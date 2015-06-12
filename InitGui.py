@@ -1,7 +1,7 @@
 ﻿# -*- coding: utf-8 -*-
 ###################################################################################
 #
-#  SheetMetalCmd.py
+#  InitGui.py
 #  
 #  Copyright 2015 Shai Seger <shaise at gmail dot com>
 #  
