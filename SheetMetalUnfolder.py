@@ -1411,10 +1411,15 @@ class SMUnfoldObject:
   def __init__(self, obj):
     '''"Add Wall with radius bend" '''
     obj.Proxy = self
+    self.isOk = True
 
   def execute(self, fp):
     s = PerformUnfold()
-    fp.Shape = s
+    if (s != None):
+      fp.Shape = s
+      self.isOk = True
+    else:
+      self.isOk = False
     
 
 
@@ -1433,6 +1438,8 @@ class SMUnfoldCommandClass():
     SMUnfoldObject(a)
     a.ViewObject.Proxy = 0
     FreeCAD.ActiveDocument.recompute()
+    if not(a.Proxy.isOk):
+      FreeCAD.ActiveDocument.removeObject(a.Name)
     return
    
   def IsActive(self):
