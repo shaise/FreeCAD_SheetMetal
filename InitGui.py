@@ -64,7 +64,8 @@ static char * D:\shai\FreeCAD\mkwall_xpm[] = {
     def Initialize(self):
         "This function is executed when FreeCAD starts"
         import SheetMetalCmd # import here all the needed files that create your FreeCAD commands
-        self.list = ["SMMakeWall", "SMExtrudeFace"] # A list of command names created in the line above
+        import SheetMetalUnfolder
+        self.list = ["SMMakeWall", "SMExtrudeFace", "SMUnfold"] # A list of command names created in the line above
         self.appendToolbar("My Commands",self.list) # creates a new toolbar with your commands
         # self.appendMenu("My New Menu",self.list) # creates a new menu
         # self.appendMenu(["An existing Menu","My submenu"],self.list) # appends a submenu to an existing menu
