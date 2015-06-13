@@ -6,7 +6,7 @@ A simple sheet metal workbench for FreeCad
 * Unfolding tool: Copyright 2014 by Ulrich Brammer <ulrich1a[at]users.sourceforge.net>
 
 #### Installation
-For  ggg Installation and how to use, please visit:  
+For Installation and how to use, please visit:  
 http://theseger.com/projects/2015/06/sheet-metal-addon-for-freecad/
 
 #### Release notes:
