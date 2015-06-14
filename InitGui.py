@@ -23,7 +23,7 @@
 #  
 ###################################################################################
 
-class MyWorkbench (Workbench):
+class SMWorkbench (Workbench):
  
     MenuText = "Sheet Metal"
     ToolTip = "Sheet metal workbench"
@@ -87,4 +87,4 @@ static char * D:\shai\FreeCAD\mkwall_xpm[] = {
         # this function is mandatory if this is a full python workbench
         return "Gui::PythonWorkbench"
  
-Gui.addWorkbench(MyWorkbench())
+Gui.addWorkbench(SMWorkbench())
