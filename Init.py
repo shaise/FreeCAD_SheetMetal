@@ -23,4 +23,4 @@
 #  
 ###################################################################################
 
-print "My Sheet Metal Loaded"
+print "Sheet Metal workbench loaded"
