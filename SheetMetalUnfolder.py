@@ -1350,7 +1350,7 @@ def PerformUnfold():
     else:
       o = Gui.Selection.getSelectionEx()[0]
       SMLog (o.ObjectName)
-      if len(o.SubObjects)>1:
+      if len(o.SubObjects) != 1:
         mw=FreeCADGui.getMainWindow()
         QtGui.QMessageBox.information(mw,"SubelementError","""Only one flat face has to be selected!""")
       else:
@@ -1393,7 +1393,7 @@ def PerformUnfold():
             
             if TheTree.error_code <> None:
               SMError ("Error " + unfold_error[TheTree.error_code])
-              SMError (" at Face" + TheTree.failed_face_idx+1)
+              SMError (" at Face" + str(TheTree.failed_face_idx+1))
               QtGui.QMessageBox.information(mw,"Error",unfold_error[TheTree.error_code])
             else:
               SMMessage ("unfold successful")
