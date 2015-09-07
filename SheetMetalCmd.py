@@ -40,7 +40,7 @@ def smMakeFace(edge, dir, from_p, to_p):
     return Part.Face(w)
 
 
-def smBend(bendR = 1.0, bendA = 90.0, flipped = False, extLen = 10.0, gap1 = 0.0, gap2 = 0, reliefW = 0.5, 
+def smBend(bendR = 1.0, bendA = 90.0, flipped = False, extLen = 10.0, gap1 = 0.0, gap2 = 0.0, reliefW = 0.5, 
             reliefD = 1.0, selFaceNames = '', MainObject = None):
             
   #AAD = FreeCAD.ActiveDocument
@@ -256,8 +256,8 @@ class SMExtrudeWall:
     selobj = Gui.Selection.getSelectionEx()[0]
     
     obj.addProperty("App::PropertyLength","length","Parameters","Length of wall").length = 10.0
-    obj.addProperty("App::PropertyLength","gap1","Parameters","Gap from left side").gap1 = 0.0
-    obj.addProperty("App::PropertyLength","gap2","Parameters","Gap from right side").gap2 = 0.0
+    obj.addProperty("App::PropertyDistance","gap1","Parameters","Gap from left side").gap1 = 0.0
+    obj.addProperty("App::PropertyDistance","gap2","Parameters","Gap from right side").gap2 = 0.0
     obj.addProperty("App::PropertyLinkSub", "baseObject", "Parameters", "Base object").baseObject = (selobj.Object, selobj.SubElementNames)
     obj.Proxy = self
 

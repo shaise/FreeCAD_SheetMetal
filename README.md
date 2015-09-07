@@ -10,6 +10,7 @@ For Installation and how to use, please visit:
 http://theseger.com/projects/2015/06/sheet-metal-addon-for-freecad/
 
 #### Release notes:
+* V0.0.13 07 Sep 2015:  Add negative gaps for extrude function. (per deveee request)
 * V0.012  07 Sep 2015:  Fix issue submitted by deveee
 * V0.010  13 Jun 2015:  Add Ulrich's great unfolding tool. Thanks!!!
 * V0.002  12 Jun 2015:  Fix Save/Load issues  
