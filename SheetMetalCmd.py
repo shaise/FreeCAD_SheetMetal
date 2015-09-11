@@ -58,19 +58,22 @@ def smBend(bendR = 1.0, bendA = 90.0, flipped = False, extLen = 10.0, gap1 = 0.0
         thkEdge = edge
 
     # main corner
-    p0 = thkEdge.valueAt(0.0)
-    thkDir = thkEdge.valueAt(thk) - thkEdge.valueAt(0.0)
+    p0 = thkEdge.valueAt(thkEdge.FirstParameter)
+    thkDir = thkEdge.valueAt(thkEdge.LastParameter) - thkEdge.valueAt(thkEdge.FirstParameter)
     
     # find a length edge  =  revolve axis direction
     for lenEdge in selFace.Edges:
-      len = lenEdge.LastParameter
+      lastp = lenEdge.LastParameter
+      firstp = lenEdge.FirstParameter
+      len = lenEdge.Length
       if lenEdge.isSame(thkEdge):
         continue
-      if lenEdge.valueAt(0.0) == p0:
-        revAxisV = lenEdge.valueAt(len) - lenEdge.valueAt(0.0)
+      FreeCAD.Console.PrintLog("=>" + str(lastp)+", "+ str(lenEdge.valueAt(firstp)) +", "+ str(lenEdge.valueAt(lastp)) + ", " + str(p0) + "\n")
+      if lenEdge.valueAt(firstp) == p0:
+        revAxisV = lenEdge.valueAt(lastp) - lenEdge.valueAt(firstp)
         break
-      if lenEdge.valueAt(len) == p0:
-        revAxisV = lenEdge.valueAt(0.0) - lenEdge.valueAt(len)
+      if lenEdge.valueAt(lastp) == p0:
+        revAxisV = lenEdge.valueAt(firstp) - lenEdge.valueAt(lastp)
         break
      
     # narrow the wall if we have gaps
