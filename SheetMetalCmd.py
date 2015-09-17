@@ -34,8 +34,8 @@ def smMakeFace(edge, dir, from_p, to_p):
     e1.translate(dir * from_p)
     e2 = edge.copy()
     e2.translate(dir * to_p)
-    e3 = Part.Line(e1.valueAt(0.0), e2.valueAt(0.0)).toShape()
-    e4 = Part.Line(e1.valueAt(edge.Length), e2.valueAt(edge.Length)).toShape()
+    e3 = Part.Line(e1.valueAt(e1.FirstParameter), e2.valueAt(e2.FirstParameter)).toShape()
+    e4 = Part.Line(e1.valueAt(e1.LastParameter), e2.valueAt(e2.LastParameter)).toShape()
     w = Part.Wire([e1,e3,e2,e4])
     return Part.Face(w)
 
@@ -92,7 +92,7 @@ def smBend(bendR = 1.0, bendA = 90.0, flipped = False, extLen = 10.0, gap1 = 0.0
     
     # remove relief if needed
     if reliefW > 0 and reliefD > 0 and (gap1 > 0 or gap2 > 0) :
-      thkEdgeW = Part.Line(thkEdge.valueAt(-0.1), thkEdge.valueAt(thk+0.1)).toShape()
+      thkEdgeW = Part.Line(thkEdge.valueAt(thkEdge.FirstParameter-0.1), thkEdge.valueAt(thkEdge.LastParameter+0.1)).toShape()
       reliefFace = smMakeFace(thkEdgeW, revDir, gap1 - reliefW, gap1)
       reliefFace = reliefFace.fuse(smMakeFace(thkEdgeW, revDir, lgap2, lgap2 + reliefW))
       reliefSolid = reliefFace.extrude(selFace.normalAt(0,0) * reliefD * -1)
@@ -101,10 +101,10 @@ def smBend(bendR = 1.0, bendA = 90.0, flipped = False, extLen = 10.0, gap1 = 0.0
    
     #find revolve point
     if not(flipped):
-      revAxisP = thkEdge.valueAt(thk + bendR)
+      revAxisP = thkEdge.valueAt(thkEdge.LastParameter + bendR)
       revAxisV = revAxisV * -1
     else:
-      revAxisP = thkEdge.valueAt(-bendR)  
+      revAxisP = thkEdge.valueAt(thkEdge.FirstParameter - bendR)  
     
     # create bend
     wallFace = revFace
