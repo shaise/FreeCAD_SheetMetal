@@ -1530,7 +1530,7 @@ def PerformUnfold():
 class SMUnfoldObject:
   def __init__(self, obj):
     '''"Add Wall with radius bend" '''
-    obj.Proxy = self
+    obj.Proxy = None
     self.isOk = True
 
   def execute(self, fp):
@@ -1554,12 +1554,11 @@ class SMUnfoldCommandClass():
             'ToolTip' : "Flatten folded sheet metal object"}
  
   def Activated(self):
-    a=FreeCAD.ActiveDocument.addObject("Part::FeaturePython","Unfold")
-    SMUnfoldObject(a)
-    a.ViewObject.Proxy = 0
+    s = PerformUnfold()
+    if (s != None):
+      a=FreeCAD.ActiveDocument.addObject("Part::Feature","Unfold")
+      a.Shape = s
     FreeCAD.ActiveDocument.recompute()
-    if not(a.Proxy.isOk):
-      FreeCAD.ActiveDocument.removeObject(a.Name)
     return
    
   def IsActive(self):
