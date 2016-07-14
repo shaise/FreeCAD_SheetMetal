@@ -406,6 +406,7 @@ class SheetTree(object):
   def isVertOpposite(self, theVert, theNode):
     F_type = str(self.f_list[theNode.idx].Surface)
     vF_vert = Base.Vector(theVert.X, theVert.Y, theVert.Z)
+    distFailure = 0
     if F_type == "<Plane object>":
       distFailure = vF_vert.distanceToPlane (theNode.facePosi, theNode.axis) - self.__thickness
     if F_type == "<Cylinder object>":
@@ -1307,19 +1308,28 @@ class SheetTree(object):
     #for ed in b_wire.Edges:
     #  SMLog("b_wire1 tol: ", ed.Vertexes[0].Tolerance, " ", ed.Vertexes[1].Tolerance)
       
-    sweep_path = Part.makeLine(o_wire.Vertexes[0].Point, b_wire.Vertexes[0].Point)
+    #sweep_path = Part.makeLine(o_wire.Vertexes[0].Point, b_wire.Vertexes[0].Point)
     #Part.show(sweep_path)
 
-    Bend_shell = Part.makeRuledSurface (o_wire, b_wire)
+    #Bend_shell = Part.makeRuledSurface (o_wire, b_wire)
     # Part.show(Bend_shell)
-    for shell_face in Bend_shell.Faces:
-      flat_shell.append(shell_face )
+        
+    #for shell_face in Bend_shell.Faces:
+    #  flat_shell.append(shell_face )
 
+    for i in range(len(o_wire.Edges)) :
+      flat_shell.append(self.MakeFace(o_wire.Edges[i], b_wire.Edges[i]))
 
     #Part.show(self.__Shape.copy())
     #SMLog("finish genBendShell Face", bend_node.idx +1)
 
     return flat_shell
+
+  def MakeFace(self, e1, e2):
+    e3 = Part.Line(e1.valueAt(e1.FirstParameter), e2.valueAt(e2.FirstParameter)).toShape()
+    e4 = Part.Line(e1.valueAt(e1.LastParameter), e2.valueAt(e2.LastParameter)).toShape()
+    w = Part.Wire([e1,e3,e2,e4])
+    return Part.Face(w)
 
 
   def makeSeamFace(self, sEdge, theNode):
