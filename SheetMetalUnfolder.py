@@ -1564,11 +1564,14 @@ class SMUnfoldCommandClass():
             'ToolTip' : "Flatten folded sheet metal object"}
  
   def Activated(self):
+    doc = FreeCAD.ActiveDocument
     s = PerformUnfold()
     if (s != None):
-      a=FreeCAD.ActiveDocument.addObject("Part::Feature","Unfold")
+      doc.openTransaction("Unfold")
+      a = doc.addObject("Part::Feature","Unfold")
       a.Shape = s
-    FreeCAD.ActiveDocument.recompute()
+      doc.commitTransaction()
+    doc.recompute()
     return
    
   def IsActive(self):

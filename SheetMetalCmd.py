@@ -208,10 +208,13 @@ class AddWallCommandClass():
             'ToolTip' : "Extends a wall from a side face of metal sheet"}
  
   def Activated(self):
-    a=FreeCAD.ActiveDocument.addObject("Part::FeaturePython","Bend")
+    doc = FreeCAD.ActiveDocument
+    doc.openTransaction("Bend")
+    a = doc.addObject("Part::FeaturePython","Bend")
     SMBendWall(a)
     SMViewProviderTree(a.ViewObject)
-    FreeCAD.ActiveDocument.recompute()
+    doc.recompute()
+    doc.commitTransaction()
     return
    
   def IsActive(self):
@@ -280,10 +283,13 @@ class SMExtrudeCommandClass():
             'ToolTip' : "Extrude a face along normal"}
  
   def Activated(self):
-    a=FreeCAD.ActiveDocument.addObject("Part::FeaturePython","Extrude")
+    doc = FreeCAD.ActiveDocument
+    doc.openTransaction("Extrude")
+    a = doc.addObject("Part::FeaturePython","Extrude")
     SMExtrudeWall(a)
     SMViewProviderTree(a.ViewObject)
-    FreeCAD.ActiveDocument.recompute()
+    doc.recompute()
+    doc.commitTransaction()
     return
    
   def IsActive(self):
