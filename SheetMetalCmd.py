@@ -153,9 +153,11 @@ class SMBendWall:
 class SMViewProviderTree:
   "A View provider that nests children objects under the created one"
       
-  def __init__(self, obj):
+  def __init__(self, obj, isPartDesign):
     obj.Proxy = self
     self.Object = obj.Object
+    self.isPartDesign = isPartDesign
+    FreeCAD.Console.PrintLog("isPartDesign = " + str(self.isPartDesign) + '\n')
       
   def attach(self, obj):
     self.Object = obj.Object
@@ -186,7 +188,7 @@ class SMViewProviderTree:
 
   def claimChildren(self):
     objs = []
-    if hasattr(self.Object,"baseObject"):
+    if hasattr(self, "isPartDesign") and not self.isPartDesign and hasattr(self.Object,"baseObject"):
       objs.append(self.Object.baseObject[0])
     return objs
  
@@ -209,10 +211,22 @@ class AddWallCommandClass():
  
   def Activated(self):
     doc = FreeCAD.ActiveDocument
+    view = Gui.ActiveDocument.ActiveView
+    activeBody = None
+    if hasattr(view,'getActiveObject'):
+      activeBody = view.getActiveObject('pdbody')
+      #FreeCAD.Console.PrintLog("ver 0.17 detected") 
     doc.openTransaction("Bend")
-    a = doc.addObject("Part::FeaturePython","Bend")
-    SMBendWall(a)
-    SMViewProviderTree(a.ViewObject)
+    if (activeBody == None):
+      a = doc.addObject("Part::FeaturePython","Bend")
+      SMBendWall(a)
+      SMViewProviderTree(a.ViewObject, False)
+    else:
+      #FreeCAD.Console.PrintLog("found active body: " + activeBody.Name)
+      a = doc.addObject("PartDesign::FeaturePython","Bend")
+      SMBendWall(a)
+      SMViewProviderTree(a.ViewObject, True)
+      activeBody.addObject(a)
     doc.recompute()
     doc.commitTransaction()
     return
@@ -284,10 +298,21 @@ class SMExtrudeCommandClass():
  
   def Activated(self):
     doc = FreeCAD.ActiveDocument
+    view = Gui.ActiveDocument.ActiveView
+    activeBody = None
+    if hasattr(view,'getActiveObject'):
+      activeBody = view.getActiveObject('pdbody')
+      #FreeCAD.Console.PrintLog("ver 0.17 detected") 
     doc.openTransaction("Extrude")
-    a = doc.addObject("Part::FeaturePython","Extrude")
-    SMExtrudeWall(a)
-    SMViewProviderTree(a.ViewObject)
+    if (activeBody == None):
+      a = doc.addObject("Part::FeaturePython","Extrude")
+      SMExtrudeWall(a)
+      SMViewProviderTree(a.ViewObject, False)
+    else:
+      a = doc.addObject("PartDesign::FeaturePython","Extrude")
+      SMExtrudeWall(a)
+      SMViewProviderTree(a.ViewObject, True)
+      activeBody.addObject(a)
     doc.recompute()
     doc.commitTransaction()
     return
