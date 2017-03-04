@@ -1326,8 +1326,8 @@ class SheetTree(object):
     return flat_shell
 
   def MakeFace(self, e1, e2):
-    e3 = Part.Line(e1.valueAt(e1.FirstParameter), e2.valueAt(e2.FirstParameter)).toShape()
-    e4 = Part.Line(e1.valueAt(e1.LastParameter), e2.valueAt(e2.LastParameter)).toShape()
+    e3 = Part.LineSegment(e1.valueAt(e1.FirstParameter), e2.valueAt(e2.FirstParameter)).toShape()
+    e4 = Part.LineSegment(e1.valueAt(e1.LastParameter), e2.valueAt(e2.LastParameter)).toShape()
     w = Part.Wire([e1,e3,e2,e4])
     return Part.Face(w)
 

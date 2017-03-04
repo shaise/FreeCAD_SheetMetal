@@ -29,6 +29,7 @@ from PySide import QtCore, QtGui
 import FreeCAD, FreeCADGui, Part, os
 __dir__ = os.path.dirname(__file__)
 iconPath = os.path.join( __dir__, 'Resources', 'icons' )
+smEpsilon = 0.0000001
 
 def smWarnDialog(msg):
     diag = QtGui.QMessageBox(QtGui.QMessageBox.Warning, 'Error in macro MessageBox', msg)
@@ -53,13 +54,18 @@ def smIsOperationLegal(body, selobj):
         return False
     return True    
  
+def smStrEdge(e):
+    return "[" + str(e.valueAt(e.FirstParameter)) + " , " + str(e.valueAt(e.LastParameter)) + "]"
+ 
 def smMakeFace(edge, dir, from_p, to_p):
     e1 = edge.copy()
     e1.translate(dir * from_p)
     e2 = edge.copy()
     e2.translate(dir * to_p)
-    e3 = Part.Line(e1.valueAt(e1.FirstParameter), e2.valueAt(e2.FirstParameter)).toShape()
-    e4 = Part.Line(e1.valueAt(e1.LastParameter), e2.valueAt(e2.LastParameter)).toShape()
+    FreeCAD.Console.PrintLog("=> fromp:" + str(from_p) + "\n   top:" + str(to_p) + "\n   fp:" + str(e1.FirstParameter) + "\n   lp:" + str(e1.LastParameter) + "\n")
+    e3 = Part.LineSegment(e1.valueAt(e1.FirstParameter), e2.valueAt(e2.FirstParameter)).toShape()
+    e4 = Part.LineSegment(e1.valueAt(e1.LastParameter), e2.valueAt(e2.LastParameter)).toShape()
+    FreeCAD.Console.PrintLog("=>" + smStrEdge(e1) + "\n  " + smStrEdge(e3) + "\n  " + smStrEdge(e2) + "\n  " + smStrEdge(e4) + "\n")
     w = Part.Wire([e1,e3,e2,e4])
     return Part.Face(w)
 
@@ -93,10 +99,10 @@ def smBend(bendR = 1.0, bendA = 90.0, flipped = False, extLen = 10.0, gap1 = 0.0
       if lenEdge.isSame(thkEdge):
         continue
       FreeCAD.Console.PrintLog("=>" + str(lastp)+", "+ str(lenEdge.valueAt(firstp)) +", "+ str(lenEdge.valueAt(lastp)) + ", " + str(p0) + "\n")
-      if lenEdge.valueAt(firstp) == p0:
+      if (lenEdge.valueAt(firstp) - p0).Length < smEpsilon:
         revAxisV = lenEdge.valueAt(lastp) - lenEdge.valueAt(firstp)
         break
-      if lenEdge.valueAt(lastp) == p0:
+      if (lenEdge.valueAt(lastp) - p0).Length < smEpsilon:
         revAxisV = lenEdge.valueAt(firstp) - lenEdge.valueAt(lastp)
         break
      
@@ -111,12 +117,12 @@ def smBend(bendR = 1.0, bendA = 90.0, flipped = False, extLen = 10.0, gap1 = 0.0
         revFace.reverse()
     
     #make sure the direction verctor is correct in respect to the normal
-    if thkDir.cross(revAxisV).normalize() == selFace.normalAt(0,0):
+    if (thkDir.cross(revAxisV).normalize() - selFace.normalAt(0,0)).Length < smEpsilon:
       revAxisV = revAxisV * -1
     
     # remove relief if needed
     if reliefW > 0 and reliefD > 0 and (gap1 > 0 or gap2 > 0) :
-      thkEdgeW = Part.Line(thkEdge.valueAt(thkEdge.FirstParameter-0.1), thkEdge.valueAt(thkEdge.LastParameter+0.1)).toShape()
+      thkEdgeW = Part.LineSegment(thkEdge.valueAt(thkEdge.FirstParameter-0.1), thkEdge.valueAt(thkEdge.LastParameter+0.1)).toShape()
       reliefFace = smMakeFace(thkEdgeW, revDir, gap1 - reliefW, gap1)
       reliefFace = reliefFace.fuse(smMakeFace(thkEdgeW, revDir, lgap2, lgap2 + reliefW))
       reliefSolid = reliefFace.extrude(selFace.normalAt(0,0) * reliefD * -1)
