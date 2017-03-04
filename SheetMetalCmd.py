@@ -24,11 +24,35 @@
 ###################################################################################
 
 from FreeCAD import Gui
+from PySide import QtCore, QtGui
+
 import FreeCAD, FreeCADGui, Part, os
 __dir__ = os.path.dirname(__file__)
 iconPath = os.path.join( __dir__, 'Resources', 'icons' )
 
-  
+def smWarnDialog(msg):
+    diag = QtGui.QMessageBox(QtGui.QMessageBox.Warning, 'Error in macro MessageBox', msg)
+    diag.setWindowModality(QtCore.Qt.ApplicationModal)
+    diag.exec_()
+ 
+def smBelongToBody(item, body):
+    if (body == None):
+        return False
+    for obj in body.Group:
+        if obj.Name == item.Name:
+            return True
+    return False
+    
+def smIsPartDesign(obj):
+    return str(obj).find("<PartDesign::") == 0
+    
+def smIsOperationLegal(body, selobj):
+    FreeCAD.Console.PrintLog(str(selobj) + " " + str(body) + " " + str(smBelongToBody(selobj, body)) + "\n")
+    if smIsPartDesign(selobj) and not smBelongToBody(selobj, body):
+        smWarnDialog("The selected geometry does not belong to the active Body.\nPlease make the container of this item active by\ndouble clicking on it.")
+        return False
+    return True    
+ 
 def smMakeFace(edge, dir, from_p, to_p):
     e1 = edge.copy()
     e1.translate(dir * from_p)
@@ -213,11 +237,13 @@ class AddWallCommandClass():
     doc = FreeCAD.ActiveDocument
     view = Gui.ActiveDocument.ActiveView
     activeBody = None
+    selobj = Gui.Selection.getSelectionEx()[0].Object
     if hasattr(view,'getActiveObject'):
       activeBody = view.getActiveObject('pdbody')
-      #FreeCAD.Console.PrintLog("ver 0.17 detected") 
+    if not smIsOperationLegal(activeBody, selobj):
+        return
     doc.openTransaction("Bend")
-    if (activeBody == None):
+    if activeBody == None or not smIsPartDesign(selobj):
       a = doc.addObject("Part::FeaturePython","Bend")
       SMBendWall(a)
       SMViewProviderTree(a.ViewObject, False)
