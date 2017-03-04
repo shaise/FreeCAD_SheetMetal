@@ -30,6 +30,7 @@ import FreeCAD, FreeCADGui, Part, os
 __dir__ = os.path.dirname(__file__)
 iconPath = os.path.join( __dir__, 'Resources', 'icons' )
 smEpsilon = 0.0000001
+smIsV17 = hasattr(Gui.ActiveDocument.ActiveView,'getActiveObject')
 
 def smWarnDialog(msg):
     diag = QtGui.QMessageBox(QtGui.QMessageBox.Warning, 'Error in macro MessageBox', msg)
@@ -46,7 +47,7 @@ def smBelongToBody(item, body):
     
 def smIsPartDesign(obj):
     return str(obj).find("<PartDesign::") == 0
-    
+        
 def smIsOperationLegal(body, selobj):
     #FreeCAD.Console.PrintLog(str(selobj) + " " + str(body) + " " + str(smBelongToBody(selobj, body)) + "\n")
     if smIsPartDesign(selobj) and not smBelongToBody(selobj, body):
@@ -63,8 +64,8 @@ def smMakeFace(edge, dir, from_p, to_p):
     e2 = edge.copy()
     e2.translate(dir * to_p)
     #FreeCAD.Console.PrintLog("=> fromp:" + str(from_p) + "\n   top:" + str(to_p) + "\n   fp:" + str(e1.FirstParameter) + "\n   lp:" + str(e1.LastParameter) + "\n")
-    e3 = Part.LineSegment(e1.valueAt(e1.FirstParameter), e2.valueAt(e2.FirstParameter)).toShape()
-    e4 = Part.LineSegment(e1.valueAt(e1.LastParameter), e2.valueAt(e2.LastParameter)).toShape()
+    e3 = Part.makeLine(e1.valueAt(e1.FirstParameter), e2.valueAt(e2.FirstParameter))
+    e4 = Part.makeLine(e1.valueAt(e1.LastParameter), e2.valueAt(e2.LastParameter))
     #FreeCAD.Console.PrintLog("=>" + smStrEdge(e1) + "\n  " + smStrEdge(e3) + "\n  " + smStrEdge(e2) + "\n  " + smStrEdge(e4) + "\n")
     w = Part.Wire([e1,e3,e2,e4])
     return Part.Face(w)
@@ -122,7 +123,7 @@ def smBend(bendR = 1.0, bendA = 90.0, flipped = False, extLen = 10.0, gap1 = 0.0
     
     # remove relief if needed
     if reliefW > 0 and reliefD > 0 and (gap1 > 0 or gap2 > 0) :
-      thkEdgeW = Part.LineSegment(thkEdge.valueAt(thkEdge.FirstParameter-0.1), thkEdge.valueAt(thkEdge.LastParameter+0.1)).toShape()
+      thkEdgeW = Part.makeLine(thkEdge.valueAt(thkEdge.FirstParameter-0.1), thkEdge.valueAt(thkEdge.LastParameter+0.1))
       reliefFace = smMakeFace(thkEdgeW, revDir, gap1 - reliefW, gap1)
       reliefFace = reliefFace.fuse(smMakeFace(thkEdgeW, revDir, lgap2, lgap2 + reliefW))
       reliefSolid = reliefFace.extrude(selFace.normalAt(0,0) * reliefD * -1)
@@ -332,9 +333,11 @@ class SMExtrudeCommandClass():
     doc = FreeCAD.ActiveDocument
     view = Gui.ActiveDocument.ActiveView
     activeBody = None
+    selobj = Gui.Selection.getSelectionEx()[0].Object
     if hasattr(view,'getActiveObject'):
       activeBody = view.getActiveObject('pdbody')
-      #FreeCAD.Console.PrintLog("ver 0.17 detected") 
+    if not smIsOperationLegal(activeBody, selobj):
+        return      
     doc.openTransaction("Extrude")
     if (activeBody == None):
       a = doc.addObject("Part::FeaturePython","Extrude")
