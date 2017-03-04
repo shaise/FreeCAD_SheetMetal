@@ -48,7 +48,7 @@ def smIsPartDesign(obj):
     return str(obj).find("<PartDesign::") == 0
     
 def smIsOperationLegal(body, selobj):
-    FreeCAD.Console.PrintLog(str(selobj) + " " + str(body) + " " + str(smBelongToBody(selobj, body)) + "\n")
+    #FreeCAD.Console.PrintLog(str(selobj) + " " + str(body) + " " + str(smBelongToBody(selobj, body)) + "\n")
     if smIsPartDesign(selobj) and not smBelongToBody(selobj, body):
         smWarnDialog("The selected geometry does not belong to the active Body.\nPlease make the container of this item active by\ndouble clicking on it.")
         return False
@@ -62,10 +62,10 @@ def smMakeFace(edge, dir, from_p, to_p):
     e1.translate(dir * from_p)
     e2 = edge.copy()
     e2.translate(dir * to_p)
-    FreeCAD.Console.PrintLog("=> fromp:" + str(from_p) + "\n   top:" + str(to_p) + "\n   fp:" + str(e1.FirstParameter) + "\n   lp:" + str(e1.LastParameter) + "\n")
+    #FreeCAD.Console.PrintLog("=> fromp:" + str(from_p) + "\n   top:" + str(to_p) + "\n   fp:" + str(e1.FirstParameter) + "\n   lp:" + str(e1.LastParameter) + "\n")
     e3 = Part.LineSegment(e1.valueAt(e1.FirstParameter), e2.valueAt(e2.FirstParameter)).toShape()
     e4 = Part.LineSegment(e1.valueAt(e1.LastParameter), e2.valueAt(e2.LastParameter)).toShape()
-    FreeCAD.Console.PrintLog("=>" + smStrEdge(e1) + "\n  " + smStrEdge(e3) + "\n  " + smStrEdge(e2) + "\n  " + smStrEdge(e4) + "\n")
+    #FreeCAD.Console.PrintLog("=>" + smStrEdge(e1) + "\n  " + smStrEdge(e3) + "\n  " + smStrEdge(e2) + "\n  " + smStrEdge(e4) + "\n")
     w = Part.Wire([e1,e3,e2,e4])
     return Part.Face(w)
 
@@ -98,7 +98,7 @@ def smBend(bendR = 1.0, bendA = 90.0, flipped = False, extLen = 10.0, gap1 = 0.0
       len = lenEdge.Length
       if lenEdge.isSame(thkEdge):
         continue
-      FreeCAD.Console.PrintLog("=>" + str(lastp)+", "+ str(lenEdge.valueAt(firstp)) +", "+ str(lenEdge.valueAt(lastp)) + ", " + str(p0) + "\n")
+      #FreeCAD.Console.PrintLog("=>" + str(lastp)+", "+ str(lenEdge.valueAt(firstp)) +", "+ str(lenEdge.valueAt(lastp)) + ", " + str(p0) + "\n")
       if (lenEdge.valueAt(firstp) - p0).Length < smEpsilon:
         revAxisV = lenEdge.valueAt(lastp) - lenEdge.valueAt(firstp)
         break
