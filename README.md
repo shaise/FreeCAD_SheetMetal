@@ -2,14 +2,14 @@
 A simple sheet metal workbench for FreeCad
 
 #### Developpers:
-* Folding tools:  By Shai Seger
+* Folding tools:  Shai Seger  
                   Based and inspired by Javier Martínez code
 * Unfolding tool: Copyright 2014 by Ulrich Brammer <ulrich1a[at]users.sourceforge.net>
 
 #### Installation
 For Installation and how to use, please visit:  
-http://theseger.com/projects/2015/06/sheet-metal-addon-for-freecad/
-Starting from FreeCAD 0.17 it can be installed via the Addon Manager (froom Tools menu)
+http://theseger.com/projects/2015/06/sheet-metal-addon-for-freecad/  
+Starting from FreeCAD 0.17 it can be installed via the Addon Manager (from Tools menu)
 
 #### Release notes:
 * V0.1.01 03 Mar 2017:  Support version 0.17. (strting from build 10423)
