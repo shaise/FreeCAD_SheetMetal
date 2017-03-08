@@ -326,8 +326,8 @@ class SMExtrudeCommandClass():
 
   def GetResources(self):
     return {'Pixmap'  : os.path.join( iconPath , 'SMExtrude.svg') , # the name of a svg file available in the resources
-            'MenuText': "Extrude Face" ,
-            'ToolTip' : "Extrude a face along normal"}
+            'MenuText': "Extend Face" ,
+            'ToolTip' : "Extend a face along normal"}
  
   def Activated(self):
     doc = FreeCAD.ActiveDocument
@@ -338,13 +338,13 @@ class SMExtrudeCommandClass():
       activeBody = view.getActiveObject('pdbody')
     if not smIsOperationLegal(activeBody, selobj):
         return      
-    doc.openTransaction("Extrude")
+    doc.openTransaction("Extend")
     if (activeBody == None):
-      a = doc.addObject("Part::FeaturePython","Extrude")
+      a = doc.addObject("Part::FeaturePython","Extend")
       SMExtrudeWall(a)
       SMViewProviderTree(a.ViewObject, False)
     else:
-      a = doc.addObject("PartDesign::FeaturePython","Extrude")
+      a = doc.addObject("PartDesign::FeaturePython","Extend")
       SMExtrudeWall(a)
       SMViewProviderTree(a.ViewObject, True)
       activeBody.addObject(a)
