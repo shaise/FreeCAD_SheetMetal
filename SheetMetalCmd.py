@@ -30,7 +30,6 @@ import FreeCAD, FreeCADGui, Part, os
 __dir__ = os.path.dirname(__file__)
 iconPath = os.path.join( __dir__, 'Resources', 'icons' )
 smEpsilon = 0.0000001
-smIsV17 = hasattr(Gui.ActiveDocument.ActiveView,'getActiveObject')
 
 def smWarnDialog(msg):
     diag = QtGui.QMessageBox(QtGui.QMessageBox.Warning, 'Error in macro MessageBox', msg)
