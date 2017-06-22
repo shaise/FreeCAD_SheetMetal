@@ -384,11 +384,11 @@ class SMExtrudeCommandClass():
     if (activeBody == None):
       a = doc.addObject("Part::FeaturePython","Extend")
       SMExtrudeWall(a)
-      SMViewProviderTree(a.ViewObject, False)
+      SMViewProviderTree(a.ViewObject)
     else:
       a = doc.addObject("PartDesign::FeaturePython","Extend")
       SMExtrudeWall(a)
-      SMViewProviderTree(a.ViewObject, True)
+      SMViewProviderFlat(a.ViewObject)
       activeBody.addObject(a)
     doc.recompute()
     doc.commitTransaction()
