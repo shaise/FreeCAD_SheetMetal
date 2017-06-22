@@ -183,11 +183,9 @@ class SMBendWall:
 class SMViewProviderTree:
   "A View provider that nests children objects under the created one"
       
-  def __init__(self, obj, isPartDesign):
+  def __init__(self, obj):
     obj.Proxy = self
     self.Object = obj.Object
-    self.isPartDesign = isPartDesign
-    FreeCAD.Console.PrintLog("isPartDesign = " + str(self.isPartDesign) + '\n')
       
   def attach(self, obj):
     self.Object = obj.Object
@@ -218,8 +216,53 @@ class SMViewProviderTree:
 
   def claimChildren(self):
     objs = []
-    if hasattr(self, "isPartDesign") and not self.isPartDesign and hasattr(self.Object,"baseObject"):
+    if hasattr(self.Object,"baseObject"):
       objs.append(self.Object.baseObject[0])
+    return objs
+ 
+  def getIcon(self):
+    if isinstance(self.Object.Proxy,SMBendWall):
+      return os.path.join( iconPath , 'AddWall.svg')
+    elif isinstance(self.Object.Proxy,SMExtrudeWall):
+      return os.path.join( iconPath , 'SMExtrude.svg')
+
+
+class SMViewProviderFlat:
+  "A View provider that places objects flat under base object"
+      
+  def __init__(self, obj):
+    obj.Proxy = self
+    self.Object = obj.Object
+      
+  def attach(self, obj):
+    self.Object = obj.Object
+    return
+
+  def updateData(self, fp, prop):
+    return
+
+  def getDisplayModes(self,obj):
+    modes=[]
+    return modes
+
+  def setDisplayMode(self,mode):
+    return mode
+
+  def onChanged(self, vp, prop):
+    return
+
+  def __getstate__(self):
+    #        return {'ObjectName' : self.Object.Name}
+    return None
+
+  def __setstate__(self,state):
+    if state is not None:
+      import FreeCAD
+      doc = FreeCAD.ActiveDocument #crap
+      self.Object = doc.getObject(state['ObjectName'])
+
+  def claimChildren(self):
+    objs = []
     return objs
  
   def getIcon(self):
@@ -252,12 +295,12 @@ class AddWallCommandClass():
     if activeBody == None or not smIsPartDesign(selobj):
       a = doc.addObject("Part::FeaturePython","Bend")
       SMBendWall(a)
-      SMViewProviderTree(a.ViewObject, False)
+      SMViewProviderTree(a.ViewObject)
     else:
       #FreeCAD.Console.PrintLog("found active body: " + activeBody.Name)
       a = doc.addObject("PartDesign::FeaturePython","Bend")
       SMBendWall(a)
-      SMViewProviderTree(a.ViewObject, True)
+      SMViewProviderFlat(a.ViewObject)
       activeBody.addObject(a)
     doc.recompute()
     doc.commitTransaction()
