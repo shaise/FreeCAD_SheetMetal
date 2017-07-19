@@ -6,6 +6,8 @@ A simple sheet metal workbench for FreeCad
                   Based and inspired by Javier Martínez code
 * Unfolding tool: Copyright 2014 by Ulrich Brammer <ulrich1a[at]users.sourceforge.net>
 
+![Demo Workflow](../master/Resources/SheetMetal4.gif)
+
 #### Installation
 For Installation and how to use, please visit:  
 http://theseger.com/projects/2015/06/sheet-metal-addon-for-freecad/  
