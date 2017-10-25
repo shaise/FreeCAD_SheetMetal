@@ -30,7 +30,7 @@
 # change code to handle face indexes in the node instead of faces
 
 
-# sheet_ufo16.py
+# sheet_ufo17.py
 # Die Weiterreichung eines schon geschnittenen Seitenfaces macht Probleme.
 # Die Seitenfaces passen hinterher nicht mehr mit den Hauptflächen zusammen.
 
@@ -46,7 +46,8 @@
 # - make a view-provider for bends
 # - make the k-factor selectable
 # - upfold or unfold single bends
- 
+
+## https://forum.freecadweb.org/viewtopic.php?t=15421#p122997 
 
 '''
 
@@ -99,6 +100,8 @@ def SMLog(* args):
   for x in args:
     message += str(x)
   FreeCAD.Console.PrintLog(message + "\n")
+  FreeCAD.Console.PrintMessage(message + "\n") #maui
+
 
 def SMError(* args):
   message = ""
@@ -208,7 +211,7 @@ class SheetTree(object):
     self.index_unfold_list = [] # indexes needed for unfolding
     for i in range(len (self.__Shape.Faces)):
     #for i in range(len (self.f_list)):
-      # if i!=(f_idx):
+      # if i<>(f_idx):
       self.index_list.append(i)
       self.index_unfold_list.append(i)
       self.f_list.append(self.__Shape.Faces[i])
@@ -295,7 +298,7 @@ class SheetTree(object):
             self.__thickness = mEdge.Length
         
         # self.__thickness = lLine.Length
-        if (self.__thickness < estimated_thickness) or (self.__thickness > 1.9 * estimated_thickness):
+        if (self.__thickness < estimated_thickness) or (self.__thickness > 1.9 * estimated_thickness): #maui
           self.error_code = 3
           self.failed_face_idx = f_idx
           SMError("estimated thickness: ", estimated_thickness, " measured thickness: ", self.__thickness)
@@ -368,14 +371,14 @@ class SheetTree(object):
         if sf_edge.isSame(ise_edge):
           the_index = i
           break
-      if the_index != None:
+      if the_index <> None:
         break
           
     # Simple strategy applied: look if the connecting face has vertexes
     # with sheet-thickness distance to the top face.
     # fix me: this will fail with sharpened sheet edges with two faces
     # between top and bottom.
-    if the_index != None:
+    if the_index <> None:
       distVerts = 0
       vertList = []
       F_type = str(self.f_list[tree_node.idx].Surface)
@@ -605,10 +608,10 @@ class SheetTree(object):
         if sf_edge.isSame(ise_edge):
           the_index = i
           break
-      if the_index != None:
+      if the_index <> None:
         break
           
-    if the_index != None:
+    if the_index <> None:
       distVerts = 0
       vertList = []
       F_type = str(self.f_list[tree_node.idx].Surface)
@@ -843,10 +846,11 @@ class SheetTree(object):
 
       if newNode.bend_dir == 'up':
         k_Factor = 0.65 + 0.5*math.log10(self.__Shape.Faces[face_idx].Surface.Radius/self.__thickness)
-        SMLog("Face", newNode.idx+1, " k-factor: ", k_Factor)
+        SMLog("Face", newNode.idx+1, " k-factor up: ", k_Factor)
         newNode._trans_length = (self.__Shape.Faces[face_idx].Surface.Radius + k_Factor * self.__thickness/2.0) * newNode.bend_angle
       else:
         k_Factor = 0.65 + 0.5*math.log10((self.__Shape.Faces[face_idx].Surface.Radius - self.__thickness)/self.__thickness)
+        SMLog("Face", newNode.idx+1, " k-factor: ", k_Factor)
         newNode._trans_length = (self.__Shape.Faces[face_idx].Surface.Radius - self.__thickness \
                                   + k_Factor * self.__thickness/2.0) * newNode.bend_angle
       if newNode._trans_length < 0.0:
@@ -992,10 +996,10 @@ class SheetTree(object):
       
       for n_node in sNode.child_list:
         nextSearch = self.searchNode(theIdx, n_node)
-        if nextSearch != None:
+        if nextSearch <> None:
           result = nextSearch
           break
-    if result!=None:
+    if result<>None:
       SMLog("this is the result: ", result.idx)
     else:
       SMLog("this is the result: ", None)
@@ -1150,7 +1154,7 @@ class SheetTree(object):
       
       t_idx = self.search_face(bend_edge, bend_node)
       # Part.show(self.f_list[t_idx])
-      if t_idx != None:
+      if t_idx <> None:
         topFace = self.f_list[t_idx].copy()
         topFace.rotate(self.f_list[bend_node.idx].Surface.Center,bend_node.axis,math.degrees(bend_node.bend_angle))
         topFace.translate(trans_vec)
@@ -1249,7 +1253,7 @@ class SheetTree(object):
                 next_idx = 1
               if equal_vector(theEdge.Vertexes[1].Point, next_pnt):
                 next_idx = 0
-              if next_idx != None:
+              if next_idx <> None:
                 if self.isVertOpposite(theEdge.Vertexes[next_idx], bend_node):
                   nextEdge = theEdge.copy()
                   search_List.remove(i)
@@ -1257,7 +1261,7 @@ class SheetTree(object):
                   break
                 else:
                   next_idx = None
-          if the_index != None:
+          if the_index <> None:
             break
 
         #find the lastEdge
@@ -1269,7 +1273,7 @@ class SheetTree(object):
                 last_idx = 1
               if equal_vector(theEdge.Vertexes[1].Point, start_pnt):
                 last_idx = 0
-              if last_idx != None:
+              if last_idx <> None:
                 if self.isVertOpposite(theEdge.Vertexes[last_idx], bend_node):
                   lastEdge = theEdge.copy()
                   search_List.remove(i)
@@ -1277,7 +1281,7 @@ class SheetTree(object):
                   break
                 else:
                   last_idx = None
-          if the_index != None:
+          if the_index <> None:
             break
             
         # find the middleEdge
@@ -1287,7 +1291,7 @@ class SheetTree(object):
               last_idx = 1
             if equal_vector(theEdge.Vertexes[1].Point, start_pnt):
               last_idx = 0
-            if last_idx != None:
+            if last_idx <> None:
               if self.isVertOpposite(theEdge.Vertexes[last_idx], bend_node):
                 lastEdge = theEdge.copy()
                 search_List.remove(i)
@@ -1311,14 +1315,14 @@ class SheetTree(object):
     #sweep_path = Part.makeLine(o_wire.Vertexes[0].Point, b_wire.Vertexes[0].Point)
     #Part.show(sweep_path)
 
-    #Bend_shell = Part.makeRuledSurface (o_wire, b_wire)
+    Bend_shell = Part.makeRuledSurface (o_wire, b_wire)  #changed
     # Part.show(Bend_shell)
         
-    #for shell_face in Bend_shell.Faces:
-    #  flat_shell.append(shell_face )
+    for shell_face in Bend_shell.Faces:  #changed
+      flat_shell.append(shell_face )     #changed
 
-    for i in range(len(o_wire.Edges)) :
-      flat_shell.append(self.MakeFace(o_wire.Edges[i], b_wire.Edges[i]))
+    #for i in range(len(o_wire.Edges)) :
+    #  flat_shell.append(self.MakeFace(o_wire.Edges[i], b_wire.Edges[i]))
 
     #Part.show(self.__Shape.copy())
     #SMLog("finish genBendShell Face", bend_node.idx +1)
@@ -1354,7 +1358,7 @@ class SheetTree(object):
             next_idx = 1
           if equal_vertex(theEdge.Vertexes[1], nextVert):
             next_idx = 0
-          if next_idx != None:
+          if next_idx <> None:
             if self.isVertOpposite(theEdge.Vertexes[next_idx], theNode):
               nextEdge = theEdge.copy()
               search_List.remove(i)
@@ -1363,7 +1367,7 @@ class SheetTree(object):
               break
             else:
               next_idx = None
-      if the_index != None:
+      if the_index <> None:
         break
 
     #find the lastEdge
@@ -1378,7 +1382,7 @@ class SheetTree(object):
             last_idx = 1
           if equal_vertex(theEdge.Vertexes[1], startVert):
             last_idx = 0
-          if last_idx != None:
+          if last_idx <> None:
             SMLog("test for the last Edge")
             if self.isVertOpposite(theEdge.Vertexes[last_idx], theNode):
               lastEdge = theEdge.copy()
@@ -1388,7 +1392,7 @@ class SheetTree(object):
               break
             else:
               last_idx = None
-      if last_idx != None:
+      if last_idx <> None:
         break
         
     # find the middleEdge
@@ -1400,7 +1404,7 @@ class SheetTree(object):
           mid_idx = 1
         if equal_vertex(theEdge.Vertexes[1], nextEdge.Vertexes[next_idx]):
           mid_idx = 0
-        if mid_idx != None:
+        if mid_idx <> None:
           if equal_vertex(theEdge.Vertexes[mid_idx], lastEdge.Vertexes[last_idx]):
             midEdge = theEdge.copy()
             #Part.show(midEdge)
@@ -1521,7 +1525,7 @@ def PerformUnfold():
                         showTime = time.clock()
                         SMLog("Show time: ", showTime - solidTime, " total time: ", showTime - startzeit)
             
-            if TheTree.error_code != None:
+            if TheTree.error_code <> None:
               SMError("Error ", unfold_error[TheTree.error_code], " at Face", TheTree.failed_face_idx+1)
               QtGui.QMessageBox.information(mw,"Error",unfold_error[TheTree.error_code])
             else:
