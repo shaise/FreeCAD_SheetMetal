@@ -190,6 +190,10 @@ class SMBendWall:
  
   def execute(self, fp):
     '''"Print a short message when doing a recomputation, this method is mandatory" '''
+    if (not hasattr(fp,"miterangle1")):
+      fp.addProperty("App::PropertyAngle","miterangle1","Parameters","Bend miter angle").miterangle1 = 0.0
+      fp.addProperty("App::PropertyAngle","miterangle2","Parameters","Bend miter angle").miterangle2 = 0.0
+   
     s = smBend(bendR = fp.radius.Value, bendA = fp.angle.Value, miterA1 = fp.miterangle1.Value, miterA2 = fp.miterangle2.Value, flipped = fp.invert, extLen = fp.length.Value, 
                 gap1 = fp.gap1.Value, gap2 = fp.gap2.Value, reliefW = fp.reliefw.Value, reliefD = fp.reliefd.Value,
                 selFaceNames = fp.baseObject[1], MainObject = fp.baseObject[0])
