@@ -26,7 +26,7 @@
 from FreeCAD import Gui
 from PySide import QtCore, QtGui
 
-import FreeCAD, FreeCADGui, Part, os
+import FreeCAD, FreeCADGui, Part, os, math
 __dir__ = os.path.dirname(__file__)
 iconPath = os.path.join( __dir__, 'Resources', 'icons' )
 smEpsilon = 0.0000001
@@ -70,7 +70,7 @@ def smMakeFace(edge, dir, from_p, to_p):
     return Part.Face(w)
 
 
-def smBend(bendR = 1.0, bendA = 90.0, flipped = False, extLen = 10.0, gap1 = 0.0, gap2 = 0.0, reliefW = 0.5, 
+def smBend(bendR = 1.0, bendA = 90.0, miterA1 =0.0,miterA2 =0.0, flipped = False, extLen = 10.0, gap1 = 0.0, gap2 = 0.0, reliefW = 0.5, 
             reliefD = 1.0, selFaceNames = '', MainObject = None):
             
   #AAD = FreeCAD.ActiveDocument
@@ -147,7 +147,21 @@ def smBend(bendR = 1.0, bendA = 90.0, flipped = False, extLen = 10.0, gap1 = 0.0
     
     # create wall
     if extLen > 0 :
-      wallSolid = wallFace.extrude(wallFace.normalAt(0,0) * extLen)
+      miterlen1 = extLen * math.tan(math.radians(miterA1))
+      miterlen2 = extLen * math.tan(math.radians(miterA2))
+      mitergap1 = gap1 + miterlen1
+      mitergap2 = len - gap2 - miterlen2
+      if miterlen1 or miterlen2 :
+        seamEdge = thkEdge.copy()
+        seamFace = smMakeFace(seamEdge, revDir, mitergap1, mitergap2)
+        seamFace.rotate(revAxisP, revAxisV, bendA)
+        seamFace.translate(wallFace.normalAt(0,0) * extLen)
+        e1 = wallFace.valueAt(0,0)
+        e2 = e1 + (wallFace.normalAt(0,0) * extLen)
+        traj = Part.makeLine(e1, e2)
+        wallSolid = Part.Wire(traj).makePipeShell([wallFace.Wires[0],seamFace.Wires[0]],True,True)
+      else:  
+        wallSolid = wallFace.extrude(wallFace.normalAt(0,0) * extLen)
       resultSolid = resultSolid.fuse(wallSolid)
       
   Gui.ActiveDocument.getObject(MainObject.Name).Visibility = False
@@ -167,6 +181,8 @@ class SMBendWall:
     obj.addProperty("App::PropertyLength","gap2","Parameters","Gap from right side").gap2 = 0.0
     obj.addProperty("App::PropertyBool","invert","Parameters","Invert bend direction").invert = False
     obj.addProperty("App::PropertyAngle","angle","Parameters","Bend angle").angle = 90.0
+    obj.addProperty("App::PropertyAngle","miterangle1","Parameters","Bend miter angle").miterangle1 = 0.0
+    obj.addProperty("App::PropertyAngle","miterangle2","Parameters","Bend miter angle").miterangle2 = 0.0
     obj.addProperty("App::PropertyLength","reliefw","Parameters","Relief width").reliefw = 0.5
     obj.addProperty("App::PropertyLength","reliefd","Parameters","Relief depth").reliefd = 1.0
     obj.addProperty("App::PropertyLinkSub", "baseObject", "Parameters", "Base object").baseObject = (selobj.Object, selobj.SubElementNames)
@@ -174,7 +190,7 @@ class SMBendWall:
  
   def execute(self, fp):
     '''"Print a short message when doing a recomputation, this method is mandatory" '''
-    s = smBend(bendR = fp.radius.Value, bendA = fp.angle.Value,  flipped = fp.invert, extLen = fp.length.Value, 
+    s = smBend(bendR = fp.radius.Value, bendA = fp.angle.Value, miterA1 = fp.miterangle1.Value, miterA2 = fp.miterangle2.Value, flipped = fp.invert, extLen = fp.length.Value, 
                 gap1 = fp.gap1.Value, gap2 = fp.gap2.Value, reliefW = fp.reliefw.Value, reliefD = fp.reliefd.Value,
                 selFaceNames = fp.baseObject[1], MainObject = fp.baseObject[0])
     fp.Shape = s
