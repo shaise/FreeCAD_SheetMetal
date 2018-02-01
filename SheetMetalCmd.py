@@ -123,8 +123,15 @@ def smBend(bendR = 1.0, bendA = 90.0, miterA1 =0.0,miterA2 =0.0, flipped = False
     # remove relief if needed
     if reliefW > 0 and reliefD > 0 and (gap1 > 0 or gap2 > 0) :
       thkEdgeW = Part.makeLine(thkEdge.valueAt(thkEdge.FirstParameter-0.1), thkEdge.valueAt(thkEdge.LastParameter+0.1))
-      reliefFace = smMakeFace(thkEdgeW, revDir, gap1 - reliefW, gap1)
-      reliefFace = reliefFace.fuse(smMakeFace(thkEdgeW, revDir, lgap2, lgap2 + reliefW))
+      if gap1 > 0:
+        reliefFace = smMakeFace(thkEdgeW, revDir, gap1 - reliefW, gap1)
+      else:
+        reliefFace = None
+      if gap2 > 0:
+        if reliefFace is not None:
+          reliefFace = reliefFace.fuse(smMakeFace(thkEdgeW, revDir, lgap2, lgap2 + reliefW))
+        else:
+          reliefFace = smMakeFace(thkEdgeW, revDir, lgap2, lgap2 + reliefW)
       reliefSolid = reliefFace.extrude(selFace.normalAt(0,0) * reliefD * -1)
       #Part.show(reliefSolid)
       resultSolid = resultSolid.cut(reliefSolid)
