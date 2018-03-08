@@ -113,7 +113,7 @@ def smBend(bendR = 1.0, bendA = 90.0, miterA1 =0.0,miterA2 =0.0, flipped = False
       revFace = selFace
     else:
       revFace = smMakeFace(thkEdge, revDir, gap1, lgap2)
-      if (revFace.normalAt(0,0) != selFace.normalAt(0,0)):
+      if (not revFace.normalAt(0,0).isEqual(selFace.normalAt(0,0),0.0001)):
         revFace.reverse()
     
     #make sure the direction verctor is correct in respect to the normal
@@ -167,7 +167,7 @@ def smBend(bendR = 1.0, bendA = 90.0, miterA1 =0.0,miterA2 =0.0, flipped = False
         e2 = e1 + (wallFace.normalAt(0,0) * extLen)
         traj = Part.makeLine(e1, e2)
         wallSolid = Part.Wire(traj).makePipeShell([wallFace.Wires[0],seamFace.Wires[0]],True,True)
-      else:  
+      else: 
         wallSolid = wallFace.extrude(wallFace.normalAt(0,0) * extLen)
       resultSolid = resultSolid.fuse(wallSolid)
       
