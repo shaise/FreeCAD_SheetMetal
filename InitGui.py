@@ -23,44 +23,22 @@
 #  
 ###################################################################################
 
+import smwb_locator
+smWBpath = os.path.dirname(smwb_locator.__file__)
+smWB_icons_path =  os.path.join( smWBpath, 'Resources', 'icons')
+
+global main_smWB_Icon
+main_smWB_Icon = os.path.join( smWB_icons_path , 'SMLogo.svg')
+
+
 class SMWorkbench (Workbench):
  
+    global main_smWB_Icon
+    
     MenuText = "Sheet Metal"
     ToolTip = "Sheet metal workbench"
-    Icon = '''
-/* XPM */
-static char * D:\shai\FreeCAD\mkwall_xpm[] = {
-"16 16 12 1",
-" 	c #000000",
-".	c #ECEC00",
-"+	c #FFFF00",
-"@	c #131300",
-"#	c #0E0E00",
-"$	c #D7D700",
-"%	c #F1F100",
-"&	c #282800",
-"*	c #010100",
-"=	c #FEFE00",
-"-	c #F7F700",
-";	c #080800",
-"       .+++++++@",
-"     #$++++++%& ",
-"   * $+++++=+&  ",
-"  * -+++++=+;   ",
-"   -=++++++;*   ",
-" #$++++++%&     ",
-" $+++++=+&      ",
-".+++++=+;     * ",
-"+++++++;*      -",
-"+++++%&      #$+",
-"+++=+&     * $++",
-"++=+;     * -+++",
-"+++;*      -=+++",
-"+%&      #$+++++",
-"+&     * $++++++",
-"@       -+++++++"};
-'''
- 
+    Icon = main_smWB_Icon
+    
     def Initialize(self):
         "This function is executed when FreeCAD starts"
         import SheetMetalCmd # import here all the needed files that create your FreeCAD commands
