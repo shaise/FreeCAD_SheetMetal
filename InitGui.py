@@ -27,7 +27,7 @@ import smwb_locator
 smWBpath = os.path.dirname(smwb_locator.__file__)
 smWB_icons_path =  os.path.join( smWBpath, 'Resources', 'icons')
 
-global main_smwb_Icon
+global main_smWB_Icon
 main_smWB_Icon = os.path.join( smWB_icons_path , 'SMLogo.svg')
 
 
