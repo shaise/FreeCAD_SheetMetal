@@ -136,6 +136,10 @@ def smBend(bendR = 1.0, bendA = 90.0, miterA1 =0.0,miterA2 =0.0, flipped = False
       #Part.show(reliefSolid)
       resultSolid = resultSolid.cut(reliefSolid)
    
+    if (bendA < 0):
+        bendA = -bendA
+        flipped = not flipped
+        
     #find revolve point
     if not(flipped):
       revAxisP = thkEdge.valueAt(thkEdge.LastParameter + bendR)
