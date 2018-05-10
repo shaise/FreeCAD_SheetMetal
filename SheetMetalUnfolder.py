@@ -1312,10 +1312,13 @@ class SheetTree(object):
     #for ed in b_wire.Edges:
     #  SMLog("b_wire1 tol: ", ed.Vertexes[0].Tolerance, " ", ed.Vertexes[1].Tolerance)
       
-    #sweep_path = Part.makeLine(o_wire.Vertexes[0].Point, b_wire.Vertexes[0].Point)
+    sweep_path = Part.makeLine(o_wire.Vertexes[0].Point, b_wire.Vertexes[0].Point)
     #Part.show(sweep_path)
 
-    Bend_shell = Part.makeRuledSurface (o_wire, b_wire)  #changed
+    #Bend_shell = Part.makeRuledSurface (o_wire, b_wire)  #changed
+    
+    Bend_shell = Part.Wire(sweep_path).makePipeShell([o_wire, b_wire], False, True)
+    
     # Part.show(Bend_shell)
         
     for shell_face in Bend_shell.Faces:  #changed

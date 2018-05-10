@@ -14,7 +14,8 @@ http://theseger.com/projects/2015/06/sheet-metal-addon-for-freecad/
 Starting from FreeCAD 0.17 it can be installed via the [Addon Manager](https://github.com/FreeCAD/FreeCAD-addons) (from Tools menu)
 
 #### Release notes:
-* V0.1.12 01 Feb 2018:  Allow negative bend angles. Change XPM icons to SVG
+* V0.1.13 10 May 2018:  Change unbending method so shape refinement can work.
+* V0.1.12 25 Mar 2018:  Allow negative bend angles. Change XPM icons to SVG
 * V0.1.11 01 Feb 2018:  fix Issue #23: when there is a gap only on one side, an extra face is added to the other
 * V0.1.10 11 Nov 2017:  Add miter option to bends. By @jaisejames
 * V0.1.02 22 Jun 2017:  Fix nesting bug, when saving and loading file
