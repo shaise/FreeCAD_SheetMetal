@@ -13,7 +13,13 @@ For installation and how to use, please visit:
 http://theseger.com/projects/2015/06/sheet-metal-addon-for-freecad/  
 Starting from FreeCAD 0.17 it can be installed via the [Addon Manager](https://github.com/FreeCAD/FreeCAD-addons) (from Tools menu)
 
-#### Release notes:
+#### Release notes: 
+* V0.1.20 19 Jun 2018:  <br/>
+Add bend extension to make the bended wall wider<br/>
+Add relief shape selection (rounded or flat)<br/>
+Double clicking on a bent in the tree view, brings a dialog to select different faces (good when editing the base object breaks the bend, and new faces need to be selected)<br/>
+Setting miter angle now works with unfold command<br/>
+Thank you jaisejames for all these new features!!
 * V0.1.13 10 May 2018:  Change unbending method so shape refinement can work.
 * V0.1.12 25 Mar 2018:  Allow negative bend angles. Change XPM icons to SVG
 * V0.1.11 01 Feb 2018:  fix Issue #23: when there is a gap only on one side, an extra face is added to the other
