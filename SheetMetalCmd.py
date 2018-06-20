@@ -98,6 +98,13 @@ def smMakeFace(edge, dir, gap1, gap2, extLen, angle1=0.0, angle2=0.0):
     else :
       w = Part.makePolygon([p1,p2,p3,p4,p1])
     return Part.Face(w)
+    
+def smRestrict(var, fromVal, toVal):
+    if var < fromVal:
+      return fromVal
+    if var > toVal:
+      return toVal
+    return var
 
 def smBend(bendR = 1.0, bendA = 90.0, miterA1 =0.0,miterA2 =0.0, flipped = False, extLen = 10.0, gap1 = 0.0, gap2 = 0.0, reliefType = "Rectangle", 
             reliefW = 0.5, reliefD = 1.0, extend1 = 0.0, extend2 = 0.0, selFaceNames = '', MainObject = None):
@@ -155,7 +162,12 @@ def smBend(bendR = 1.0, bendA = 90.0, miterA1 =0.0,miterA2 =0.0, flipped = False
       reliefSolid = reliefFace.extrude(thkDir.normalize() * thk)
       #Part.show(reliefSolid)
       resultSolid = resultSolid.cut(reliefSolid)
-   
+
+    # restrict angle
+    if (bendA < 0):
+        bendA = -bendA
+        flipped = not flipped
+            
     #find revolve point
     if not(flipped):
       revAxisP = thkEdge.valueAt(thkEdge.LastParameter + bendR)
@@ -214,6 +226,10 @@ class SMBendWall:
       fp.addProperty("App::PropertyDistance","extend1","Parameters","Gap from left side").extend1 = 0.0
       fp.addProperty("App::PropertyDistance","extend2","Parameters","Gap from right side").extend2 = 0.0	
    
+    # restrict some params
+    fp.miterangle1.Value = smRestrict(fp.miterangle1.Value, -80.0, 80.0)
+    fp.miterangle2.Value = smRestrict(fp.miterangle2.Value, -80.0, 80.0)
+    
     s = smBend(bendR = fp.radius.Value, bendA = fp.angle.Value, miterA1 = fp.miterangle1.Value, miterA2 = fp.miterangle2.Value, flipped = fp.invert, extLen = fp.length.Value, 
                 gap1 = fp.gap1.Value, gap2 = fp.gap2.Value, reliefType = fp.reliefType, reliefW = fp.reliefw.Value, reliefD = fp.reliefd.Value, 
                 extend1 = fp.extend1.Value, extend2 = fp.extend2.Value, selFaceNames = fp.baseObject[1], MainObject = fp.baseObject[0])

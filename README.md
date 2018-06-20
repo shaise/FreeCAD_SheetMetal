@@ -14,6 +14,7 @@ http://theseger.com/projects/2015/06/sheet-metal-addon-for-freecad/
 Starting from FreeCAD 0.17 it can be installed via the [Addon Manager](https://github.com/FreeCAD/FreeCAD-addons) (from Tools menu)
 
 #### Release notes: 
+* V0.1.21 19 Jun 2018:  Fixed back negative bend angles, restrict miter to +/- 80 degrees
 * V0.1.20 19 Jun 2018:  <br/>
 Add bend extension to make the bended wall wider<br/>
 Add relief shape selection (rounded or flat)<br/>
