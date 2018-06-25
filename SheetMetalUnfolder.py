@@ -122,6 +122,11 @@ def SMMessage(* args):
     message += str(x)
   FreeCAD.Console.PrintMessage(message + "\n")
 
+def SMWarning(* args):
+  message = ""
+  for x in args:
+    message += str(x)
+  FreeCAD.Console.PrintWarning(message + "\n")
 
 
 def equal_vertex(vert1, vert2, p=5):
@@ -1598,6 +1603,7 @@ def SMGetGeoSegment(e):
   
 def SMmakeSketchfromEdges (edges, name):
     precision = 0.1 # precision in Bspline to BiArcs
+    quasidef = 0.01 #quasi deflection for Ellipses and Parabola
     usk = FreeCAD.activeDocument().addObject('Sketcher::SketchObject',name)
     geo=[]
     for e in edges:
@@ -1609,11 +1615,20 @@ def SMmakeSketchfromEdges (edges, name):
                 seg = SMGetGeoSegment(eb)
                 if seg != None:
                     geo.append(seg)
+        elif isinstance(e.Curve,Part.Ellipse) or isinstance(e.Curve,Part.Parabola):
+            l=e.copy().discretize(QuasiDeflection=quasidef)
+            plines=Part.makePolygon(l)
+            for edg in plines.Edges:
+                SMLog("====> " + str(1))
+                seg = SMGetGeoSegment(edg)
+                if seg != None:
+                    geo.append(seg)            
         else:
             seg = SMGetGeoSegment(e)
             if seg != None:
                 geo.append(seg)
     usk.addGeometry(geo)
+    return usk
 
 
 class SMUnfoldObject:
@@ -1773,7 +1788,16 @@ class SMUnfoldTaskPanel:
               grp2 = Drawing.projectEx(co, norm)
               edges.append(grp2[0])  
             p = Part.makeCompound(edges)
-            SMmakeSketchfromEdges(p.Edges,"Unfold_Sketch")
+            try:
+                sk = Draft.makeSketch(p.Edges, autoconstraints = True)
+                sk.Label = "Unfold_Sketch"
+            except:
+                try:
+                    doc.removeObject(sk.Name)
+                except:
+                    pass
+                SMWarning("discretizing Sketch")
+                sk = SMmakeSketchfromEdges(p.Edges,"Unfold_Sketch")
           doc.commitTransaction()
           docG = FreeCADGui.ActiveDocument
           docG.getObject(a.Name).Transparency = genObjTransparency
