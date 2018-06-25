@@ -1598,17 +1598,24 @@ def SMGetGeoSegment(e):
   
 def SMmakeSketchfromEdges (edges, name):
     precision = 0.1 # precision in Bspline to BiArcs
+    quasidef = 0.01 #quasi deflection for Ellipses and Parabola
     usk = FreeCAD.activeDocument().addObject('Sketcher::SketchObject',name)
     geo=[]
     for e in edges:
         if isinstance(e.Curve,Part.BSplineCurve):
             arcs = e.Curve.toBiArcs(precision)
             for i in arcs:
-                SMLog("====> " + str(1))
                 eb = Part.Edge(i)
                 seg = SMGetGeoSegment(eb)
                 if seg != None:
                     geo.append(seg)
+        elif isinstance(e.Curve,Part.Ellipse) or isinstance(e.Curve,Part.Parabola):
+            l=e.copy().discretize(QuasiDeflection=quasidef)
+            plines=Part.makePolygon(l)
+            for edg in plines.Edges:
+                seg = SMGetGeoSegment(edg)
+                if seg != None:
+                    geo.append(seg)            
         else:
             seg = SMGetGeoSegment(e)
             if seg != None:
@@ -1773,7 +1780,14 @@ class SMUnfoldTaskPanel:
               grp2 = Drawing.projectEx(co, norm)
               edges.append(grp2[0])  
             p = Part.makeCompound(edges)
-            SMmakeSketchfromEdges(p.Edges,"Unfold_Sketch")
+            try:
+              sk = Draft.makeSketch(p.Edges, autoconstraints = True)
+              sk.Label = "Unfold_Sketch"
+              SMLog("normal")
+            except:
+              doc.removeObject(sk.Name)
+              SMLog("discretizing")
+              SMmakeSketchfromEdges(p.Edges,"Unfold_Sketch")
           doc.commitTransaction()
           docG = FreeCADGui.ActiveDocument
           docG.getObject(a.Name).Transparency = genObjTransparency
