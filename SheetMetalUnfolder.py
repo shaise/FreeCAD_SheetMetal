@@ -63,10 +63,17 @@ if __name__ == '__main__':
 
 
 import Part, FreeCAD, FreeCADGui, os
-from PySide import QtGui
+from PySide import QtGui, QtCore
 from FreeCAD import Base
 from FreeCAD import Gui
 import DraftVecUtils, DraftGeomUtils, math, time
+import Draft
+import Drawing
+from SheetMetalCmd import iconPath
+
+genSketchChecked = True      
+genObjTransparency = 70
+manKFactor = -100.0     
 
 # to do: 
 # - Put error numbers into the text
@@ -100,7 +107,7 @@ def SMLog(* args):
   for x in args:
     message += str(x)
   FreeCAD.Console.PrintLog(message + "\n")
-  FreeCAD.Console.PrintMessage(message + "\n") #maui
+  #FreeCAD.Console.PrintMessage(message + "\n") #maui
 
 
 def SMError(* args):
@@ -843,16 +850,17 @@ class SheetTree(object):
         SMLog("minus bend_angle")
 
 
-
       if newNode.bend_dir == 'up':
-        k_Factor = 0.65 + 0.5*math.log10(self.__Shape.Faces[face_idx].Surface.Radius/self.__thickness)
-        SMLog("Face", newNode.idx+1, " k-factor up: ", k_Factor)
-        newNode._trans_length = (self.__Shape.Faces[face_idx].Surface.Radius + k_Factor * self.__thickness/2.0) * newNode.bend_angle
+        innerRadius = self.__Shape.Faces[face_idx].Surface.Radius
       else:
-        k_Factor = 0.65 + 0.5*math.log10((self.__Shape.Faces[face_idx].Surface.Radius - self.__thickness)/self.__thickness)
-        SMLog("Face", newNode.idx+1, " k-factor: ", k_Factor)
-        newNode._trans_length = (self.__Shape.Faces[face_idx].Surface.Radius - self.__thickness \
-                                  + k_Factor * self.__thickness/2.0) * newNode.bend_angle
+        innerRadius = self.__Shape.Faces[face_idx].Surface.Radius - self.__thickness
+      if manKFactor < -9.0:
+        # auto (original) K factor
+        k_Factor = (0.65 + 0.5*math.log10(innerRadius/self.__thickness)) / 2.0
+      else:
+        k_Factor = manKFactor
+      SMLog("Face", newNode.idx+1, " k-factor ", newNode.bend_dir, ": ", k_Factor)
+      newNode._trans_length = (innerRadius + k_Factor * self.__thickness) * newNode.bend_angle
       if newNode._trans_length < 0.0:
         newNode._trans_length = -newNode._trans_length
         # the _trans_length is always positive, due to correct tan_vec
@@ -1106,11 +1114,13 @@ class SheetTree(object):
     
     # Part.show(self.__Shape.copy())
     flat_shell = []
+    bend_edge = None
       
     trans_vec = bend_node.tan_vec * bend_node._trans_length
 
     # o_edge: originating edge of the bend = parent edge
     o_edge = bend_node.p_edge.copy()
+    #Part.show(o_edge)
     # We want a section wire at the start of the bend_node, in order
     # to regenerate a flat body with this section wire.
     # 3 vectors are needed to generate a section plane: vec1 and 
@@ -1125,8 +1135,10 @@ class SheetTree(object):
       child_node = bend_node.child_list[0] # fixme: there could be more than one child node for a bend face.
       # bend_edge = bend_node.edge_pool[child_node.idx][0] 
       bend_edge = child_node.p_edge.copy()
-
+      
       b_wire = self.makeSectionWire(bend_edge, bend_node, bend_node.bend_dir).copy()
+      #Part.show(b_wire)
+
       
     else:
       number_c_edges = 0
@@ -1330,7 +1342,23 @@ class SheetTree(object):
     #Part.show(self.__Shape.copy())
     #SMLog("finish genBendShell Face", bend_node.idx +1)
 
-    return flat_shell
+    
+    # find bend line
+    fold_edge = []
+    if bend_edge != None:
+      bend_edge.rotate(self.f_list[bend_node.idx].Surface.Center,bend_node.axis,math.degrees(bend_node.bend_angle))
+      bend_edge.translate(trans_vec)
+      vo1 = o_edge.Vertexes[0].Point
+      vo2 = o_edge.Vertexes[1].Point
+      vb1 = bend_edge.Vertexes[0].Point
+      vb2 = bend_edge.Vertexes[1].Point
+      if (vo1 - vb1).Length > (vo1 - vb2).Length:
+        fold_edge.append(Part.makeLine((vo1 + vb2) / 2, (vo2 + vb1) / 2))
+      else:
+        fold_edge.append(Part.makeLine((vo1 + vb1) / 2, (vo2 + vb2) / 2))
+      #Part.show(fold_edge)
+
+    return (flat_shell, fold_edge)
 
   def MakeFace(self, e1, e2):
     e3 = Part.makeLine(e1.valueAt(e1.FirstParameter), e2.valueAt(e2.FirstParameter))
@@ -1435,16 +1463,23 @@ class SheetTree(object):
     #SMLog("unfold_tree face", node.idx + 1)
     theShell = []
     nodeShell = []
+    theFolds = []
+    nodeFold = []
     for n_node in node.child_list:
       if self.error_code == None:
-        theShell = theShell + self.unfold_tree2(n_node)
+        (shell, fold) = self.unfold_tree2(n_node)
+        theShell = theShell + shell
+        theFolds = theFolds + fold
     if node.node_type == 'Bend':
       trans_vec = node.tan_vec * node._trans_length
       for bFaces in theShell:
         bFaces.rotate(self.f_list[node.idx].Surface.Center,node.axis,math.degrees(node.bend_angle))
         bFaces.translate(trans_vec)
+      for fold in theFolds:
+        fold.rotate(self.f_list[node.idx].Surface.Center,node.axis,math.degrees(node.bend_angle))
+        fold.translate(trans_vec)
       if self.error_code == None:
-        nodeShell = self.generateBendShell(node)
+        (nodeShell, nodeFold) = self.generateBendShell(node)
     else:
       if self.error_code == None:
         # nodeShell = self.generateShell(node)
@@ -1454,7 +1489,7 @@ class SheetTree(object):
         #  for seamEdge in node.seam_edges:
         #    self.makeSeamFace(seamEdge, node)
     SMLog("ufo finish face",node.idx +1)
-    return (theShell + nodeShell)
+    return (theShell + nodeShell, theFolds + nodeFold)
 
 
 
@@ -1463,6 +1498,8 @@ class SheetTree(object):
 def PerformUnfold():
   mylist = Gui.Selection.getSelectionEx()
   resPart = None
+  normalVect = None
+  theFoldList = []
   # SMLog('Die Selektion: ',mylist)
   # SMLog('Zahl der Selektionen: ', mylist.__len__())
 
@@ -1484,6 +1521,9 @@ def PerformUnfold():
         if hasattr(subelement,'Surface'):
           s_type = str(subelement.Surface)
           if s_type == "<Plane object>":
+            # get the normal of the surface for lated 2d projection
+            normalVect = subelement.normalAt(0,0)
+
             mw=FreeCADGui.getMainWindow()
             #QtGui.QMessageBox.information(mw,"Hurra","""Lets try unfolding!""")
             SMLog("name: ",subelement)
@@ -1497,14 +1537,15 @@ def PerformUnfold():
               SMLog("Analytical time: ",endzeit-startzeit)
               
               if TheTree.error_code == None:
-                # TheTree.showFaces()
-                theFaceList = TheTree.unfold_tree2(TheTree.root) # traverses the tree-structure
+                #TheTree.showFaces()
+                (theFaceList, theFoldList) = TheTree.unfold_tree2(TheTree.root) # traverses the tree-structure
                 if TheTree.error_code == None:
                   unfoldTime = time.clock()
                   SMLog("time to run the unfold: ", unfoldTime - endzeit)
 
                   try:
                       newShell = Part.Shell(theFaceList)
+
                   except:
                       SMError("couldn't join some faces, show only single faces")
                       for newFace in theFaceList:
@@ -1541,12 +1582,43 @@ def PerformUnfold():
         else:
           mw=FreeCADGui.getMainWindow()
           QtGui.QMessageBox.information(mw,"Selection Error","""Sheet UFO works only with a flat face as starter!\n Select a flat face.""")
-  return resPart
+  return (resPart, theFoldList, normalVect)
+
+
+def SMGetGeoSegment(e):
+    if 'Line' in str(e.Curve):
+        return Part.LineSegment(e.Vertexes[0].Point,e.Vertexes[1].Point)
+    elif 'Circle' in str(e.Curve):
+        if not e.Closed:
+            return Part.ArcOfCircle(e.Curve, e.FirstParameter,
+                                    e.LastParameter,e.Curve.Axis.z>0)
+        else:
+            return Part.Circle(e.Curve.Center,e.Curve.Axis,e.Curve.Radius)
+    return None
+  
+def SMmakeSketchfromEdges (edges, name):
+    precision = 0.1 # precision in Bspline to BiArcs
+    usk = FreeCAD.activeDocument().addObject('Sketcher::SketchObject',name)
+    geo=[]
+    for e in edges:
+        if isinstance(e.Curve,Part.BSplineCurve):
+            arcs = e.Curve.toBiArcs(precision)
+            for i in arcs:
+                SMLog("====> " + str(1))
+                eb = Part.Edge(i)
+                seg = SMGetGeoSegment(eb)
+                if seg != None:
+                    geo.append(seg)
+        else:
+            seg = SMGetGeoSegment(e)
+            if seg != None:
+                geo.append(seg)
+    usk.addGeometry(geo)
 
 
 class SMUnfoldObject:
   def __init__(self, obj):
-    '''"Add Wall with radius bend" '''
+    '''"Unfold sheet metal object" '''
     obj.Proxy = None
     self.isOk = True
 
@@ -1557,7 +1629,171 @@ class SMUnfoldObject:
       self.isOk = True
     else:
       self.isOk = False
-    
+
+
+      
+#############################################################################
+# Gui Part. Widget generated from UnfoldOptions.ui using pyuic
+#############################################################################
+           
+try:
+    _fromUtf8 = QtCore.QString.fromUtf8
+except AttributeError:
+    def _fromUtf8(s):
+        return s
+
+try:
+    _encoding = QtGui.QApplication.UnicodeUTF8
+    def _translate(context, text, disambig):
+        return QtGui.QApplication.translate(context, text, disambig, _encoding)
+except AttributeError:
+    def _translate(context, text, disambig):
+        return QtGui.QApplication.translate(context, text, disambig)
+      
+class SMUnfoldTaskPanel:
+    '''A TaskPanel for the facebinder'''
+    def __init__(self):
+        global genSketchChecked, genObjTransparency, manKFactor
+        self.obj = None
+        self.form = QtGui.QWidget()
+        self.form.setObjectName("SMUnfoldTaskPanel")
+        self.form.setWindowTitle("Unfold sheet metal onject")
+        self.verticalLayout_2 = QtGui.QVBoxLayout(self.form)
+        self.verticalLayout_2.setObjectName(_fromUtf8("verticalLayout_2"))
+        self.verticalLayout = QtGui.QVBoxLayout()
+        self.verticalLayout.setObjectName(_fromUtf8("verticalLayout"))
+        self.checkSketch = QtGui.QCheckBox(self.form)
+        self.checkSketch.setObjectName(_fromUtf8("checkSketch"))
+        self.verticalLayout.addWidget(self.checkSketch)
+        self.horizontalLayout = QtGui.QHBoxLayout()
+        self.horizontalLayout.setSizeConstraint(QtGui.QLayout.SetDefaultConstraint)
+        self.horizontalLayout.setObjectName(_fromUtf8("horizontalLayout"))
+        self.checkKfact = QtGui.QCheckBox(self.form)
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Maximum)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.checkKfact.sizePolicy().hasHeightForWidth())
+        self.checkKfact.setSizePolicy(sizePolicy)
+        self.checkKfact.setObjectName(_fromUtf8("checkKfact"))
+        self.checkKfact.stateChanged.connect(self.checkKfactChange)
+        self.horizontalLayout.addWidget(self.checkKfact)
+        self.kFactSpin = QtGui.QDoubleSpinBox(self.form)
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Maximum, QtGui.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.kFactSpin.sizePolicy().hasHeightForWidth())
+        self.kFactSpin.setSizePolicy(sizePolicy)
+        self.kFactSpin.setMaximumSize(QtCore.QSize(70, 16777215))
+        self.kFactSpin.setDecimals(3)
+        self.kFactSpin.setMaximum(2.0)
+        self.kFactSpin.setSingleStep(0.1)
+        self.kFactSpin.setProperty("value", 0.5)
+        self.kFactSpin.setObjectName(_fromUtf8("kFactSpin"))
+        self.horizontalLayout.addWidget(self.kFactSpin)
+        self.verticalLayout.addLayout(self.horizontalLayout)
+        self.horizontalLayout_2 = QtGui.QHBoxLayout()
+        self.horizontalLayout_2.setSizeConstraint(QtGui.QLayout.SetMinimumSize)
+        self.horizontalLayout_2.setContentsMargins(-1, 0, -1, -1)
+        self.horizontalLayout_2.setObjectName(_fromUtf8("horizontalLayout_2"))
+        self.label = QtGui.QLabel(self.form)
+        self.label.setObjectName(_fromUtf8("label"))
+        self.horizontalLayout_2.addWidget(self.label)
+        self.transSpin = QtGui.QSpinBox(self.form)
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Maximum, QtGui.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.transSpin.sizePolicy().hasHeightForWidth())
+        self.transSpin.setSizePolicy(sizePolicy)
+        self.transSpin.setMaximumSize(QtCore.QSize(70, 16777215))
+        self.transSpin.setMaximum(100)
+        self.transSpin.setObjectName(_fromUtf8("transSpin"))
+        self.horizontalLayout_2.addWidget(self.transSpin)
+        self.verticalLayout.addLayout(self.horizontalLayout_2)
+        spacerItem = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
+        self.verticalLayout.addItem(spacerItem)
+        self.verticalLayout_2.addLayout(self.verticalLayout)
+
+        if genSketchChecked:
+          self.checkSketch.setCheckState(QtCore.Qt.CheckState.Checked)
+        if manKFactor < -9.0:
+          self.kFactSpin.setEnabled(False)
+          self.kFactSpin.setProperty("value", 0.5)
+        else:
+          self.checkKfact.setCheckState(QtCore.Qt.CheckState.Checked)
+          self.kFactSpin.setProperty("value", manKFactor)
+        self.transSpin.setProperty("value", genObjTransparency)
+          
+        self.retranslateUi()
+        
+        
+        
+        #self.grid = QtGui.QGridLayout(self.form)
+        #self.grid.setObjectName("grid")
+        #self.title = QtGui.QLabel(self.form)
+        #self.grid.addWidget(self.title, 0, 0, 1, 2)
+        #self.title.setText("Select a starting face and press OK")
+
+        # options
+        #self.genSketch = QtGui.QCheckBox(self.form)
+        #self.grid.addWidget(self.genSketch, 1, 0, 1, 2)
+        #self.genSketch.setText("Generate Sketch")
+        #if genSketchChecked:
+        #  self.genSketch.setCheckState(QtCore.Qt.CheckState.Checked)
+        
+    def isAllowedAlterSelection(self):
+        return True
+
+    def isAllowedAlterView(self):
+        return True
+
+    def getStandardButtons(self):
+        return int(QtGui.QDialogButtonBox.Ok)
+
+    def accept(self):
+        global genSketchChecked, genObjTransparency, manKFactor
+        genSketchChecked = self.checkSketch.isChecked()
+        if self.checkKfact.isChecked():
+            manKFactor = self.kFactSpin.value()
+        else:
+            manKFactor = -10.0
+        genObjTransparency = self.transSpin.value()
+            
+        doc = FreeCAD.ActiveDocument
+        (s, foldLines, norm) = PerformUnfold()
+        if (s is not None):
+          doc.openTransaction("Unfold")
+          a = doc.addObject("Part::Feature","Unfold")
+          a.Shape = s
+          if genSketchChecked:
+            edges = []
+            grp1 = Drawing.projectEx(s,norm)
+            edges.append(grp1[0])
+            if len(foldLines) > 0:
+              co = Part.makeCompound(foldLines)
+              grp2 = Drawing.projectEx(co, norm)
+              edges.append(grp2[0])  
+            p = Part.makeCompound(edges)
+            SMmakeSketchfromEdges(p.Edges,"Unfold_Sketch")
+          doc.commitTransaction()
+          docG = FreeCADGui.ActiveDocument
+          docG.getObject(a.Name).Transparency = genObjTransparency
+        doc.recompute()
+        FreeCAD.ActiveDocument.recompute()
+        return True
+
+    def getStandardButtons(self):
+        return int(QtGui.QDialogButtonBox.Ok) + int(QtGui.QDialogButtonBox.Cancel)
+        
+    def checkKfactChange(self):
+        self.kFactSpin.setEnabled(self.checkKfact.isChecked())
+        
+
+    def retranslateUi(self):
+        self.form.setWindowTitle(_translate("SheetMetal", "Unfold sheet metal onject", None))
+        self.checkSketch.setText(_translate("SheetMetal", "Generate projection sketch", None))
+        self.checkKfact.setText(_translate("SheetMetal", "Manual K-factor", None))
+        self.label.setText(_translate("SheetMetal", "Unfold object transparency", None))
+        self.transSpin.setSuffix(_translate("SheetMetal", "%", None))
 
 
 class SMUnfoldCommandClass():
@@ -1571,14 +1807,8 @@ class SMUnfoldCommandClass():
             'ToolTip' : "Flatten folded sheet metal object"}
  
   def Activated(self):
-    doc = FreeCAD.ActiveDocument
-    s = PerformUnfold()
-    if (s is not None):
-      doc.openTransaction("Unfold")
-      a = doc.addObject("Part::Feature","Unfold")
-      a.Shape = s
-      doc.commitTransaction()
-    doc.recompute()
+    taskd = SMUnfoldTaskPanel()
+    FreeCADGui.Control.showDialog(taskd)
     return
    
   def IsActive(self):
