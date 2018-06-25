@@ -14,6 +14,7 @@ http://theseger.com/projects/2015/06/sheet-metal-addon-for-freecad/
 Starting from FreeCAD 0.17 it can be installed via the [Addon Manager](https://github.com/FreeCAD/FreeCAD-addons) (from Tools menu)
 
 #### Release notes: 
+* V0.1.32 25 Jun 2018:  New feature: Option to separately unfold bends. Thank you jaisejames!
 * V0.1.31 25 Jun 2018:  Support ellipses and parabolas, Try standard sketch conversion first
 * V0.1.30 25 Jun 2018:  <br/>
 New feature: Generate unfold sketch with folding marks. Issue #33. Thank you easyw-fc! <br/>

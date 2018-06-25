@@ -106,8 +106,8 @@ def smRestrict(var, fromVal, toVal):
       return toVal
     return var
 
-def smBend(bendR = 1.0, bendA = 90.0, miterA1 =0.0,miterA2 =0.0, flipped = False, extLen = 10.0, gap1 = 0.0, gap2 = 0.0, reliefType = "Rectangle", 
-            reliefW = 0.5, reliefD = 1.0, extend1 = 0.0, extend2 = 0.0, selFaceNames = '', MainObject = None):
+def smBend(bendR = 1.0, bendA = 90.0, miterA1 =0.0,miterA2 =0.0, flipped = False, unfold = False, extLen = 10.0, gap1 = 0.0, gap2 = 0.0,  
+            reliefType = "Rectangle", reliefW = 0.5, reliefD = 1.0, extend1 = 0.0, extend2 = 0.0, kfactor = 0.45, selFaceNames = '', MainObject = None):
             
   #AAD = FreeCAD.ActiveDocument
   #MainObject = AAD.getObject( selObjectName )
@@ -173,21 +173,37 @@ def smBend(bendR = 1.0, bendA = 90.0, miterA1 =0.0,miterA2 =0.0, flipped = False
       revAxisP = thkEdge.valueAt(thkEdge.LastParameter + bendR)
       revAxisV = revAxisV * -1
     else:
-      revAxisP = thkEdge.valueAt(thkEdge.FirstParameter - bendR)  
-    
-    if bendA > 0.0 :
-    # create bend	
-      bendSolid = revFace.revolve(revAxisP, revAxisV, bendA)
-      #Part.show(bendSolid)
-      resultSolid = resultSolid.fuse(bendSolid)
+      revAxisP = thkEdge.valueAt(thkEdge.FirstParameter - bendR)
+	  
+    if not(unfold) :
+      if bendA > 0.0 :
+      # create bend	
+        bendSolid = revFace.revolve(revAxisP, revAxisV, bendA)
+        #Part.show(bendSolid)
+        resultSolid = resultSolid.fuse(bendSolid)
 
-    if extLen > 0 :
-	# create wall
-      Wall_face = smMakeFace(lenEdge, revFace.normalAt(0,0), gap1-extend1, gap2-extend2, extLen, miterA1, miterA2)
-      wallSolid = Wall_face.extrude(thkDir.normalize() * thk)
-      #Part.show(wallSolid)	  
-      wallSolid.rotate(revAxisP, revAxisV, bendA)
-      resultSolid = resultSolid.fuse(wallSolid)
+      if extLen > 0 :
+      # create wall
+        Wall_face = smMakeFace(lenEdge, revFace.normalAt(0,0), gap1-extend1, gap2-extend2, extLen, miterA1, miterA2)
+        wallSolid = Wall_face.extrude(thkDir.normalize() * thk)
+        #Part.show(wallSolid)	  
+        wallSolid.rotate(revAxisP, revAxisV, bendA)
+        resultSolid = resultSolid.fuse(wallSolid)
+    else :
+      if bendA > 0.0 :
+      # create bend	
+        unfoldLength = 3.14 * (bendR + kfactor * thk) * (bendA / 180)
+        bendSolid = revFace.extrude(revFace.normalAt(0,0) * unfoldLength)
+        #Part.show(bendSolid)
+        resultSolid = resultSolid.fuse(bendSolid)
+
+      if extLen > 0 :
+      # create wall
+        Wall_face = smMakeFace(lenEdge, revFace.normalAt(0,0), gap1-extend1, gap2-extend2, extLen, miterA1, miterA2)
+        wallSolid = Wall_face.extrude(thkDir.normalize() * thk)
+        #Part.show(wallSolid)	  
+        wallSolid.translate(revFace.normalAt(0,0) * unfoldLength)
+        resultSolid = resultSolid.fuse(wallSolid)
       
   Gui.ActiveDocument.getObject(MainObject.Name).Visibility = False
   return resultSolid
@@ -211,6 +227,8 @@ class SMBendWall:
     obj.addProperty("App::PropertyLength","reliefw","Parameters","Relief width").reliefw = 0.5
     obj.addProperty("App::PropertyLength","reliefd","Parameters","Relief depth").reliefd = 1.0
     obj.addProperty("App::PropertyLinkSub", "baseObject", "Parameters", "Base object").baseObject = (selobj.Object, selobj.SubElementNames)
+    obj.addProperty("App::PropertyBool","unfold","ParametersEx","Invert bend direction").unfold = False
+    obj.addProperty("App::PropertyFloatConstraint","kfactor","ParametersEx","Gap from left side").kfactor = (0.45,0.0,1.0,0.01)
     obj.Proxy = self
  
   def execute(self, fp):
@@ -224,15 +242,21 @@ class SMBendWall:
 
     if (not hasattr(fp,"extend1")):
       fp.addProperty("App::PropertyDistance","extend1","Parameters","Gap from left side").extend1 = 0.0
-      fp.addProperty("App::PropertyDistance","extend2","Parameters","Gap from right side").extend2 = 0.0	
-   
+      fp.addProperty("App::PropertyDistance","extend2","Parameters","Gap from right side").extend2 = 0.0
+
+    if (not hasattr(fp,"unfold")):
+      fp.addProperty("App::PropertyBool","unfold","ParametersEx","Invert bend direction").unfold = False
+
+    if (not hasattr(fp,"kfactor")):
+      fp.addProperty("App::PropertyFloatConstraint","kfactor","ParametersEx","Gap from left side").kfactor = (0.45,0.0,1.0,0.01)
+
     # restrict some params
     fp.miterangle1.Value = smRestrict(fp.miterangle1.Value, -80.0, 80.0)
     fp.miterangle2.Value = smRestrict(fp.miterangle2.Value, -80.0, 80.0)
     
-    s = smBend(bendR = fp.radius.Value, bendA = fp.angle.Value, miterA1 = fp.miterangle1.Value, miterA2 = fp.miterangle2.Value, flipped = fp.invert, extLen = fp.length.Value, 
-                gap1 = fp.gap1.Value, gap2 = fp.gap2.Value, reliefType = fp.reliefType, reliefW = fp.reliefw.Value, reliefD = fp.reliefd.Value, 
-                extend1 = fp.extend1.Value, extend2 = fp.extend2.Value, selFaceNames = fp.baseObject[1], MainObject = fp.baseObject[0])
+    s = smBend(bendR = fp.radius.Value, bendA = fp.angle.Value, miterA1 = fp.miterangle1.Value, miterA2 = fp.miterangle2.Value, flipped = fp.invert, unfold = fp.unfold, 
+                extLen = fp.length.Value, gap1 = fp.gap1.Value, gap2 = fp.gap2.Value, reliefType = fp.reliefType, reliefW = fp.reliefw.Value, reliefD = fp.reliefd.Value, 
+                extend1 = fp.extend1.Value, extend2 = fp.extend2.Value, kfactor = fp.kfactor, selFaceNames = fp.baseObject[1], MainObject = fp.baseObject[0])
     fp.Shape = s
 
 
