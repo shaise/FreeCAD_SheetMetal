@@ -203,7 +203,7 @@ class SheetTree(object):
   def __init__(self, TheShape, f_idx):
     self.cFaceTol = 0.002 # tolerance to detect counter-face vertices
     # this high tolerance was needed for more real parts
-    self.root = None # make_new_face_node adds the root node if parent_node == None
+    self.root = None # make_new_face_node adds the root node if parent_node is None
     self.__Shape = TheShape.copy()
     self.error_code = None
     self.failed_face_idx = None
@@ -725,7 +725,7 @@ class SheetTree(object):
           else:
             counter_found = False
             SMLog("faceMiddle: ", str(faceMiddle), "counterMiddle: ", str(counterMiddle))
-      #if newNode.c_face_idx == None:
+      #if newNode.c_face_idx is None:
       #  Part.show(axis_line)
           
         
@@ -897,7 +897,7 @@ class SheetTree(object):
 
     # Part.show(self.__Shape.Faces[newNode.c_face_idx])
     # Part.show(self.__Shape.Faces[newNode.idx])
-    if newNode.c_face_idx == None:
+    if newNode.c_face_idx is None:
       newNode.analysis_ok = False
       newNode.error_code = 13 # Analysis: counter face not found
       self.error_code = 13
@@ -911,7 +911,7 @@ class SheetTree(object):
     #  Part.show(nFace)
 
 
-    if P_node == None:
+    if P_node is None:
       self.root = newNode
     else:
       P_node.child_list.append(newNode)
@@ -930,7 +930,7 @@ class SheetTree(object):
         if sf_edge.isSame(n_edge):
           the_index = i
           
-    #if the_index == None:
+    #if the_index is None:
     #  the_node.analysis_ok = False # the code can not handle? edges without neighbor faces
     #  the_node.error_code = 14 # Analysis: the code can not handle? edges without neighbor faces
     #  self.error_code = 14
@@ -1350,7 +1350,7 @@ class SheetTree(object):
     
     # find bend line
     fold_edge = []
-    if bend_edge != None:
+    if bend_edge is not None:
       bend_edge.rotate(self.f_list[bend_node.idx].Surface.Center,bend_node.axis,math.degrees(bend_node.bend_angle))
       bend_edge.translate(trans_vec)
       vo1 = o_edge.Vertexes[0].Point
@@ -1471,7 +1471,7 @@ class SheetTree(object):
     theFolds = []
     nodeFold = []
     for n_node in node.child_list:
-      if self.error_code == None:
+      if self.error_code is None:
         (shell, fold) = self.unfold_tree2(n_node)
         theShell = theShell + shell
         theFolds = theFolds + fold
@@ -1483,10 +1483,10 @@ class SheetTree(object):
       for fold in theFolds:
         fold.rotate(self.f_list[node.idx].Surface.Center,node.axis,math.degrees(node.bend_angle))
         fold.translate(trans_vec)
-      if self.error_code == None:
+      if self.error_code is None:
         (nodeShell, nodeFold) = self.generateBendShell(node)
     else:
-      if self.error_code == None:
+      if self.error_code is None:
         # nodeShell = self.generateShell(node)
         for idx in node.nfIndexes:
           nodeShell.append(self.f_list[idx].copy())
@@ -1536,15 +1536,15 @@ def PerformUnfold():
             #SMLog(f_number)
             startzeit = time.clock()
             TheTree = SheetTree(o.Object.Shape, f_number) # initializes the tree-structure
-            if TheTree.error_code == None:
+            if TheTree.error_code is None:
               TheTree.Bend_analysis(f_number, None) # traverses the shape builds the tree-structure
               endzeit = time.clock()
               SMLog("Analytical time: ",endzeit-startzeit)
               
-              if TheTree.error_code == None:
+              if TheTree.error_code is None:
                 #TheTree.showFaces()
                 (theFaceList, theFoldList) = TheTree.unfold_tree2(TheTree.root) # traverses the tree-structure
-                if TheTree.error_code == None:
+                if TheTree.error_code is None:
                   unfoldTime = time.clock()
                   SMLog("time to run the unfold: ", unfoldTime - endzeit)
 
@@ -1554,7 +1554,7 @@ def PerformUnfold():
                   except:
                       SMError("couldn't join some faces, show only single faces")
                       for newFace in theFaceList:
-                        if (resPart == None):
+                        if (resPart is None):
                           resPart = newFace
                         else:
                           resPart = resPart.fuse(newFace)
@@ -1612,18 +1612,18 @@ def SMmakeSketchfromEdges (edges, name):
             for i in arcs:
                 eb = Part.Edge(i)
                 seg = SMGetGeoSegment(eb)
-                if seg != None:
+                if seg is not None:
                     geo.append(seg)
         elif isinstance(e.Curve,Part.Ellipse) or isinstance(e.Curve,Part.Parabola):
             l=e.copy().discretize(QuasiDeflection=quasidef)
             plines=Part.makePolygon(l)
             for edg in plines.Edges:
                 seg = SMGetGeoSegment(edg)
-                if seg != None:
+                if seg is not None:
                     geo.append(seg)            
         else:
             seg = SMGetGeoSegment(e)
-            if seg != None:
+            if seg is not None:
                 geo.append(seg)
     usk.addGeometry(geo)
     return usk
@@ -1772,7 +1772,13 @@ class SMUnfoldTaskPanel:
         genObjTransparency = self.transSpin.value()
             
         doc = FreeCAD.ActiveDocument
-        (s, foldLines, norm) = PerformUnfold()
+        try:
+            (s, foldLines, norm) = PerformUnfold()
+        except:
+            s = None
+            QtGui.QApplication.restoreOverrideCursor()
+            msg = """Unfold is failing.<br>Please try to select a different face to unfold your object"""
+            QtGui.QMessageBox.question(None,"Warning",msg,QtGui.QMessageBox.Ok)
         if (s is not None):
           doc.openTransaction("Unfold")
           a = doc.addObject("Part::Feature","Unfold")
