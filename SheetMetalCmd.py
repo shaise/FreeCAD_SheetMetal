@@ -37,7 +37,7 @@ def smWarnDialog(msg):
     diag.exec_()
  
 def smBelongToBody(item, body):
-    if (body == None):
+    if (body is None):
         return False
     for obj in body.Group:
         if obj.Name == item.Name:
@@ -490,7 +490,7 @@ class AddWallCommandClass():
     if not smIsOperationLegal(activeBody, selobj):
         return
     doc.openTransaction("Bend")
-    if activeBody == None or not smIsPartDesign(selobj):
+    if activeBody is None or not smIsPartDesign(selobj):
       a = doc.addObject("Part::FeaturePython","Bend")
       SMBendWall(a)
       SMViewProviderTree(a.ViewObject)
@@ -579,7 +579,7 @@ class SMExtrudeCommandClass():
     if not smIsOperationLegal(activeBody, selobj):
         return      
     doc.openTransaction("Extend")
-    if (activeBody == None):
+    if (activeBody is None):
       a = doc.addObject("Part::FeaturePython","Extend")
       SMExtrudeWall(a)
       SMViewProviderTree(a.ViewObject)
