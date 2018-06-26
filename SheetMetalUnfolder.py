@@ -122,6 +122,11 @@ def SMMessage(* args):
     message += str(x)
   FreeCAD.Console.PrintMessage(message + "\n")
 
+def SMWarning(* args):
+  message = ""
+  for x in args:
+    message += str(x)
+  FreeCAD.Console.PrintWarning(message + "\n")
 
 
 def equal_vertex(vert1, vert2, p=5):
@@ -1621,6 +1626,7 @@ def SMmakeSketchfromEdges (edges, name):
             if seg != None:
                 geo.append(seg)
     usk.addGeometry(geo)
+    return usk
 
 
 class SMUnfoldObject:
@@ -1780,17 +1786,19 @@ class SMUnfoldTaskPanel:
               grp2 = Drawing.projectEx(co, norm)
               edges.append(grp2[0])  
             p = Part.makeCompound(edges)
-            #try:
-            sk = Draft.makeSketch(p.Edges, autoconstraints = True)
-            sk.Label = "Unfold_Sketch"
-            FreeCADGui.ActiveDocument.getObject(sk.Name).LineColor = (0.0,0.0,0.5)
-            #except:
-            #  doc.removeObject(sk.Name)
-            #  SMLog("discretizing")
-            #  SMmakeSketchfromEdges(p.Edges,"Unfold_Sketch")
+            try:
+                sk = Draft.makeSketch(p.Edges, autoconstraints = True)
+                sk.Label = "Unfold_Sketch"
+            except:
+                skb = doc.ActiveObject
+                doc.removeObject(skb.Name)
+                SMWarning("discretizing Sketch")
+                sk = SMmakeSketchfromEdges(p.Edges,"Unfold_Sketch")
           doc.commitTransaction()
           docG = FreeCADGui.ActiveDocument
           docG.getObject(a.Name).Transparency = genObjTransparency
+          docG.getObject(sk.Name).LineColor = (0.0,0.0,0.5)
+          docG.getObject(sk.Name).PointColor = (0.0,0.0,0.5)
         doc.recompute()
         FreeCAD.ActiveDocument.recompute()
         return True
