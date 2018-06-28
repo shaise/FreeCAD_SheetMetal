@@ -212,7 +212,8 @@ class SheetTree(object):
       SMError("The shape is not valid!")
       self.error_code = 4  # Starting: invalid shape
       self.failed_face_idx = f_idx
-    
+      return
+
     #Part.show(self.__Shape)
     
     # List of indices to the shape.Faces. The list is used a lot for face searches.
@@ -280,8 +281,9 @@ class SheetTree(object):
             SMError("Starting measure_pos for thickness measurement is outside!")
             self.error_code = 2
             self.failed_face_idx = f_idx
+            return
 
-        
+
         if hasattr(self.__Shape.Faces[f_idx].Surface,'Axis'):
           s_Axis =  self.__Shape.Faces[f_idx].Surface.Axis
           # SMLog('We have an axis: ', s_Axis)
@@ -786,6 +788,7 @@ class SheetTree(object):
         newNode.error_code = 12 # ('more than one bend-childs')
         self.error_code = 12
         self.failed_face_idx = face_idx
+        return
 
       #Start to investigate the angles at self.__Shape.Faces[face_idx].ParameterRange[0]
       angle_0 = self.__Shape.Faces[face_idx].ParameterRange[0]
@@ -832,7 +835,8 @@ class SheetTree(object):
               self.error_code = 16
               self.failed_face_idx = face_idx
               SMError("did not found start angle, to do to fix")
-        
+              return
+
       newNode.bend_angle = angle_end - angle_start
       if newNode.bend_angle < 0.0:
         angle_tan = angle_start - math.pi/2.0
@@ -904,6 +908,7 @@ class SheetTree(object):
       self.failed_face_idx = face_idx
       SMError("No counter-face Debugging Thickness: ", self.__thickness)
       Part.show(self.__Shape.Faces[face_idx])
+      return
 
     # now we call the new code
     self.get_node_faces(newNode, wires_e_lists)
@@ -965,6 +970,8 @@ class SheetTree(object):
       SMLog(" Parent Face", parent_node.idx + 1)
     SMLog("Die Liste: ", self.index_list)
     t_node = self.make_new_face_node(face_idx, parent_node, parent_edge, wires_edge_lists)
+    if t_node is None:
+      return
     # Need also the edge_list in the node!
     SMLog("Die Liste nach make_new_face_node: ", self.index_list)
     
