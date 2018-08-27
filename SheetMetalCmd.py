@@ -441,25 +441,25 @@ class SMBendWallTaskPanel:
       self.retranslateUi(self.form)
 
     def updateElement(self):
-		if self.obj:
-			sel = FreeCADGui.Selection.getSelectionEx()[0]
-			if sel.HasSubObjects:
-				obj = sel.Object
-				for elt in sel.SubElementNames:
-					if "Face" in elt:
-						face = self.obj.baseObject
-						found = False
-						if (face[0] == obj.Name):
-							if isinstance(face[1],tuple):
-								for subf in face[1]:
-									if subf == elt:
-										found = True
-							else:
-								if (face[1][0] == elt):
-									found = True
-						if not found:
-							self.obj.baseObject = (sel.Object, sel.SubElementNames)
-			self.update()
+        if self.obj:
+            sel = FreeCADGui.Selection.getSelectionEx()[0]
+            if sel.HasSubObjects:
+                obj = sel.Object
+                for elt in sel.SubElementNames:
+                    if "Face" in elt:
+                        face = self.obj.baseObject
+                        found = False
+                        if (face[0] == obj.Name):
+                            if isinstance(face[1],tuple):
+                                for subf in face[1]:
+                                    if subf == elt:
+                                        found = True
+                            else:
+                                if (face[1][0] == elt):
+                                    found = True
+                        if not found:
+                            self.obj.baseObject = (sel.Object, sel.SubElementNames)
+            self.update()
 
     def accept(self):
         FreeCAD.ActiveDocument.recompute()
