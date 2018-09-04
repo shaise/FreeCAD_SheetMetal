@@ -1634,7 +1634,7 @@ class SheetTree(object):
     '''
     eIndex = 0 
     newEdgeList = []
-    idxList = range(len(myEdgeList))
+    idxList = list(range(len(myEdgeList)))
     newIdxList = [eIndex]
     newEdgeList.append(myEdgeList[eIndex])
     idxList.remove(eIndex)
