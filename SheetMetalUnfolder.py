@@ -110,8 +110,10 @@ import Draft
 import Drawing
 from SheetMetalCmd import iconPath
 
-genSketchChecked = True      
-sepSketchChecked = False      
+genSketchChecked = True
+genSketchColor = '#000080'      
+bendSketchChecked = False
+bendSketchColor = '#c00000'      
 genObjTransparency = 70
 manKFactor = -100.0     
 
@@ -2110,6 +2112,40 @@ except AttributeError:
     def _translate(context, text, disambig):
         return QtGui.QApplication.translate(context, text, disambig)
       
+      
+class QColorButton(QtGui.QPushButton):
+    '''
+    Custom Qt Widget to show a chosen color.
+    '''
+
+    def __init__(self, *args, **kwargs):
+        super(QColorButton, self).__init__(*args, **kwargs)
+        self._color = None
+        self.setMaximumWidth(32)
+        self.pressed.connect(self.onColorPicker)
+
+    def setColor(self, color):
+        if color != self._color:
+            self._color = color
+            FreeCAD.Console.PrintLog("Set color " + self._color + "\n")
+        if self._color is not None:
+            self.setStyleSheet("background-color: %s;" % self._color)
+        else:
+            self.setStyleSheet("")
+
+    def color(self):
+        return self._color
+        
+    def colorF(self):
+        return QtGui.QColor(self._color).getRgbF()
+
+    def onColorPicker(self):
+        dlg = QtGui.QColorDialog()
+        if self._color:
+            dlg.setCurrentColor(QtGui.QColor('self._color'))
+        if dlg.exec_():
+            self.setColor(dlg.currentColor().name())
+        
 class SMUnfoldTaskPanel:
     '''A TaskPanel for the facebinder'''
     def __init__(self):
@@ -2122,13 +2158,28 @@ class SMUnfoldTaskPanel:
         self.verticalLayout_2.setObjectName(_fromUtf8("verticalLayout_2"))
         self.verticalLayout = QtGui.QVBoxLayout()
         self.verticalLayout.setObjectName(_fromUtf8("verticalLayout"))
+        self.horizontalLayout_1 = QtGui.QHBoxLayout()
         self.checkSketch = QtGui.QCheckBox(self.form)
         self.checkSketch.setObjectName(_fromUtf8("checkSketch"))
-        self.verticalLayout.addWidget(self.checkSketch)
         self.checkSketch.stateChanged.connect(self.checkSketchChange)
+        self.horizontalLayout_1.addWidget(self.checkSketch)
+        self.genColor = QColorButton()
+        self.genColor.setMaximumHeight(self.checkSketch.height() * 2 / 3)
+        self.genColor.setColor(genSketchColor)
+        self.horizontalLayout_1.addWidget(self.genColor)
+        self.verticalLayout.addLayout(self.horizontalLayout_1)
+                
+        self.horizontalLayout_3 = QtGui.QHBoxLayout()
         self.checkSeparate = QtGui.QCheckBox(self.form)
         self.checkSeparate.setObjectName(_fromUtf8("checkSeparate"))
-        self.verticalLayout.addWidget(self.checkSeparate)
+        self.checkSeparate.stateChanged.connect(self.checkSketchChange)
+        self.horizontalLayout_3.addWidget(self.checkSeparate)
+        self.bendColor = QColorButton()
+        self.bendColor.setMaximumHeight(self.checkSketch.height() * 2 / 3)
+        self.bendColor.setColor(bendSketchColor)
+        self.horizontalLayout_3.addWidget(self.bendColor)
+        self.verticalLayout.addLayout(self.horizontalLayout_3)
+        
         self.horizontalLayout = QtGui.QHBoxLayout()
         self.horizontalLayout.setSizeConstraint(QtGui.QLayout.SetDefaultConstraint)
         self.horizontalLayout.setObjectName(_fromUtf8("horizontalLayout"))
@@ -2179,7 +2230,7 @@ class SMUnfoldTaskPanel:
 
         if genSketchChecked:
           self.checkSketch.setCheckState(QtCore.Qt.CheckState.Checked)
-        if sepSketchChecked:
+        if bendSketchChecked:
           self.checkSeparate.setCheckState(QtCore.Qt.CheckState.Checked)
         if manKFactor < -9.0:
           self.kFactSpin.setEnabled(False)
@@ -2218,9 +2269,12 @@ class SMUnfoldTaskPanel:
         return int(QtGui.QDialogButtonBox.Ok)
 
     def accept(self):
-        global genSketchChecked, sepSketchChecked, genObjTransparency, manKFactor
+        global genSketchChecked, bendSketchChecked, genObjTransparency, manKFactor
+        global genSketchColor, bendSketchColor
         genSketchChecked = self.checkSketch.isChecked()
-        sepSketchChecked = self.checkSeparate.isChecked()
+        genSketchColor = self.genColor.color()
+        bendSketchChecked = self.checkSeparate.isChecked()
+        bendSketchColor = self.bendColor.color()
         if self.checkKfact.isChecked():
             manKFactor = self.kFactSpin.value()
         else:
@@ -2247,13 +2301,13 @@ class SMUnfoldTaskPanel:
             if len(foldLines) > 0:
               co = Part.makeCompound(foldLines)
               grp2 = Drawing.projectEx(co, norm)
-              if not sepSketchChecked:
+              if not bendSketchChecked:
                 edges.append(grp2[0])
-            self.generateSketch(edges, "Unfold_Sketch", (0.0,0.0,0.5))
-            if len(foldLines) > 0 and sepSketchChecked:
+            self.generateSketch(edges, "Unfold_Sketch", self.genColor.colorF())
+            if len(foldLines) > 0 and bendSketchChecked:
               foldEdges = []
               foldEdges.append(grp2[0])
-              self.generateSketch(foldEdges, "Unfold_Sketch_bends", (0.5,0.0,0.0))
+              self.generateSketch(foldEdges, "Unfold_Sketch_bends", self.bendColor.colorF())
           doc.commitTransaction()
           docG = FreeCADGui.ActiveDocument
           docG.getObject(a.Name).Transparency = genObjTransparency
@@ -2283,11 +2337,13 @@ class SMUnfoldTaskPanel:
         
     def checkSketchChange(self):
         self.checkSeparate.setEnabled(self.checkSketch.isChecked())
+        #self.genColor.setEnabled(self.checkSketch.isChecked())
+        #self.bendColor.setEnabled(self.checkSketch.isChecked() and self.checkSeparate.isChecked())
         
     def retranslateUi(self):
         self.form.setWindowTitle(_translate("SheetMetal", "Unfold sheet metal onject", None))
         self.checkSketch.setText(_translate("SheetMetal", "Generate projection sketch", None))
-        self.checkSeparate.setText(_translate("SheetMetal", "Separate projection layers", None))
+        self.checkSeparate.setText(_translate("SheetMetal", "Separate bend lines sketch", None))
         self.checkKfact.setText(_translate("SheetMetal", "Manual K-factor", None))
         self.label.setText(_translate("SheetMetal", "Unfold object transparency", None))
         self.transSpin.setSuffix(_translate("SheetMetal", "%", None))
