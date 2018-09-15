@@ -111,6 +111,7 @@ import Drawing
 from SheetMetalCmd import iconPath
 
 genSketchChecked = True      
+sepSketchChecked = False      
 genObjTransparency = 70
 manKFactor = -100.0     
 
@@ -2124,6 +2125,10 @@ class SMUnfoldTaskPanel:
         self.checkSketch = QtGui.QCheckBox(self.form)
         self.checkSketch.setObjectName(_fromUtf8("checkSketch"))
         self.verticalLayout.addWidget(self.checkSketch)
+        self.checkSketch.stateChanged.connect(self.checkSketchChange)
+        self.checkSeparate = QtGui.QCheckBox(self.form)
+        self.checkSeparate.setObjectName(_fromUtf8("checkSeparate"))
+        self.verticalLayout.addWidget(self.checkSeparate)
         self.horizontalLayout = QtGui.QHBoxLayout()
         self.horizontalLayout.setSizeConstraint(QtGui.QLayout.SetDefaultConstraint)
         self.horizontalLayout.setObjectName(_fromUtf8("horizontalLayout"))
@@ -2174,6 +2179,8 @@ class SMUnfoldTaskPanel:
 
         if genSketchChecked:
           self.checkSketch.setCheckState(QtCore.Qt.CheckState.Checked)
+        if sepSketchChecked:
+          self.checkSeparate.setCheckState(QtCore.Qt.CheckState.Checked)
         if manKFactor < -9.0:
           self.kFactSpin.setEnabled(False)
           self.kFactSpin.setProperty("value", 0.5)
@@ -2182,7 +2189,9 @@ class SMUnfoldTaskPanel:
           self.kFactSpin.setProperty("value", manKFactor)
         self.transSpin.setProperty("value", genObjTransparency)
           
+        self.checkSketchChange()
         self.retranslateUi()
+        
         
         
         
@@ -2209,8 +2218,9 @@ class SMUnfoldTaskPanel:
         return int(QtGui.QDialogButtonBox.Ok)
 
     def accept(self):
-        global genSketchChecked, genObjTransparency, manKFactor
+        global genSketchChecked, sepSketchChecked, genObjTransparency, manKFactor
         genSketchChecked = self.checkSketch.isChecked()
+        sepSketchChecked = self.checkSeparate.isChecked()
         if self.checkKfact.isChecked():
             manKFactor = self.kFactSpin.value()
         else:
@@ -2237,24 +2247,33 @@ class SMUnfoldTaskPanel:
             if len(foldLines) > 0:
               co = Part.makeCompound(foldLines)
               grp2 = Drawing.projectEx(co, norm)
-              edges.append(grp2[0])  
-            p = Part.makeCompound(edges)
-            try:
-                sk = Draft.makeSketch(p.Edges, autoconstraints = True)
-                sk.Label = "Unfold_Sketch"
-            except:
-                skb = doc.ActiveObject
-                doc.removeObject(skb.Name)
-                SMWarning("discretizing Sketch")
-                sk = SMmakeSketchfromEdges(p.Edges,"Unfold_Sketch")
+              if not sepSketchChecked:
+                edges.append(grp2[0])
+            self.generateSketch(edges, "Unfold_Sketch", (0.0,0.0,0.5))
+            if len(foldLines) > 0 and sepSketchChecked:
+              foldEdges = []
+              foldEdges.append(grp2[0])
+              self.generateSketch(foldEdges, "Unfold_Sketch_bends", (0.5,0.0,0.0))
           doc.commitTransaction()
           docG = FreeCADGui.ActiveDocument
           docG.getObject(a.Name).Transparency = genObjTransparency
-          docG.getObject(sk.Name).LineColor = (0.0,0.0,0.5)
-          docG.getObject(sk.Name).PointColor = (0.0,0.0,0.5)
         doc.recompute()
         FreeCAD.ActiveDocument.recompute()
         return True
+        
+    def generateSketch(self, edges, name, color):
+        docG = FreeCADGui.ActiveDocument
+        p = Part.makeCompound(edges)
+        try:
+            sk = Draft.makeSketch(p.Edges, autoconstraints = True)
+            sk.Label = name
+        except:
+            skb = doc.ActiveObject
+            doc.removeObject(skb.Name)
+            SMWarning("discretizing Sketch")
+            sk = SMmakeSketchfromEdges(p.Edges,name)
+        docG.getObject(sk.Name).LineColor = color
+        docG.getObject(sk.Name).PointColor = color
 
     def getStandardButtons(self):
         return int(QtGui.QDialogButtonBox.Ok) + int(QtGui.QDialogButtonBox.Cancel)
@@ -2262,10 +2281,13 @@ class SMUnfoldTaskPanel:
     def checkKfactChange(self):
         self.kFactSpin.setEnabled(self.checkKfact.isChecked())
         
-
+    def checkSketchChange(self):
+        self.checkSeparate.setEnabled(self.checkSketch.isChecked())
+        
     def retranslateUi(self):
         self.form.setWindowTitle(_translate("SheetMetal", "Unfold sheet metal onject", None))
         self.checkSketch.setText(_translate("SheetMetal", "Generate projection sketch", None))
+        self.checkSeparate.setText(_translate("SheetMetal", "Separate projection layers", None))
         self.checkKfact.setText(_translate("SheetMetal", "Manual K-factor", None))
         self.label.setText(_translate("SheetMetal", "Unfold object transparency", None))
         self.transSpin.setSuffix(_translate("SheetMetal", "%", None))
