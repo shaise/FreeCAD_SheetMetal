@@ -114,6 +114,7 @@ genSketchChecked = True
 genSketchColor = '#000080'      
 bendSketchChecked = False
 bendSketchColor = '#c00000'      
+intSketchColor = '#ff5733'
 genObjTransparency = 70
 manKFactor = -100.0     
 
@@ -1158,7 +1159,7 @@ class SheetTree(object):
       
     # Part.show(self.__Shape.Faces[newNode.c_face_idx])
     # Part.show(self.__Shape.Faces[newNode.idx])
-    if newNode.c_face_idx == None:
+    if newNode.c_face_idx is None:
       newNode.analysis_ok = False
       newNode.error_code = 13 # Analysis: counter face not found
       self.error_code = 13
@@ -1175,7 +1176,7 @@ class SheetTree(object):
     #  Part.show(nFace)
 
 
-    if P_node == None:
+    if P_node is None:
       self.root = newNode
     else:
       P_node.child_list.append(newNode)
@@ -1928,7 +1929,7 @@ class SheetTree(object):
     theFoldLines = []
     nodeFoldLines = []
     for n_node in node.child_list:
-      if self.error_code == None:
+      if self.error_code is None:
         shell, foldLines = self.unfold_tree2(n_node)
         theShell = theShell + shell
         theFoldLines = theFoldLines + foldLines
@@ -1940,11 +1941,11 @@ class SheetTree(object):
       for fold in theFoldLines:
         fold.rotate(self.f_list[node.idx].Surface.Center,node.axis,math.degrees(-node.bend_angle))
         fold.translate(trans_vec)
-      if self.error_code == None:
+      if self.error_code is None:
         #nodeShell = self.generateBendShell(node)
         nodeShell, nodeFoldLines = self.generateBendShell2(node)
     else:
-      if self.error_code == None:
+      if self.error_code is None:
         # nodeShell = self.generateShell(node)
         for idx in node.nfIndexes:
           nodeShell.append(self.f_list[idx].copy())
@@ -1992,20 +1993,19 @@ def getUnfold():
               #print f_number
               startzeit = time.clock()
               TheTree = SheetTree(o.Object.Shape, f_number) # initializes the tree-structure
-              if TheTree.error_code == None:
+              if TheTree.error_code is None:
                 TheTree.Bend_analysis(f_number, None) # traverses the shape and builds the tree-structure
                 endzeit = time.clock()
                 FreeCAD.Console.PrintLog("Analytical time: "+ str(endzeit-startzeit) + "\n")
                 
-                if TheTree.error_code == None:
+                if TheTree.error_code is None:
                   # TheTree.showFaces()
                   theFaceList, foldLines = TheTree.unfold_tree2(TheTree.root) # traverses the tree-structure
-                  if TheTree.error_code == None:
+                  if TheTree.error_code is None:
                     unfoldTime = time.clock()
                     FreeCAD.Console.PrintLog("time to run the unfold: "+ str(unfoldTime - endzeit) + "\n")
                     folds = Part.Compound(foldLines)
                     #Part.show(folds, 'Fold_Lines')
-    
                     try:
                         newShell = Part.Shell(theFaceList)
                     except:
@@ -2180,6 +2180,16 @@ class SMUnfoldTaskPanel:
         self.horizontalLayout_3.addWidget(self.bendColor)
         self.verticalLayout.addLayout(self.horizontalLayout_3)
         
+        self.horizontalLayout_4 = QtGui.QHBoxLayout()
+        self.InternalLbl = QtGui.QLabel(self.form)
+        self.InternalLbl.setObjectName(_fromUtf8("InternalLbl"))
+        self.horizontalLayout_4.addWidget(self.InternalLbl)
+        self.internalColor = QColorButton()
+        self.internalColor.setMaximumHeight(self.checkSketch.height() * 2 / 3)
+        self.internalColor.setColor(intSketchColor)
+        self.horizontalLayout_4.addWidget(self.internalColor)
+        self.verticalLayout.addLayout(self.horizontalLayout_4)
+        
         self.horizontalLayout = QtGui.QHBoxLayout()
         self.horizontalLayout.setSizeConstraint(QtGui.QLayout.SetDefaultConstraint)
         self.horizontalLayout.setObjectName(_fromUtf8("horizontalLayout"))
@@ -2275,6 +2285,8 @@ class SMUnfoldTaskPanel:
         genSketchColor = self.genColor.color()
         bendSketchChecked = self.checkSeparate.isChecked()
         bendSketchColor = self.bendColor.color()
+        intSketchColor = self.internalColor.color()
+        
         if self.checkKfact.isChecked():
             manKFactor = self.kFactSpin.value()
         else:
@@ -2304,6 +2316,35 @@ class SMUnfoldTaskPanel:
               if not bendSketchChecked:
                 edges.append(grp2[0])
             self.generateSketch(edges, "Unfold_Sketch", self.genColor.colorF())
+            sku = doc.ActiveObject
+            if bendSketchChecked:
+              docG = FreeCADGui.ActiveDocument
+              try:
+                doc.addObject("Part::Face", "mainFace").Sources = (sku, )
+                doc.recompute()
+                newface = doc.ActiveObject
+                owEdgs = newface.Shape.OuterWire.Edges
+                faceEdgs = newface.Shape.Edges
+                doc.removeObject(newface.Name)
+                #Part.show(newface)
+                self.generateSketch(owEdgs, "Unfold_Sketch_OutWire", self.genColor.colorF())
+                sko = doc.ActiveObject
+                intEdgs = []; idx = []
+                for i, e in enumerate(faceEdgs):
+                  for oe in owEdgs:
+                    if oe.hashCode() == e.hashCode():
+                      idx.append(i)
+                for i, e in enumerate(faceEdgs):
+                  if i not in idx:
+                    intEdgs.append(e)
+                if len (intEdgs) > 0:
+                  self.generateSketch(intEdgs, "Unfold_Sketch_Internal", self.internalColor.colorF())
+                docG = FreeCADGui.ActiveDocument
+                docG.getObject(sku.Name).Visibility = False
+                #doc.recompute()
+              except:
+                doc.removeObject(newface.Name)
+                SMError('Exception: OutWire Sketch not created')
             if len(foldLines) > 0 and bendSketchChecked:
               foldEdges = []
               foldEdges.append(grp2[0])
@@ -2347,6 +2388,7 @@ class SMUnfoldTaskPanel:
         self.checkKfact.setText(_translate("SheetMetal", "Manual K-factor", None))
         self.label.setText(_translate("SheetMetal", "Unfold object transparency", None))
         self.transSpin.setSuffix(_translate("SheetMetal", "%", None))
+        self.InternalLbl.setText(_translate("SheetMetal", "Internal Sketch color", None))
 
 
 class SMUnfoldCommandClass():
