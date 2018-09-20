@@ -2176,12 +2176,16 @@ class SMUnfoldTaskPanel:
         self.genColor.setColor(genSketchColor)
         self.horizontalLayout_1.addWidget(self.genColor)
         self.verticalLayout.addLayout(self.horizontalLayout_1)
-                
-        self.horizontalLayout_3 = QtGui.QHBoxLayout()
+
         self.checkSeparate = QtGui.QCheckBox(self.form)
         self.checkSeparate.setObjectName(_fromUtf8("checkSeparate"))
         self.checkSeparate.stateChanged.connect(self.checkSketchChange)
-        self.horizontalLayout_3.addWidget(self.checkSeparate)
+        self.verticalLayout.addWidget(self.checkSeparate)
+        
+        self.horizontalLayout_3 = QtGui.QHBoxLayout()
+        self.BendLbl = QtGui.QLabel(self.form)
+        self.BendLbl.setObjectName(_fromUtf8("BendLbl"))
+        self.horizontalLayout_3.addWidget(self.BendLbl)
         self.bendColor = QColorButton()
         self.bendColor.setMaximumHeight(self.checkSketch.height() * 2 / 3)
         self.bendColor.setColor(bendSketchColor)
@@ -2406,11 +2410,12 @@ class SMUnfoldTaskPanel:
     def retranslateUi(self):
         self.form.setWindowTitle(_translate("SheetMetal", "Unfold sheet metal onject", None))
         self.checkSketch.setText(_translate("SheetMetal", "Generate projection sketch", None))
-        self.checkSeparate.setText(_translate("SheetMetal", "Separate bend lines sketch", None))
+        self.checkSeparate.setText(_translate("SheetMetal", "Separate projection layers", None))
         self.checkKfact.setText(_translate("SheetMetal", "Manual K-factor", None))
         self.label.setText(_translate("SheetMetal", "Unfold object transparency", None))
         self.transSpin.setSuffix(_translate("SheetMetal", "%", None))
-        self.InternalLbl.setText(_translate("SheetMetal", "Internal Sketch color", None))
+        self.BendLbl.setText(_translate("SheetMetal", "    Bend lines color", None))
+        self.InternalLbl.setText(_translate("SheetMetal", "    Internal lines color", None))
 
 
 class SMUnfoldCommandClass():
