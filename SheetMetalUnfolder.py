@@ -2112,7 +2112,15 @@ except AttributeError:
     def _translate(context, text, disambig):
         return QtGui.QApplication.translate(context, text, disambig)
       
-      
+# loading presets
+pg = FreeCAD.ParamGet("User parameter:BaseApp/Preferences/Mod/sheetmetal")
+if pg.IsEmpty():
+    pg.SetBool("bendSketch",0)
+    pg.SetBool("genSketch",1)
+    pg.SetString("bendColor","#c00000")
+    pg.SetString("genColor","#000080")
+    pg.SetString("intColor","#ff5733")
+
 class QColorButton(QtGui.QPushButton):
     '''
     Custom Qt Widget to show a chosen color.
@@ -2287,6 +2295,20 @@ class SMUnfoldTaskPanel:
         bendSketchColor = self.bendColor.color()
         intSketchColor = self.internalColor.color()
         
+        #print(self.checkSeparate.isChecked())
+        pg = FreeCAD.ParamGet("User parameter:BaseApp/Preferences/Mod/sheetmetal")
+        if bendSketchChecked:
+            pg.SetBool("bendSketch",1)
+        else:
+            pg.SetBool("bendSketch",0)
+        if genSketchChecked:
+            pg.SetBool("genSketch",1)
+        else:
+            pg.SetBool("genSketch",0)
+        pg.SetString("bendColor",bendSketchColor)
+        pg.SetString("genColor",genSketchColor)
+        pg.SetString("intColor",intSketchColor)
+        
         if self.checkKfact.isChecked():
             manKFactor = self.kFactSpin.value()
         else:
@@ -2327,7 +2349,7 @@ class SMUnfoldTaskPanel:
                 faceEdgs = newface.Shape.Edges
                 doc.removeObject(newface.Name)
                 #Part.show(newface)
-                self.generateSketch(owEdgs, "Unfold_Sketch_OutWire", self.genColor.colorF())
+                self.generateSketch(owEdgs, "Unfold_Sketch_Outline", self.genColor.colorF())
                 sko = doc.ActiveObject
                 intEdgs = []; idx = []
                 for i, e in enumerate(faceEdgs):
@@ -2344,7 +2366,7 @@ class SMUnfoldTaskPanel:
                 #doc.recompute()
               except:
                 doc.removeObject(newface.Name)
-                SMError('Exception: OutWire Sketch not created')
+                SMError('Exception: Outline Sketch not created')
             if len(foldLines) > 0 and bendSketchChecked:
               foldEdges = []
               foldEdges.append(grp2[0])
@@ -2403,6 +2425,18 @@ class SMUnfoldCommandClass():
  
   def Activated(self):
     taskd = SMUnfoldTaskPanel()
+    pg = FreeCAD.ParamGet("User parameter:BaseApp/Preferences/Mod/sheetmetal")
+    if pg.GetBool("bendSketch"):
+        taskd.checkSeparate.setCheckState(QtCore.Qt.CheckState.Checked)
+    else:
+        taskd.checkSeparate.setCheckState(QtCore.Qt.CheckState.Unchecked)
+    if pg.GetBool("genSketch"):
+        taskd.checkSketch.setCheckState(QtCore.Qt.CheckState.Checked)
+    else:
+        taskd.checkSketch.setCheckState(QtCore.Qt.CheckState.Unchecked)
+    taskd.bendColor.setColor(pg.GetString("bendColor"))
+    taskd.genColor.setColor(pg.GetString("genColor"))
+    taskd.internalColor.setColor(pg.GetString("intColor"))
     FreeCADGui.Control.showDialog(taskd)
     return
    
