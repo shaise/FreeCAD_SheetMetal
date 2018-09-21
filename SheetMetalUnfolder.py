@@ -825,13 +825,13 @@ class SheetTree(object):
       innerRadius = theFace.Surface.Radius - self.__thickness
     if manKFactor < -9.0:
       # auto (original) K factor
-      newNode.k_Factor = (0.65 + 0.5*math.log10(innerRadius/self.__thickness)) / 2.0
+      newNode.k_Factor = (0.65 + 0.5*math.log10(innerRadius/self.__thickness))
     else:
-      newNode.k_Factor = manKFactor
+      newNode.k_Factor = manKFactor * 2.0
     if newNode.k_Factor < 0:
       newNode.k_Factor = 0
     FreeCAD.Console.PrintLog(newNode.bend_dir + " Face"+ str(newNode.idx+1)+ " k-factor: "+ str(newNode.k_Factor) + "\n")
-    newNode._trans_length = (innerRadius + newNode.k_Factor * self.__thickness) * newNode.bend_angle
+    newNode._trans_length = (innerRadius + newNode.k_Factor * self.__thickness/2.0) * newNode.bend_angle
 
 
     #print 'newNode._trans_length: ', newNode._trans_length
