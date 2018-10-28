@@ -106,6 +106,18 @@ def smRestrict(var, fromVal, toVal):
       return toVal
     return var
 
+ def smFace(selItem, obj) :
+  # find face
+  if type(selItem) == Part.Edge :
+    Facelist = obj.ancestorsOfType(selItem, Part.Face)
+    if Facelist[0].Area < Facelist[1].Area :
+      selFace = Facelist[0]
+    else :
+      selFace = Facelist[1]
+  elif type(selItem) == Part.Face :
+    selFace = selItem
+  return selFace
+ 
 def smBend(bendR = 1.0, bendA = 90.0, miterA1 =0.0,miterA2 =0.0, flipped = False, unfold = False, extLen = 10.0, gap1 = 0.0, gap2 = 0.0,  
             reliefType = "Rectangle", reliefW = 0.5, reliefD = 1.0, extend1 = 0.0, extend2 = 0.0, kfactor = 0.45, selFaceNames = '', MainObject = None):
             
@@ -114,7 +126,8 @@ def smBend(bendR = 1.0, bendA = 90.0, miterA1 =0.0,miterA2 =0.0, flipped = False
   
   resultSolid = MainObject.Shape
   for selFaceName in selFaceNames:
-    selFace = MainObject.Shape.getElement(selFaceName)
+    selItem = MainObject.Shape.getElement(selFaceName)
+    selFace = smFace(selItem, MainObject.Shape)
   
     # find the narrow edge
     thk = 999999.0
