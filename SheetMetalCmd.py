@@ -397,7 +397,7 @@ class SMViewProviderFlat:
 
 
 class SMBendWallTaskPanel:
-    '''A TaskPanel for the facebinder'''
+    '''A TaskPanel for the Sheetmetal Selection'''
     def __init__(self):
         
         self.obj = None
@@ -408,7 +408,7 @@ class SMBendWallTaskPanel:
         self.grid.setObjectName("grid")
         self.title = QtGui.QLabel(self.form)
         self.grid.addWidget(self.title, 0, 0, 1, 2)
-        self.title.setText("Select new face(s) and press Update")
+        self.title.setText("Select new face(s)/Edges(s) and press Update")
 
         # tree
         self.tree = QtGui.QTreeWidget(self.form)
@@ -459,7 +459,7 @@ class SMBendWallTaskPanel:
             if sel.HasSubObjects:
                 obj = sel.Object
                 for elt in sel.SubElementNames:
-                    if "Face" in elt:
+                    if "Face" in elt  or "Edge" in elt:
                         face = self.obj.baseObject
                         found = False
                         if (face[0] == obj.Name):
@@ -522,7 +522,7 @@ class AddWallCommandClass():
       return False
     selobj = Gui.Selection.getSelection()[0]
     for selFace in Gui.Selection.getSelectionEx()[0].SubObjects:
-      if type(selFace) != Part.Face:
+      if type(selFace) == Part.Vertex :
         return False
     return True
 
@@ -610,7 +610,7 @@ class SMExtrudeCommandClass():
       return False
     selobj = Gui.Selection.getSelection()[0]
     for selFace in Gui.Selection.getSelectionEx()[0].SubObjects:
-      if type(selFace) != Part.Face:
+      if type(selFace) == Part.Vertex :
         return False
     return True
 
