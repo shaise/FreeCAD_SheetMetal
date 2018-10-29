@@ -106,7 +106,7 @@ def smRestrict(var, fromVal, toVal):
       return toVal
     return var
 
- def smFace(selItem, obj) :
+def smFace(selItem, obj) :
   # find face
   if type(selItem) == Part.Edge :
     Facelist = obj.ancestorsOfType(selItem, Part.Face)
