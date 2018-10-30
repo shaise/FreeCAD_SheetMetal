@@ -1016,9 +1016,14 @@ class SMExtrudeWall:
     obj.Proxy = self
 
   def execute(self, fp):
+
+    # pass selected object shape
+    Main_Object = fp.baseObject[0].Shape.copy()
+    face = fp.baseObject[1]
+
     #s = smExtrude(extLength = fp.length.Value, selFaceNames = self.selFaceNames, selObjectName = self.selObjectName)
-    s = smBend(bendA = 0.0, extLen = fp.length.Value, gap1 = fp.gap1.Value, gap2 = fp.gap2.Value, reliefW = 0.0,
-                selFaceNames = fp.baseObject[1], MainObject = fp.baseObject[0])
+    s,f = smBend(bendA = 0.0, extLen = fp.length.Value, gap1 = fp.gap1.Value, gap2 = fp.gap2.Value, reliefW = 0.0,
+                selFaceNames = face, MainObject = Main_Object)
     fp.Shape = s
     
 
