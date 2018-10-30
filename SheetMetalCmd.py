@@ -147,7 +147,7 @@ def smGetFace(Faces, obj) :
       face_common = face.common(Face)
       if face_common.Faces :
         faceList.append('Face'+str(i+1))
-  print(faceList)
+  #print(faceList)
   return faceList
 
 def smMiter(bendA = 90.0, miterA1 = 0.0, miterA2 = 0.0, flipped = False, extLen = 10.0, gap1 = 0.0, gap2 = 0.0,
@@ -293,7 +293,7 @@ def smMiter(bendA = 90.0, miterA1 = 0.0, miterA2 = 0.0, flipped = False, extLen 
             elif abs(dist2) < abs(dist1) :
               miterA2List[j] = abs(90-Angle) *-1
 
-  print(miterA1List, miterA2List)
+  #print(miterA1List, miterA2List)
   return miterA1List, miterA2List
 
 def smBend(bendR = 1.0, bendA = 90.0, miterA1 = 0.0,miterA2 = 0.0, BendType = "Material Outside", flipped = False, unfold = False, 
@@ -665,11 +665,11 @@ class SMBendWall:
     fp.miterangle2.Value = smRestrict(fp.miterangle2.Value, -80.0, 80.0)
 
     # pass selected object shape
-    Main_Object = fp.baseObject[0].Shape
+    Main_Object = fp.baseObject[0].Shape.copy()
     face = fp.baseObject[1]
     bendAList = [fp.angle.Value]
     LengthList = [fp.length.Value]
-    print face
+    #print face
 
     if fp.Sketch :
       WireList = fp.Sketch.Shape.Wires[0]
