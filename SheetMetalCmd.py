@@ -301,8 +301,19 @@ def smBend(bendR = 1.0, bendA = 90.0, miterA1 = 0.0,miterA2 = 0.0, BendType = "M
             extend2 = 0.0, kfactor = 0.45, RelifFactor = 0.7, UseRelifFactor = False, selFaceNames = '', MainObject = None, 
             automiter = True, sketch = None ):
 
-  miterA1List, miterA2List = smMiter(bendA = bendA, miterA1 = miterA1, miterA2 = miterA2, flipped = flipped, extLen = extLen, gap1 = gap1, 
+  # if sketch is as wall 
+  sketches = False
+  if sketch :
+    if sketch.Shape.Wires[0].isClosed() :
+      sketches = True
+    else :
+      pass
+
+  if not(sketches) :
+    miterA1List, miterA2List = smMiter(bendA = bendA, miterA1 = miterA1, miterA2 = miterA2, flipped = flipped, extLen = extLen, gap1 = gap1, 
                                       gap2 = gap2, selFaceNames = selFaceNames, automiter = automiter, MainObject = MainObject)
+  else :
+    miterA1List, miterA2List = ( [0.0],[0.0])
 
   thk_faceList = []
   resultSolid = MainObject
@@ -664,9 +675,7 @@ class SMBendWall:
     fp.miterangle1.Value = smRestrict(fp.miterangle1.Value, -80.0, 80.0)
     fp.miterangle2.Value = smRestrict(fp.miterangle2.Value, -80.0, 80.0)
 
-    # pass selected object shape
-    Main_Object = fp.baseObject[0].Shape.copy()
-    face = fp.baseObject[1]
+    # get LengthList, bendAList
     bendAList = [fp.angle.Value]
     LengthList = [fp.length.Value]
     #print face
@@ -698,12 +707,20 @@ class SMBendWall:
               angle = sign*math.degrees(angle_rad)
             bendAList.append(angle)
           i += 1
+      else :
+        if fp.Sketch.Support :
+          fp.baseObject = (fp.Sketch.Support[0][0], fp.Sketch.Support[0][1] )
+        LengthList = [10.0]
       if fp.sketchinvert :
         LengthList.reverse()
         bendAList.reverse()
     fp.LengthList = LengthList
     fp.bendAList = bendAList
     #print(LengthList, bendAList)
+
+    # pass selected object shape
+    Main_Object = fp.baseObject[0].Shape.copy()
+    face = fp.baseObject[1]
 
     for i in range(len(LengthList)) :
       s, f = smBend(bendR = fp.radius.Value, bendA = bendAList[i], miterA1 = fp.miterangle1.Value, miterA2 = fp.miterangle2.Value, BendType = fp.BendType,  
@@ -759,6 +776,8 @@ class SMViewProviderTree:
     objs = []
     if hasattr(self.Object,"baseObject"):
       objs.append(self.Object.baseObject[0])
+    if hasattr(self.Object,"Sketch"):
+      objs.append(self.Object.Sketch)
     return objs
  
   def getIcon(self):
