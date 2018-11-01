@@ -687,6 +687,7 @@ class SMBendWall:
 
     if (not hasattr(fp,"BendType")):
       fp.addProperty("App::PropertyEnumeration", "BendType", "Parameters","Bend Type").BendType = ["Material Outside", "Material Inside", "Thickness Outside", "Offset"]
+      fp.addProperty("App::PropertyDistance","offset","ParametersEx","offset Bend").offset = 0.0
 
     if (not hasattr(fp,"RelifFactor")):
       fp.addProperty("App::PropertyBool","UseRelifFactor","ReliefParameters","Use Relif Factor").UseRelifFactor = False
