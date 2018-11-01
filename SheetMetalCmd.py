@@ -150,7 +150,7 @@ def smGetFace(Faces, obj) :
   #print(faceList)
   return faceList
 
-def smMiter(bendA = 90.0, miterA1 = 0.0, miterA2 = 0.0, flipped = False, extLen = 10.0, gap1 = 0.0, gap2 = 0.0,
+def smMiter(bendR = 1.0, bendA = 90.0, miterA1 = 0.0, miterA2 = 0.0, flipped = False, extLen = 10.0, gap1 = 0.0, gap2 = 0.0,
             automiter = True, selFaceNames = '', MainObject = None):
 
   if not(automiter) :
@@ -337,7 +337,7 @@ def smBend(bendR = 1.0, bendA = 90.0, miterA1 = 0.0,miterA2 = 0.0, BendType = "M
       pass
 
   if not(sketches) :
-    miterA1List, miterA2List, gap1List, gap2List = smMiter(bendA = bendA, miterA1 = miterA1, miterA2 = miterA2, flipped = flipped, extLen = extLen, gap1 = gap1, 
+    miterA1List, miterA2List, gap1List, gap2List = smMiter(bendR = bendR, bendA = bendA, miterA1 = miterA1, miterA2 = miterA2, flipped = flipped, extLen = extLen, gap1 = gap1, 
                                       gap2 = gap2, selFaceNames = selFaceNames, automiter = automiter, MainObject = MainObject)
   else :
     miterA1List, miterA2List, gap1List, gap2List = ( [0.0],[0.0],[gap1],[gap2])
