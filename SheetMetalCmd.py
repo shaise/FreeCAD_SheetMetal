@@ -79,7 +79,7 @@ def smMakeRelifFace(edge, dir, gap, reliefW, reliefD, reliefType):
     w = Part.Wire([e1,e2,e3,e4])
     return Part.Face(w)
  
-def smMakeFace(edge, dir, gap1, gap2, extLen, angle1=0.0, angle2=0.0):
+def smMakeFace(edge, dir, extLen, gap1 = 0.0, gap2 = 0.0, angle1 = 0.0, angle2 = 0.0):
     len1 = extLen * math.tan(math.radians(angle1))
     len2 = extLen * math.tan(math.radians(angle2))
 
