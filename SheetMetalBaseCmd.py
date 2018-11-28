@@ -168,8 +168,8 @@ class AddBaseCommandClass():
 
   def GetResources(self):
     return {'Pixmap'  : os.path.join( iconPath , 'AddBase.svg') , # the name of a svg file available in the resources
-            'MenuText': "Make Wall" ,
-            'ToolTip' : "Extends a wall from a side face of metal sheet"}
+            'MenuText': "Make Base Wall" ,
+            'ToolTip' : "Create a sheetmetal wall from a sketch"}
  
   def Activated(self):
     doc = FreeCAD.ActiveDocument
