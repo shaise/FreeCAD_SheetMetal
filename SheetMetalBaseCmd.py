@@ -178,8 +178,8 @@ class AddBaseCommandClass():
     selobj = Gui.Selection.getSelectionEx()[0].Object
     if hasattr(view,'getActiveObject'):
       activeBody = view.getActiveObject('pdbody')
-    if not smIsOperationLegal(activeBody, selobj):
-        return
+#    if not smIsOperationLegal(activeBody, selobj):
+#        return
     doc.openTransaction("BaseBend")
     if activeBody is None or not smIsSketchObject(selobj):
       a = doc.addObject("Part::FeaturePython","BaseBend")
