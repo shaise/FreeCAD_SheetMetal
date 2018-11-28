@@ -43,12 +43,12 @@ def smBelongToBody(item, body):
             return True
     return False
     
-def smIsPartDesign(obj):
+def smIsSketchObject(obj):
     return str(obj).find("<PartDesign::") == 0
         
 def smIsOperationLegal(body, selobj):
     #FreeCAD.Console.PrintLog(str(selobj) + " " + str(body) + " " + str(smBelongToBody(selobj, body)) + "\n")
-    if smIsPartDesign(selobj) and not smBelongToBody(selobj, body):
+    if smIsSketchObject(selobj) and not smBelongToBody(selobj, body):
         smWarnDialog("The selected geometry does not belong to the active Body.\nPlease make the container of this item active by\ndouble clicking on it.")
         return False
     return True    
@@ -180,11 +180,17 @@ class AddBaseCommandClass():
       activeBody = view.getActiveObject('pdbody')
     if not smIsOperationLegal(activeBody, selobj):
         return
-    doc.openTransaction("Base")
-    if activeBody is None or not smIsPartDesign(selobj):
-      a = doc.addObject("Part::FeaturePython","Base")
+    doc.openTransaction("BaseBend")
+    if activeBody is None or not smIsSketchObject(selobj):
+      a = doc.addObject("Part::FeaturePython","BaseBend")
       SMBaseBend(a)
       SMBaseViewProvider(a.ViewObject)
+    else:
+      #FreeCAD.Console.PrintLog("found active body: " + activeBody.Name)
+      a = doc.addObject("PartDesign::FeaturePython","BaseBend")
+      SMBaseBend(a)
+      SMBaseViewProvider(a.ViewObject)
+      activeBody.addObject(a)    
     doc.recompute()
     doc.commitTransaction()
     return
