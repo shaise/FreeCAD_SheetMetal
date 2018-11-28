@@ -24,6 +24,7 @@
 ###################################################################################
 
 from FreeCAD import Gui
+from PySide import QtCore, QtGui
 import DraftGeomUtils
 
 import FreeCAD, FreeCADGui, Part, os
