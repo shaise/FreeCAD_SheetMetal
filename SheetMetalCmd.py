@@ -398,6 +398,10 @@ def smBend(bendR = 1.0, bendA = 90.0, miterA1 = 0.0,miterA2 = 0.0, BendType = "M
       if not(Cface.isSame(selFace)) :
         break
 
+    # Produce Offset Edge
+    if offset > 0.0 :
+      lenEdge.translate(selFace.normalAt(0,0) * offset)
+
     # main Length Edge
     MlenEdge = lenEdge
     leng = MlenEdge.Length
@@ -1017,6 +1021,8 @@ class AddWallCommandClass():
     if len(Gui.Selection.getSelection()) < 1 or len(Gui.Selection.getSelectionEx()[0].SubElementNames) < 1:
       return False
     selobj = Gui.Selection.getSelection()[0]
+    if str(type(selobj)) == "<type 'Sketcher.SketchObject'>":
+      return False
     for selFace in Gui.Selection.getSelectionEx()[0].SubObjects:
       if type(selFace) == Part.Vertex :
         return False
@@ -1110,6 +1116,8 @@ class SMExtrudeCommandClass():
     if len(Gui.Selection.getSelection()) < 1 or len(Gui.Selection.getSelectionEx()[0].SubElementNames) < 1:
       return False
     selobj = Gui.Selection.getSelection()[0]
+    if str(type(selobj)) == "<type 'Sketcher.SketchObject'>":
+      return False
     for selFace in Gui.Selection.getSelectionEx()[0].SubObjects:
       if type(selFace) == Part.Vertex :
         return False
