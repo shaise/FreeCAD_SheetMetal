@@ -1078,6 +1078,7 @@ class SMExtrudeWall:
     #s = smExtrude(extLength = fp.length.Value, selFaceNames = self.selFaceNames, selObjectName = self.selObjectName)
     s,f = smBend(bendA = 0.0, extLen = fp.length.Value, gap1 = fp.gap1.Value, gap2 = fp.gap2.Value, reliefW = 0.0,
                 selFaceNames = face, MainObject = Main_Object)
+    Gui.ActiveDocument.getObject(fp.baseObject[0].Name).Visibility = False
     fp.Shape = s
     
 
