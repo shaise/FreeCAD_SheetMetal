@@ -45,7 +45,7 @@ def smBelongToBody(item, body):
     return False
     
 def smIsSketchObject(obj):
-    return str(obj).find("<PartDesign::") == 0
+    return str(obj).find("<Sketcher::") == 0
         
 def smIsOperationLegal(body, selobj):
     #FreeCAD.Console.PrintLog(str(selobj) + " " + str(body) + " " + str(smBelongToBody(selobj, body)) + "\n")
