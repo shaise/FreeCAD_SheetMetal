@@ -128,6 +128,7 @@ class SMBendWall:
     obj.addProperty("App::PropertyDistance","gap2","Parameters","Gap from center").gap2 = 0.0
     obj.addProperty("App::PropertyDistance","gap3","Parameters","Gap from center").gap3 = 0.0
     obj.addProperty("App::PropertyBool","flip","Parameters","Flip Tool direction").flip = False
+    obj.addProperty("App::PropertyBool","SupressFeature","Parameters","Supress Forming Feature").SupressFeature = False    
     obj.addProperty("App::PropertyAngle","angle","Parameters","Tool Position angle").angle = 0.0
     obj.addProperty("App::PropertyDistance","thickness","Parameters","thickness of sheetmetal").thickness = -1.0
     obj.addProperty("App::PropertyLinkSub", "baseObject", "Parameters", "Base object").baseObject = (selobj[0].Object, selobj[0].SubElementNames)
@@ -147,7 +148,10 @@ class SMBendWall:
     tool_faces = [tool.Shape.getElement(fp.toolObject[1][i]) for i in range(len(fp.toolObject[1]))]
     point = FreeCAD.Vector(fp.gap1.Value, fp.gap2.Value, fp.gap3.Value)
 
-    a = makeforming(tool, base, base_face, thk, tool_faces, point, fp.angle.Value)
+    if not(fp.SupressFeature) :
+      a = makeforming(tool, base, base_face, thk, tool_faces, point, fp.angle.Value)
+    else :
+      a = base.Shape
     fp.Shape = a
     Gui.ActiveDocument.getObject(fp.baseObject[0].Name).Visibility = False
 
