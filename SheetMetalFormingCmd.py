@@ -124,9 +124,7 @@ class SMBendWall:
     '''"Add Forming Wall" '''
     selobj = Gui.Selection.getSelectionEx()
 
-    obj.addProperty("App::PropertyDistance","gap1","Parameters","Gap from center").gap1 = 0.0
-    obj.addProperty("App::PropertyDistance","gap2","Parameters","Gap from center").gap2 = 0.0
-    obj.addProperty("App::PropertyDistance","gap3","Parameters","Gap from center").gap3 = 0.0
+    obj.addProperty("App::PropertyVectorDistance","offset","Parameters","offset from center")
     obj.addProperty("App::PropertyBool","flip","Parameters","Flip Tool direction").flip = False
     obj.addProperty("App::PropertyBool","SupressFeature","Parameters","Supress Forming Feature").SupressFeature = False    
     obj.addProperty("App::PropertyAngle","angle","Parameters","Tool Position angle").angle = 0.0
@@ -146,10 +144,9 @@ class SMBendWall:
       thk = fp.thickness.Value
     tool = fp.toolObject[0]
     tool_faces = [tool.Shape.getElement(fp.toolObject[1][i]) for i in range(len(fp.toolObject[1]))]
-    point = FreeCAD.Vector(fp.gap1.Value, fp.gap2.Value, fp.gap3.Value)
 
     if not(fp.SupressFeature) :
-      a = makeforming(tool, base, base_face, thk, tool_faces, point, fp.angle.Value)
+      a = makeforming(tool, base, base_face, thk, tool_faces, fp.offset, fp.angle.Value)
     else :
       a = base.Shape
     fp.Shape = a
