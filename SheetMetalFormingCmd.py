@@ -125,7 +125,7 @@ class SMBendWall:
     selobj = Gui.Selection.getSelectionEx()
 
     obj.addProperty("App::PropertyVectorDistance","offset","Parameters","offset from center")
-    obj.addProperty("App::PropertyBool","flip","Parameters","Flip Tool direction").flip = False
+#    obj.addProperty("App::PropertyBool","flip","Parameters","Flip Tool direction").flip = False
     obj.addProperty("App::PropertyBool","SupressFeature","Parameters","Supress Forming Feature").SupressFeature = False    
     obj.addProperty("App::PropertyAngle","angle","Parameters","Tool Position angle").angle = 0.0
     obj.addProperty("App::PropertyDistance","thickness","Parameters","thickness of sheetmetal").thickness = -1.0
