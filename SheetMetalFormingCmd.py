@@ -267,6 +267,20 @@ class SMFormingWallTaskPanel:
           item.setText(0,f[0].Name)
           item.setIcon(0,QtGui.QIcon(":/icons/Tree_Part.svg"))
           item.setText(1,f[1][0])
+
+        f = self.obj.toolObject
+        if isinstance(f[1],list):
+          for subf in f[1]:
+            #FreeCAD.Console.PrintLog("item: " + subf + "\n")
+            item = QtGui.QTreeWidgetItem(self.tree)
+            item.setText(0,f[0].Name)
+            item.setIcon(0,QtGui.QIcon(":/icons/Tree_Part.svg"))
+            item.setText(1,subf)  
+        else:
+          item = QtGui.QTreeWidgetItem(self.tree)
+          item.setText(0,f[0].Name)
+          item.setIcon(0,QtGui.QIcon(":/icons/Tree_Part.svg"))
+          item.setText(1,f[1][0])
       self.retranslateUi(self.form)
 
     def updateElement(self):
@@ -288,6 +302,24 @@ class SMFormingWallTaskPanel:
                     found = True
               if not found:
                 self.obj.baseObject = (sel.Object, sel.SubElementNames)
+
+        sel = FreeCADGui.Selection.getSelectionEx()[1]
+        if sel.HasSubObjects:
+          obj = sel.Object
+          for elt in sel.SubElementNames:
+            if "Face" in elt:
+              face = self.obj.toolObject
+              found = False
+              if (face[0] == obj.Name):
+                if isinstance(face[1],tuple):
+                  for subf in face[1]:
+                    if subf == elt:
+                      found = True
+                else:
+                  if (face[1][0] == elt):
+                    found = True
+              if not found:
+                self.obj.toolObject = (sel.Object, sel.SubElementNames)
         self.update()
 
     def accept(self):
