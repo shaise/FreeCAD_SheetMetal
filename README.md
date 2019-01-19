@@ -24,7 +24,7 @@ Starting from FreeCAD 0.17 it can be installed via the [Addon Manager](https://g
 ** Added Relief factor
 ** Added Material Inside, thk inside, Offset options
 * V0.2.04 21 Sep 2018:  Fix K-Factor bug
-* V0.2.03 20 Sep 2018:  Merge easyw PR: Add seperate color for inner sketch lines. (issue #46). Change Gui layout
+* V0.2.03 20 Sep 2018:  Merge easyw PR: Add separate color for inner sketch lines. (issue #46). Change Gui layout
 * V0.2.02 15 Sep 2018:  Add color selection for unfold sketches (issue #41)
 * V0.2.01 15 Sep 2018:  Fix bug when not generating sketch (issue #42). Support separate color for bend lines (issue #41)
 * V0.2.00 04 Sep 2018:  Make SheetMetal compatible with Python 3 and QT 5
