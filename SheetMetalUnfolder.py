@@ -420,11 +420,11 @@ class SheetTree(object):
     '''
     
     # How to begin?
-    # searching for all faces, that have two vertices in common with 
+    # searching for all faces that have two vertices in common with 
     # an edge from the list should give the sheet edge.
-    # But we also need to look at the sheet edge, in order to not claim
+    # But, we also need to look at the sheet edge, in order to not claim
     # faces from the next node!
-    # Then we have to treat thoses faces, that belongs to more than one
+    # Then we have to treat those faces that belong to more than one
     # node. Those faces needs to be cut and the face list needs to be updated.
     # look also at the number of wires of the top face. More wires will
     # indicate a hole or a feature.
@@ -897,7 +897,7 @@ class SheetTree(object):
       axis_line = Part.makeLine(s_Posi.add(ext_Vec), s_Posi)
       #Part.show(axis_line, 'axis_line'+str(face_idx+1))
       
-      # nead a mean point of the face to avoid false counter faces
+      # need a mean point of the face to avoid false counter faces
       faceMiddle = Base.Vector(0.0,0.0,0.0) # calculating a mean vector
       for Vvec in self.__Shape.Faces[face_idx].OuterWire.Vertexes:
           faceMiddle = faceMiddle.add(Vvec.Point)
@@ -919,7 +919,7 @@ class SheetTree(object):
               counter_found = False
   
         if counter_found:
-          # nead a mean point of the face to avoid false counter faces
+          # need a mean point of the face to avoid false counter faces
           counterMiddle = Base.Vector(0.0,0.0,0.0) # calculating a mean vector
           for Vvec in self.__Shape.Faces[i].OuterWire.Vertexes:
               counterMiddle = counterMiddle.add(Vvec.Point)

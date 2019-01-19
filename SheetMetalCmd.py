@@ -212,7 +212,7 @@ def smMiter(bendR = 1.0, bendA = 90.0, miterA1 = 0.0, miterA2 = 0.0, flipped = F
         bendA = -bendA
         flipped = not flipped
 
-      # to get tranlated face
+      # to get translated face
       transP = FaceDir * (bendR + thk)
 
       # narrow the wall if we have gaps
