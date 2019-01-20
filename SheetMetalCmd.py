@@ -647,8 +647,8 @@ class SMBendWall:
     obj.addProperty("App::PropertyEnumeration", "BendType", "Parameters","Relief Type").BendType = ["Material Outside", "Material Inside", "Thickness Outside", "Offset"]
     obj.addProperty("App::PropertyAngle","angle","Parameters","Bend angle").angle = 90.0
     obj.addProperty("App::PropertyEnumeration", "reliefType", "ParametersRelief","Relief Type").reliefType = ["Rectangle", "Round"]
-    obj.addProperty("App::PropertyBool","UseRelifFactor","ParametersRelief","Use Relief Factor").UseRelifFactor = False
-    obj.addProperty("App::PropertyFloat","RelifFactor","ParametersRelief","Relief Factor").RelifFactor = 0.7
+    obj.addProperty("App::PropertyBool","UseReliefFactor","ParametersRelief","Use Relief Factor").UseReliefFactor = False
+    obj.addProperty("App::PropertyFloat","ReliefFactor","ParametersRelief","Relief Factor").ReliefFactor = 0.7
     obj.addProperty("App::PropertyLength","reliefw","ParametersRelief","Relief width").reliefw = 0.8
     obj.addProperty("App::PropertyLength","reliefd","ParametersRelief","Relief depth").reliefd = 1.0
     obj.addProperty("App::PropertyLinkSub", "baseObject", "Parameters", "Base object").baseObject = (selobj.Object, selobj.SubElementNames)
@@ -677,7 +677,7 @@ class SMBendWall:
       fp.addProperty("App::PropertyBool","AutoMiter","ParametersEx","Auto Miter").AutoMiter = True
 
     if (not hasattr(fp,"reliefType")):
-      fp.addProperty("App::PropertyEnumeration", "reliefType", "Parameters","Relief Type").reliefType = ["Rectangle", "Round"]
+      fp.addProperty("App::PropertyEnumeration", "reliefType", "ParametersRelief","Relief Type").reliefType = ["Rectangle", "Round"]
 
     if (not hasattr(fp,"extend1")):
       fp.addProperty("App::PropertyDistance","extend1","Parameters","extend from left side").extend1 = 0.0
@@ -693,9 +693,9 @@ class SMBendWall:
       fp.addProperty("App::PropertyEnumeration", "BendType", "Parameters","Bend Type").BendType = ["Material Outside", "Material Inside", "Thickness Outside", "Offset"]
       fp.addProperty("App::PropertyDistance","offset","ParametersEx","offset Bend").offset = 0.0
 
-    if (not hasattr(fp,"RelifFactor")):
-      fp.addProperty("App::PropertyBool","UseRelifFactor","ReliefParameters","Use Relief Factor").UseRelifFactor = False
-      fp.addProperty("App::PropertyFloat","RelifFactor","ReliefParameters","Relief Factor").RelifFactor = 0.7
+    if (not hasattr(fp,"ReliefFactor")):
+      fp.addProperty("App::PropertyBool","UseReliefFactor","ParametersRelief","Use Relief Factor").UseReliefFactor = False
+      fp.addProperty("App::PropertyFloat","ReliefFactor","ParametersRelief","Relief Factor").ReliefFactor = 0.7
 
     if (not hasattr(fp,"Sketch")):
       fp.addProperty("App::PropertyLink", "Sketch", "ParametersEx2", "Sketch object")
@@ -759,7 +759,7 @@ class SMBendWall:
       s, f = smBend(bendR = fp.radius.Value, bendA = bendAList[i], miterA1 = fp.miterangle1.Value, miterA2 = fp.miterangle2.Value, BendType = fp.BendType,  
                     flipped = fp.invert, unfold = fp.unfold, extLen = LengthList[i], gap1 = fp.gap1.Value, gap2 = fp.gap2.Value, reliefType = fp.reliefType,  
                     reliefW = fp.reliefw.Value, reliefD = fp.reliefd.Value, extend1 = fp.extend1.Value, extend2 = fp.extend2.Value, kfactor = fp.kfactor,
-                    offset = fp.offset.Value, ReliefFactor = fp.RelifFactor, UseReliefFactor = fp.UseRelifFactor, automiter = fp.AutoMiter, 
+                    offset = fp.offset.Value, ReliefFactor = fp.ReliefFactor, UseReliefFactor = fp.UseReliefFactor, automiter = fp.AutoMiter, 
                     selFaceNames = face, MainObject = Main_Object, sketch = fp.Sketch)
       faces = smGetFace(f, s)
       face = faces
