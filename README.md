@@ -15,6 +15,7 @@ http://theseger.com/projects/2015/06/sheet-metal-addon-for-freecad/
 Starting from FreeCAD 0.17 it can be installed via the [Addon Manager](https://github.com/FreeCAD/FreeCAD-addons) (from Tools menu)
 
 #### Release notes: 
+* V0.2.22 24 Jan 2019:  Fix some typos, Issue #54
 * V0.2.21 20 Jan 2019:  Fix some typos, Issue #52
 * V0.2.20 10 Jan 2019:  Added sheetmetal generation from base wire by jaisejames. Thank you!
 * V0.2.10 01 Nov 2018:  Merge new features by jaisejames. Thank you!

@@ -827,7 +827,7 @@ class SheetTree(object):
       # auto (original) K factor
       newNode.k_Factor = (0.65 + 0.5*math.log10(innerRadius/self.__thickness))
     else:
-      newNode.k_Factor = manKFactor * 2.0
+      newNode.k_Factor = manKFactor # revert to 1/2 k_factor standard * 2.0
     if newNode.k_Factor < 0:
       newNode.k_Factor = 0
     FreeCAD.Console.PrintLog(newNode.bend_dir + " Face"+ str(newNode.idx+1)+ " k-factor: "+ str(newNode.k_Factor) + "\n")

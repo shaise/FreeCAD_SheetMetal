@@ -614,7 +614,7 @@ def smBend(bendR = 1.0, bendA = 90.0, miterA1 = 0.0,miterA2 = 0.0, BendType = "M
     else :
       if bendA > 0.0 :
         # create bend
-        unfoldLength = ( bendR + kfactor * thk / 2.0 ) * bendA * math.pi / 180
+        unfoldLength = ( bendR + kfactor * thk / 2.0 ) * bendA * math.pi / 180.0
         # narrow the wall if we have gaps
         unfoldFace = smMakeFace(lenEdge, thkDir, thk, gap1, gap2)
         if unfoldFace.normalAt(0,0) != FaceDir :
