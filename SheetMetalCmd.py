@@ -1034,26 +1034,25 @@ Gui.addCommand('SMMakeWall',AddWallCommandClass())
 # Extrude
 ###########################################################################################
 
-def smExtrude(extLength = 10.0, selFaceNames = '', selObjectName = ''):
+def smExtrude(extLength = 10.0, selFaceNames = '', selObject = ''):
   
 #  selFace = Gui.Selection.getSelectionEx()[0].SubObjects[0]
 #  selObjectName = Gui.Selection.getSelection()[0].Name
   AAD = FreeCAD.ActiveDocument
-  MainObject = AAD.getObject( selObjectName )
-  finalShape = MainObject.Shape
+  FreeCAD.Console.PrintLog("extface:" + str(selObject) + "\n")
   for selFaceName in selFaceNames:
-    selFace = AAD.getObject(selObjectName).Shape.getElement(selFaceName)
+    selFace = selObject.getElement(selFaceName)
 
     # extrusion direction
     V_extDir = selFace.normalAt( 0,0 )
 
     # extrusion
     wallFace = selFace.extrude( V_extDir*extLength )
-    finalShape = finalShape.fuse( wallFace )
+    finalShape = selObject.fuse( wallFace )
   
   #finalShape = finalShape.removeSplitter()
   #finalShape = Part.Solid(finalShape.childShapes()[0])  
-  Gui.ActiveDocument.getObject( selObjectName ).Visibility = False
+  #Gui.ActiveDocument.getObject( selObjectName ).Visibility = False
   return finalShape
 
 
@@ -1075,8 +1074,10 @@ class SMExtrudeWall:
     Main_Object = fp.baseObject[0].Shape.copy()
     face = fp.baseObject[1]
 
-    #s = smExtrude(extLength = fp.length.Value, selFaceNames = self.selFaceNames, selObjectName = self.selObjectName)
-    s,f = smBend(bendA = 0.0, extLen = fp.length.Value, gap1 = fp.gap1.Value, gap2 = fp.gap2.Value, reliefW = 0.0,
+    if fp.gap1.Value == 0.0 and fp.gap2.Value == 0.0:
+      s = smExtrude(extLength = fp.length.Value, selFaceNames = face, selObject = Main_Object)
+    else:
+      s,f = smBend(bendA = 0.0, extLen = fp.length.Value, gap1 = fp.gap1.Value, gap2 = fp.gap2.Value, reliefW = 0.0,
                 selFaceNames = face, MainObject = Main_Object)
     Gui.ActiveDocument.getObject(fp.baseObject[0].Name).Visibility = False
     fp.Shape = s
