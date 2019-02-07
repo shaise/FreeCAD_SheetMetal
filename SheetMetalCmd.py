@@ -1039,7 +1039,6 @@ def smExtrude(extLength = 10.0, selFaceNames = '', selObject = ''):
 #  selFace = Gui.Selection.getSelectionEx()[0].SubObjects[0]
 #  selObjectName = Gui.Selection.getSelection()[0].Name
   AAD = FreeCAD.ActiveDocument
-  FreeCAD.Console.PrintLog("extface:" + str(selObject) + "\n")
   for selFaceName in selFaceNames:
     selFace = selObject.getElement(selFaceName)
 
