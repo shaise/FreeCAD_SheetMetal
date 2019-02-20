@@ -44,7 +44,8 @@ class SMWorkbench (Workbench):
         import SheetMetalCmd # import here all the needed files that create your FreeCAD commands
         import SheetMetalUnfolder
         import SheetMetalBaseCmd
-        self.list = ["SMBase", "SMMakeWall", "SMExtrudeFace", "SMUnfold"] # A list of command names created in the line above
+        import SheetMetalFoldWall
+        self.list = ["SMBase", "SMMakeWall", "SMExtrudeFace", "SMUnfold", "SMFoldWall"] # A list of command names created in the line above
         self.appendToolbar("My Commands",self.list) # creates a new toolbar with your commands
         # self.appendMenu("My New Menu",self.list) # creates a new menu
         # self.appendMenu(["An existing Menu","My submenu"],self.list) # appends a submenu to an existing menu
