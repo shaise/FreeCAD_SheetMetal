@@ -162,8 +162,9 @@ def smFold(bendR = 1.0, bendA = 90.0, kfactor = 0.45, invertbend = False, flippe
       solidlist = [cutsolid1, cutsolid2, offsetsolid]
       resultsolid = BOPTools.JoinAPI.connect(solidlist)
   
-#    else :
-#      if bendA > 0.0 :
+  else :
+    if bendlinesketch and bendA > 0.0 :
+      resultsolid = FoldShape
 
   Gui.ActiveDocument.getObject(MainObject.Name).Visibility = False
   Gui.ActiveDocument.getObject(bendlinesketch.Name).Visibility = False
@@ -181,7 +182,7 @@ class SMFoldWall:
     obj.addProperty("App::PropertyBool","invertbend","Parameters","Invert bend direction").invertbend = False
     obj.addProperty("App::PropertyFloatConstraint","kfactor","Parameters","Gap from left side").kfactor = (0.5,0.0,1.0,0.01)
     obj.addProperty("App::PropertyBool","invert","Parameters","Invert bend direction").invert = False
-    obj.addProperty("App::PropertyBool","unfold","Parameters1","Invert bend direction").unfold = False
+    obj.addProperty("App::PropertyBool","unfold","Parameters","Invert bend direction").unfold = False
     obj.Proxy = self
 
   def execute(self, fp):
@@ -235,6 +236,49 @@ class SMFoldViewProvider:
   def getIcon(self):
     return os.path.join( iconPath , 'AddFoldWall.svg')
 
+class SMFoldPDViewProvider:
+  "A View provider that nests children objects under the created one"
+      
+  def __init__(self, obj):
+    obj.Proxy = self
+    self.Object = obj.Object
+      
+  def attach(self, obj):
+    self.Object = obj.Object
+    return
+
+  def updateData(self, fp, prop):
+    return
+
+  def getDisplayModes(self,obj):
+    modes=[]
+    return modes
+
+  def setDisplayMode(self,mode):
+    return mode
+
+  def onChanged(self, vp, prop):
+    return
+
+  def __getstate__(self):
+    #        return {'ObjectName' : self.Object.Name}
+    return None
+
+  def __setstate__(self,state):
+    if state is not None:
+      import FreeCAD
+      doc = FreeCAD.ActiveDocument #crap
+      self.Object = doc.getObject(state['ObjectName'])
+
+  def claimChildren(self):
+    objs = []
+    if hasattr(self.Object,"BendLine"):
+      objs.append(self.Object.BendLine)
+    return objs
+ 
+  def getIcon(self):
+    return os.path.join( iconPath , 'AddFoldWall.svg')
+
 class AddFoldWallCommandClass():
   """Add Wall command"""
 
@@ -261,7 +305,7 @@ class AddFoldWallCommandClass():
       #FreeCAD.Console.PrintLog("found active body: " + activeBody.Name)
       a = doc.addObject("PartDesign::FeaturePython","Fold")
       SMFoldWall(a)
-      SMFoldViewProvider(a.ViewObject)
+      SMFoldPDViewProvider(a.ViewObject)
       activeBody.addObject(a)
     doc.recompute()
     doc.commitTransaction()
