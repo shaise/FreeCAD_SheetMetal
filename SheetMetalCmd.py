@@ -151,18 +151,20 @@ def smGetFace(Faces, obj) :
   return faceList
 
 def smMiter(bendR = 1.0, bendA = 90.0, miterA1 = 0.0, miterA2 = 0.0, flipped = False, extLen = 10.0, gap1 = 0.0, gap2 = 0.0,
-            automiter = True, selFaceNames = '', MainObject = None):
+            reliefD = 1.0, automiter = True, selFaceNames = '', MainObject = None):
 
   if not(automiter) :
     miterA1List = [miterA1 for selFaceName in selFaceNames]
     miterA2List = [miterA2 for selFaceName in selFaceNames]
     gap1List = [gap1 for selFaceName in selFaceNames]
     gap2List = [gap2 for selFaceName in selFaceNames]
+    reliefDList = [reliefD for selFaceName in selFaceNames]
   else :
     miterA1List = [0.0 for selFaceName in selFaceNames]
     miterA2List = [0.0 for selFaceName in selFaceNames]
     gap1List = [gap1 for selFaceName in selFaceNames]
     gap2List = [gap2 for selFaceName in selFaceNames]
+    reliefDList = [reliefD for selFaceName in selFaceNames]
     facelist, edgelist, facefliplist, edgefliplist, transfacelist, transedgelist = ([], [], [], [], [], [])
     for selFaceName in selFaceNames :
       selItem = MainObject.getElement(selFaceName)
@@ -262,9 +264,11 @@ def smMiter(bendR = 1.0, bendA = 90.0, miterA1 = 0.0, miterA2 = 0.0, flipped = F
             if abs(dist1) < abs(dist2) :
               miterA1List[j] = Angle / 2.0 
               gap1List[j] = 0.1
+              reliefDList[j] = 0.0
             elif abs(dist2) < abs(dist1) :
               miterA2List[j] = Angle / 2.0
               gap2List[j] = 0.1
+              reliefDList[j] = 0.0
         elif i != j :
           p1 = lenEdge.valueAt(lenEdge.FirstParameter)
           p2 = lenEdge.valueAt(lenEdge.LastParameter)
@@ -284,10 +288,12 @@ def smMiter(bendR = 1.0, bendA = 90.0, miterA1 = 0.0, miterA2 = 0.0, flipped = F
               miterA1List[j] = abs(90-Angle)
               if abs(dist3) > 0.0 :
                 gap1List[j] = abs(dist3) + 0.1
+                reliefDList[j] = 0.0
             elif abs(dist2) < abs(dist1) :
               miterA2List[j] = abs(90-Angle)
               if abs(dist4) > 0.0 :
                 gap2List[j] = abs(dist4) + 0.1
+                reliefDList[j] = 0.0
 
     # check faces intersect each other for fliplist
     for i,face in enumerate(facefliplist) :
@@ -338,9 +344,9 @@ def smBend(bendR = 1.0, bendA = 90.0, miterA1 = 0.0,miterA2 = 0.0, BendType = "M
 
   if not(sketches) :
     miterA1List, miterA2List, gap1List, gap2List = smMiter(bendR = bendR, bendA = bendA, miterA1 = miterA1, miterA2 = miterA2, flipped = flipped, extLen = extLen, gap1 = gap1, 
-                                      gap2 = gap2, selFaceNames = selFaceNames, automiter = automiter, MainObject = MainObject)
+                                      gap2 = gap2, reliefD = reliefD, selFaceNames = selFaceNames, automiter = automiter, MainObject = MainObject)
   else :
-    miterA1List, miterA2List, gap1List, gap2List = ( [0.0],[0.0],[gap1],[gap2])
+    miterA1List, miterA2List, gap1List, gap2List = ( [0.0],[0.0],[gap1],[gap2],[reliefD])
 
   thk_faceList = []
   resultSolid = MainObject
@@ -349,6 +355,7 @@ def smBend(bendR = 1.0, bendA = 90.0, miterA1 = 0.0,miterA2 = 0.0, BendType = "M
     selFace = smFace(selItem, MainObject)
     selFace = smModifiedFace(selFace, resultSolid)
     gap1, gap2 = (gap1List[i], gap2List[i])
+    reliefD = reliefDList[i]
 
     # find the narrow edge
     thk = 999999.0
@@ -871,7 +878,8 @@ class SMViewProviderFlat:
 
   def claimChildren(self):
     objs = []
-    objs = []
+    if hasattr(self.Object,"Sketch"):
+      objs.append(self.Object.Sketch)
     return objs
  
   def getIcon(self):
