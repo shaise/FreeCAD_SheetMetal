@@ -326,8 +326,8 @@ def smMiter(bendR = 1.0, bendA = 90.0, miterA1 = 0.0, miterA2 = 0.0, flipped = F
             elif abs(dist2) < abs(dist1) :
               miterA2List[j] = abs(90-Angle) *-1
 
-  #print(miterA1List, miterA2List, gap1List, gap2List)
-  return miterA1List, miterA2List, gap1List, gap2List
+#  print(miterA1List, miterA2List, gap1List, gap2List, reliefDList)
+  return miterA1List, miterA2List, gap1List, gap2List, reliefDList
 
 def smBend(bendR = 1.0, bendA = 90.0, miterA1 = 0.0,miterA2 = 0.0, BendType = "Material Outside", flipped = False, unfold = False, 
             offset = 0.0, extLen = 10.0, gap1 = 0.0, gap2 = 0.0,  reliefType = "Rectangle", reliefW = 0.8, reliefD = 1.0, extend1 = 0.0, 
@@ -343,10 +343,10 @@ def smBend(bendR = 1.0, bendA = 90.0, miterA1 = 0.0,miterA2 = 0.0, BendType = "M
       pass
 
   if not(sketches) :
-    miterA1List, miterA2List, gap1List, gap2List = smMiter(bendR = bendR, bendA = bendA, miterA1 = miterA1, miterA2 = miterA2, flipped = flipped, extLen = extLen, gap1 = gap1, 
+    miterA1List, miterA2List, gap1List, gap2List, reliefDList = smMiter(bendR = bendR, bendA = bendA, miterA1 = miterA1, miterA2 = miterA2, flipped = flipped, extLen = extLen, gap1 = gap1, 
                                       gap2 = gap2, reliefD = reliefD, selFaceNames = selFaceNames, automiter = automiter, MainObject = MainObject)
   else :
-    miterA1List, miterA2List, gap1List, gap2List = ( [0.0],[0.0],[gap1],[gap2],[reliefD])
+    miterA1List, miterA2List, gap1List, gap2List, reliefDList = ( [0.0],[0.0],[gap1],[gap2],[reliefD])
 
   thk_faceList = []
   resultSolid = MainObject
@@ -559,7 +559,10 @@ def smBend(bendR = 1.0, bendA = 90.0, miterA1 = 0.0,miterA2 = 0.0, BendType = "M
                     CutSolids.append(RfaceE)
                     break
 
-      CutFace = smMakeFace(MlenEdge, thkDir, thk, gap1, gap2)
+      if reliefD == 0.0 and ( gap1 == 0.1 or gap2 == 0.1 ) :
+        CutFace = smMakeFace(MlenEdge, thkDir, thk, 0, 0)
+      else :
+        CutFace = smMakeFace(MlenEdge, thkDir, thk, gap1, gap2)
       CutSolid = CutFace.extrude(FaceDir * offset )
       CfaceSolid = Cface.extrude(thkDir * thk)
       CutSolid = CutSolid.common(CfaceSolid)
