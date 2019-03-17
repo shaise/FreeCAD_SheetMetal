@@ -237,7 +237,7 @@ def smMiter(bendR = 1.0, bendA = 90.0, miterA1 = 0.0, miterA2 = 0.0, flipped = F
 
       # narrow the wall if we have gaps
       BendFace = smMakeFace(lenEdge, FaceDir * -1, extLen, gap1, gap2)
-      if BendFace.normalAt(0,0) != FaceDir :
+      if BendFace.normalAt(0,0) != thkDir :
         BendFace.reverse()
       BendFace.rotate(revAxisP, revAxisV, bendA)
       #Part.show(BendFace)
@@ -317,14 +317,15 @@ def smMiter(bendR = 1.0, bendA = 90.0, miterA1 = 0.0, miterA2 = 0.0, flipped = F
           section_vertex = face.section(lenEdge)
           if section_vertex.Vertexes :
             section_edge = face.section(facefliplist[j])
-            Angle = LineAngle(section_edge.Edges[0], lenEdge)
-            #print(Angle)
-            dist1 = (p1 - section_vertex.Vertexes[0].Point).Length
-            dist2 = (p2 - section_vertex.Vertexes[0].Point).Length
-            if abs(dist1) < abs(dist2) :
-              miterA1List[j] = abs(90-Angle)* -1
-            elif abs(dist2) < abs(dist1) :
-              miterA2List[j] = abs(90-Angle) *-1
+            if section_edge.Edges :
+              Angle = LineAngle(section_edge.Edges[0], lenEdge)
+              #print(Angle)
+              dist1 = (p1 - section_vertex.Vertexes[0].Point).Length
+              dist2 = (p2 - section_vertex.Vertexes[0].Point).Length
+              if abs(dist1) < abs(dist2) :
+                miterA1List[j] = abs(90-Angle)* -1
+              elif abs(dist2) < abs(dist1) :
+                miterA2List[j] = abs(90-Angle) *-1
 
 #  print(miterA1List, miterA2List, gap1List, gap2List, reliefDList)
   return miterA1List, miterA2List, gap1List, gap2List, reliefDList
@@ -533,7 +534,7 @@ def smBend(bendR = 1.0, bendA = 90.0, miterA1 = 0.0,miterA2 = 0.0, BendType = "M
 
     # remove bend face if present
     if inside :
-      if gap1 == 0.0 :
+      if gap1 == 0.0 or (reliefD == 0.0 and  gap1 == 0.1) :
         Edgelist = selFace.ancestorsOfType(vertex0, Part.Edge)
         for ed in Edgelist :
           if not(MlenEdge.isSame(ed)):
@@ -546,7 +547,7 @@ def smBend(bendR = 1.0, bendA = 90.0, miterA1 = 0.0,miterA2 = 0.0, BendType = "M
                     CutSolids.append(RfaceE)
                     break
 
-      if gap2 == 0.0 :
+      if gap2 == 0.0 or (reliefD == 0.0 and  gap2 == 0.1) :
         Edgelist = selFace.ancestorsOfType(vertex1, Part.Edge)
         for ed in Edgelist :
           if not(MlenEdge.isSame(ed)):
