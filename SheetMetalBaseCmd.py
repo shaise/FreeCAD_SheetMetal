@@ -79,7 +79,7 @@ def smBase(thk = 2.0, length = 10.0, radius = 1.0, Side = "Inside", MainObject =
       offsetSolid = offsetwire.extrude(Edge_Dir * length )
       CutList =[]
       for x in offsetSolid.Faces :
-        if (str(type(x.Surface))) == "<type 'Part.Plane'>" :
+        if str(x.Surface) == "<Plane object>":
           offsetSolid = x.extrude(x.normalAt(0,0) * -thk )
           CutList.append(offsetSolid)
           #Part.show(offsetSolid)
@@ -200,7 +200,7 @@ class AddBaseCommandClass():
     if len(Gui.Selection.getSelection()) != 1 :
       return False
     selobj = Gui.Selection.getSelection()[0]
-    if str(type(selobj)) != "<type 'Sketcher.SketchObject'>":
+    if not(selobj.isDerivedFrom("Sketcher::SketchObject")):
        return False
     return True
 
