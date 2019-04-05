@@ -1033,7 +1033,7 @@ class AddWallCommandClass():
     if len(Gui.Selection.getSelection()) < 1 or len(Gui.Selection.getSelectionEx()[0].SubElementNames) < 1:
       return False
     selobj = Gui.Selection.getSelection()[0]
-    if str(type(selobj)) == "<type 'Sketcher.SketchObject'>":
+    if selobj.isDerivedFrom("Sketcher::SketchObject"):
       return False
     for selFace in Gui.Selection.getSelectionEx()[0].SubObjects:
       if type(selFace) == Part.Vertex :
@@ -1129,7 +1129,7 @@ class SMExtrudeCommandClass():
     if len(Gui.Selection.getSelection()) < 1 or len(Gui.Selection.getSelectionEx()[0].SubElementNames) < 1:
       return False
     selobj = Gui.Selection.getSelection()[0]
-    if str(type(selobj)) == "<type 'Sketcher.SketchObject'>":
+    if selobj.isDerivedFrom("Sketcher::SketchObject"):
       return False
     for selFace in Gui.Selection.getSelectionEx()[0].SubObjects:
       if type(selFace) == Part.Vertex :
