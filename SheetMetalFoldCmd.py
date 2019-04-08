@@ -159,6 +159,17 @@ def smFold(bendR = 1.0, bendA = 90.0, kfactor = 0.45, invertbend = False, flippe
         offsetsolid = offsetsolidlist[0]
       cutsolid1 = BOPTools.JoinAPI.cutout_legacy(solid0, offsetsolid, 0.0)
       cutsolid2 = BOPTools.JoinAPI.cutout_legacy(solid1, offsetsolid, 0.0)
+      # To Check cut solid in correct direction 
+      solid0_c = cutsolid1.common(solid1)
+      #Part.show(solid0_c,"solid1")
+      solid1_c = cutsolid2.common(solid0)
+      #Part.show(solid1_c,"solid2")
+      if solid0_c.Edges :
+        solid0 = solid0.cut(cutsolid1)
+        cutsolid1 = BOPTools.JoinAPI.cutout_legacy(solid0, offsetsolid, 0.0)
+      if solid1_c.Edges :
+        solid1 = solid1.cut(cutsolid2)
+        cutsolid2 = BOPTools.JoinAPI.cutout_legacy(solid1, offsetsolid, 0.0)
       solidlist = [cutsolid1, cutsolid2, offsetsolid]
       resultsolid = BOPTools.JoinAPI.connect(solidlist)
   
