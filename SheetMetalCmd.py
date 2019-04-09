@@ -540,9 +540,9 @@ def smBend(bendR = 1.0, bendA = 90.0, miterA1 = 0.0,miterA2 = 0.0, BendType = "M
           if not(MlenEdge.isSame(ed)):
             list1 = resultSolid.ancestorsOfType(ed, Part.Face)
             for Rface in list1 :
-              if Rface.Area != selFace.Area and str(Rface.Surface) == "<Plane object>" :
+              if Rface.Area != selFace.Area and issubclass(type(Rface.Surface),Part.Plane) :
                 for edge in Rface.Edges:
-                  if str(type(edge.Curve)) == "<type 'Part.Circle'>":
+                  if issubclass(type(edge.Curve),Part.Circle):
                     RfaceE = Rface.extrude(Rface.normalAt(0,0) * -Noffset1 )
                     CutSolids.append(RfaceE)
                     break
@@ -553,9 +553,9 @@ def smBend(bendR = 1.0, bendA = 90.0, miterA1 = 0.0,miterA2 = 0.0, BendType = "M
           if not(MlenEdge.isSame(ed)):
             list1 = resultSolid.ancestorsOfType(ed, Part.Face)
             for Rface in list1 :
-              if Rface.Area != selFace.Area and str(Rface.Surface) == "<Plane object>" :
+              if Rface.Area != selFace.Area and issubclass(type(Rface.Surface),Part.Plane) :
                 for edge in Rface.Edges:
-                  if str(type(edge.Curve)) == "<type 'Part.Circle'>":
+                  if issubclass(type(edge.Curve),Part.Circle):
                     RfaceE = Rface.extrude(Rface.normalAt(0,0) * -Noffset2 )
                     CutSolids.append(RfaceE)
                     break
