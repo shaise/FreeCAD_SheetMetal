@@ -145,7 +145,7 @@ def smFold(bendR = 1.0, bendA = 90.0, kfactor = 0.45, invertbend = False, flippe
       offsetfacelist = []
       offsetsolidlist = []
       for face in filletedface.Faces :
-        if str(face.Surface) != "<Plane object>" :
+        if not(issubclass(type(face.Surface),Part.Plane)):
           offsetface = face.makeOffsetShape(offset-thk, 0.0)
           #Part.show(offsetface)
           offsetfacelist.append(offsetface)
