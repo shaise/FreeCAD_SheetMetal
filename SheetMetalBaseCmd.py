@@ -79,7 +79,7 @@ def smBase(thk = 2.0, length = 10.0, radius = 1.0, Side = "Inside", MainObject =
       offsetSolid = offsetwire.extrude(Edge_Dir * length )
       CutList =[]
       for x in offsetSolid.Faces :
-        if str(x.Surface) == "<Plane object>":
+        if issubclass(type(x.Surface),Part.Plane):
           offsetSolid = x.extrude(x.normalAt(0,0) * -thk )
           CutList.append(offsetSolid)
           #Part.show(offsetSolid)
