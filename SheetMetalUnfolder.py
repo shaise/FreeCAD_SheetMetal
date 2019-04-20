@@ -825,13 +825,14 @@ class SheetTree(object):
       innerRadius = theFace.Surface.Radius - self.__thickness
     if manKFactor < -9.0:
       # auto (original) K factor
+      raise AppError("Why is manKFactor less than -9?")
       newNode.k_Factor = (0.65 + 0.5*math.log10(innerRadius/self.__thickness))
     else:
-      newNode.k_Factor = manKFactor # revert to 1/2 k_factor standard * 2.0
+      newNode.k_Factor = manKFactor 
     if newNode.k_Factor < 0:
       newNode.k_Factor = 0
     FreeCAD.Console.PrintLog(newNode.bend_dir + " Face"+ str(newNode.idx+1)+ " k-factor: "+ str(newNode.k_Factor) + "\n")
-    newNode._trans_length = (innerRadius + newNode.k_Factor * self.__thickness/2.0) * newNode.bend_angle
+    newNode._trans_length = (innerRadius + newNode.k_Factor * self.__thickness) * newNode.bend_angle
 
 
     #print 'newNode._trans_length: ', newNode._trans_length
@@ -1290,7 +1291,7 @@ class SheetTree(object):
     bRad = bend_node.innerRadius
     kFactor = bend_node.k_Factor
     thick = self.__thickness
-    transRad = bRad + kFactor * thick/2.0
+    transRad = bRad + kFactor * thick
     print 'transRad Face', str(fIdx+1), ', r:', bRad, ', k-factor:', round(kFactor, 2), ', thickness:', thick
     tanVec = bend_node.tan_vec
     aFace = self.f_list[fIdx]
@@ -1687,7 +1688,7 @@ class SheetTree(object):
     bRad = bend_node.innerRadius
     kFactor = bend_node.k_Factor
     thick = self.__thickness
-    transRad = bRad + kFactor * thick/2.0
+    transRad = bRad + kFactor * thick
     tanVec = bend_node.tan_vec
     theFace = self.f_list[bend_node.idx]
     
@@ -1764,7 +1765,7 @@ class SheetTree(object):
       return bPoint
 
     thick = self.__thickness
-    transRad = bend_node.innerRadius + bend_node.k_Factor * thick/2.0
+    transRad = bend_node.innerRadius + bend_node.k_Factor * thick
     tanVec = bend_node.tan_vec
 
     chord = cent.sub(bend_node.p_edge.Vertexes[0].Point)
