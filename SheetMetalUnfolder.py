@@ -2161,7 +2161,7 @@ class SMUnfoldTaskPanel:
         self.obj = None
         self.form = QtGui.QWidget()
         self.form.setObjectName("SMUnfoldTaskPanel")
-        self.form.setWindowTitle("Unfold sheet metal onject")
+        self.form.setWindowTitle("Unfold sheet metal object")
         self.verticalLayout_2 = QtGui.QVBoxLayout(self.form)
         self.verticalLayout_2.setObjectName(_fromUtf8("verticalLayout_2"))
         self.verticalLayout = QtGui.QVBoxLayout()
@@ -2455,4 +2455,3 @@ class SMUnfoldCommandClass():
     return True
 
 Gui.addCommand('SMUnfold',SMUnfoldCommandClass())
-
