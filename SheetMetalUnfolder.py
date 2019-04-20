@@ -2158,6 +2158,22 @@ class SMUnfoldTaskPanel:
     '''A TaskPanel for the facebinder'''
     def __init__(self):
         global genSketchChecked, genObjTransparency, manKFactor
+        
+        sel_entity = Gui.Selection.getSelection()[0]
+        sel_obj = sel_entity.getParentGeoFeatureGroup()
+        k_factors = []
+        for feature in sel_obj.Group:
+            try: 
+                k_factors.append(feature.getPropertyByName('kfactor'))
+            except:
+                pass 
+                
+        k_factors_uniq = set(k_factors)
+        if len(k_factors_uniq) > 1: 
+            k_factors_so_far = ', '.join(map(str, list(k_factors_uniq)))
+            raise ValueError("I don't know how to handle multiple k-factor values: " + k_factors_so_far)
+        k_factor = k_factors[0]
+
         self.obj = None
         self.form = QtGui.QWidget()
         self.form.setObjectName("SMUnfoldTaskPanel")
@@ -2224,7 +2240,7 @@ class SMUnfoldTaskPanel:
         self.kFactSpin.setDecimals(3)
         self.kFactSpin.setMaximum(2.0)
         self.kFactSpin.setSingleStep(0.1)
-        self.kFactSpin.setProperty("value", 0.5)
+        self.kFactSpin.setProperty("value", k_factor)
         self.kFactSpin.setObjectName(_fromUtf8("kFactSpin"))
         self.horizontalLayout.addWidget(self.kFactSpin)
         self.verticalLayout.addLayout(self.horizontalLayout)
@@ -2254,12 +2270,8 @@ class SMUnfoldTaskPanel:
           self.checkSketch.setCheckState(QtCore.Qt.CheckState.Checked)
         if bendSketchChecked:
           self.checkSeparate.setCheckState(QtCore.Qt.CheckState.Checked)
-        if manKFactor < -9.0:
-          self.kFactSpin.setEnabled(False)
-          self.kFactSpin.setProperty("value", 0.5)
-        else:
-          self.checkKfact.setCheckState(QtCore.Qt.CheckState.Checked)
-          self.kFactSpin.setProperty("value", manKFactor)
+
+        self.kFactSpin.setEnabled(False)          
         self.transSpin.setProperty("value", genObjTransparency)
           
         self.checkSketchChange()
@@ -2313,10 +2325,7 @@ class SMUnfoldTaskPanel:
         pg.SetString("genColor",genSketchColor)
         pg.SetString("intColor",intSketchColor)
         
-        if self.checkKfact.isChecked():
-            manKFactor = self.kFactSpin.value()
-        else:
-            manKFactor = -10.0
+        manKFactor = self.kFactSpin.value()
         genObjTransparency = self.transSpin.value()
             
         doc = FreeCAD.ActiveDocument
@@ -2429,7 +2438,13 @@ class SMUnfoldCommandClass():
             'ToolTip' : "Flatten folded sheet metal object"}
  
   def Activated(self):
-    taskd = SMUnfoldTaskPanel()
+    try:
+        taskd = SMUnfoldTaskPanel()
+    except ValueError as e:
+        SMError(e.args[0])
+        QtGui.QMessageBox.critical(FreeCADGui.getMainWindow(), "ERROR", e.args[0])
+        return 
+
     pg = FreeCAD.ParamGet("User parameter:BaseApp/Preferences/Mod/sheetmetal")
     if pg.GetBool("bendSketch"):
         taskd.checkSeparate.setCheckState(QtCore.Qt.CheckState.Checked)
