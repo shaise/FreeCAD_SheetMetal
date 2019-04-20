@@ -652,7 +652,7 @@ class SheetTree(object):
             
       maxDistance = 1000
       oppoPoint = None
-      print ('need to check Face', str(fIdx+1), ' with ', len(self.f_list[fIdx].Vertexes))
+      #print('need to check Face', str(fIdx+1), ' with ', len(self.f_list[fIdx].Vertexes))
       for theVert in self.f_list[fIdx].Vertexes:
         # need to check if theVert has 
         if self.isVertOpposite(theVert, theNode):
@@ -662,7 +662,7 @@ class SheetTree(object):
             oppoPoint = theVert.Point
             
       if oppoPoint is None:
-        print (' error need always an opposite point in a side face!')
+        print(' error need always an opposite point in a side face!')
         # fix me: need a proper error condition.
       
       #vec1 = Base.Vector(theNode.axis.x, theNode.axis.y, theNode.axis.z) # make a copy
@@ -702,7 +702,7 @@ class SheetTree(object):
             
       maxDistance = 1000
       oppoPoint = None
-      print ('need to check Face', str(fIdx+1), ' with ', len(self.f_list[fIdx].Vertexes))
+      #print('need to check Face', str(fIdx+1), ' with ', len(self.f_list[fIdx].Vertexes))
       for theVert in self.f_list[fIdx].Vertexes:
         # need to check if theVert has 
         if self.isVertOpposite(theVert, theNode):
@@ -712,7 +712,7 @@ class SheetTree(object):
             oppoPoint = theVert.Point
             
       if oppoPoint is None:
-        print (' error need always an opposite point in a side face!')
+        print(' error need always an opposite point in a side face!')
         # fix me: need a proper error condition.
       #vec1 = Base.Vector(radVector.x, radVector.y, radVector.z) # make a copy
       vec1 = (oppoPoint - origin).normalize()
@@ -1140,7 +1140,7 @@ class SheetTree(object):
               flagStr = flagStr + 'p1'
               origVec = P_edge.Vertexes[1].Point
               unbendVec = origVec
-          print ('make vertexDict: ', flagStr, ' ', str(face_idx+1))
+          #print('make vertexDict: ', flagStr, ' ', str(face_idx+1))
           newNode.vertexDict[vertDictIdx] = flagStr, origVec, unbendVec
           vertDictIdx += 1
   
@@ -1153,7 +1153,7 @@ class SheetTree(object):
               flagStr = flagStr + 'p'
               origVec = pVert.Point
               unbendVec = origVec
-          print ('make vertexDict: ', flagStr, ' ', str(face_idx+1))
+          #print('make vertexDict: ', flagStr, ' ', str(face_idx+1))
           newNode.vertexDict[vertDictIdx] = flagStr, origVec, unbendVec
           vertDictIdx += 1
       
@@ -1291,7 +1291,7 @@ class SheetTree(object):
     kFactor = bend_node.k_Factor
     thick = self.__thickness
     transRad = bRad + kFactor * thick/2.0
-    #print 'transRad Face', str(fIdx+1), ' ', bRad, ' ', kFactor, ' ', thick
+    print 'transRad Face', str(fIdx+1), ', r:', bRad, ', k-factor:', round(kFactor, 2), ', thickness:', thick
     tanVec = bend_node.tan_vec
     aFace = self.f_list[fIdx]
     
@@ -1339,7 +1339,7 @@ class SheetTree(object):
     for aWire in fWireList:
         uEdge = None
         idxList, closedW = self.sortEdgesTolerant(aWire.Edges)
-        print ('Wire', str(fIdx+1), ' has ', len(idxList), ' edges, closed: ', closedW)
+        #print('Wire', str(fIdx+1), ' has ', len(idxList), ' edges, closed: ', closedW)
         
         eList = []  # is the list of unbend edges
         j=0
@@ -1376,7 +1376,7 @@ class SheetTree(object):
           if mode == 'side':
             if vert0Idx is None:
               vert0Idx = len(bend_node.vertexDict)
-              print ('got additional side vertex0: ', vert0Idx, ' ', fEdge.Vertexes[0].Point)
+              #print('got additional side vertex0: ', vert0Idx, ' ', fEdge.Vertexes[0].Point)
               flags0 = ''
               origVec = fEdge.Vertexes[0].Point
               uVert0 = unbendPoint(origVec)
@@ -1384,7 +1384,7 @@ class SheetTree(object):
             if vertexCount >1:
               if vert1Idx is None:
                 vert1Idx = len(bend_node.vertexDict)
-                print ('got additional side vertex1: ', vert1Idx, ' ', fEdge.Vertexes[1].Point)
+                #print('got additional side vertex1: ', vert1Idx, ' ', fEdge.Vertexes[1].Point)
                 flags1 = ''
                 origVec = fEdge.Vertexes[1].Point
                 uVert1 = unbendPoint(origVec)
@@ -1620,7 +1620,7 @@ class SheetTree(object):
       except:
           #theFace = Part.makeFilledFace(wires)
           theFace = faces[0]
-          print ('got execption')
+          print('got execption')
           #Part.show(theFace, 'exception')
     keyList = []
     for key in bend_node.edgeDict:
@@ -1740,7 +1740,7 @@ class SheetTree(object):
         wireList.append(edgeL)
         #Part.show(lWire, 'foldLine'+str(bend_node.idx +1)+'_')
       else:
-        print ('fix me! make errorcondition')
+        print('fix me! make errorcondition')
         
     return wireList
   
@@ -2299,7 +2299,7 @@ class SMUnfoldTaskPanel:
         bendSketchColor = self.bendColor.color()
         intSketchColor = self.internalColor.color()
         
-        #print(self.checkSeparate.isChecked())
+        ##print(self.checkSeparate.isChecked())
         pg = FreeCAD.ParamGet("User parameter:BaseApp/Preferences/Mod/sheetmetal")
         if bendSketchChecked:
             pg.SetBool("bendSketch",1)
