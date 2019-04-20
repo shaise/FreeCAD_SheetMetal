@@ -3,6 +3,10 @@ A simple sheet metal workbench for FreeCAD
 
 ![Demo Workflow](../master/Resources/SheetMetal4.gif)
 
+# Terminology 
+
+![Terminology](./tools/terminology.png)
+
 #### Developers:
 * Folding tools:  Shai Seger [@shaise](https://github.com/shaise)<br/>
                   [@jaisejames] https://github.com/jaisekjames<br/>
