@@ -174,6 +174,12 @@ def SMWarning(* args):
     message += str(x)
   FreeCAD.Console.PrintWarning(message + "\n")
 
+def SMErrorBox(* args):  
+    message = ""
+    for x in args:
+        message += str(x)
+    SMError(message)
+    QtGui.QMessageBox.critical(FreeCADGui.getMainWindow(), "ERROR", message)
 
 def equal_vertex(vert1, vert2, p=5):
   # compares two vertices 
@@ -2160,9 +2166,10 @@ class SMUnfoldTaskPanel:
     def __init__(self):
         global genSketchChecked, genObjTransparency, manKFactor
         
-        sel_entity = Gui.Selection.getSelection()[0]
-        sel_obj = sel_entity.getParentGeoFeatureGroup()
+        # Determine the K-factor from Bend properties 
         k_factors = []
+        # TODO: Is the following the correct way to get the selected object?
+        sel_obj = Gui.Selection.getSelection()[0].getParentGeoFeatureGroup()
         for feature in sel_obj.Group:
             try: 
                 k_factors.append(feature.getPropertyByName('kfactor'))
@@ -2173,7 +2180,10 @@ class SMUnfoldTaskPanel:
         if len(k_factors_uniq) > 1: 
             k_factors_so_far = ', '.join(map(str, list(k_factors_uniq)))
             raise ValueError("I don't know how to handle multiple k-factor values: " + k_factors_so_far)
-        k_factor = k_factors[0]
+        elif len(k_factors_uniq) == 0:
+            raise ValueError("We need a K-factor to work with.")
+        else:
+            k_factor = k_factors[0]
 
         self.obj = None
         self.form = QtGui.QWidget()
@@ -2442,8 +2452,7 @@ class SMUnfoldCommandClass():
     try:
         taskd = SMUnfoldTaskPanel()
     except ValueError as e:
-        SMError(e.args[0])
-        QtGui.QMessageBox.critical(FreeCADGui.getMainWindow(), "ERROR", e.args[0])
+        SMErrorBox(e.args[0])
         return 
 
     pg = FreeCAD.ParamGet("User parameter:BaseApp/Preferences/Mod/sheetmetal")
