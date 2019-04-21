@@ -831,8 +831,7 @@ class SheetTree(object):
       innerRadius = theFace.Surface.Radius - self.__thickness
     if manKFactor < -9.0:
       # auto (original) K factor
-      raise AppError("Why is manKFactor less than -9?")
-      newNode.k_Factor = (0.65 + 0.5*math.log10(innerRadius/self.__thickness))
+      raise ValueError("Why is manKFactor less than -9?")
     else:
       newNode.k_Factor = manKFactor 
     if newNode.k_Factor < 0:
