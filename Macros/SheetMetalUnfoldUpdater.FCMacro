@@ -1,0 +1,89 @@
+__author__ = "ceremcem"
+"""
+Usage: 
+
+1. Put your processed object into an assembly container. 
+2. Create an "Element" for the unfold face
+3. Rename the element to "foo_unfold_face"
+4. Run this macro 
+5. See "foo_unfold" sketch is created properly. 
+6. See any TechDraw ProjGroup source is updated properly
+"""
+
+import FreeCAD
+import re
+
+echo = FreeCAD.Console.PrintMessage
+warn = FreeCAD.Console.PrintWarning
+
+prev_workbench = Gui.activeWorkbench().name()
+Gui.activateWorkbench("SMWorkbench")
+if prev_workbench:
+	Gui.activateWorkbench(prev_workbench)
+
+doc = App.ActiveDocument
+unfold_sketch_regex = re.compile('.+_unfold_face')
+
+for o in doc.Objects:
+	try:
+		_o = o.TypeId
+	except: 
+		# probably we deleted this object before updating the existing unfold sketch.
+		continue
+		
+	# find any Asm3 Element that matches with our magic postfix
+	if o.TypeId == 'Part::FeaturePython':
+		match = unfold_sketch_regex.match(o.Label)
+		if match:
+			output_name = o.Label[:-5]  # remove the "_face" postfix
+			echo("Found unfold job: " + output_name + " \n")
+
+			related_views = []
+			for x in doc.Objects:
+				if x.TypeId == 'TechDraw::DrawPage': 
+					for view in x.Views:
+						try: 
+							_src = view.Source[0]
+						except:
+							continue
+						#print("source of ", x.Name, view.Name, " is: ", _src.Label)
+						if _src.Label == output_name:
+							# This view uses our unfolded output, update this view at the end 
+							print("Found related TechDraw ProjGroup: " + view.Name)
+							related_views.append(view)
+							
+			try:
+				old = doc.getObjectsByLabel(output_name)[0].Name
+				doc.removeObject(old)
+				doc.recompute()
+			except:
+				pass
+			
+			# Get the unfold face id
+			# TODO: This extraction (achieving `unfold_face_id`) is a very dirty hack. 
+			# Tidy up as soon as possible. 
+			face_elem = doc.getObjectsByLabel(output_name + '_face')[0]
+			asm_container = face_elem.Parents[0][0]
+			target_obj_path = asm_container.getSubObjects()[0]
+			unfold_face_id = (asm_container.Name, target_obj_path + face_elem.LinkedObject[1].split('.')[-1]) 
+			
+			# Unfold the object
+			Gui.Selection.clearSelection()
+			Gui.Selection.addSelection(doc.Name, unfold_face_id[0], unfold_face_id[1])
+			Gui.runCommand('SMUnfoldUnattended')
+			
+			# Remove unnecessary unfolded solid
+			doc.removeObject('Unfold')
+			
+			# Properly rename the output
+			sketch = doc.getObjectsByLabel('Unfold_Sketch')[0]
+			sketch.Label = output_name
+			sketch.Visibility = False
+			
+			# Update the source of related views
+			for view in related_views:
+				echo("Updating " + view.Name + " source.")
+				view.Source = [sketch]
+
+doc.recompute()
+Gui.Selection.clearSelection()
