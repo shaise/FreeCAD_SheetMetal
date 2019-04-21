@@ -257,7 +257,7 @@ class Simple_node(object):
     self.oppositePoint = None # Point of a vertex on the opposite site, used to align points to the sheet plane
     self.vertexDict = {} # Vertexes of a bend, original and unbend coordinates, flags p, c, t, o
     self.edgeDict = {} # unbend edges dictionary, key is a combination of indexes to vertexDict.
-    self.k_Factor = None # k-factor according to DIN 6935
+    self.k_Factor = None # k-factor according to ANSI standard
     self._trans_length = None # length of translation for Bend nodes, k-factor used according to DIN 6935
     self.analysis_ok = True # indicator if something went wrong with the analysis of the face
     self.error_code = None # index to unfold_error dictionary
