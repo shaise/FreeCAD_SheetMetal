@@ -2479,3 +2479,42 @@ class SMUnfoldCommandClass():
     return True
 
 Gui.addCommand('SMUnfold',SMUnfoldCommandClass())
+
+class SMUnfoldUnattendedCommandClass():
+  """Unfold object"""
+
+  def GetResources(self):
+    __dir__ = os.path.dirname(__file__)
+    iconPath = os.path.join( __dir__, 'Resources', 'icons' )
+    return {'Pixmap'  : os.path.join( iconPath , 'SMUnfoldUnattended.svg') , # the name of a svg file available in the resources
+            'MenuText': "Unattended Unfold" ,
+            'ToolTip' : "Flatten folded sheet metal object with default options."}
+
+  def Activated(self):
+    SMMessage("Running unattended unfold...")
+    taskd = SMUnfoldTaskPanel()
+    pg = FreeCAD.ParamGet("User parameter:BaseApp/Preferences/Mod/sheetmetal")
+    if pg.GetBool("bendSketch"):
+        taskd.checkSeparate.setCheckState(QtCore.Qt.CheckState.Checked)
+    else:
+        taskd.checkSeparate.setCheckState(QtCore.Qt.CheckState.Unchecked)
+    if pg.GetBool("genSketch"):
+        taskd.checkSketch.setCheckState(QtCore.Qt.CheckState.Checked)
+    else:
+        taskd.checkSketch.setCheckState(QtCore.Qt.CheckState.Unchecked)
+    taskd.bendColor.setColor(pg.GetString("bendColor"))
+    taskd.genColor.setColor(pg.GetString("genColor"))
+    taskd.internalColor.setColor(pg.GetString("intColor"))
+    taskd.accept()
+    return
+
+  def IsActive(self):
+    if len(Gui.Selection.getSelection()) != 1 or len(Gui.Selection.getSelectionEx()[0].SubElementNames) != 1:
+      return False
+    selobj = Gui.Selection.getSelection()[0]
+    selFace = Gui.Selection.getSelectionEx()[0].SubObjects[0]
+    if type(selFace) != Part.Face:
+      return False
+    return True
+
+Gui.addCommand("SMUnfoldUnattended",SMUnfoldUnattendedCommandClass())
