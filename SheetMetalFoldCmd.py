@@ -87,9 +87,9 @@ def smFold(bendR = 1.0, bendA = 90.0, kfactor = 0.45, invertbend = False, flippe
       thk = smthk(FoldShape, foldface)
 
       if not(flipped) :
-        offset = thk / 2.0 * kfactor
+        offset = thk / kfactor
       else :
-        offset = thk - ( thk / 2.0 * kfactor )
+        offset = thk - ( thk / kfactor )
 
       tool = bendlinesketch.Shape
       tool_faces = tool.extrude(normal * -thk)
