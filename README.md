@@ -7,6 +7,21 @@ A simple sheet metal workbench for FreeCAD
 
 ![Terminology](./tools/terminology.png)
 
+# Test case 
+
+As a simple test case, consider the following example: 
+
+* Inputs: 
+    - Thickness: 2mm 
+    - K-factor: 0.38
+    - Leg length: 48.12mm
+    - Inner effective radius: 1.64mm
+    - Flange length: 51.76mm
+* Output
+    - End to mold-line distance: 50mm
+
+You can find a simple calculator in `./tools/calc-unfold.py`. 
+
 #### Developers:
 * Folding tools:  Shai Seger [@shaise](https://github.com/shaise)<br/>
                   [@jaisejames] https://github.com/jaisekjames<br/>
