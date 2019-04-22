@@ -2358,8 +2358,6 @@ class SMUnfoldTaskPanel:
             
         doc = FreeCAD.ActiveDocument
 
-
-
         def get_linked_objs_recursive(links): 
             Parts_index = 2
             objects = []
@@ -2527,8 +2525,9 @@ class SMUnfoldTaskPanel:
             sk = Draft.makeSketch(p.Edges, autoconstraints = True)
             sk.Label = name
         except:
-            skb = docG.ActiveObject
-            docG.removeObject(skb.Name)
+            doc = FreeCAD.ActiveDocument
+            skb = doc.ActiveObject
+            doc.removeObject(skb.Name)
             SMWarning("discretizing Sketch")
             sk = SMmakeSketchfromEdges(p.Edges,name)
         docG.getObject(sk.Name).LineColor = color
