@@ -236,7 +236,7 @@ class Simple_node(object):
   Faces of the edge of the metal-sheet need in cases to be split.
   These new faces are added to the index list.
   '''
-  def __init__(self, f_idx=None, Parent_node= None, Parent_edge = None):
+  def __init__(self, f_idx=None, Parent_node= None, Parent_edge = None, k_factor_lookup = None):
     self.idx = f_idx  # index of the "top-face"
     self.c_face_idx = None # face index to the opposite face of the sheet (counter-face)
     self.node_type = None  # 'Flat' or 'Bend'
@@ -258,8 +258,7 @@ class Simple_node(object):
     self.oppositePoint = None # Point of a vertex on the opposite site, used to align points to the sheet plane
     self.vertexDict = {} # Vertexes of a bend, original and unbend coordinates, flags p, c, t, o
     self.edgeDict = {} # unbend edges dictionary, key is a combination of indexes to vertexDict.
-    self.__k_Factor = 0 # k-factor according to ANSI standard
-    self.manualKFactor = None
+    self.k_factor_lookup = k_factor_lookup # k-factor lookup dictionary, according to ANSI standard
     self._trans_length = None # length of translation for Bend nodes
     self.analysis_ok = True # indicator if something went wrong with the analysis of the face
     self.error_code = None # index to unfold_error dictionary
@@ -286,10 +285,10 @@ class Simple_node(object):
 
     if manKFactor is not None: 
         return manKFactor
-    elif self.__k_Factor < 0: 
-        return 0 
     else:
-        return self.__k_Factor
+        # obtain the K-factor from the lookup table 
+        return get_val_from_range(self.k_factor_lookup, self.innerRadius / self.thickness)    
+        
 
   @k_Factor.setter
   def k_Factor(self, val):
@@ -297,13 +296,14 @@ class Simple_node(object):
     
 
 class SheetTree(object):
-  def __init__(self, TheShape, f_idx):
+  def __init__(self, TheShape, f_idx, k_factor_lookup):
     self.cFaceTol = 0.002 # tolerance to detect counter-face vertices
     # this high tolerance was needed for more real parts
     self.root = None # make_new_face_node adds the root node if parent_node == None
     self.__Shape = TheShape.copy()
     self.error_code = None
     self.failed_face_idx = None
+    self.k_factor_lookup = k_factor_lookup
     
     if not self.__Shape.isValid():
       FreeCAD.Console.PrintLog("The shape is not valid!" + "\n")
@@ -847,7 +847,6 @@ class SheetTree(object):
     # Will be used to determine the correct K-factor
     newNode.thickness = self.__thickness
     newNode.innerRadius = innerRadius
-    newNode.manKFactor = manKFactor
 
     FreeCAD.Console.PrintLog(newNode.bend_dir + " Face"+ str(newNode.idx+1)+ " k-factor: "+ str(newNode.k_Factor) + "\n")
     newNode._trans_length = (innerRadius + newNode.k_Factor * self.__thickness) * newNode.bend_angle
@@ -885,7 +884,7 @@ class SheetTree(object):
     # search the counter face, get axis of Face
     # In case of "Bend" get angle, k_factor and trans_length
     # put the node into the tree
-    newNode = Simple_node(face_idx, P_node, P_edge)
+    newNode = Simple_node(face_idx, P_node, P_edge, self.k_factor_lookup)
     F_type = str(self.__Shape.Faces[face_idx].Surface)
     
     # This face should be a node in the tree, and is therefore known!
@@ -1309,8 +1308,6 @@ class SheetTree(object):
     bRad = bend_node.innerRadius
     thick = self.__thickness
     
-    # obtain the K-factor from the lookup table 
-    #kFactor = get_val_from_range(k_factor_lookup, bRad / thick)    
     kFactor = bend_node.k_Factor
     
     transRad = bRad + kFactor * thick
@@ -2015,7 +2012,7 @@ def getUnfold(k_factor_lookup):
               f_number = int(o.SubElementNames[0].lstrip('Face'))-1
               #print f_number
               startzeit = time.clock()
-              TheTree = SheetTree(o.Object.Shape, f_number) # initializes the tree-structure
+              TheTree = SheetTree(o.Object.Shape, f_number, k_factor_lookup) # initializes the tree-structure
               if TheTree.error_code is None:
                 TheTree.Bend_analysis(f_number, None) # traverses the shape and builds the tree-structure
                 endzeit = time.clock()
