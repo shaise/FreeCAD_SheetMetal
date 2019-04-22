@@ -1312,7 +1312,6 @@ class SheetTree(object):
     
     transRad = bRad + kFactor * thick
     print "transRad Face: %d, r: %.2f, thickness: %.2f, K-factor: %.2f" % (fIdx+1, bRad, thick, kFactor)
-    #print 'transRad Face', str(fIdx+1), ', r:', bRad, ', k-factor:', round(kFactor, 2), ', thickness:', thick
     tanVec = bend_node.tan_vec
     aFace = self.f_list[fIdx]
     
