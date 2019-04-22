@@ -1311,7 +1311,8 @@ class SheetTree(object):
     kFactor = bend_node.k_Factor
     
     transRad = bRad + kFactor * thick
-    print 'transRad Face', str(fIdx+1), ', r:', bRad, ', k-factor:', round(kFactor, 2), ', thickness:', thick
+    print "transRad Face: %d, r: %.2f, thickness: %.2f, K-factor: %.2f" % (fIdx+1, bRad, thick, kFactor)
+    #print 'transRad Face', str(fIdx+1), ', r:', bRad, ', k-factor:', round(kFactor, 2), ', thickness:', thick
     tanVec = bend_node.tan_vec
     aFace = self.f_list[fIdx]
     
@@ -2183,7 +2184,8 @@ class SMUnfoldTaskPanel:
         global genSketchChecked, genObjTransparency, manKFactor        
         k_factor = 0.5  # default value 
         
-        # Get the material name
+        # Get the material name if possible
+        self.material = None
         material_regex = re.compile('.+_material_([a-zA-Z0-9_]+).*')
         selobj = Gui.Selection.getSelection()[0]
         selobj_parent = selobj.getParentGeoFeatureGroup()
@@ -2195,11 +2197,6 @@ class SMUnfoldTaskPanel:
         if material_match:
             self.material = material_match.group(1)
             SMMessage('Material for this unfold is: ', self.material)
-        else:
-            msg = "Unfold operation needs to know material to get K-factor values."
-            msg += "\n"
-            msg += "Please specify the material via the shape label."
-            raise ValueError(msg)
                         
         self.obj = None
         self.form = QtGui.QWidget()
@@ -2363,13 +2360,72 @@ class SMUnfoldTaskPanel:
             
         doc = FreeCAD.ActiveDocument
         
-        # TODO: get the k_factor lookup table here 
+        # Build the k_factor lookup table 
+        if self.material:
+            material_sheet_name = "material_%s" % self.material
+            lookup_sheet = doc.getObjectsByLabel(material_sheet_name)
+            if len(lookup_sheet) == 0: 
+                SMErrorBox("No Spreadsheet is found containing material definition: %s" % material_sheet_name)
+                return 
+            else:
+                lookup_sheet = lookup_sheet[0]
+            
+            # Start of spreadsheet functions 
+            cell_regex = re.compile('^([A-Z]+)([0-9]+)$')
+            def get_cells(sheet):
+                return sorted(filter(cell_regex.search, sheet.PropertiesList))
+            # End of spreadsheet functions 
+            
+            key_cell = None 
+            value_cell = None
+            for cell in get_cells(lookup_sheet):
+                if lookup_sheet.get(cell) == 'Radius / Thickness':
+                    key_cell = cell 
+                if lookup_sheet.get(cell) == 'K-factor':
+                    value_cell = cell 
+                if key_cell is not None and value_cell is not None:
+                    break 
+            
+            if key_cell is None:
+                raise ValueError("No cell can be found with name: 'Radius / Thickness'")
+            if value_cell is None:
+                raise ValueError("No cell can be found with name: 'K-factor'")
+
+            key_column_name = cell_regex.match(key_cell).group(1)
+            key_column_row = int(cell_regex.match(key_cell).group(2))
+            value_column_name = cell_regex.match(value_cell).group(1)
+                
+            k_factor_lookup = {}
+            for i in range(key_column_row + 1, 1000):
+                try:
+                    key = float(lookup_sheet.get(key_column_name + str(i)))
+                except:
+                    break            
+                value = float(lookup_sheet.get(value_column_name + str(i)))
+
+                #SMMessage("Found key/value: %f : %f" % (key, value))
+                k_factor_lookup[key] = value 
+            
+            SMMessage("Obtained K-factor lookup table is:")
+            print(k_factor_lookup)
+        elif not self.checkKfact.isChecked():
+            msg = "Unfold operation needs to know material to get K-factor values."
+            msg += "\n"
+            msg += "Please specify the material via label or use a manual K-factor."
+            SMErrorBox(msg)
+            return
+        else:
+            k_factor_lookup = {}  # manual value will be used
+
+        """
+        # For debugging purposes 
         k_factor_lookup = {
             1: 0.25,
             3: 0.35,
             5: 0.44,
             99: 0.5
         }
+        """
         try:
             s, foldComp, norm, thename = getUnfold(k_factor_lookup)
             foldLines = foldComp.Edges
@@ -2524,7 +2580,12 @@ class SMUnfoldUnattendedCommandClass():
 
   def Activated(self):
     SMMessage("Running unattended unfold...")
-    taskd = SMUnfoldTaskPanel()
+    try:
+        taskd = SMUnfoldTaskPanel()
+    except ValueError as e:
+        SMErrorBox(e.args[0])
+        return 
+
     pg = FreeCAD.ParamGet("User parameter:BaseApp/Preferences/Mod/sheetmetal")
     if pg.GetBool("bendSketch"):
         taskd.checkSeparate.setCheckState(QtCore.Qt.CheckState.Checked)
