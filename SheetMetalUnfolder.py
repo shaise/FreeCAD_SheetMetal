@@ -2441,7 +2441,7 @@ class SMUnfoldTaskPanel:
             sk.Label = name
         except:
             skb = docG.ActiveObject
-            doc.removeObject(skb.Name)
+            docG.removeObject(skb.Name)
             SMWarning("discretizing Sketch")
             sk = SMmakeSketchfromEdges(p.Edges,name)
         docG.getObject(sk.Name).LineColor = color
