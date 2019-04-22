@@ -109,6 +109,7 @@ import DraftVecUtils, DraftGeomUtils, math, time
 import Draft
 import Drawing
 from SheetMetalCmd import iconPath
+from lookup import get_val_from_range
 
 genSketchChecked = True
 genSketchColor = '#000080'      
@@ -116,7 +117,7 @@ bendSketchChecked = False
 bendSketchColor = '#c00000'      
 intSketchColor = '#ff5733'
 genObjTransparency = 70
-manKFactor = -100.0     
+manKFactor = None
 
 # to do: 
 # - Put error numbers into the text
@@ -257,8 +258,9 @@ class Simple_node(object):
     self.oppositePoint = None # Point of a vertex on the opposite site, used to align points to the sheet plane
     self.vertexDict = {} # Vertexes of a bend, original and unbend coordinates, flags p, c, t, o
     self.edgeDict = {} # unbend edges dictionary, key is a combination of indexes to vertexDict.
-    self.k_Factor = None # k-factor according to ANSI standard
-    self._trans_length = None # length of translation for Bend nodes, k-factor used according to DIN 6935
+    self.__k_Factor = 0 # k-factor according to ANSI standard
+    self.manualKFactor = None
+    self._trans_length = None # length of translation for Bend nodes
     self.analysis_ok = True # indicator if something went wrong with the analysis of the face
     self.error_code = None # index to unfold_error dictionary
     # here the new features of the nodes:
@@ -277,10 +279,22 @@ class Simple_node(object):
   def get_Face_idx(self):
     # get the face index from the tree-element
     return self.idx
+    
+  @property
+  def k_Factor(self):
+    global manKFactor
 
+    if manKFactor is not None: 
+        return manKFactor
+    elif self.__k_Factor < 0: 
+        return 0 
+    else:
+        return self.__k_Factor
 
-
-
+  @k_Factor.setter
+  def k_Factor(self, val):
+    SMError("k_Factor is a readonly property! Won't set to:", val) 
+    
 
 class SheetTree(object):
   def __init__(self, TheShape, f_idx):
@@ -824,18 +838,17 @@ class SheetTree(object):
         newNode.tan_vec = -pTanVec
       else:
         newNode.tan_vec = pTanVec
-
+        
     if newNode.bend_dir == 'up':
       innerRadius = theFace.Surface.Radius
     else:
       innerRadius = theFace.Surface.Radius - self.__thickness
-    if manKFactor < -9.0:
-      # auto (original) K factor
-      raise ValueError("Why is manKFactor less than -9?")
-    else:
-      newNode.k_Factor = manKFactor 
-    if newNode.k_Factor < 0:
-      newNode.k_Factor = 0
+
+    # Will be used to determine the correct K-factor
+    newNode.thickness = self.__thickness
+    newNode.innerRadius = innerRadius
+    newNode.manKFactor = manKFactor
+
     FreeCAD.Console.PrintLog(newNode.bend_dir + " Face"+ str(newNode.idx+1)+ " k-factor: "+ str(newNode.k_Factor) + "\n")
     newNode._trans_length = (innerRadius + newNode.k_Factor * self.__thickness) * newNode.bend_angle
 
@@ -1294,8 +1307,12 @@ class SheetTree(object):
     axis = bend_node.axis
     cent = bend_node.bendCenter
     bRad = bend_node.innerRadius
-    kFactor = bend_node.k_Factor
     thick = self.__thickness
+    
+    # obtain the K-factor from the lookup table 
+    #kFactor = get_val_from_range(k_factor_lookup, bRad / thick)    
+    kFactor = bend_node.k_Factor
+    
     transRad = bRad + kFactor * thick
     print 'transRad Face', str(fIdx+1), ', r:', bRad, ', k-factor:', round(kFactor, 2), ', thickness:', thick
     tanVec = bend_node.tan_vec
@@ -1820,8 +1837,8 @@ class SheetTree(object):
     bendFaceList.remove(bend_node.c_face_idx)
     
     flat_shell = []
-    flat_shell.append(self.unbendFace(bend_node.idx, bend_node, nullVec, 'top') )
-    flat_shell.append(self.unbendFace(bend_node.c_face_idx, bend_node, nullVec, 'counter') )
+    flat_shell.append(self.unbendFace(bend_node.idx, bend_node, nullVec, 'top'))
+    flat_shell.append(self.unbendFace(bend_node.c_face_idx, bend_node, nullVec, 'counter'))
     
     
     for i in bendFaceList:
@@ -1964,7 +1981,7 @@ class SheetTree(object):
 
 
 
-def getUnfold():
+def getUnfold(k_factor_lookup):
     resPart = None
     normalVect = None
     folds = None
@@ -2160,30 +2177,33 @@ class QColorButton(QtGui.QPushButton):
         if dlg.exec_():
             self.setColor(dlg.currentColor().name())
         
+        
+import re
+
 class SMUnfoldTaskPanel:
     '''A TaskPanel for the facebinder'''
     def __init__(self):
-        global genSketchChecked, genObjTransparency, manKFactor
+        global genSketchChecked, genObjTransparency, manKFactor        
+        k_factor = 0.5  # default value 
         
-        # Determine the K-factor from Bend properties 
-        k_factors = []
-        # TODO: Is the following the correct way to get the selected object?
-        sel_obj = Gui.Selection.getSelection()[0].getParentGeoFeatureGroup()
-        for feature in sel_obj.Group:
-            try: 
-                k_factors.append(feature.getPropertyByName('kfactor'))
-            except:
-                pass 
-                
-        k_factors_uniq = set(k_factors)
-        if len(k_factors_uniq) > 1: 
-            k_factors_so_far = ', '.join(map(str, list(k_factors_uniq)))
-            raise ValueError("I don't know how to handle multiple k-factor values: " + k_factors_so_far)
-        elif len(k_factors_uniq) == 0:
-            raise ValueError("We need a K-factor to work with.")
+        # Get the material name
+        material_regex = re.compile('.+_material_([a-zA-Z0-9_]+).*')
+        selobj = Gui.Selection.getSelection()[0]
+        selobj_parent = selobj.getParentGeoFeatureGroup()
+        if selobj_parent:
+            label = selobj_parent.Label
         else:
-            k_factor = k_factors[0]
-
+            label = selobj.Label             
+        material_match = material_regex.match(label)
+        if material_match:
+            self.material = material_match.group(1)
+            SMMessage('Material for this unfold is: ', self.material)
+        else:
+            msg = "Unfold operation needs to know material to get K-factor values."
+            msg += "\n"
+            msg += "Please specify the material via the shape label."
+            raise ValueError(msg)
+                        
         self.obj = None
         self.form = QtGui.QWidget()
         self.form.setObjectName("SMUnfoldTaskPanel")
@@ -2335,16 +2355,31 @@ class SMUnfoldTaskPanel:
         pg.SetString("genColor",genSketchColor)
         pg.SetString("intColor",intSketchColor)
         
-        manKFactor = self.kFactSpin.value()
+        if self.checkKfact.isChecked():
+            manKFactor = self.kFactSpin.value()
+            SMMessage('manual kfactor is enabled: ', manKFactor)
+        else:
+            SMMessage('manual kfactor is disabled.')
+            manKFactor = None 
+            
         genObjTransparency = self.transSpin.value()
             
         doc = FreeCAD.ActiveDocument
+        
+        # TODO: get the k_factor lookup table here 
+        k_factor_lookup = {
+            1: 0.25,
+            3: 0.35,
+            5: 0.44,
+            99: 0.5
+        }
         try:
-            s, foldComp, norm, thename = getUnfold()
+            s, foldComp, norm, thename = getUnfold(k_factor_lookup)
             foldLines = foldComp.Edges
-        except:
+        except Exception as e:
             s = None
             QtGui.QApplication.restoreOverrideCursor()
+            SMError(e.args)
             msg = """Unfold is failing.<br>Please try to select a different face to unfold your object"""
             QtGui.QMessageBox.question(None,"Warning",msg,QtGui.QMessageBox.Ok)
         if (s is not None):
@@ -2408,7 +2443,7 @@ class SMUnfoldTaskPanel:
             sk = Draft.makeSketch(p.Edges, autoconstraints = True)
             sk.Label = name
         except:
-            skb = doc.ActiveObject
+            skb = docG.ActiveObject
             doc.removeObject(skb.Name)
             SMWarning("discretizing Sketch")
             sk = SMmakeSketchfromEdges(p.Edges,name)
@@ -2427,7 +2462,7 @@ class SMUnfoldTaskPanel:
         #self.bendColor.setEnabled(self.checkSketch.isChecked() and self.checkSeparate.isChecked())
         
     def retranslateUi(self):
-        self.form.setWindowTitle(_translate("SheetMetal", "Unfold sheet metal onject", None))
+        self.form.setWindowTitle(_translate("SheetMetal", "Unfold sheet metal object", None))
         self.checkSketch.setText(_translate("SheetMetal", "Generate projection sketch", None))
         self.checkSeparate.setText(_translate("SheetMetal", "Separate projection layers", None))
         self.checkKfact.setText(_translate("SheetMetal", "Manual K-factor", None))
