@@ -2358,15 +2358,43 @@ class SMUnfoldTaskPanel:
         genObjTransparency = self.transSpin.value()
             
         doc = FreeCAD.ActiveDocument
-        
-        # Build the k_factor lookup table 
-        if self.material:
-            material_sheet_name = "material_%s" % self.material
-            lookup_sheet = doc.getObjectsByLabel(material_sheet_name)
-            if len(lookup_sheet) == 0: 
-                SMErrorBox("No Spreadsheet is found containing material definition: %s" % material_sheet_name)
-                return 
-            else:
+
+
+
+        def get_linked_objs_recursive(links): 
+            Parts_index = 2
+            objects = []
+            for o in [l.LinkedObject for l in links]:
+                if o.TypeId == 'App::Link':
+                    # recursive
+                    objects += get_linked_objs_recursive([o])
+                elif o.TypeId == 'Part::FeaturePython':
+                    # this is an assembly container 
+                    objects += o.Group[Parts_index].Group
+                else:
+                    objects.append(o)
+
+            #print "Examined objects: ", ', '.join([o.Label for o in objects])
+            return objects 
+        
+        # Build the k_factor lookup table 
+        if self.material:
+            material_sheet_name = "material_%s" % self.material
+            lookup_sheet = doc.getObjectsByLabel(material_sheet_name)
+            if len(lookup_sheet) == 0: 
+                # Maybe the material sheet is linked from another document
+                lookup_sheet = None
+                links = doc.findObjects('App::Link')
+                objects = get_linked_objs_recursive(links)
+                for obj in objects:
+                    if obj.Label == material_sheet_name:
+                        lookup_sheet = obj 
+                        break
+
+                if lookup_sheet is None:
+                    SMErrorBox("No Spreadsheet is found containing material definition: %s" % material_sheet_name)
+                    return 
+            else:
                 lookup_sheet = lookup_sheet[0]
             
             # Start of spreadsheet functions 
