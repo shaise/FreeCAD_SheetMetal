@@ -156,7 +156,6 @@ def SMLog(* args):
   FreeCAD.Console.PrintLog(message + "\n")
   #FreeCAD.Console.PrintMessage(message + "\n") #maui
 
-
 def SMError(* args):
   message = ""
   for x in args:
@@ -2384,12 +2383,17 @@ class SMUnfoldTaskPanel:
             if len(lookup_sheet) == 0: 
                 # Maybe the material sheet is linked from another document
                 lookup_sheet = None
-                links = doc.findObjects('App::Link')
-                objects = get_linked_objs_recursive(links)
-                for obj in objects:
-                    if obj.Label == material_sheet_name:
-                        lookup_sheet = obj 
-                        break
+                try:
+                    links = doc.findObjects('App::Link')
+                    objects = get_linked_objs_recursive(links)
+                    for obj in objects:
+                        if obj.Label == material_sheet_name:
+                            lookup_sheet = obj 
+                            break
+                except: 
+                    # In FreeCAD Main branch, "App:Link" is not a valid type 
+                    # thus causing FreeCADError. Simply ignore it. 
+                    pass
 
                 if lookup_sheet is None:
                     SMErrorBox("No Spreadsheet is found containing material definition: %s" % material_sheet_name)
