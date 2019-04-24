@@ -109,6 +109,7 @@ import DraftVecUtils, DraftGeomUtils, math, time
 import Draft
 import Drawing
 from SheetMetalCmd import iconPath
+from lookup import get_val_from_range
 
 genSketchChecked = True
 genSketchColor = '#000080'      
@@ -116,7 +117,8 @@ bendSketchChecked = False
 bendSketchColor = '#c00000'      
 intSketchColor = '#ff5733'
 genObjTransparency = 70
-manKFactor = -100.0     
+manKFactor = None
+kFactorStandard = None
 
 # to do: 
 # - Put error numbers into the text
@@ -155,7 +157,6 @@ def SMLog(* args):
   FreeCAD.Console.PrintLog(message + "\n")
   #FreeCAD.Console.PrintMessage(message + "\n") #maui
 
-
 def SMError(* args):
   message = ""
   for x in args:
@@ -174,6 +175,12 @@ def SMWarning(* args):
     message += str(x)
   FreeCAD.Console.PrintWarning(message + "\n")
 
+def SMErrorBox(* args):  
+    message = ""
+    for x in args:
+        message += str(x)
+    SMError(message)
+    QtGui.QMessageBox.critical(FreeCADGui.getMainWindow(), "ERROR", message)
 
 def equal_vertex(vert1, vert2, p=5):
   # compares two vertices 
@@ -229,7 +236,7 @@ class Simple_node(object):
   Faces of the edge of the metal-sheet need in cases to be split.
   These new faces are added to the index list.
   '''
-  def __init__(self, f_idx=None, Parent_node= None, Parent_edge = None):
+  def __init__(self, f_idx=None, Parent_node= None, Parent_edge = None, k_factor_lookup = None):
     self.idx = f_idx  # index of the "top-face"
     self.c_face_idx = None # face index to the opposite face of the sheet (counter-face)
     self.node_type = None  # 'Flat' or 'Bend'
@@ -251,8 +258,8 @@ class Simple_node(object):
     self.oppositePoint = None # Point of a vertex on the opposite site, used to align points to the sheet plane
     self.vertexDict = {} # Vertexes of a bend, original and unbend coordinates, flags p, c, t, o
     self.edgeDict = {} # unbend edges dictionary, key is a combination of indexes to vertexDict.
-    self.k_Factor = None # k-factor according to DIN 6935
-    self._trans_length = None # length of translation for Bend nodes, k-factor used according to DIN 6935
+    self.k_factor_lookup = k_factor_lookup # k-factor lookup dictionary, according to ANSI standard
+    self._trans_length = None # length of translation for Bend nodes
     self.analysis_ok = True # indicator if something went wrong with the analysis of the face
     self.error_code = None # index to unfold_error dictionary
     # here the new features of the nodes:
@@ -271,19 +278,41 @@ class Simple_node(object):
   def get_Face_idx(self):
     # get the face index from the tree-element
     return self.idx
+    
+  @property
+  def k_Factor(self):
+    global manKFactor
 
-
-
-
+    k = None
+    if manKFactor is not None: 
+        k = manKFactor
+    else:
+        # obtain the K-factor from the lookup table 
+        if kFactorStandard is None:
+            raise ValueError('K-factor standard declaration is required!')
+        k = get_val_from_range(self.k_factor_lookup, self.innerRadius / self.thickness)
+    if kFactorStandard == 'din':
+        k = k / 2
+    elif kFactorStandard == 'ansi':
+        pass
+    else:
+        raise ValueError('Unrecognized K-factor standard: %s' % (str(kFactorStandard)))
+    return k 
+        
+  @k_Factor.setter
+  def k_Factor(self, val):
+    SMError("k_Factor is a readonly property! Won't set to:", val) 
+    
 
 class SheetTree(object):
-  def __init__(self, TheShape, f_idx):
+  def __init__(self, TheShape, f_idx, k_factor_lookup):
     self.cFaceTol = 0.002 # tolerance to detect counter-face vertices
     # this high tolerance was needed for more real parts
     self.root = None # make_new_face_node adds the root node if parent_node == None
     self.__Shape = TheShape.copy()
     self.error_code = None
     self.failed_face_idx = None
+    self.k_factor_lookup = k_factor_lookup
     
     if not self.__Shape.isValid():
       FreeCAD.Console.PrintLog("The shape is not valid!" + "\n")
@@ -652,7 +681,7 @@ class SheetTree(object):
             
       maxDistance = 1000
       oppoPoint = None
-      print ('need to check Face', str(fIdx+1), ' with ', len(self.f_list[fIdx].Vertexes))
+      #print('need to check Face', str(fIdx+1), ' with ', len(self.f_list[fIdx].Vertexes))
       for theVert in self.f_list[fIdx].Vertexes:
         # need to check if theVert has 
         if self.isVertOpposite(theVert, theNode):
@@ -662,7 +691,7 @@ class SheetTree(object):
             oppoPoint = theVert.Point
             
       if oppoPoint is None:
-        print (' error need always an opposite point in a side face!')
+        print(' error need always an opposite point in a side face!')
         # fix me: need a proper error condition.
       
       #vec1 = Base.Vector(theNode.axis.x, theNode.axis.y, theNode.axis.z) # make a copy
@@ -702,7 +731,7 @@ class SheetTree(object):
             
       maxDistance = 1000
       oppoPoint = None
-      print ('need to check Face', str(fIdx+1), ' with ', len(self.f_list[fIdx].Vertexes))
+      #print('need to check Face', str(fIdx+1), ' with ', len(self.f_list[fIdx].Vertexes))
       for theVert in self.f_list[fIdx].Vertexes:
         # need to check if theVert has 
         if self.isVertOpposite(theVert, theNode):
@@ -712,7 +741,7 @@ class SheetTree(object):
             oppoPoint = theVert.Point
             
       if oppoPoint is None:
-        print (' error need always an opposite point in a side face!')
+        print(' error need always an opposite point in a side face!')
         # fix me: need a proper error condition.
       #vec1 = Base.Vector(radVector.x, radVector.y, radVector.z) # make a copy
       vec1 = (oppoPoint - origin).normalize()
@@ -818,20 +847,18 @@ class SheetTree(object):
         newNode.tan_vec = -pTanVec
       else:
         newNode.tan_vec = pTanVec
-
+        
     if newNode.bend_dir == 'up':
       innerRadius = theFace.Surface.Radius
     else:
       innerRadius = theFace.Surface.Radius - self.__thickness
-    if manKFactor < -9.0:
-      # auto (original) K factor
-      newNode.k_Factor = (0.65 + 0.5*math.log10(innerRadius/self.__thickness))
-    else:
-      newNode.k_Factor = manKFactor # revert to 1/2 k_factor standard * 2.0
-    if newNode.k_Factor < 0:
-      newNode.k_Factor = 0
+
+    # Will be used to determine the correct K-factor
+    newNode.thickness = self.__thickness
+    newNode.innerRadius = innerRadius
+
     FreeCAD.Console.PrintLog(newNode.bend_dir + " Face"+ str(newNode.idx+1)+ " k-factor: "+ str(newNode.k_Factor) + "\n")
-    newNode._trans_length = (innerRadius + newNode.k_Factor * self.__thickness/2.0) * newNode.bend_angle
+    newNode._trans_length = (innerRadius + newNode.k_Factor * self.__thickness) * newNode.bend_angle
 
 
     #print 'newNode._trans_length: ', newNode._trans_length
@@ -866,7 +893,7 @@ class SheetTree(object):
     # search the counter face, get axis of Face
     # In case of "Bend" get angle, k_factor and trans_length
     # put the node into the tree
-    newNode = Simple_node(face_idx, P_node, P_edge)
+    newNode = Simple_node(face_idx, P_node, P_edge, self.k_factor_lookup)
     F_type = str(self.__Shape.Faces[face_idx].Surface)
     
     # This face should be a node in the tree, and is therefore known!
@@ -1140,7 +1167,7 @@ class SheetTree(object):
               flagStr = flagStr + 'p1'
               origVec = P_edge.Vertexes[1].Point
               unbendVec = origVec
-          print ('make vertexDict: ', flagStr, ' ', str(face_idx+1))
+          #print('make vertexDict: ', flagStr, ' ', str(face_idx+1))
           newNode.vertexDict[vertDictIdx] = flagStr, origVec, unbendVec
           vertDictIdx += 1
   
@@ -1153,7 +1180,7 @@ class SheetTree(object):
               flagStr = flagStr + 'p'
               origVec = pVert.Point
               unbendVec = origVec
-          print ('make vertexDict: ', flagStr, ' ', str(face_idx+1))
+          #print('make vertexDict: ', flagStr, ' ', str(face_idx+1))
           newNode.vertexDict[vertDictIdx] = flagStr, origVec, unbendVec
           vertDictIdx += 1
       
@@ -1288,10 +1315,16 @@ class SheetTree(object):
     axis = bend_node.axis
     cent = bend_node.bendCenter
     bRad = bend_node.innerRadius
-    kFactor = bend_node.k_Factor
     thick = self.__thickness
-    transRad = bRad + kFactor * thick/2.0
-    #print 'transRad Face', str(fIdx+1), ' ', bRad, ' ', kFactor, ' ', thick
+    
+    kFactor = bend_node.k_Factor
+    
+    transRad = bRad + kFactor * thick
+    if kFactorStandard == 'din':
+        conv = ', converted from DIN'
+    else:
+        conv = '' 
+    print "transRad Face: %d, r: %.2f, thickness: %.2f, K-factor: %.2f (ANSI%s)" % (fIdx+1, bRad, thick, kFactor, conv)
     tanVec = bend_node.tan_vec
     aFace = self.f_list[fIdx]
     
@@ -1339,7 +1372,7 @@ class SheetTree(object):
     for aWire in fWireList:
         uEdge = None
         idxList, closedW = self.sortEdgesTolerant(aWire.Edges)
-        print ('Wire', str(fIdx+1), ' has ', len(idxList), ' edges, closed: ', closedW)
+        #print('Wire', str(fIdx+1), ' has ', len(idxList), ' edges, closed: ', closedW)
         
         eList = []  # is the list of unbend edges
         j=0
@@ -1376,7 +1409,7 @@ class SheetTree(object):
           if mode == 'side':
             if vert0Idx is None:
               vert0Idx = len(bend_node.vertexDict)
-              print ('got additional side vertex0: ', vert0Idx, ' ', fEdge.Vertexes[0].Point)
+              #print('got additional side vertex0: ', vert0Idx, ' ', fEdge.Vertexes[0].Point)
               flags0 = ''
               origVec = fEdge.Vertexes[0].Point
               uVert0 = unbendPoint(origVec)
@@ -1384,7 +1417,7 @@ class SheetTree(object):
             if vertexCount >1:
               if vert1Idx is None:
                 vert1Idx = len(bend_node.vertexDict)
-                print ('got additional side vertex1: ', vert1Idx, ' ', fEdge.Vertexes[1].Point)
+                #print('got additional side vertex1: ', vert1Idx, ' ', fEdge.Vertexes[1].Point)
                 flags1 = ''
                 origVec = fEdge.Vertexes[1].Point
                 uVert1 = unbendPoint(origVec)
@@ -1620,7 +1653,7 @@ class SheetTree(object):
       except:
           #theFace = Part.makeFilledFace(wires)
           theFace = faces[0]
-          print ('got execption')
+          print('got execption')
           #Part.show(theFace, 'exception')
     keyList = []
     for key in bend_node.edgeDict:
@@ -1687,7 +1720,7 @@ class SheetTree(object):
     bRad = bend_node.innerRadius
     kFactor = bend_node.k_Factor
     thick = self.__thickness
-    transRad = bRad + kFactor * thick/2.0
+    transRad = bRad + kFactor * thick
     tanVec = bend_node.tan_vec
     theFace = self.f_list[bend_node.idx]
     
@@ -1740,7 +1773,7 @@ class SheetTree(object):
         wireList.append(edgeL)
         #Part.show(lWire, 'foldLine'+str(bend_node.idx +1)+'_')
       else:
-        print ('fix me! make errorcondition')
+        print('fix me! make errorcondition')
         
     return wireList
   
@@ -1764,7 +1797,7 @@ class SheetTree(object):
       return bPoint
 
     thick = self.__thickness
-    transRad = bend_node.innerRadius + bend_node.k_Factor * thick/2.0
+    transRad = bend_node.innerRadius + bend_node.k_Factor * thick
     tanVec = bend_node.tan_vec
 
     chord = cent.sub(bend_node.p_edge.Vertexes[0].Point)
@@ -1814,8 +1847,8 @@ class SheetTree(object):
     bendFaceList.remove(bend_node.c_face_idx)
     
     flat_shell = []
-    flat_shell.append(self.unbendFace(bend_node.idx, bend_node, nullVec, 'top') )
-    flat_shell.append(self.unbendFace(bend_node.c_face_idx, bend_node, nullVec, 'counter') )
+    flat_shell.append(self.unbendFace(bend_node.idx, bend_node, nullVec, 'top'))
+    flat_shell.append(self.unbendFace(bend_node.c_face_idx, bend_node, nullVec, 'counter'))
     
     
     for i in bendFaceList:
@@ -1958,7 +1991,7 @@ class SheetTree(object):
 
 
 
-def getUnfold():
+def getUnfold(k_factor_lookup):
     resPart = None
     normalVect = None
     folds = None
@@ -1992,7 +2025,7 @@ def getUnfold():
               f_number = int(o.SubElementNames[0].lstrip('Face'))-1
               #print f_number
               startzeit = time.clock()
-              TheTree = SheetTree(o.Object.Shape, f_number) # initializes the tree-structure
+              TheTree = SheetTree(o.Object.Shape, f_number, k_factor_lookup) # initializes the tree-structure
               if TheTree.error_code is None:
                 TheTree.Bend_analysis(f_number, None) # traverses the shape and builds the tree-structure
                 endzeit = time.clock()
@@ -2154,12 +2187,31 @@ class QColorButton(QtGui.QPushButton):
         if dlg.exec_():
             self.setColor(dlg.currentColor().name())
         
+        
+import re
+
 class SMUnfoldTaskPanel:
     '''A TaskPanel for the facebinder'''
     def __init__(self):
-        global genSketchChecked, genObjTransparency, manKFactor
+        global genSketchChecked, genObjTransparency, manKFactor       
+        k_factor = 0.5  # default value 
+        
+        # Get the material name if possible
+        self.material = None
+        material_regex = re.compile('.+_material_([a-zA-Z0-9_]+).*')
+        selobj = Gui.Selection.getSelection()[0]
+        selobj_parent = selobj.getParentGeoFeatureGroup()
+        if selobj_parent:
+            label = selobj_parent.Label
+        else:
+            label = selobj.Label             
+        material_match = material_regex.match(label)
+        if material_match:
+            self.material = material_match.group(1)
+            SMMessage('Material for this unfold is: ', self.material)
+                        
         self.obj = None
-        self.form = QtGui.QWidget()
+        self.form = SMUnfoldTaskPanel = QtGui.QWidget()
         self.form.setObjectName("SMUnfoldTaskPanel")
         self.form.setWindowTitle("Unfold sheet metal object")
         self.verticalLayout_2 = QtGui.QVBoxLayout(self.form)
@@ -2202,6 +2254,7 @@ class SMUnfoldTaskPanel:
         self.horizontalLayout_4.addWidget(self.internalColor)
         self.verticalLayout.addLayout(self.horizontalLayout_4)
         
+        # Manual K-factor selection 
         self.horizontalLayout = QtGui.QHBoxLayout()
         self.horizontalLayout.setSizeConstraint(QtGui.QLayout.SetDefaultConstraint)
         self.horizontalLayout.setObjectName(_fromUtf8("horizontalLayout"))
@@ -2214,6 +2267,8 @@ class SMUnfoldTaskPanel:
         self.checkKfact.setObjectName(_fromUtf8("checkKfact"))
         self.checkKfact.stateChanged.connect(self.checkKfactChange)
         self.horizontalLayout.addWidget(self.checkKfact)
+        spacerItem = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        self.horizontalLayout.addItem(spacerItem)
         self.kFactSpin = QtGui.QDoubleSpinBox(self.form)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Maximum, QtGui.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
@@ -2224,17 +2279,26 @@ class SMUnfoldTaskPanel:
         self.kFactSpin.setDecimals(3)
         self.kFactSpin.setMaximum(2.0)
         self.kFactSpin.setSingleStep(0.1)
-        self.kFactSpin.setProperty("value", 0.5)
+        self.kFactSpin.setProperty("value", k_factor)
         self.kFactSpin.setObjectName(_fromUtf8("kFactSpin"))
-        self.horizontalLayout.addWidget(self.kFactSpin)
+        self.horizontalLayout.addWidget(self.kFactSpin) 
+        # ANSI/DIN selection        
+        self.kfactorAnsi = QtGui.QRadioButton(SMUnfoldTaskPanel)
+        self.kfactorAnsi.setObjectName(_fromUtf8("kfactorAnsi"))
+        self.horizontalLayout.addWidget(self.kfactorAnsi)
+        self.kfactorDin = QtGui.QRadioButton(SMUnfoldTaskPanel)
+        self.kfactorDin.setObjectName(_fromUtf8("kfactorDin"))
+        self.horizontalLayout.addWidget(self.kfactorDin)
+        #
         self.verticalLayout.addLayout(self.horizontalLayout)
+                        
         self.horizontalLayout_2 = QtGui.QHBoxLayout()
         self.horizontalLayout_2.setSizeConstraint(QtGui.QLayout.SetMinimumSize)
         self.horizontalLayout_2.setContentsMargins(-1, 0, -1, -1)
         self.horizontalLayout_2.setObjectName(_fromUtf8("horizontalLayout_2"))
         self.label = QtGui.QLabel(self.form)
         self.label.setObjectName(_fromUtf8("label"))
-        self.horizontalLayout_2.addWidget(self.label)
+        self.horizontalLayout_2.addWidget(self.label)        
         self.transSpin = QtGui.QSpinBox(self.form)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Maximum, QtGui.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
@@ -2254,14 +2318,12 @@ class SMUnfoldTaskPanel:
           self.checkSketch.setCheckState(QtCore.Qt.CheckState.Checked)
         if bendSketchChecked:
           self.checkSeparate.setCheckState(QtCore.Qt.CheckState.Checked)
-        if manKFactor < -9.0:
-          self.kFactSpin.setEnabled(False)
-          self.kFactSpin.setProperty("value", 0.5)
-        else:
-          self.checkKfact.setCheckState(QtCore.Qt.CheckState.Checked)
-          self.kFactSpin.setProperty("value", manKFactor)
+
+        self.kFactSpin.setEnabled(False)          
         self.transSpin.setProperty("value", genObjTransparency)
-          
+        # Remember the K-factor standard selection 
+        self.updateKfactorStandard()
+        
         self.checkSketchChange()
         self.retranslateUi()
         
@@ -2289,17 +2351,23 @@ class SMUnfoldTaskPanel:
 
     def getStandardButtons(self):
         return int(QtGui.QDialogButtonBox.Ok)
+        
+    def updateKfactorStandard(self):
+        global kFactorStandard
+        self.kfactorAnsi.setChecked(kFactorStandard == 'ansi')
+        self.kfactorDin.setChecked(kFactorStandard == 'din')
 
     def accept(self):
         global genSketchChecked, bendSketchChecked, genObjTransparency, manKFactor
         global genSketchColor, bendSketchColor
+        global kFactorStandard
         genSketchChecked = self.checkSketch.isChecked()
         genSketchColor = self.genColor.color()
         bendSketchChecked = self.checkSeparate.isChecked()
         bendSketchColor = self.bendColor.color()
         intSketchColor = self.internalColor.color()
         
-        #print(self.checkSeparate.isChecked())
+        ##print(self.checkSeparate.isChecked())
         pg = FreeCAD.ParamGet("User parameter:BaseApp/Preferences/Mod/sheetmetal")
         if bendSketchChecked:
             pg.SetBool("bendSketch",1)
@@ -2312,20 +2380,166 @@ class SMUnfoldTaskPanel:
         pg.SetString("bendColor",bendSketchColor)
         pg.SetString("genColor",genSketchColor)
         pg.SetString("intColor",intSketchColor)
-        
+                
         if self.checkKfact.isChecked():
+            if self.kfactorAnsi.isChecked():
+                kFactorStandard = 'ansi'
+            elif self.kfactorDin.isChecked():
+                kFactorStandard = 'din'
+            else:
+                SMErrorBox("K-factor standard must be explicitly selected")
+                return        
             manKFactor = self.kFactSpin.value()
+            SMMessage('manual kfactor is enabled: ', manKFactor)
         else:
-            manKFactor = -10.0
+            SMMessage('manual kfactor is disabled.')
+            manKFactor = None 
+            kFactorStandard = None 
+            self.updateKfactorStandard()
+
         genObjTransparency = self.transSpin.value()
             
         doc = FreeCAD.ActiveDocument
+
+        def get_linked_objs_recursive(links): 
+            Parts_index = 2
+            objects = []
+            for o in [l.LinkedObject for l in links]:
+                if o.TypeId == 'App::Link':
+                    # recursive
+                    objects += get_linked_objs_recursive([o])
+                elif o.TypeId == 'Part::FeaturePython':
+                    # this is an assembly container 
+                    objects += o.Group[Parts_index].Group
+                else:
+                    objects.append(o)
+
+            #print "Examined objects: ", ', '.join([o.Label for o in objects])
+            return objects 
+        
+        # Build the k_factor lookup table 
+        if self.material:
+            material_sheet_name = "material_%s" % self.material
+            lookup_sheet = doc.getObjectsByLabel(material_sheet_name)
+            if len(lookup_sheet) == 0: 
+                # Maybe the material sheet is linked from another document
+                lookup_sheet = None
+                try:
+                    links = doc.findObjects('App::Link')
+                    objects = get_linked_objs_recursive(links)
+                    for obj in objects:
+                        if obj.Label == material_sheet_name:
+                            lookup_sheet = obj 
+                            break
+                except: 
+                    # In FreeCAD Main branch, "App:Link" is not a valid type 
+                    # thus causing FreeCADError. Simply ignore it. 
+                    pass
+
+                if lookup_sheet is None:
+                    SMErrorBox("No Spreadsheet is found containing material definition: %s" % material_sheet_name)
+                    return 
+            else:
+                lookup_sheet = lookup_sheet[0]
+            
+            # Start of spreadsheet functions 
+            cell_regex = re.compile('^([A-Z]+)([0-9]+)$')
+            def get_cells(sheet):
+                return sorted(filter(cell_regex.search, sheet.PropertiesList))
+                
+            def get_cell_tuple(cell_name):
+                m = cell_regex.match(cell_name)
+                col_name = m.group(1)
+                row_num = int(m.group(2))
+                return (col_name, row_num)
+            # End of spreadsheet functions 
+            
+            key_cell = None 
+            value_cell = None
+            options_cell = None 
+            for cell in get_cells(lookup_sheet):
+                if lookup_sheet.get(cell) == 'Radius / Thickness':
+                    key_cell = cell 
+                if lookup_sheet.get(cell) == 'K-factor':
+                    value_cell = cell                     
+                if lookup_sheet.get(cell) == 'Options':
+                    options_cell = cell 
+                if key_cell is not None and value_cell is not None and options_cell is not None:
+                    break 
+            
+            if key_cell is None:
+                raise ValueError("No cell can be found with name: 'Radius / Thickness'")
+            if value_cell is None:
+                raise ValueError("No cell can be found with name: 'K-factor'")
+            if options_cell is None:
+                raise ValueError("No cell can be found with name: 'Options'")
+
+            [key_column_name, key_column_row] = get_cell_tuple(key_cell)
+            value_column_name = get_cell_tuple(value_cell)[0]
+                
+            # Build K-factor lookup table 
+            k_factor_lookup = {}
+            for i in range(key_column_row + 1, 1000):
+                try:
+                    key = float(lookup_sheet.get(key_column_name + str(i)))
+                except:
+                    break            
+                value = float(lookup_sheet.get(value_column_name + str(i)))
+
+                #SMMessage("Found key/value: %f : %f" % (key, value))
+                k_factor_lookup[key] = value 
+            
+            # Get the options 
+            [opt_col, opt_row] = get_cell_tuple(options_cell)
+            i = 1
+            while True:
+                opt_key_cell = "%s%i" % (opt_col, opt_row + i)
+                next_col = chr(ord(opt_col) + 1)
+                opt_value_cell = "%s%i" % (next_col, opt_row + i)
+                i += 1
+                try:
+                    option = lookup_sheet.get(opt_key_cell)
+                    value = lookup_sheet.get(opt_value_cell)
+                except:
+                    break
+                    
+                #print "Found option: ", option, ":", value
+                if option == 'K-factor standard':
+                    if value in ["ANSI", "DIN"]:
+                        kFactorStandard = value.lower()
+                
+            if kFactorStandard is None:
+                SMErrorBox("'K-factor standard: ANSI/DIN' is required!")
+                return
+            
+            SMMessage("Obtained K-factor lookup table is:")
+            print(k_factor_lookup)
+        elif not self.checkKfact.isChecked():
+            msg = "Unfold operation needs to know K-factor value(s) to be used."
+            msg += "\n\n"
+            msg += "* Either set a manual K-factor in the SheetMetal options menu\n"
+            msg += "* Or use a \"Material Definition Sheet\" (see SheetMetal/README)"
+            SMErrorBox(msg)
+            return
+        else:
+            k_factor_lookup = {}  # manual value will be used
+
+        """
+        # For debugging purposes 
+        k_factor_lookup = {
+            1: 0.25,
+            3: 0.35,
+            5: 0.44,
+            99: 0.5
+        }
+        """
         try:
-            s, foldComp, norm, thename = getUnfold()
+            s, foldComp, norm, thename = getUnfold(k_factor_lookup)
             foldLines = foldComp.Edges
-        except:
+        except Exception as e:
             s = None
             QtGui.QApplication.restoreOverrideCursor()
+            SMError(e.args)
             msg = """Unfold is failing.<br>Please try to select a different face to unfold your object"""
             QtGui.QMessageBox.question(None,"Warning",msg,QtGui.QMessageBox.Ok)
         if (s is not None):
@@ -2389,6 +2603,7 @@ class SMUnfoldTaskPanel:
             sk = Draft.makeSketch(p.Edges, autoconstraints = True)
             sk.Label = name
         except:
+            doc = FreeCAD.ActiveDocument
             skb = doc.ActiveObject
             doc.removeObject(skb.Name)
             SMWarning("discretizing Sketch")
@@ -2416,6 +2631,8 @@ class SMUnfoldTaskPanel:
         self.transSpin.setSuffix(_translate("SheetMetal", "%", None))
         self.BendLbl.setText(_translate("SheetMetal", "    Bend lines color", None))
         self.InternalLbl.setText(_translate("SheetMetal", "    Internal lines color", None))
+        self.kfactorAnsi.setText(_translate("SheetMetal", "ANSI", None))
+        self.kfactorDin.setText(_translate("SheetMetal", "DIN", None))
 
 
 class SMUnfoldCommandClass():
@@ -2429,7 +2646,12 @@ class SMUnfoldCommandClass():
             'ToolTip' : "Flatten folded sheet metal object"}
  
   def Activated(self):
-    taskd = SMUnfoldTaskPanel()
+    try:
+        taskd = SMUnfoldTaskPanel()
+    except ValueError as e:
+        SMErrorBox(e.args[0])
+        return 
+
     pg = FreeCAD.ParamGet("User parameter:BaseApp/Preferences/Mod/sheetmetal")
     if pg.GetBool("bendSketch"):
         taskd.checkSeparate.setCheckState(QtCore.Qt.CheckState.Checked)
@@ -2456,3 +2678,46 @@ class SMUnfoldCommandClass():
 
 Gui.addCommand('SMUnfold',SMUnfoldCommandClass())
 
+class SMUnfoldUnattendedCommandClass():
+  """Unfold object"""
+
+  def GetResources(self):
+    __dir__ = os.path.dirname(__file__)
+    iconPath = os.path.join( __dir__, 'Resources', 'icons' )
+    return {'Pixmap'  : os.path.join( iconPath , 'SMUnfoldUnattended.svg') , # the name of a svg file available in the resources
+            'MenuText': "Unattended Unfold" ,
+            'ToolTip' : "Flatten folded sheet metal object with default options."}
+
+  def Activated(self):
+    SMMessage("Running unattended unfold...")
+    try:
+        taskd = SMUnfoldTaskPanel()
+    except ValueError as e:
+        SMErrorBox(e.args[0])
+        return 
+
+    pg = FreeCAD.ParamGet("User parameter:BaseApp/Preferences/Mod/sheetmetal")
+    if pg.GetBool("bendSketch"):
+        taskd.checkSeparate.setCheckState(QtCore.Qt.CheckState.Checked)
+    else:
+        taskd.checkSeparate.setCheckState(QtCore.Qt.CheckState.Unchecked)
+    if pg.GetBool("genSketch"):
+        taskd.checkSketch.setCheckState(QtCore.Qt.CheckState.Checked)
+    else:
+        taskd.checkSketch.setCheckState(QtCore.Qt.CheckState.Unchecked)
+    taskd.bendColor.setColor(pg.GetString("bendColor"))
+    taskd.genColor.setColor(pg.GetString("genColor"))
+    taskd.internalColor.setColor(pg.GetString("intColor"))
+    taskd.accept()
+    return
+
+  def IsActive(self):
+    if len(Gui.Selection.getSelection()) != 1 or len(Gui.Selection.getSelectionEx()[0].SubElementNames) != 1:
+      return False
+    selobj = Gui.Selection.getSelection()[0]
+    selFace = Gui.Selection.getSelectionEx()[0].SubObjects[0]
+    if type(selFace) != Part.Face:
+      return False
+    return True
+
+Gui.addCommand("SMUnfoldUnattended",SMUnfoldUnattendedCommandClass())

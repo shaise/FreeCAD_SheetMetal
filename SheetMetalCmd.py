@@ -625,7 +625,7 @@ def smBend(bendR = 1.0, bendA = 90.0, miterA1 = 0.0,miterA2 = 0.0, BendType = "M
     else :
       if bendA > 0.0 :
         # create bend
-        unfoldLength = ( bendR + kfactor * thk / 2.0 ) * bendA * math.pi / 180.0
+        unfoldLength = ( bendR + kfactor * thk ) * bendA * math.pi / 180.0
         # narrow the wall if we have gaps
         unfoldFace = smMakeFace(lenEdge, thkDir, thk, gap1, gap2)
         if unfoldFace.normalAt(0,0) != FaceDir :
@@ -670,7 +670,7 @@ class SMBendWall:
     obj.addProperty("App::PropertyAngle","miterangle2","ParametersEx","Bend miter angle").miterangle2 = 0.0
     obj.addProperty("App::PropertyDistance","offset","ParametersEx","offset Bend").offset = 0.0
     obj.addProperty("App::PropertyBool","unfold","ParametersEx","Invert bend direction").unfold = False
-    obj.addProperty("App::PropertyFloatConstraint","kfactor","ParametersEx","Gap from left side").kfactor = (0.5,0.0,1.0,0.01)
+    obj.addProperty("App::PropertyFloatConstraint","kfactor","ParametersEx","Location of neutral line. Caution: Using ANSI standards, not DIN.").kfactor = (0.5,0.0,1.0,0.01)
     obj.addProperty("App::PropertyLink", "Sketch", "ParametersEx2", "Sketch object")
     obj.addProperty("App::PropertyBool","sketchflip","ParametersEx2","flip sketch direction").sketchflip = False
     obj.addProperty("App::PropertyBool","sketchinvert","ParametersEx2","invert sketch start").sketchinvert = False
@@ -698,7 +698,7 @@ class SMBendWall:
       fp.addProperty("App::PropertyBool","unfold","ParametersEx","Invert bend direction").unfold = False
 
     if (not hasattr(fp,"kfactor")):
-      fp.addProperty("App::PropertyFloatConstraint","kfactor","ParametersEx","Gap from left side").kfactor = (0.5,0.0,1.0,0.01)
+      fp.addProperty("App::PropertyFloatConstraint","kfactor","ParametersEx","Location of neutral line. Caution: Using ANSI standards, not DIN.").kfactor = (0.5,0.0,1.0,0.01)
 
     if (not hasattr(fp,"BendType")):
       fp.addProperty("App::PropertyEnumeration", "BendType", "Parameters","Bend Type").BendType = ["Material Outside", "Material Inside", "Thickness Outside", "Offset"]

@@ -3,6 +3,57 @@ A simple sheet metal workbench for FreeCAD
 
 ![Demo Workflow](../master/Resources/SheetMetal4.gif)
 
+# Terminology 
+
+![Terminology](./tools/terminology.png)
+
+# Test case 
+
+As a simple test case, consider the following example: 
+
+* Inputs: 
+    - Thickness: 2mm 
+    - K-factor: 0.38 (ANSI)
+    - Leg length: 48.12mm
+    - Inner effective radius: 1.64mm
+    - Flange length: 51.76mm
+* Output
+    - End to mold-line distance: 50mm
+
+You can find a simple calculator in `./tools/calc-unfold.py`. 
+
+# Material Definition Sheet 
+
+You can use a Spreadsheet object to declare K-factor values inside the project file permanently. This will allow: 
+
+* Different K-factor values to be used for each bend in your model 
+* Sharing the same material definition for multiple objects 
+* Unattended unfold (required for ["Unfold Updater" macro](./Macros/SheetMetalUnfoldUpdater.FCMacro))
+
+To use the Material Definition Sheet, follow the steps:
+
+1. Determine your material name (eg. `foo`)
+2. Add `_material_foo` postfix to your shape's Label.
+3. Create a spreadsheet with the name of `material_foo`
+4. Create a table layout in `material_foo`, like the following (see [this table](https://user-images.githubusercontent.com/6639874/56498031-b017bc00-6508-11e9-8b14-6076513d8488.png)): 
+
+    | Radius / Thickness | K-factor | Options | | 
+    | ---| ---| --- | --- |
+    | 1 | 0.38 | K-factor standard | ANSI |
+    | 3 | 0.43 | | |
+    | 99 | 0.5 | | |
+    
+    Notes: 
+    
+    1. The cell names are case/space sensitive.
+    2. Possible values for `K-factor standard` is `ANSI` or `DIN`. 
+    3. `Radius / Thickness` means `Radius over Thickness`. Eg. if inner radius is `1.64mm` and material thickness is `2mm` then `Radius / Thickness == 1.64/2 = 0.82` so `0.38` will be used as the K-factor. See [lookup.py](https://github.com/ceremcem/FreeCAD_SheetMetal/blob/k-factor-from-lookup/lookup.py#L46-L68) for more examples.
+
+5. Unfold as usual.
+
+[Here](https://user-images.githubusercontent.com/6639874/56642679-a749f600-6680-11e9-944a-82e447d9dc4e.gif) is a screencast in action.
+ 
+
 #### Developers:
 * Folding tools:  Shai Seger [@shaise](https://github.com/shaise)<br/>
                   [@jaisejames] https://github.com/jaisekjames<br/>
