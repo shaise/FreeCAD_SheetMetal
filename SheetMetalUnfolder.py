@@ -2161,7 +2161,7 @@ class SMUnfoldTaskPanel:
         self.obj = None
         self.form = QtGui.QWidget()
         self.form.setObjectName("SMUnfoldTaskPanel")
-        self.form.setWindowTitle("Unfold sheet metal onject")
+        self.form.setWindowTitle("Unfold sheet metal object")
         self.verticalLayout_2 = QtGui.QVBoxLayout(self.form)
         self.verticalLayout_2.setObjectName(_fromUtf8("verticalLayout_2"))
         self.verticalLayout = QtGui.QVBoxLayout()
@@ -2408,7 +2408,7 @@ class SMUnfoldTaskPanel:
         #self.bendColor.setEnabled(self.checkSketch.isChecked() and self.checkSeparate.isChecked())
         
     def retranslateUi(self):
-        self.form.setWindowTitle(_translate("SheetMetal", "Unfold sheet metal onject", None))
+        self.form.setWindowTitle(_translate("SheetMetal", "Unfold sheet metal object", None))
         self.checkSketch.setText(_translate("SheetMetal", "Generate projection sketch", None))
         self.checkSeparate.setText(_translate("SheetMetal", "Separate projection layers", None))
         self.checkKfact.setText(_translate("SheetMetal", "Manual K-factor", None))
