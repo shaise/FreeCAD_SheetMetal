@@ -3,6 +3,13 @@ A simple sheet metal workbench for FreeCAD
 
 ![Demo Workflow](../master/Resources/SheetMetal4.gif)
 
+#### Developers:
+* Folding tools:<br/>Shai Seger [@shaise](https://github.com/shaise)<br/>
+                  [@jaisekjames](https://github.com/jaisekjames)<br/>
+                  Cerem Cem ASLAN [@ceremcem](https://github.com/ceremcem)<br/>
+                  Based and inspired by Javier Martínez's ([@JMG1](https://github.com/JMG1)) code
+* Unfolding tool: Copyright 2014 by Ulrich Brammer <ulrich1a[at]users.sourceforge.net> AKA [@ulrich1a](https://github.com/ulrich1a)
+
 # Terminology 
 
 ![Terminology](./tools/terminology.png)
@@ -53,19 +60,13 @@ To use the Material Definition Sheet, follow the steps:
 
 [Here](https://user-images.githubusercontent.com/6639874/56642679-a749f600-6680-11e9-944a-82e447d9dc4e.gif) is a screencast in action.
  
-
-#### Developers:
-* Folding tools:  Shai Seger [@shaise](https://github.com/shaise)<br/>
-                  [@jaisejames] https://github.com/jaisekjames<br/>
-                  Based and inspired by Javier Martínez's ([@JMG1](https://github.com/JMG1)) code
-* Unfolding tool: Copyright 2014 by Ulrich Brammer <ulrich1a[at]users.sourceforge.net> AKA [@ulrich1a](https://github.com/ulrich1a)
-
 #### Installation
 For installation and how to use, please visit:  
 http://theseger.com/projects/2015/06/sheet-metal-addon-for-freecad/  
 Starting from FreeCAD 0.17 it can be installed via the [Addon Manager](https://github.com/FreeCAD/FreeCAD-addons) (from Tools menu)
 
 #### Release notes: 
+* V0.2.31 24 Apr 2019:  Added better K factor control by ceremcem. Thank you!
 * V0.2.30 30 Mar 2019:  Added Fold-on-sketch-line tool by jaisejames. Thank you!
 * V0.2.22 24 Jan 2019:  Fix some typos, Issue #54
 * V0.2.21 20 Jan 2019:  Fix some typos, Issue #52
