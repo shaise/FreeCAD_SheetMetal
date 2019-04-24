@@ -2516,8 +2516,9 @@ class SMUnfoldTaskPanel:
             print(k_factor_lookup)
         elif not self.checkKfact.isChecked():
             msg = "Unfold operation needs to know K-factor value(s) to be used."
-            msg += "\n"
-            msg += "Either set a manual K-factor or use a Material Definition Sheet."
+            msg += "\n\n"
+            msg += "* Either set a manual K-factor in the SheetMetal options menu\n"
+            msg += "* Or use a \"Material Definition Sheet\" (see SheetMetal/README)"
             SMErrorBox(msg)
             return
         else:

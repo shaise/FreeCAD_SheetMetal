@@ -1,5 +1,11 @@
 __author__ = "ceremcem"
 """
+Description:
+
+This macro automatically updates all unfold operations as well as their related 
+TechDraw views. It depends on some LinkStage3 features, see 
+https://github.com/realthunder/FreeCAD_assembly3 for more info.
+
 Usage: 
 
 1. Put your processed object into an assembly container. 
@@ -17,6 +23,7 @@ echo = FreeCAD.Console.PrintMessage
 warn = FreeCAD.Console.PrintWarning
 
 prev_workbench = Gui.activeWorkbench().name()
+# TODO: Actually there is no need to switch to SMWorkbench after the first one.
 Gui.activateWorkbench("SMWorkbench")
 if prev_workbench:
 	Gui.activateWorkbench(prev_workbench)
