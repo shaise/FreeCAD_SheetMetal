@@ -118,6 +118,7 @@ bendSketchColor = '#c00000'
 intSketchColor = '#ff5733'
 genObjTransparency = 70
 manKFactor = None
+kFactorStandard = None
 
 # to do: 
 # - Put error numbers into the text
@@ -282,13 +283,22 @@ class Simple_node(object):
   def k_Factor(self):
     global manKFactor
 
+    k = None
     if manKFactor is not None: 
-        return manKFactor
+        k = manKFactor
     else:
         # obtain the K-factor from the lookup table 
-        return get_val_from_range(self.k_factor_lookup, self.innerRadius / self.thickness)    
+        if kFactorStandard is None:
+            raise ValueError('K-factor standard declaration is required!')
+        k = get_val_from_range(self.k_factor_lookup, self.innerRadius / self.thickness)
+    if kFactorStandard == 'din':
+        k = k / 2
+    elif kFactorStandard == 'ansi':
+        pass
+    else:
+        raise ValueError('Unrecognized K-factor standard: %s' % (str(kFactorStandard)))
+    return k 
         
-
   @k_Factor.setter
   def k_Factor(self, val):
     SMError("k_Factor is a readonly property! Won't set to:", val) 
@@ -1310,7 +1320,11 @@ class SheetTree(object):
     kFactor = bend_node.k_Factor
     
     transRad = bRad + kFactor * thick
-    print "transRad Face: %d, r: %.2f, thickness: %.2f, K-factor: %.2f" % (fIdx+1, bRad, thick, kFactor)
+    if kFactorStandard == 'din':
+        conv = ', converted from DIN'
+    else:
+        conv = '' 
+    print "transRad Face: %d, r: %.2f, thickness: %.2f, K-factor: %.2f (ANSI%s)" % (fIdx+1, bRad, thick, kFactor, conv)
     tanVec = bend_node.tan_vec
     aFace = self.f_list[fIdx]
     
@@ -2179,7 +2193,7 @@ import re
 class SMUnfoldTaskPanel:
     '''A TaskPanel for the facebinder'''
     def __init__(self):
-        global genSketchChecked, genObjTransparency, manKFactor        
+        global genSketchChecked, genObjTransparency, manKFactor       
         k_factor = 0.5  # default value 
         
         # Get the material name if possible
@@ -2197,7 +2211,7 @@ class SMUnfoldTaskPanel:
             SMMessage('Material for this unfold is: ', self.material)
                         
         self.obj = None
-        self.form = QtGui.QWidget()
+        self.form = SMUnfoldTaskPanel = QtGui.QWidget()
         self.form.setObjectName("SMUnfoldTaskPanel")
         self.form.setWindowTitle("Unfold sheet metal object")
         self.verticalLayout_2 = QtGui.QVBoxLayout(self.form)
@@ -2240,6 +2254,7 @@ class SMUnfoldTaskPanel:
         self.horizontalLayout_4.addWidget(self.internalColor)
         self.verticalLayout.addLayout(self.horizontalLayout_4)
         
+        # Manual K-factor selection 
         self.horizontalLayout = QtGui.QHBoxLayout()
         self.horizontalLayout.setSizeConstraint(QtGui.QLayout.SetDefaultConstraint)
         self.horizontalLayout.setObjectName(_fromUtf8("horizontalLayout"))
@@ -2252,6 +2267,8 @@ class SMUnfoldTaskPanel:
         self.checkKfact.setObjectName(_fromUtf8("checkKfact"))
         self.checkKfact.stateChanged.connect(self.checkKfactChange)
         self.horizontalLayout.addWidget(self.checkKfact)
+        spacerItem = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        self.horizontalLayout.addItem(spacerItem)
         self.kFactSpin = QtGui.QDoubleSpinBox(self.form)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Maximum, QtGui.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
@@ -2264,15 +2281,24 @@ class SMUnfoldTaskPanel:
         self.kFactSpin.setSingleStep(0.1)
         self.kFactSpin.setProperty("value", k_factor)
         self.kFactSpin.setObjectName(_fromUtf8("kFactSpin"))
-        self.horizontalLayout.addWidget(self.kFactSpin)
+        self.horizontalLayout.addWidget(self.kFactSpin) 
+        # ANSI/DIN selection        
+        self.kfactorAnsi = QtGui.QRadioButton(SMUnfoldTaskPanel)
+        self.kfactorAnsi.setObjectName(_fromUtf8("kfactorAnsi"))
+        self.horizontalLayout.addWidget(self.kfactorAnsi)
+        self.kfactorDin = QtGui.QRadioButton(SMUnfoldTaskPanel)
+        self.kfactorDin.setObjectName(_fromUtf8("kfactorDin"))
+        self.horizontalLayout.addWidget(self.kfactorDin)
+        #
         self.verticalLayout.addLayout(self.horizontalLayout)
+                        
         self.horizontalLayout_2 = QtGui.QHBoxLayout()
         self.horizontalLayout_2.setSizeConstraint(QtGui.QLayout.SetMinimumSize)
         self.horizontalLayout_2.setContentsMargins(-1, 0, -1, -1)
         self.horizontalLayout_2.setObjectName(_fromUtf8("horizontalLayout_2"))
         self.label = QtGui.QLabel(self.form)
         self.label.setObjectName(_fromUtf8("label"))
-        self.horizontalLayout_2.addWidget(self.label)
+        self.horizontalLayout_2.addWidget(self.label)        
         self.transSpin = QtGui.QSpinBox(self.form)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Maximum, QtGui.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
@@ -2295,7 +2321,9 @@ class SMUnfoldTaskPanel:
 
         self.kFactSpin.setEnabled(False)          
         self.transSpin.setProperty("value", genObjTransparency)
-          
+        # Remember the K-factor standard selection 
+        self.updateKfactorStandard()
+        
         self.checkSketchChange()
         self.retranslateUi()
         
@@ -2323,10 +2351,16 @@ class SMUnfoldTaskPanel:
 
     def getStandardButtons(self):
         return int(QtGui.QDialogButtonBox.Ok)
+        
+    def updateKfactorStandard(self):
+        global kFactorStandard
+        self.kfactorAnsi.setChecked(kFactorStandard == 'ansi')
+        self.kfactorDin.setChecked(kFactorStandard == 'din')
 
     def accept(self):
         global genSketchChecked, bendSketchChecked, genObjTransparency, manKFactor
         global genSketchColor, bendSketchColor
+        global kFactorStandard
         genSketchChecked = self.checkSketch.isChecked()
         genSketchColor = self.genColor.color()
         bendSketchChecked = self.checkSeparate.isChecked()
@@ -2346,14 +2380,23 @@ class SMUnfoldTaskPanel:
         pg.SetString("bendColor",bendSketchColor)
         pg.SetString("genColor",genSketchColor)
         pg.SetString("intColor",intSketchColor)
-        
+                
         if self.checkKfact.isChecked():
+            if self.kfactorAnsi.isChecked():
+                kFactorStandard = 'ansi'
+            elif self.kfactorDin.isChecked():
+                kFactorStandard = 'din'
+            else:
+                SMErrorBox("K-factor standard must be explicitly selected")
+                return        
             manKFactor = self.kFactSpin.value()
             SMMessage('manual kfactor is enabled: ', manKFactor)
         else:
             SMMessage('manual kfactor is disabled.')
             manKFactor = None 
-            
+            kFactorStandard = None 
+            self.updateKfactorStandard()
+
         genObjTransparency = self.transSpin.value()
             
         doc = FreeCAD.ActiveDocument
@@ -2403,27 +2446,38 @@ class SMUnfoldTaskPanel:
             cell_regex = re.compile('^([A-Z]+)([0-9]+)$')
             def get_cells(sheet):
                 return sorted(filter(cell_regex.search, sheet.PropertiesList))
+                
+            def get_cell_tuple(cell_name):
+                m = cell_regex.match(cell_name)
+                col_name = m.group(1)
+                row_num = int(m.group(2))
+                return (col_name, row_num)
             # End of spreadsheet functions 
             
             key_cell = None 
             value_cell = None
+            options_cell = None 
             for cell in get_cells(lookup_sheet):
                 if lookup_sheet.get(cell) == 'Radius / Thickness':
                     key_cell = cell 
                 if lookup_sheet.get(cell) == 'K-factor':
-                    value_cell = cell 
-                if key_cell is not None and value_cell is not None:
+                    value_cell = cell                     
+                if lookup_sheet.get(cell) == 'Options':
+                    options_cell = cell 
+                if key_cell is not None and value_cell is not None and options_cell is not None:
                     break 
             
             if key_cell is None:
                 raise ValueError("No cell can be found with name: 'Radius / Thickness'")
             if value_cell is None:
                 raise ValueError("No cell can be found with name: 'K-factor'")
+            if options_cell is None:
+                raise ValueError("No cell can be found with name: 'Options'")
 
-            key_column_name = cell_regex.match(key_cell).group(1)
-            key_column_row = int(cell_regex.match(key_cell).group(2))
-            value_column_name = cell_regex.match(value_cell).group(1)
+            [key_column_name, key_column_row] = get_cell_tuple(key_cell)
+            value_column_name = get_cell_tuple(value_cell)[0]
                 
+            # Build K-factor lookup table 
             k_factor_lookup = {}
             for i in range(key_column_row + 1, 1000):
                 try:
@@ -2435,12 +2489,35 @@ class SMUnfoldTaskPanel:
                 #SMMessage("Found key/value: %f : %f" % (key, value))
                 k_factor_lookup[key] = value 
             
+            # Get the options 
+            [opt_col, opt_row] = get_cell_tuple(options_cell)
+            i = 1
+            while True:
+                opt_key_cell = "%s%i" % (opt_col, opt_row + i)
+                next_col = chr(ord(opt_col) + 1)
+                opt_value_cell = "%s%i" % (next_col, opt_row + i)
+                i += 1
+                try:
+                    option = lookup_sheet.get(opt_key_cell)
+                    value = lookup_sheet.get(opt_value_cell)
+                except:
+                    break
+                    
+                #print "Found option: ", option, ":", value
+                if option == 'K-factor standard':
+                    if value in ["ANSI", "DIN"]:
+                        kFactorStandard = value.lower()
+                
+            if kFactorStandard is None:
+                SMErrorBox("'K-factor standard: ANSI/DIN' is required!")
+                return
+            
             SMMessage("Obtained K-factor lookup table is:")
             print(k_factor_lookup)
         elif not self.checkKfact.isChecked():
-            msg = "Unfold operation needs to know material to get K-factor values."
+            msg = "Unfold operation needs to know K-factor value(s) to be used."
             msg += "\n"
-            msg += "Please specify the material via label or use a manual K-factor."
+            msg += "Either set a manual K-factor or use a Material Definition Sheet."
             SMErrorBox(msg)
             return
         else:
@@ -2553,6 +2630,8 @@ class SMUnfoldTaskPanel:
         self.transSpin.setSuffix(_translate("SheetMetal", "%", None))
         self.BendLbl.setText(_translate("SheetMetal", "    Bend lines color", None))
         self.InternalLbl.setText(_translate("SheetMetal", "    Internal lines color", None))
+        self.kfactorAnsi.setText(_translate("SheetMetal", "ANSI", None))
+        self.kfactorDin.setText(_translate("SheetMetal", "DIN", None))
 
 
 class SMUnfoldCommandClass():
