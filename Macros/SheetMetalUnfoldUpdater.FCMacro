@@ -24,6 +24,8 @@ if prev_workbench:
 doc = App.ActiveDocument
 unfold_sketch_regex = re.compile('.+_unfold_face')
 
+echo("--------------------- Updating unfold ------------------------------\n")
+
 for o in doc.Objects:
 	try:
 		_o = o.TypeId
@@ -36,7 +38,7 @@ for o in doc.Objects:
 		match = unfold_sketch_regex.match(o.Label)
 		if match:
 			output_name = o.Label[:-5]  # remove the "_face" postfix
-			echo("Found unfold job: " + output_name + " \n")
+			echo("* Found unfold job: " + output_name + " \n")
 
 			related_views = []
 			for x in doc.Objects:
@@ -44,12 +46,14 @@ for o in doc.Objects:
 					for view in x.Views:
 						try: 
 							_src = view.Source[0]
-						except:
+						except Exception as e:
+							warn("!! Exception of %s is: %s" % (view.Label, e.args[0]))
+							print(view.Source)
 							continue
-						#print("source of ", x.Name, view.Name, " is: ", _src.Label)
+						#print "source of ", view.Label, ' in ', x.Label, " is: ", _src.Label
 						if _src.Label == output_name:
 							# This view uses our unfolded output, update this view at the end 
-							print("Found related TechDraw ProjGroup: " + view.Name)
+							echo("* Found related TechDraw ProjGroup: %s\n" % view.Label)
 							related_views.append(view)
 							
 			try:
@@ -81,9 +85,12 @@ for o in doc.Objects:
 			sketch.Visibility = False
 			
 			# Update the source of related views
-			for view in related_views:
-				echo("Updating " + view.Name + " source.")
-				view.Source = [sketch]
+			if len(related_views) > 0:
+				for view in related_views:
+					echo("* Updating %s source as %s\n" % (view.Label, sketch.Label))
+					view.Source = [sketch]
+			else:
+				warn('No TechDraw view is updated.\n')
 
 doc.recompute()
 Gui.Selection.clearSelection()
