@@ -1,4 +1,4 @@
-# Introduction 
+# Air Bending
 
 ![air-bending-punch-distances](./air-bending-punch-distances.svg)
 
@@ -9,19 +9,19 @@
     B      A
 ```
 
-# First bend (A)
+## First bend (A)
 
 x is equal to the "ML" distance, which is "a" in this case.
 
-# After first bend (B, ...)
+## After first bend (B, ...)
 
 x is equal to "b + FD" distance. Calculate FD value with [calc-unfold](./calc-unfold.py) tool.
 
-# K-factor table
+## K-factor table
 
 Taken from https://en.wikipedia.org/wiki/Bending_(metalworking):
 
-| Generic K-factors          | Aluminum       | Aluminum         | Steel          |
+| Generic K-factors (ANSI)   | Aluminum       | Aluminum         | Steel          |
 |----------------------------|----------------|------------------|----------------|
 | Radius                     | Soft materials | Medium materials | Hard materials |
 | **Air bending**            |                |                  |                |
