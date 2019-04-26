@@ -1324,7 +1324,7 @@ class SheetTree(object):
         conv = ', converted from DIN'
     else:
         conv = '' 
-    print "transRad Face: %d, r: %.2f, thickness: %.2f, K-factor: %.2f (ANSI%s)" % (fIdx+1, bRad, thick, kFactor, conv)
+    SMMessage("transRad Face: %d, r: %.2f, thickness: %.2f, K-factor: %.2f (ANSI%s)" % (fIdx+1, bRad, thick, kFactor, conv))
     tanVec = bend_node.tan_vec
     aFace = self.f_list[fIdx]
     
@@ -1650,10 +1650,10 @@ class SheetTree(object):
           #Part.show(theFace, 'theFace')
           #theFace = Part.Face(wires[0], wires[1:])
           #theFace = Part.makeFace(myWire, 'Part::FaceMakerSimple')
-      except:
+      except Exception as e:
           #theFace = Part.makeFilledFace(wires)
           theFace = faces[0]
-          print('got execption')
+          SMError('got execption: ', str(e))
           #Part.show(theFace, 'exception')
     keyList = []
     for key in bend_node.edgeDict:
@@ -2512,8 +2512,7 @@ class SMUnfoldTaskPanel:
                 SMErrorBox("'K-factor standard: ANSI/DIN' is required!")
                 return
             
-            SMMessage("Obtained K-factor lookup table is:")
-            print(k_factor_lookup)
+            SMMessage("Obtained K-factor lookup table is:", k_factor_lookup)
         elif not self.checkKfact.isChecked():
             msg = "Unfold operation needs to know K-factor value(s) to be used."
             msg += "\n\n"
