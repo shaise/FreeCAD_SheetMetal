@@ -2209,6 +2209,10 @@ class SMUnfoldTaskPanel:
         if material_match:
             self.material = material_match.group(1)
             SMMessage('Material for this unfold is: ', self.material)
+            
+        doc = FreeCAD.ActiveDocument
+        self.availableMdsObjects = [o for o in doc.findObjects('Spreadsheet::Sheet') if material_regex.match(o.Label)]
+
                         
         self.obj = None
         self.form = SMUnfoldTaskPanel = QtGui.QWidget()
@@ -2254,6 +2258,22 @@ class SMUnfoldTaskPanel:
         self.horizontalLayout_4.addWidget(self.internalColor)
         self.verticalLayout.addLayout(self.horizontalLayout_4)
         
+        # Material Definition Sheet selection 
+        # TODO: This control currently extends the "MDS assignment (the 
+        # label renaming hack)". However, in the future (when Propageted Properties 
+        # are available) the same control will use a propagated property of the 
+        # selected object as the information storage (instead of renaming the label)
+        self.materalDefinitionSheetLayout = QtGui.QHBoxLayout()
+        self.materalDefinitionSheetLayout.setObjectName(_fromUtf8("materalDefinitionSheetLayout"))
+        self.checkUseMds = QtGui.QCheckBox(SMUnfoldTaskPanel)
+        self.checkUseMds.setObjectName(_fromUtf8("checkUseMds"))
+        self.checkUseMds.stateChanged.connect(self.checkUseMdsChange)
+        self.materalDefinitionSheetLayout.addWidget(self.checkUseMds)
+        self.availableMds = QtGui.QComboBox(SMUnfoldTaskPanel)
+        self.availableMds.setObjectName(_fromUtf8("availableMds"))
+        self.materalDefinitionSheetLayout.addWidget(self.availableMds)
+        self.verticalLayout.addLayout(self.materalDefinitionSheetLayout)
+
         # Manual K-factor selection 
         self.horizontalLayout = QtGui.QHBoxLayout()
         self.horizontalLayout.setSizeConstraint(QtGui.QLayout.SetDefaultConstraint)
@@ -2325,6 +2345,7 @@ class SMUnfoldTaskPanel:
         self.updateKfactorStandard()
         self.checkKfactChange()
         self.checkSketchChange()
+        self.populateMdsList()
         self.retranslateUi()
         
         
@@ -2351,6 +2372,20 @@ class SMUnfoldTaskPanel:
 
     def getStandardButtons(self):
         return int(QtGui.QDialogButtonBox.Ok)
+        
+    def populateMdsList(self):
+        if not self.checkKfact.isChecked():
+            if self.material is not None:
+                self.checkUseMds.setChecked(True)
+
+        mds_enabled = self.checkUseMds.isChecked()
+        self.availableMds.setEnabled(mds_enabled)
+
+        if mds_enabled:
+            self.checkKfact.setChecked(False)        
+
+        for mds in self.availableMdsObjects:
+            self.availableMds.addItem(mds.Label)
         
     def updateKfactorStandard(self):
         global kFactorStandard
@@ -2635,7 +2670,12 @@ class SMUnfoldTaskPanel:
         self.kFactSpin.setEnabled(checked)
         self.kfactorAnsi.setEnabled(checked)
         self.kfactorDin.setEnabled(checked)
+        if checked:
+            self.checkUseMds.setChecked(False)
         
+    def checkUseMdsChange(self):
+        self.populateMdsList()
+
     def checkSketchChange(self):
         self.checkSeparate.setEnabled(self.checkSketch.isChecked())
         #self.genColor.setEnabled(self.checkSketch.isChecked())
@@ -2652,6 +2692,7 @@ class SMUnfoldTaskPanel:
         self.InternalLbl.setText(_translate("SheetMetal", "    Internal lines color", None))
         self.kfactorAnsi.setText(_translate("SheetMetal", "ANSI", None))
         self.kfactorDin.setText(_translate("SheetMetal", "DIN", None))
+        self.checkUseMds.setText(_translate("SMUnfoldTaskPanel", "Use Material Definition Sheet", None))
 
 
 class SMUnfoldCommandClass():

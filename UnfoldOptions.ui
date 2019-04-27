@@ -24,6 +24,20 @@
       </widget>
      </item>
      <item>
+      <layout class="QHBoxLayout" name="materalDefinitionSheetLayout">
+       <item>
+        <widget class="QCheckBox" name="checkUseMds">
+         <property name="text">
+          <string>Use Material Definition Sheet</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QComboBox" name="availableMds"/>
+       </item>
+      </layout>
+     </item>
+     <item>
       <layout class="QHBoxLayout" name="horizontalLayout">
        <property name="sizeConstraint">
         <enum>QLayout::SetDefaultConstraint</enum>
