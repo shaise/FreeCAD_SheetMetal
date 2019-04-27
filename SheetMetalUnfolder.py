@@ -2323,7 +2323,7 @@ class SMUnfoldTaskPanel:
         self.transSpin.setProperty("value", genObjTransparency)
 
         self.updateKfactorStandard()
-        
+        self.checkKfactChange()
         self.checkSketchChange()
         self.retranslateUi()
         
@@ -2521,9 +2521,12 @@ class SMUnfoldTaskPanel:
                 if option == 'K-factor standard':
                     if value in ["ANSI", "DIN"]:
                         kFactorStandard = value.lower()
+                    else:
+                        SMErrorBox('Invalid K-factor standard: %s \nin %s' % (value, material_sheet_name))
+                        return                        
                 
             if kFactorStandard is None:
-                SMErrorBox("'K-factor standard: ANSI/DIN' is required!")
+                SMErrorBox("'K-factor standard' option is required (ANSI or DIN) in %s" % material_sheet_name)
                 return
             
             SMMessage("Obtained K-factor lookup table is:", k_factor_lookup)
@@ -2628,7 +2631,10 @@ class SMUnfoldTaskPanel:
         return int(QtGui.QDialogButtonBox.Ok) + int(QtGui.QDialogButtonBox.Cancel)
         
     def checkKfactChange(self):
-        self.kFactSpin.setEnabled(self.checkKfact.isChecked())
+        checked = self.checkKfact.isChecked()
+        self.kFactSpin.setEnabled(checked)
+        self.kfactorAnsi.setEnabled(checked)
+        self.kfactorDin.setEnabled(checked)
         
     def checkSketchChange(self):
         self.checkSeparate.setEnabled(self.checkSketch.isChecked())
