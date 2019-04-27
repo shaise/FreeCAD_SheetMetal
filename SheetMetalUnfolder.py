@@ -2246,7 +2246,6 @@ class SMUnfoldTaskPanel:
         k_factor = 0.5  # default value 
         
         # Get the material name if possible
-        self.material = None
         self.material_sheet_name = None
         material_sheet_regex_str = "material_([a-zA-Z0-9_]+)"
         material_sheet_regex = re.compile(material_sheet_regex_str)
@@ -2262,11 +2261,10 @@ class SMUnfoldTaskPanel:
         self.root_label = label
         material_match = material_regex.match(label)
         if material_match:
-            self.material = material_match.group(1)
-            self.material_sheet_name = "material_%s" % self.material
-            self.root_label = self.root_label[:-(len(self.material_sheet_name) + 1)]
-            SMMessage('Material for this unfold is: ', self.material)
-            
+            self.material_sheet_name = "material_%s" % material_match.group(1)
+            mds_postfix = "_" + self.material_sheet_name
+            self.root_label = self.root_label[:-len(mds_postfix)]
+
         doc = FreeCAD.ActiveDocument
         self.availableMdsObjects = [o for o in doc.findObjects('Spreadsheet::Sheet') if material_sheet_regex.match(o.Label)]
                         
@@ -2463,7 +2461,7 @@ class SMUnfoldTaskPanel:
 
         # mark selected state if material is assigned
         if not self.checkKfact.isChecked():
-            if self.material is not None:
+            if self.material_sheet_name is not None:
                 self.checkUseMds.setChecked(True)
 
         if mds_enabled:
@@ -2533,16 +2531,19 @@ class SMUnfoldTaskPanel:
             self.updateKfactorStandard()
 
         genObjTransparency = self.transSpin.value()
-            
+
+        if self.new_mds_name != self.material_sheet_name:
+            SMErrorBox("Please 'Apply' your new Material Definition Sheet name first.")
+            return
+
         doc = FreeCAD.ActiveDocument
-
-        # Build the k_factor lookup table 
-
-        if self.material and not self.checkKfact.isChecked():
+        # Build the k_factor lookup table
+        if self.material_sheet_name and not self.checkKfact.isChecked():
             lookup_sheet = getObjectsByLabelRecursive(doc, self.material_sheet_name)
             if lookup_sheet is None:
                 SMErrorBox("No Spreadsheet is found containing material definition: %s" % self.material_sheet_name)
                 return
+            SMMessage("Using Material Definition Sheet: %s" % self.material_sheet_name)
 
             key_cell = None
             value_cell = None
