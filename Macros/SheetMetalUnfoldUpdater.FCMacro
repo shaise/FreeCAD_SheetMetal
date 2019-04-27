@@ -62,10 +62,13 @@ for o in doc.Objects:
 							# This view uses our unfolded output, update this view at the end 
 							echo("* Found related TechDraw ProjGroup: %s\n" % view.Label)
 							related_views.append(view)
-							
+			
+			# mark current output as "to be deleted"
+			tmp_postfix = "_TMP"
+			old = None		
 			try:
-				old = doc.getObjectsByLabel(output_name)[0].Name
-				doc.removeObject(old)
+				old = doc.getObjectsByLabel(output_name)[0]
+				old.Label += tmp_postfix
 				doc.recompute()
 			except:
 				pass
@@ -82,22 +85,35 @@ for o in doc.Objects:
 			Gui.Selection.clearSelection()
 			Gui.Selection.addSelection(doc.Name, unfold_face_id[0], unfold_face_id[1])
 			Gui.runCommand('SMUnfoldUnattended')
-			
-			# Remove unnecessary unfolded solid
-			doc.removeObject('Unfold')
-			
-			# Properly rename the output
-			sketch = doc.getObjectsByLabel('Unfold_Sketch')[0]
-			sketch.Label = output_name
-			sketch.Visibility = False
-			
-			# Update the source of related views
-			if len(related_views) > 0:
-				for view in related_views:
-					echo("* Updating %s source as %s\n" % (view.Label, sketch.Label))
-					view.Source = [sketch]
-			else:
-				warn('No TechDraw view is updated.\n')
+		
+			try:
+				# Remove unnecessary unfolded solid
+				doc.removeObject('Unfold')
+				
+				# Properly rename the output
+				sketch = doc.getObjectsByLabel('Unfold_Sketch')[0]
+				sketch.Label = output_name
+				sketch.Visibility = False
+				
+				# Update the source of related views
+				if len(related_views) > 0:
+					for view in related_views:
+						echo("* Updating %s source as %s\n" % (view.Label, sketch.Label))
+						view.Source = [sketch]
+				else:
+					warn('No TechDraw view is updated.\n')
+
+				# remove the temporary object
+				if old is not None:
+					doc.removeObject(old.Name)
+					doc.recompute()
+			except:
+				warn('Something went wrong.\n')
+				# restore the previous sketch
+				if old is not None:
+					echo("* Restoring the previous sketch.\n")
+					old.Label = old.Label[:-(len(tmp_postfix))]
+					doc.recompute()
 
 doc.recompute()
 Gui.Selection.clearSelection()
