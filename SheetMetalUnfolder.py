@@ -2255,12 +2255,16 @@ class SMUnfoldTaskPanel:
         selobj_parent = selobj.getParentGeoFeatureGroup()
         if selobj_parent:
             label = selobj_parent.Label
+            self.root_obj = selobj_parent
         else:
-            label = selobj.Label             
+            label = selobj.Label
+            self.root_obj = selobj
+        self.root_label = label
         material_match = material_regex.match(label)
         if material_match:
             self.material = material_match.group(1)
             self.material_sheet_name = "material_%s" % self.material
+            self.root_label = self.root_label[:-(len(self.material_sheet_name) + 1)]
             SMMessage('Material for this unfold is: ', self.material)
             
         doc = FreeCAD.ActiveDocument
@@ -2323,6 +2327,7 @@ class SMUnfoldTaskPanel:
         self.materalDefinitionSheetLayout.addWidget(self.checkUseMds)
         self.availableMds = QtGui.QComboBox(SMUnfoldTaskPanel)
         self.availableMds.setObjectName(_fromUtf8("availableMds"))
+        self.availableMds.currentIndexChanged.connect(self.mdsChanged)
         self.materalDefinitionSheetLayout.addWidget(self.availableMds)
         self.mdsApply = QtGui.QPushButton(SMUnfoldTaskPanel)
         self.mdsApply.setMaximumSize(QtCore.QSize(50, 16777215))
@@ -2432,9 +2437,25 @@ class SMUnfoldTaskPanel:
         return int(QtGui.QDialogButtonBox.Ok)
         
     def mdsApplyPressed(self):
-        doc = FreeCAD.ActiveDocument
-        SMMessage("INFO: Changed material of '%s' from '%s' to '%s'" % (doc.Label, "foo", "bar"))
-        
+        SMMessage("INFO: Changed material of '%s' from '%s' to '%s'"
+                % (self.root_label, self.material_sheet_name, self.new_mds_name))
+
+        self.setMds(self.new_mds_name)
+        self.mdsApply.setEnabled(False)
+
+    def setMds(self, mds_name):
+        if mds_name is None:
+            self.root_obj.Label = self.root_label
+        else:
+            self.root_obj.Label = "%s_%s" % (self.root_label, mds_name)
+        self.material_sheet_name = mds_name
+
+    def mdsChanged(self):
+        self.new_mds_name = self.availableMds.currentText()
+        if self.availableMds.currentIndex() == 0:
+            self.new_mds_name = None
+        self.mdsApply.setEnabled(self.material_sheet_name != self.new_mds_name)
+
     def populateMdsList(self):
         mds_enabled = self.checkUseMds.isChecked()
         self.availableMds.setEnabled(mds_enabled)
@@ -2446,7 +2467,7 @@ class SMUnfoldTaskPanel:
                 self.checkUseMds.setChecked(True)
 
         if mds_enabled:
-                self.checkKfact.setChecked(False)
+            self.checkKfact.setChecked(False)
 
         self.availableMds.clear()
         self.availableMds.addItem('Not set')
