@@ -44,11 +44,11 @@ To use the Material Definition Sheet, follow the steps:
 3. Create a spreadsheet with the name of `material_foo`
 4. Create a table layout in `material_foo`, like the following (see [this table](https://user-images.githubusercontent.com/6639874/56498031-b017bc00-6508-11e9-8b14-6076513d8488.png)): 
 
-    | Radius / Thickness | K-factor | Options | | 
-    | ---| ---| --- | --- |
-    | 1 | 0.38 | K-factor standard | ANSI |
-    | 3 | 0.43 | | |
-    | 99 | 0.5 | | |
+    | Radius / Thickness | K-factor | | Options | | 
+    | ---| ---| --- | --- | --- |
+    | 1 | 0.38 | | K-factor standard | ANSI |
+    | 3 | 0.43 | | | |
+    | 99 | 0.5 | | | |
     
     Notes: 
     
