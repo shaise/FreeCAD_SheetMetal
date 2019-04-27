@@ -54,8 +54,6 @@ for o in doc.Objects:
 						try: 
 							_src = view.Source[0]
 						except Exception as e:
-							warn("!! Exception of %s is: %s" % (view.Label, e.args[0]))
-							print(view.Source)
 							continue
 						#print "source of ", view.Label, ' in ', x.Label, " is: ", _src.Label
 						if _src.Label == output_name:
