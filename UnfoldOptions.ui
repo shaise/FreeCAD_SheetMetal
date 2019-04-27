@@ -35,6 +35,19 @@
        <item>
         <widget class="QComboBox" name="availableMds"/>
        </item>
+       <item>
+        <widget class="QPushButton" name="mdsApply">
+         <property name="maximumSize">
+          <size>
+           <width>50</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>Apply</string>
+         </property>
+        </widget>
+       </item>
       </layout>
      </item>
      <item>

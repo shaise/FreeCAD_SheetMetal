@@ -2190,6 +2190,55 @@ class QColorButton(QtGui.QPushButton):
         
 import re
 
+
+def get_linked_objs_recursive(links):
+  Parts_index = 2
+  objects = []
+  for o in [l.LinkedObject for l in links]:
+    if o.TypeId == 'App::Link':
+      # recursive
+      objects += get_linked_objs_recursive([o])
+    elif o.TypeId == 'Part::FeaturePython':
+      # this is an assembly container
+      objects += o.Group[Parts_index].Group
+    else:
+      objects.append(o)
+  # print "Examined objects: ", ', '.join([o.Label for o in objects])
+  return objects
+
+
+def getObjectsByLabelRecursive(doc, label):
+  objects = doc.getObjectsByLabel(label)
+  res = None
+  if len(objects) == 0:
+    # Maybe the document is a link
+    try:
+      links = doc.findObjects('App::Link')
+      objects = get_linked_objs_recursive(links)
+      for obj in objects:
+        if obj.Label == label:
+          res = obj
+          break
+    except:
+      # In FreeCAD Main branch, "App:Link" is not a valid type
+      # thus causing FreeCADError. Simply ignore it.
+      pass
+  else:
+    res = objects[0]
+  return res
+
+# Start of spreadsheet functions
+cell_regex = re.compile('^([A-Z]+)([0-9]+)$')
+def get_cells(sheet):
+  return sorted(filter(cell_regex.search, sheet.PropertiesList))
+
+def get_cell_tuple(cell_name):
+  m = cell_regex.match(cell_name)
+  col_name = m.group(1)
+  row_num = int(m.group(2))
+  return (col_name, row_num)
+# End of spreadsheet functions
+
 class SMUnfoldTaskPanel:
     '''A TaskPanel for the facebinder'''
     def __init__(self):
@@ -2198,7 +2247,10 @@ class SMUnfoldTaskPanel:
         
         # Get the material name if possible
         self.material = None
-        material_regex = re.compile('.+_material_([a-zA-Z0-9_]+).*')
+        self.material_sheet_name = None
+        material_sheet_regex_str = "material_([a-zA-Z0-9_]+)"
+        material_sheet_regex = re.compile(material_sheet_regex_str)
+        material_regex = re.compile(".+_%s" % material_sheet_regex_str)
         selobj = Gui.Selection.getSelection()[0]
         selobj_parent = selobj.getParentGeoFeatureGroup()
         if selobj_parent:
@@ -2208,11 +2260,11 @@ class SMUnfoldTaskPanel:
         material_match = material_regex.match(label)
         if material_match:
             self.material = material_match.group(1)
+            self.material_sheet_name = "material_%s" % self.material
             SMMessage('Material for this unfold is: ', self.material)
             
         doc = FreeCAD.ActiveDocument
-        self.availableMdsObjects = [o for o in doc.findObjects('Spreadsheet::Sheet') if material_regex.match(o.Label)]
-
+        self.availableMdsObjects = [o for o in doc.findObjects('Spreadsheet::Sheet') if material_sheet_regex.match(o.Label)]
                         
         self.obj = None
         self.form = SMUnfoldTaskPanel = QtGui.QWidget()
@@ -2272,6 +2324,12 @@ class SMUnfoldTaskPanel:
         self.availableMds = QtGui.QComboBox(SMUnfoldTaskPanel)
         self.availableMds.setObjectName(_fromUtf8("availableMds"))
         self.materalDefinitionSheetLayout.addWidget(self.availableMds)
+        self.mdsApply = QtGui.QPushButton(SMUnfoldTaskPanel)
+        self.mdsApply.setMaximumSize(QtCore.QSize(50, 16777215))
+        self.mdsApply.setObjectName(_fromUtf8("mdsApply"))
+        self.mdsApply.pressed.connect(self.mdsApplyPressed)
+        self.materalDefinitionSheetLayout.addWidget(self.mdsApply)
+
         self.verticalLayout.addLayout(self.materalDefinitionSheetLayout)
 
         # Manual K-factor selection 
@@ -2373,19 +2431,34 @@ class SMUnfoldTaskPanel:
     def getStandardButtons(self):
         return int(QtGui.QDialogButtonBox.Ok)
         
+    def mdsApplyPressed(self):
+        doc = FreeCAD.ActiveDocument
+        SMMessage("INFO: Changed material of '%s' from '%s' to '%s'" % (doc.Label, "foo", "bar"))
+        
     def populateMdsList(self):
+        mds_enabled = self.checkUseMds.isChecked()
+        self.availableMds.setEnabled(mds_enabled)
+        self.mdsApply.setEnabled(False)
+
+        # mark selected state if material is assigned
         if not self.checkKfact.isChecked():
             if self.material is not None:
                 self.checkUseMds.setChecked(True)
 
-        mds_enabled = self.checkUseMds.isChecked()
-        self.availableMds.setEnabled(mds_enabled)
-
         if mds_enabled:
-            self.checkKfact.setChecked(False)        
+                self.checkKfact.setChecked(False)
 
+        self.availableMds.clear()
+        self.availableMds.addItem('Not set')
+        i = 1
+        curr = 0
         for mds in self.availableMdsObjects:
             self.availableMds.addItem(mds.Label)
+            if mds.Label == self.material_sheet_name:
+                curr = i
+            i += 1
+
+        self.availableMds.setCurrentIndex(curr)
         
     def updateKfactorStandard(self):
         global kFactorStandard
@@ -2442,60 +2515,15 @@ class SMUnfoldTaskPanel:
             
         doc = FreeCAD.ActiveDocument
 
-        def get_linked_objs_recursive(links): 
-            Parts_index = 2
-            objects = []
-            for o in [l.LinkedObject for l in links]:
-                if o.TypeId == 'App::Link':
-                    # recursive
-                    objects += get_linked_objs_recursive([o])
-                elif o.TypeId == 'Part::FeaturePython':
-                    # this is an assembly container 
-                    objects += o.Group[Parts_index].Group
-                else:
-                    objects.append(o)
-
-            #print "Examined objects: ", ', '.join([o.Label for o in objects])
-            return objects 
-        
-        # Build the k_factor lookup table 
-        if self.material and not self.checkKfact.isChecked():
-            material_sheet_name = "material_%s" % self.material
-            lookup_sheet = doc.getObjectsByLabel(material_sheet_name)
-            if len(lookup_sheet) == 0: 
-                # Maybe the material sheet is linked from another document
-                lookup_sheet = None
-                try:
-                    links = doc.findObjects('App::Link')
-                    objects = get_linked_objs_recursive(links)
-                    for obj in objects:
-                        if obj.Label == material_sheet_name:
-                            lookup_sheet = obj 
-                            break
-                except: 
-                    # In FreeCAD Main branch, "App:Link" is not a valid type 
-                    # thus causing FreeCADError. Simply ignore it. 
-                    pass
-
-                if lookup_sheet is None:
-                    SMErrorBox("No Spreadsheet is found containing material definition: %s" % material_sheet_name)
-                    return 
-            else:
-                lookup_sheet = lookup_sheet[0]
-            
-            # Start of spreadsheet functions 
-            cell_regex = re.compile('^([A-Z]+)([0-9]+)$')
-            def get_cells(sheet):
-                return sorted(filter(cell_regex.search, sheet.PropertiesList))
-                
-            def get_cell_tuple(cell_name):
-                m = cell_regex.match(cell_name)
-                col_name = m.group(1)
-                row_num = int(m.group(2))
-                return (col_name, row_num)
-            # End of spreadsheet functions 
-            
-            key_cell = None 
+        # Build the k_factor lookup table 
+
+        if self.material and not self.checkKfact.isChecked():
+            lookup_sheet = getObjectsByLabelRecursive(doc, self.material_sheet_name)
+            if lookup_sheet is None:
+                SMErrorBox("No Spreadsheet is found containing material definition: %s" % self.material_sheet_name)
+                return
+
+            key_cell = None
             value_cell = None
             options_cell = None 
             for cell in get_cells(lookup_sheet):
@@ -2557,11 +2585,11 @@ class SMUnfoldTaskPanel:
                     if value in ["ANSI", "DIN"]:
                         kFactorStandard = value.lower()
                     else:
-                        SMErrorBox('Invalid K-factor standard: %s \nin %s' % (value, material_sheet_name))
+                        SMErrorBox('Invalid K-factor standard: %s \nin %s' % (value, self.material_sheet_name))
                         return                        
                 
             if kFactorStandard is None:
-                SMErrorBox("'K-factor standard' option is required (ANSI or DIN) in %s" % material_sheet_name)
+                SMErrorBox("'K-factor standard' option is required (ANSI or DIN) in %s" % self.material_sheet_name)
                 return
             
             SMMessage("Obtained K-factor lookup table is:", k_factor_lookup)
@@ -2667,6 +2695,12 @@ class SMUnfoldTaskPanel:
         
     def checkKfactChange(self):
         checked = self.checkKfact.isChecked()
+        if not checked and not self.checkUseMds.isChecked():
+            # not allowed to uncheck unless "Use MDS" box is checked
+            # (radio-button behavior)
+            # FIXME: NOT WORKING! Why? -> self.checkKfact.setChecked(True)
+            # return 
+            pass
         self.kFactSpin.setEnabled(checked)
         self.kfactorAnsi.setEnabled(checked)
         self.kfactorDin.setEnabled(checked)
@@ -2693,6 +2727,7 @@ class SMUnfoldTaskPanel:
         self.kfactorAnsi.setText(_translate("SheetMetal", "ANSI", None))
         self.kfactorDin.setText(_translate("SheetMetal", "DIN", None))
         self.checkUseMds.setText(_translate("SMUnfoldTaskPanel", "Use Material Definition Sheet", None))
+        self.mdsApply.setText(_translate("SMUnfoldTaskPanel", "Apply", None))
 
 
 class SMUnfoldCommandClass():
