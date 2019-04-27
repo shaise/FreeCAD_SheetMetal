@@ -2227,6 +2227,17 @@ def getObjectsByLabelRecursive(doc, label):
     res = objects[0]
   return res
 
+def findObjectsByTypeRecursive(doc, type):
+  objects = []
+  for obj in doc.findObjects():
+    if obj.TypeId == type:
+      objects.append(obj)
+    elif obj.TypeId == 'App::Link':
+      for _o in get_linked_objs_recursive([obj]):
+        if _o.TypeId == type:
+          objects.append(_o)
+  return objects 
+
 # Start of spreadsheet functions
 cell_regex = re.compile('^([A-Z]+)([0-9]+)$')
 def get_cells(sheet):
@@ -2265,13 +2276,7 @@ class SMUnfoldTaskPanel:
             mds_postfix = "_" + self.material_sheet_name
             self.root_label = self.root_label[:-len(mds_postfix)]
 
-        doc = FreeCAD.ActiveDocument
-        # FIXME: "Spreadsheet::Sheet" isn't recognized as a valid type thus thrown an exception
-        # when there is no spreadsheet in the document. This seems like an upstream FC bug.
-        try:
-            spreadsheets = doc.findObjects('Spreadsheet::Sheet')
-        except:
-            spreadsheets = []
+        spreadsheets = findObjectsByTypeRecursive(FreeCAD.ActiveDocument, 'Spreadsheet::Sheet')
         self.availableMdsObjects = [o for o in spreadsheets if material_sheet_regex.match(o.Label)]
                         
         self.obj = None
