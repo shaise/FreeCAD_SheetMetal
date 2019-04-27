@@ -2193,7 +2193,7 @@ import re
 class SMUnfoldTaskPanel:
     '''A TaskPanel for the facebinder'''
     def __init__(self):
-        global genSketchChecked, genObjTransparency, manKFactor       
+        global genSketchChecked, genObjTransparency, manKFactor     
         k_factor = 0.5  # default value 
         
         # Get the material name if possible
@@ -2321,7 +2321,7 @@ class SMUnfoldTaskPanel:
 
         self.kFactSpin.setEnabled(False)          
         self.transSpin.setProperty("value", genObjTransparency)
-        # Remember the K-factor standard selection 
+
         self.updateKfactorStandard()
         
         self.checkSketchChange()
@@ -2354,6 +2354,11 @@ class SMUnfoldTaskPanel:
         
     def updateKfactorStandard(self):
         global kFactorStandard
+        # Use any previously saved the K-factor standard if available.
+        # (note: this will be ignored while using material definition sheet.)
+        pg = FreeCAD.ParamGet("User parameter:BaseApp/Preferences/Mod/sheetmetal")
+        kFactorStandard = pg.GetString("kFactorStandard")
+
         self.kfactorAnsi.setChecked(kFactorStandard == 'ansi')
         self.kfactorDin.setChecked(kFactorStandard == 'din')
 
@@ -2389,6 +2394,7 @@ class SMUnfoldTaskPanel:
             else:
                 SMErrorBox("K-factor standard must be explicitly selected")
                 return        
+            pg.SetString("kFactorStandard", kFactorStandard)
             manKFactor = self.kFactSpin.value()
             SMMessage('manual kfactor is enabled: ', manKFactor)
         else:
@@ -2418,7 +2424,7 @@ class SMUnfoldTaskPanel:
             return objects 
         
         # Build the k_factor lookup table 
-        if self.material:
+        if self.material and not self.checkKfact.isChecked():
             material_sheet_name = "material_%s" % self.material
             lookup_sheet = doc.getObjectsByLabel(material_sheet_name)
             if len(lookup_sheet) == 0: 
@@ -2490,6 +2496,14 @@ class SMUnfoldTaskPanel:
                 k_factor_lookup[key] = value 
             
             # Get the options 
+            # ----------------
+            
+            # Ignore any saved K-factor standard settings when using a M.D.S.
+            # because user might be using a third party library that depends 
+            # on a different K-factor standard, so project might contain mixed 
+            # K-factor standards. 
+            kFactorStandard = None  
+            
             [opt_col, opt_row] = get_cell_tuple(options_cell)
             i = 1
             while True:
