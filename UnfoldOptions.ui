@@ -16,6 +16,9 @@
   <layout class="QVBoxLayout" name="verticalLayout_2">
    <item>
     <layout class="QVBoxLayout" name="verticalLayout">
+     <property name="sizeConstraint">
+      <enum>QLayout::SetMaximumSize</enum>
+     </property>
      <item>
       <widget class="QCheckBox" name="checkSketch">
        <property name="text">
@@ -182,6 +185,13 @@
         </size>
        </property>
       </spacer>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="checkPersistentManualKfact">
+       <property name="text">
+        <string>Use &quot;Manual K-factor&quot; unless MDS is in use</string>
+       </property>
+      </widget>
      </item>
     </layout>
    </item>

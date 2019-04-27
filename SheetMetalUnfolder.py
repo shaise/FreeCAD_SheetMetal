@@ -2153,6 +2153,8 @@ if pg.IsEmpty():
     pg.SetString("bendColor","#c00000")
     pg.SetString("genColor","#000080")
     pg.SetString("intColor","#ff5733")
+    pg.SetBool("persistentManualKfact", 0)
+    pg.SetString("manualKFactor", "0.40")
 
 class QColorButton(QtGui.QPushButton):
     '''
@@ -2254,7 +2256,7 @@ class SMUnfoldTaskPanel:
     '''A TaskPanel for the facebinder'''
     def __init__(self):
         global genSketchChecked, genObjTransparency, manKFactor     
-        k_factor = 0.5  # default value 
+        self.pg = FreeCAD.ParamGet("User parameter:BaseApp/Preferences/Mod/sheetmetal")
         
         # Get the material name if possible
         self.material_sheet_name = None
@@ -2371,7 +2373,8 @@ class SMUnfoldTaskPanel:
         self.kFactSpin.setDecimals(3)
         self.kFactSpin.setMaximum(2.0)
         self.kFactSpin.setSingleStep(0.1)
-        self.kFactSpin.setProperty("value", k_factor)
+        default_k_factor = float(self.pg.GetString('manualKFactor') or 0.40)
+        self.kFactSpin.setProperty("value", default_k_factor)
         self.kFactSpin.setObjectName(_fromUtf8("kFactSpin"))
         self.horizontalLayout.addWidget(self.kFactSpin) 
         # ANSI/DIN selection        
@@ -2383,7 +2386,7 @@ class SMUnfoldTaskPanel:
         self.horizontalLayout.addWidget(self.kfactorDin)
         #
         self.verticalLayout.addLayout(self.horizontalLayout)
-                        
+
         self.horizontalLayout_2 = QtGui.QHBoxLayout()
         self.horizontalLayout_2.setSizeConstraint(QtGui.QLayout.SetMinimumSize)
         self.horizontalLayout_2.setContentsMargins(-1, 0, -1, -1)
@@ -2404,6 +2407,10 @@ class SMUnfoldTaskPanel:
         self.verticalLayout.addLayout(self.horizontalLayout_2)
         spacerItem = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
         self.verticalLayout.addItem(spacerItem)
+        self.checkPersistentManualKfact = QtGui.QCheckBox(SMUnfoldTaskPanel)
+        self.checkPersistentManualKfact.setObjectName(_fromUtf8("checkPersistentManualKfact"))
+        self.verticalLayout.addWidget(self.checkPersistentManualKfact)
+
         self.verticalLayout_2.addLayout(self.verticalLayout)
 
         if genSketchChecked:
@@ -2419,10 +2426,13 @@ class SMUnfoldTaskPanel:
         self.checkSketchChange()
         self.populateMdsList()
         self.retranslateUi()
-        
-        
-        
-        
+
+        self.checkPersistentManualKfact.setChecked(self.pg.GetBool("persistentManualKfact"))
+        if self.checkPersistentManualKfact.isChecked():
+            # check manual K-factor unless MDS is in use
+            if not self.checkUseMds.isChecked():
+                self.checkKfact.setChecked(True)
+
         #self.grid = QtGui.QGridLayout(self.form)
         #self.grid.setObjectName("grid")
         #self.title = QtGui.QLabel(self.form)
@@ -2494,8 +2504,7 @@ class SMUnfoldTaskPanel:
         global kFactorStandard
         # Use any previously saved the K-factor standard if available.
         # (note: this will be ignored while using material definition sheet.)
-        pg = FreeCAD.ParamGet("User parameter:BaseApp/Preferences/Mod/sheetmetal")
-        kFactorStandard = pg.GetString("kFactorStandard")
+        kFactorStandard = self.pg.GetString("kFactorStandard")
 
         self.kfactorAnsi.setChecked(kFactorStandard == 'ansi')
         self.kfactorDin.setChecked(kFactorStandard == 'din')
@@ -2520,6 +2529,10 @@ class SMUnfoldTaskPanel:
             pg.SetBool("genSketch",1)
         else:
             pg.SetBool("genSketch",0)
+
+        # TODO: issue an "are you sure" question
+        pg.SetBool("persistentManualKfact", self.checkPersistentManualKfact.isChecked())
+
         pg.SetString("bendColor",bendSketchColor)
         pg.SetString("genColor",genSketchColor)
         pg.SetString("intColor",intSketchColor)
@@ -2534,6 +2547,7 @@ class SMUnfoldTaskPanel:
                 return        
             pg.SetString("kFactorStandard", kFactorStandard)
             manKFactor = self.kFactSpin.value()
+            self.pg.SetString('manualKFactor', str(manKFactor))
             SMMessage('manual kfactor is enabled: ', manKFactor)
         else:
             SMMessage('manual kfactor is disabled.')
@@ -2770,6 +2784,7 @@ class SMUnfoldTaskPanel:
         self.kfactorDin.setText(_translate("SheetMetal", "DIN", None))
         self.checkUseMds.setText(_translate("SMUnfoldTaskPanel", "Use Material Definition Sheet", None))
         self.mdsApply.setText(_translate("SMUnfoldTaskPanel", "Apply", None))
+        self.checkPersistentManualKfact.setText(_translate("SMUnfoldTaskPanel", "Use \"Manual K-factor\" unless MDS is in use", None))
 
 
 class SMUnfoldCommandClass():
