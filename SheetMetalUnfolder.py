@@ -2266,7 +2266,13 @@ class SMUnfoldTaskPanel:
             self.root_label = self.root_label[:-len(mds_postfix)]
 
         doc = FreeCAD.ActiveDocument
-        self.availableMdsObjects = [o for o in doc.findObjects('Spreadsheet::Sheet') if material_sheet_regex.match(o.Label)]
+        # FIXME: "Spreadsheet::Sheet" isn't recognized as a valid type thus thrown an exception
+        # when there is no spreadsheet in the document. This seems like an upstream FC bug.
+        try:
+            spreadsheets = doc.findObjects('Spreadsheet::Sheet')
+        except:
+            spreadsheets = []
+        self.availableMdsObjects = [o for o in spreadsheets if material_sheet_regex.match(o.Label)]
                         
         self.obj = None
         self.form = SMUnfoldTaskPanel = QtGui.QWidget()
@@ -2649,6 +2655,7 @@ class SMUnfoldTaskPanel:
             s = None
             QtGui.QApplication.restoreOverrideCursor()
             SMError(e.args)
+            import traceback; traceback.print_exc()
             msg = """Unfold is failing.<br>Please try to select a different face to unfold your object"""
             QtGui.QMessageBox.question(None,"Warning",msg,QtGui.QMessageBox.Ok)
         if (s is not None):
