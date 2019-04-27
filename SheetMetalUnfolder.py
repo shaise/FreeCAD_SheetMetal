@@ -2557,13 +2557,21 @@ class SMUnfoldTaskPanel:
                     options_cell = cell 
                 if key_cell is not None and value_cell is not None and options_cell is not None:
                     break 
-            
+
+            lookup_sheet_err = None
             if key_cell is None:
-                raise ValueError("No cell can be found with name: 'Radius / Thickness'")
+                lookup_sheet_err = "No cell can be found with name: 'Radius / Thickness'"
             if value_cell is None:
-                raise ValueError("No cell can be found with name: 'K-factor'")
+                lookup_sheet_err = "No cell can be found with name: 'K-factor'"
             if options_cell is None:
-                raise ValueError("No cell can be found with name: 'Options'")
+                lookup_sheet_err = "No cell can be found with name: 'Options'"
+
+            if lookup_sheet_err is not None:
+                lookup_sheet_err += '\n\n'
+                lookup_sheet_err += "Check your Material Definition Sheet's contents.\n"
+                lookup_sheet_err += "Refer to SheetMetal/README if you are unsure what to do."
+                SMErrorBox(lookup_sheet_err)
+                return
 
             [key_column_name, key_column_row] = get_cell_tuple(key_cell)
             value_column_name = get_cell_tuple(value_cell)[0]
