@@ -2840,6 +2840,7 @@ class SMUnfoldUnattendedCommandClass():
     taskd.bendColor.setColor(pg.GetString("bendColor"))
     taskd.genColor.setColor(pg.GetString("genColor"))
     taskd.internalColor.setColor(pg.GetString("intColor"))
+    taskd.new_mds_name = taskd.material_sheet_name
     taskd.accept()
     return
 
