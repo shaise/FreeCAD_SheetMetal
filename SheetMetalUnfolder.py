@@ -2553,7 +2553,7 @@ class SMUnfoldTaskPanel:
             pg.SetString("kFactorStandard", kFactorStandard)
             manKFactor = self.kFactSpin.value()
             self.pg.SetString('manualKFactor', str(manKFactor))
-            SMMessage('Manual K-factor is being used: %.2f (%s)', (manKFactor, kFactorStandard))
+            SMMessage('Manual K-factor is being used: %.2f (%s)' % (manKFactor, kFactorStandard))
             self.setMds(self.getManualKFactorString(manKFactor, kFactorStandard))
         else:
             manKFactor = None
