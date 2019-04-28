@@ -180,7 +180,13 @@ def SMErrorBox(* args):
     for x in args:
         message += str(x)
     SMError(message)
-    QtGui.QMessageBox.critical(FreeCADGui.getMainWindow(), "ERROR", message)
+    mw = FreeCADGui.getMainWindow()
+    msg_box = QtGui.QMessageBox(mw)
+    msg_box.setTextFormat(QtCore.Qt.TextFormat.RichText)
+    msg_box.setText(message)
+    msg_box.setWindowTitle("Error")
+    msg_box.setIcon(QtGui.QMessageBox.Critical)
+    msg_box.exec_()
 
 def equal_vertex(vert1, vert2, p=5):
   # compares two vertices 
@@ -2521,6 +2527,8 @@ class SMUnfoldTaskPanel:
         global genSketchChecked, bendSketchChecked, genObjTransparency, manKFactor
         global genSketchColor, bendSketchColor
         global kFactorStandard
+        mds_help_url = "https://github.com/shaise/FreeCAD_SheetMetal#material-definition-sheet"
+
         genSketchChecked = self.checkSketch.isChecked()
         genSketchColor = self.genColor.color()
         bendSketchChecked = self.checkSeparate.isChecked()
@@ -2596,9 +2604,10 @@ class SMUnfoldTaskPanel:
                 lookup_sheet_err = "No cell can be found with name: 'Options'"
 
             if lookup_sheet_err is not None:
-                lookup_sheet_err += '\n\n'
-                lookup_sheet_err += "Check your Material Definition Sheet's contents.\n"
-                lookup_sheet_err += "Refer to SheetMetal/README if you are unsure what to do."
+                lookup_sheet_err += '<p>'
+                lookup_sheet_err += "Check your Material Definition Sheet's contents.<br />"
+                lookup_sheet_err += "Refer to <a href='%s'>SheetMetal/README</a> if you are unsure about how to continue." % mds_help_url
+                lookup_sheet_err += "</p>"
                 SMErrorBox(lookup_sheet_err)
                 return
 
@@ -2654,9 +2663,10 @@ class SMUnfoldTaskPanel:
             SMMessage("Obtained K-factor lookup table is:", k_factor_lookup)
         elif not self.checkKfact.isChecked():
             msg = "Unfold operation needs to know K-factor value(s) to be used."
-            msg += "\n\n"
-            msg += "* Either set a manual K-factor in the SheetMetal options menu\n"
-            msg += "* Or use a \"Material Definition Sheet\" (see SheetMetal/README)"
+            msg += "<ol>"
+            msg += "<li>Either set a Manual K-factor</li>"
+            msg += "<li>Or use a <a href='%s'>Material Definition Sheet</a></li>" % mds_help_url
+            msg += "</ol>"
             SMErrorBox(msg)
             return
         else:
