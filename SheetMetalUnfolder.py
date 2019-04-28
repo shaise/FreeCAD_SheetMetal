@@ -2409,6 +2409,7 @@ class SMUnfoldTaskPanel:
         self.verticalLayout.addItem(spacerItem)
         self.checkPersistentManualKfact = QtGui.QCheckBox(SMUnfoldTaskPanel)
         self.checkPersistentManualKfact.setObjectName(_fromUtf8("checkPersistentManualKfact"))
+        self.checkPersistentManualKfact.clicked.connect(self.checkPersistentManualKfactClicked)
         self.verticalLayout.addWidget(self.checkPersistentManualKfact)
 
         self.verticalLayout_2.addLayout(self.verticalLayout)
@@ -2445,7 +2446,27 @@ class SMUnfoldTaskPanel:
         #self.genSketch.setText("Generate Sketch")
         #if genSketchChecked:
         #  self.genSketch.setCheckState(QtCore.Qt.CheckState.Checked)
-        
+
+    def checkPersistentManualKfactClicked(self):
+        curr = self.checkPersistentManualKfact.isChecked()
+
+        if curr:
+          msg = "Using 'Manual K-factor' by default is dangerous and may lead you\n"
+          msg += "human errors. Use this setting only if you know what you are doing.\n"
+          msg += "\n"
+          msg += "Are you sure you want to use Manual K-factor by default?"
+          mw = FreeCADGui.getMainWindow()
+          ans = QtGui.QMessageBox.question(mw, "Dangerous Setting", msg,
+                                           QtGui.QMessageBox.Ok, QtGui.QMessageBox.Cancel)
+
+          if ans == QtGui.QMessageBox.Cancel:
+            self.checkPersistentManualKfact.setChecked(False)
+            return
+          else:
+            QtGui.QMessageBox.question(mw, "Warning", "You have been warned.")
+
+        self.checkPersistentManualKfact.setChecked(curr)
+
     def isAllowedAlterSelection(self):
         return True
 
