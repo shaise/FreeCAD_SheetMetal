@@ -2284,7 +2284,7 @@ class SMUnfoldTaskPanel:
                   "kfactor": float(virtual_material_match.group(1)),
                   "standard": virtual_material_match.group(2)
                 }
-                SMMessage("This is a Manual K-factor", virtual_material)
+                #SMMessage("This is a Manual K-factor", virtual_material)
 
         spreadsheets = findObjectsByTypeRecursive(FreeCAD.ActiveDocument, 'Spreadsheet::Sheet')
         self.availableMdsObjects = [o for o in spreadsheets if material_sheet_regex.match(o.Label)]
