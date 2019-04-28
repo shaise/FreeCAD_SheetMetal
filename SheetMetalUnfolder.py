@@ -2254,28 +2254,37 @@ def get_cell_tuple(cell_name):
 class SMUnfoldTaskPanel:
     '''A TaskPanel for the facebinder'''
     def __init__(self):
-        global genSketchChecked, genObjTransparency, manKFactor     
+        global genSketchChecked, genObjTransparency, manKFactor, kFactorStandard
         self.pg = FreeCAD.ParamGet("User parameter:BaseApp/Preferences/Mod/sheetmetal")
         
         # Get the material name if possible
         self.material_sheet_name = None
-        material_sheet_regex_str = "material_([a-zA-Z0-9_]+)"
+        material_sheet_regex_str = "material_([a-zA-Z0-9_\.]+)"
         material_sheet_regex = re.compile(material_sheet_regex_str)
         material_regex = re.compile(".+_%s" % material_sheet_regex_str)
-        selobj = Gui.Selection.getSelection()[0]
-        selobj_parent = selobj.getParentGeoFeatureGroup()
-        if selobj_parent:
-            label = selobj_parent.Label
-            self.root_obj = selobj_parent
-        else:
-            label = selobj.Label
-            self.root_obj = selobj
-        self.root_label = label
-        material_match = material_regex.match(label)
+        self.root_obj = self.get_root_obj()
+        self.root_label = self.root_obj.Label
+        material_match = material_regex.match(self.root_label)
+        virtual_material = False
         if material_match:
-            self.material_sheet_name = "material_%s" % material_match.group(1)
+            material_name = material_match.group(1)
+            SMMessage("Material found: %s" % material_name)
+            self.material_sheet_name = "material_%s" % material_name
             mds_postfix = "_" + self.material_sheet_name
             self.root_label = self.root_label[:-len(mds_postfix)]
+
+            # Test if the material is virtual
+            # if material name starts with a number, then this is a virtual material
+            # (Manual K-Factor)
+            virtual_material_regex = re.compile("([0-9\.]+)([a-zA-Z]+)")
+            virtual_material_match = virtual_material_regex.match(material_name)
+            if virtual_material_match:
+                self.material_sheet_name = None
+                virtual_material = {
+                  "kfactor": float(virtual_material_match.group(1)),
+                  "standard": virtual_material_match.group(2)
+                }
+                SMMessage("This is a Manual K-factor", virtual_material)
 
         spreadsheets = findObjectsByTypeRecursive(FreeCAD.ActiveDocument, 'Spreadsheet::Sheet')
         self.availableMdsObjects = [o for o in spreadsheets if material_sheet_regex.match(o.Label)]
@@ -2425,6 +2434,20 @@ class SMUnfoldTaskPanel:
         self.populateMdsList()
         self.retranslateUi()
 
+        if isinstance(virtual_material, dict):
+            manKFactor = virtual_material["kfactor"]
+            self.kFactSpin.setProperty("value", manKFactor)
+            self.checkKfact.setChecked(True)
+            self.updateKfactorStandard(virtual_material["standard"])
+
+    def get_root_obj(self):
+        selobj = Gui.Selection.getSelection()[0]
+        selobj_parent = selobj.getParentGeoFeatureGroup()
+        if selobj_parent:
+            return selobj_parent
+        else:
+            return selobj
+
     def isAllowedAlterSelection(self):
         return True
 
@@ -2479,14 +2502,20 @@ class SMUnfoldTaskPanel:
 
         self.availableMds.setCurrentIndex(curr)
         
-    def updateKfactorStandard(self):
+    def updateKfactorStandard(self, transient_std=None):
         global kFactorStandard
-        # Use any previously saved the K-factor standard if available.
-        # (note: this will be ignored while using material definition sheet.)
-        kFactorStandard = self.pg.GetString("kFactorStandard")
+        if transient_std is None:
+            # Use any previously saved the K-factor standard if available.
+            # (note: this will be ignored while using material definition sheet.)
+            kFactorStandard = self.pg.GetString("kFactorStandard")
+        else:
+            kFactorStandard = transient_std
 
         self.kfactorAnsi.setChecked(kFactorStandard == 'ansi')
         self.kfactorDin.setChecked(kFactorStandard == 'din')
+
+    def getManualKFactorString(self, k_factor, standard):
+        return "material_%.2f%s" % (k_factor, standard)
 
     def accept(self):
         global genSketchChecked, bendSketchChecked, genObjTransparency, manKFactor
@@ -2524,18 +2553,17 @@ class SMUnfoldTaskPanel:
             pg.SetString("kFactorStandard", kFactorStandard)
             manKFactor = self.kFactSpin.value()
             self.pg.SetString('manualKFactor', str(manKFactor))
-            SMMessage('manual kfactor is enabled: ', manKFactor)
+            SMMessage('Manual K-factor is being used: %.2f (%s)', (manKFactor, kFactorStandard))
+            self.setMds(self.getManualKFactorString(manKFactor, kFactorStandard))
         else:
-            SMMessage('manual kfactor is disabled.')
-            manKFactor = None 
+            manKFactor = None
             kFactorStandard = None 
             self.updateKfactorStandard()
+            if self.new_mds_name != self.material_sheet_name:
+                SMErrorBox("Please 'Apply' your new Material Definition Sheet name first.")
+                return
 
         genObjTransparency = self.transSpin.value()
-
-        if self.new_mds_name != self.material_sheet_name:
-            SMErrorBox("Please 'Apply' your new Material Definition Sheet name first.")
-            return
 
         doc = FreeCAD.ActiveDocument
         # Build the k_factor lookup table
