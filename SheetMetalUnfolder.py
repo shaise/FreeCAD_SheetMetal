@@ -2153,7 +2153,6 @@ if pg.IsEmpty():
     pg.SetString("bendColor","#c00000")
     pg.SetString("genColor","#000080")
     pg.SetString("intColor","#ff5733")
-    pg.SetBool("persistentManualKfact", 0)
     pg.SetString("manualKFactor", "0.40")
 
 class QColorButton(QtGui.QPushButton):
@@ -2359,7 +2358,10 @@ class SMUnfoldTaskPanel:
         sizePolicy.setHeightForWidth(self.checkKfact.sizePolicy().hasHeightForWidth())
         self.checkKfact.setSizePolicy(sizePolicy)
         self.checkKfact.setObjectName(_fromUtf8("checkKfact"))
+        # NOTE: use `.clicked.connect` instead of `.stateChanged.connect` if you want to
+        # implement a "rollback" feature
         self.checkKfact.stateChanged.connect(self.checkKfactChange)
+        # END OF NOTE
         self.horizontalLayout.addWidget(self.checkKfact)
         spacerItem = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
         self.horizontalLayout.addItem(spacerItem)
@@ -2407,11 +2409,6 @@ class SMUnfoldTaskPanel:
         self.verticalLayout.addLayout(self.horizontalLayout_2)
         spacerItem = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
         self.verticalLayout.addItem(spacerItem)
-        self.checkPersistentManualKfact = QtGui.QCheckBox(SMUnfoldTaskPanel)
-        self.checkPersistentManualKfact.setObjectName(_fromUtf8("checkPersistentManualKfact"))
-        self.checkPersistentManualKfact.clicked.connect(self.checkPersistentManualKfactClicked)
-        self.verticalLayout.addWidget(self.checkPersistentManualKfact)
-
         self.verticalLayout_2.addLayout(self.verticalLayout)
 
         if genSketchChecked:
@@ -2427,45 +2424,6 @@ class SMUnfoldTaskPanel:
         self.checkSketchChange()
         self.populateMdsList()
         self.retranslateUi()
-
-        self.checkPersistentManualKfact.setChecked(self.pg.GetBool("persistentManualKfact"))
-        if self.checkPersistentManualKfact.isChecked():
-            # check manual K-factor unless MDS is in use
-            if not self.checkUseMds.isChecked():
-                self.checkKfact.setChecked(True)
-
-        #self.grid = QtGui.QGridLayout(self.form)
-        #self.grid.setObjectName("grid")
-        #self.title = QtGui.QLabel(self.form)
-        #self.grid.addWidget(self.title, 0, 0, 1, 2)
-        #self.title.setText("Select a starting face and press OK")
-
-        # options
-        #self.genSketch = QtGui.QCheckBox(self.form)
-        #self.grid.addWidget(self.genSketch, 1, 0, 1, 2)
-        #self.genSketch.setText("Generate Sketch")
-        #if genSketchChecked:
-        #  self.genSketch.setCheckState(QtCore.Qt.CheckState.Checked)
-
-    def checkPersistentManualKfactClicked(self):
-        curr = self.checkPersistentManualKfact.isChecked()
-
-        if curr:
-          msg = "Using 'Manual K-factor' by default is dangerous and may lead you\n"
-          msg += "human errors. Use this setting only if you know what you are doing.\n"
-          msg += "\n"
-          msg += "Are you sure you want to use Manual K-factor by default?"
-          mw = FreeCADGui.getMainWindow()
-          ans = QtGui.QMessageBox.question(mw, "Dangerous Setting", msg,
-                                           QtGui.QMessageBox.Ok, QtGui.QMessageBox.Cancel)
-
-          if ans == QtGui.QMessageBox.Cancel:
-            self.checkPersistentManualKfact.setChecked(False)
-            return
-          else:
-            QtGui.QMessageBox.question(mw, "Warning", "You have been warned.")
-
-        self.checkPersistentManualKfact.setChecked(curr)
 
     def isAllowedAlterSelection(self):
         return True
@@ -2550,9 +2508,6 @@ class SMUnfoldTaskPanel:
             pg.SetBool("genSketch",1)
         else:
             pg.SetBool("genSketch",0)
-
-        # TODO: issue an "are you sure" question
-        pg.SetBool("persistentManualKfact", self.checkPersistentManualKfact.isChecked())
 
         pg.SetString("bendColor",bendSketchColor)
         pg.SetString("genColor",genSketchColor)
@@ -2775,7 +2730,7 @@ class SMUnfoldTaskPanel:
         if not checked and not self.checkUseMds.isChecked():
             # not allowed to uncheck unless "Use MDS" box is checked
             # (radio-button behavior)
-            # FIXME: NOT WORKING! Why? -> self.checkKfact.setChecked(True)
+            # FIXME: NOT WORKING! Why? >>See .clicked.connect note<< -> self.checkKfact.setChecked(True)
             # return 
             pass
         self.kFactSpin.setEnabled(checked)
@@ -2805,7 +2760,6 @@ class SMUnfoldTaskPanel:
         self.kfactorDin.setText(_translate("SheetMetal", "DIN", None))
         self.checkUseMds.setText(_translate("SMUnfoldTaskPanel", "Use Material Definition Sheet", None))
         self.mdsApply.setText(_translate("SMUnfoldTaskPanel", "Apply", None))
-        self.checkPersistentManualKfact.setText(_translate("SMUnfoldTaskPanel", "Use \"Manual K-factor\" unless MDS is in use", None))
 
 
 class SMUnfoldCommandClass():
