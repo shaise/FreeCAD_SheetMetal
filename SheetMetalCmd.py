@@ -67,7 +67,7 @@ def smMakeReliefFace(edge, dir, gap, reliefW, reliefD, reliefType):
       e1 = Part.makeLine(p1, p2)
       e2 = Part.makeLine(p2, p3)
       e3 = Part.Arc(p3, p34, p4).toShape()
-      e4 = Part.makeLine(p4, p1)	
+      e4 = Part.makeLine(p4, p1)
     else :
       p3 = edge.valueAt(edge.FirstParameter + gap + reliefW) + dir.normalize() * reliefD
       p4 = edge.valueAt(edge.FirstParameter + gap) + dir.normalize() * reliefD
@@ -87,7 +87,7 @@ def smMakeFace(edge, dir, extLen, gap1 = 0.0, gap2 = 0.0, angle1 = 0.0, angle2 =
     p2 = edge.valueAt(edge.FirstParameter + gap1)
     p3 = edge.valueAt(edge.FirstParameter + gap1 + len1) + dir.normalize() * extLen
     p4 = edge.valueAt(edge.LastParameter - gap2 - len2) + dir.normalize() * extLen
-	
+
     e2 = Part.makeLine(p2, p3)
     e4 = Part.makeLine(p4, p1)
     section = e4.section(e2)
@@ -151,7 +151,7 @@ def smGetFace(Faces, obj) :
   return faceList
 
 def smMiter(bendR = 1.0, bendA = 90.0, miterA1 = 0.0, miterA2 = 0.0, flipped = False, extLen = 10.0, gap1 = 0.0, gap2 = 0.0,
-            reliefD = 1.0, automiter = True, selFaceNames = '', MainObject = None):
+             sign = 1.0, offset = 0.0, reliefD = 1.0, automiter = True, selFaceNames = '', MainObject = None):
 
   if not(automiter) :
     miterA1List = [miterA1 for selFaceName in selFaceNames]
@@ -159,13 +159,16 @@ def smMiter(bendR = 1.0, bendA = 90.0, miterA1 = 0.0, miterA2 = 0.0, flipped = F
     gap1List = [gap1 for selFaceName in selFaceNames]
     gap2List = [gap2 for selFaceName in selFaceNames]
     reliefDList = [reliefD for selFaceName in selFaceNames]
+    wallsolid_common_list =[0.0 for selFaceName in selFaceNames]
   else :
     miterA1List = [0.0 for selFaceName in selFaceNames]
     miterA2List = [0.0 for selFaceName in selFaceNames]
     gap1List = [gap1 for selFaceName in selFaceNames]
     gap2List = [gap2 for selFaceName in selFaceNames]
     reliefDList = [reliefD for selFaceName in selFaceNames]
-    facelist, edgelist, facefliplist, edgefliplist, transfacelist, transedgelist = ([], [], [], [], [], [])
+    wallsolid_common_list =[0.0 for selFaceName in selFaceNames]
+    facelist, edgelist, facefliplist, edgefliplist = ([], [], [], [])
+    wallsolidlist, wallsolidfliplist, revfacelist, revfacefliplist, lenedgelist, bendsolidlist = ([], [], [], [], [], [])
     for selFaceName in selFaceNames :
       selItem = MainObject.getElement(selFaceName)
       selFace = smFace(selItem, MainObject)
@@ -186,24 +189,25 @@ def smMiter(bendR = 1.0, bendA = 90.0, miterA1 = 0.0, miterA2 = 0.0, flipped = F
           continue
         if (p1 - p0).Length < smEpsilon:
           revAxisV = p2 - p1
-          revAxisP = p2
           break
         if (p2 - p0).Length < smEpsilon:
           revAxisV = p1 - p2
-          revAxisP = p1
           break
-
+  
+      # find the large face connected with selected face
       list2 = MainObject.ancestorsOfType(lenEdge, Part.Face)
       for Cface in list2 :
         if not(Cface.isSame(selFace)) :
           break
 
-      if not(flipped):
-        thkDir = Cface.normalAt(0,0)
-      else:
-        thkDir = Cface.normalAt(0,0) * -1
-      FaceDir = selFace.normalAt(0,0)
+      # Produce Offset Edge
+      if offset > 0.0 :
+        lenEdge.translate(selFace.normalAt(0,0) * offset)
+
+      # main Length Edge
       revAxisV.normalize()
+      thkDir = Cface.normalAt(0,0) * -1
+      FaceDir = selFace.normalAt(0,0)
 
       #make sure the direction verctor is correct in respect to the normal
       if (thkDir.cross(revAxisV).normalize() - FaceDir).Length < smEpsilon:
@@ -214,121 +218,118 @@ def smMiter(bendR = 1.0, bendA = 90.0, miterA1 = 0.0, miterA2 = 0.0, flipped = F
         bendA = -bendA
         flipped = not flipped
 
-      # to get translated face
-      transP = FaceDir * (bendR + thk)
+      if not(flipped):
+        revAxisP = lenEdge.valueAt(lenEdge.FirstParameter) + thkDir * (bendR + thk)
+        revAxisV = revAxisV * -1
+      else:
+        revAxisP = lenEdge.valueAt(lenEdge.FirstParameter) + thkDir * -bendR
+
+      if bendA > 0.0 :
+        # create bend
+        # narrow the wall if we have gaps
+        revFace = smMakeFace(lenEdge, thkDir, thk, (bendR + thk)*1.5, (bendR + thk)*1.5)
+        if revFace.normalAt(0,0) != FaceDir :
+          revFace.reverse()
+        bendSolid = revFace.revolve(revAxisP, revAxisV, bendA)
+        #Part.show(bendSolid,'bendSolid')
+        revFace.rotate(revAxisP, revAxisV, bendA)
+        revfacelist.append(revFace)
+        bendsolidlist.append(bendSolid)
+      #print(revAxisP,revAxisV)
 
       # narrow the wall if we have gaps
       BendFace = smMakeFace(lenEdge, FaceDir, extLen, gap1, gap2)
       if BendFace.normalAt(0,0) != thkDir :
         BendFace.reverse()
+      WallSolid = BendFace.extrude(thkDir * thk)
       BendFace.rotate(revAxisP, revAxisV, bendA)
-      #Part.show(BendFace)
+      #Part.show(BendFace,'BendFace')
       facelist.append(BendFace)
-      BendFace.translate(transP)
-      transfacelist.append(BendFace)
+      WallSolid.rotate(revAxisP, revAxisV, bendA)
+      #Part.show(WallSolid,'WallSolid')
+      wallsolidlist.append(WallSolid)
 
       edge_len = lenEdge.copy()
+      #Part.show(edge_len,'edge_len')
       edge_len.translate(FaceDir * extLen)
       edge_len.rotate(revAxisP, revAxisV, bendA)
-      #Part.show(edge_len)
+      #Part.show(edge_len,'edge_len')
       edgelist.append(edge_len)
-      edge_len.translate(transP)
-      transedgelist.append(edge_len)
-
-      # narrow the wall if we have gaps
-      BendFace = smMakeFace(lenEdge, FaceDir * -1, extLen, gap1, gap2)
-      if BendFace.normalAt(0,0) != thkDir :
-        BendFace.reverse()
-      BendFace.rotate(revAxisP, revAxisV, bendA)
-      #Part.show(BendFace)
-      facefliplist.append(BendFace)
 
       edge_len = lenEdge.copy()
-      edge_len.translate(FaceDir * -1 * extLen)
-      edge_len.rotate(revAxisP, revAxisV, bendA)
-      #Part.show(edge_len)
-      edgefliplist.append(edge_len)
+      lenedgelist.append(lenEdge)
+      #Part.show(edge_len,'edge_len')
 
     # check faces intersect each other
     for i,face in enumerate(facelist) :
       for j, lenEdge in enumerate(edgelist) :
-        if i != j and abs((facelist[i].normalAt(0,0)-facelist[j].normalAt(0,0)).Length) < smEpsilon :
+        if i != j and abs((facelist[i].normalAt(0,0)- facelist[j].normalAt(0,0)).Length) < smEpsilon :
+          dist = bendsolidlist[i].distToShape(bendsolidlist[j])
+          gaps = (bendR + thk)*1.5 - math.sqrt((dist[0]*dist[0])/2)
+          #print(gaps, dist[0])
           p1 = lenEdge.valueAt(lenEdge.FirstParameter)
           p2 = lenEdge.valueAt(lenEdge.LastParameter)
-          section_vertex = face.section(lenEdge)
-          if section_vertex.Vertexes :
+          wallsolid_common = wallsolidlist[i].common(wallsolidlist[j])
+          if wallsolid_common.Volume :
+            wallsolid_common_list[i] = wallsolid_common.Volume
             Angle = LineAngle(edgelist[i], edgelist[j])
             #print(Angle)
-            dist1 = (p1 - section_vertex.Vertexes[0].Point).Length
-            dist2 = (p2 - section_vertex.Vertexes[0].Point).Length
+            wallface_common = facelist[j].section(facelist[i])
+            vp1 = wallface_common.Vertexes[0].Point
+            dist1 = (p1-vp1).Length
+            dist2 = (p2-vp1).Length
             if abs(dist1) < abs(dist2) :
-              miterA1List[j] = Angle / 2.0 
-              gap1List[j] = 0.1
+              miterA1List[j] = Angle  * sign / 2.0 
+              gap1List[j] = max(0.0, gaps + 0.1)
               reliefDList[j] = 0.0
             elif abs(dist2) < abs(dist1) :
-              miterA2List[j] = Angle / 2.0
-              gap2List[j] = 0.1
+              miterA2List[j] = Angle  * sign / 2.0
+              gap2List[j] = max(0.0, gaps + 0.1)
               reliefDList[j] = 0.0
         elif i != j :
-          p1 = lenEdge.valueAt(lenEdge.FirstParameter)
-          p2 = lenEdge.valueAt(lenEdge.LastParameter)
-          p3 = transedgelist[j].valueAt(transedgelist[j].FirstParameter)
-          p4 = transedgelist[j].valueAt(transedgelist[j].LastParameter)
-          section_vertex = face.section(lenEdge)
-          section_vertex1 = transfacelist[i].section(transedgelist[j])
-          if section_vertex.Vertexes :
-            section_edge = face.section(facelist[j])
-            Angle = LineAngle(section_edge.Edges[0], lenEdge)
-            #print(Angle)
-            dist1 = (p1 - section_vertex.Vertexes[0].Point).Length
-            dist2 = (p2 - section_vertex.Vertexes[0].Point).Length
-            dist3 = (p3 - section_vertex1.Vertexes[0].Point).Length
-            dist4 = (p4 - section_vertex1.Vertexes[0].Point).Length
-            if abs(dist1) < abs(dist2) :
-              miterA1List[j] = abs(90-Angle)
-              if abs(dist3) > 0.0 :
-                gap1List[j] = abs(dist3) + 0.1
-                reliefDList[j] = 0.0
-            elif abs(dist2) < abs(dist1) :
-              miterA2List[j] = abs(90-Angle)
-              if abs(dist4) > 0.0 :
-                gap2List[j] = abs(dist4) + 0.1
-                reliefDList[j] = 0.0
-
-    # check faces intersect each other for fliplist
-    for i,face in enumerate(facefliplist) :
-      for j, lenEdge in enumerate(edgefliplist) :
-        if i != j and abs((facefliplist[i].normalAt(0,0)-facefliplist[j].normalAt(0,0)).Length) < smEpsilon :
-          p1 = lenEdge.valueAt(lenEdge.FirstParameter)
-          p2 = lenEdge.valueAt(lenEdge.LastParameter)
-          section_vertex = face.section(lenEdge)
-          if section_vertex.Vertexes :
-            Angle = LineAngle(edgefliplist[i], edgefliplist[j])
-            #print(Angle)
-            dist1 = (p1 - section_vertex.Vertexes[0].Point).Length
-            dist2 = (p2 - section_vertex.Vertexes[0].Point).Length
-            if abs(dist1) < abs(dist2) :
-              miterA1List[j] = -Angle / 2.0 
-            elif abs(dist2) < abs(dist1) :
-              miterA2List[j] = -Angle / 2.0
-        elif i != j :
-          p1 = lenEdge.valueAt(lenEdge.FirstParameter)
-          p2 = lenEdge.valueAt(lenEdge.LastParameter)
-          section_vertex = face.section(lenEdge)
-          if section_vertex.Vertexes :
-            section_edge = face.section(facefliplist[j])
-            if section_edge.Edges :
-              Angle = LineAngle(section_edge.Edges[0], lenEdge)
-              #print(Angle)
-              dist1 = (p1 - section_vertex.Vertexes[0].Point).Length
-              dist2 = (p2 - section_vertex.Vertexes[0].Point).Length
+          dist = bendsolidlist[i].distToShape(bendsolidlist[j])
+          gaps = (bendR + thk)*1.5 - math.sqrt((dist[0]*dist[0])/2)
+          #print(gaps, dist[0])
+          wallsolid_common = wallsolidlist[i].common(wallsolidlist[j])
+          if wallsolid_common.Volume :
+            wallsolid_common_list[i] = wallsolid_common.Volume
+            #Part.show(wallsolid_common,'wallsolid_common')
+            edge_len_common = lenedgelist[i].section(lenedgelist[j])
+            wallface_common = facelist[j].section(facelist[i])
+            #Part.show(wallface_common,'wallface_common')
+            #Part.show(revfacelist[j],'revfacelist')
+            if wallface_common.Edges :
+              edge1 = wallface_common.Edges[0]
+              lineDir = edge1.valueAt(edge1.FirstParameter) - edge1.valueAt(edge1.LastParameter)
+              angle1 = revfacelist[j].normalAt(0,0).getAngle(lineDir)
+              Angle = math.degrees(angle1)
+              #print(Angle,'normal')
+              if Angle > 90.0 :
+                Angle = 180-Angle
+              p1 = lenEdge.valueAt(lenEdge.FirstParameter)
+              p2 = lenEdge.valueAt(lenEdge.LastParameter)
+              vp1 = wallface_common.Vertexes[0].Point
+              dist1 = (p1-vp1).Length
+              dist2 = (p2-vp1).Length
               if abs(dist1) < abs(dist2) :
-                miterA1List[j] = abs(90-Angle)* -1
+                miterA1List[j] = abs(Angle) * sign
+                if edge_len_common.Vertexes :
+                  gap1List[j] = 0.0
+                  reliefDList[j] = 0.0
+                else :
+                  gap1List[j] = max(0.0, gaps + 0.1)
+                  reliefDList[j] = 0.0
               elif abs(dist2) < abs(dist1) :
-                miterA2List[j] = abs(90-Angle) *-1
+                miterA2List[j] = abs(Angle) * sign
+                if edge_len_common.Vertexes :
+                  gap2List[j] = 0.0
+                  reliefDList[j] = 0.0
+                else :
+                  gap2List[j] = max(0.0, gaps + 0.1)
+                  reliefDList[j] = 0.0
 
-#  print(miterA1List, miterA2List, gap1List, gap2List, reliefDList)
-  return miterA1List, miterA2List, gap1List, gap2List, reliefDList
+  #print(miterA1List, miterA2List, gap1List, gap2List, reliefDList, wallsolid_common_list)
+  return miterA1List, miterA2List, gap1List, gap2List, reliefDList, wallsolid_common_list
 
 def smBend(bendR = 1.0, bendA = 90.0, miterA1 = 0.0,miterA2 = 0.0, BendType = "Material Outside", flipped = False, unfold = False, 
             offset = 0.0, extLen = 10.0, gap1 = 0.0, gap2 = 0.0,  reliefType = "Rectangle", reliefW = 0.8, reliefD = 1.0, extend1 = 0.0, 
@@ -344,8 +345,18 @@ def smBend(bendR = 1.0, bendA = 90.0, miterA1 = 0.0,miterA2 = 0.0, BendType = "M
       pass
 
   if not(sketches) :
-    miterA1List, miterA2List, gap1List, gap2List, reliefDList = smMiter(bendR = bendR, bendA = bendA, miterA1 = miterA1, miterA2 = miterA2, flipped = flipped, extLen = extLen, gap1 = gap1, 
-                                      gap2 = gap2, reliefD = reliefD, selFaceNames = selFaceNames, automiter = automiter, MainObject = MainObject)
+    miterA1List1, miterA2List1, gap1List1, gap2List1, reliefDList1, wallsolid_common_list1 = smMiter(bendR = bendR, bendA = bendA, miterA1 = miterA1, miterA2 = miterA2, flipped = flipped, extLen = extLen, gap1 = gap1, 
+                                      sign = 1.0, offset = offset, gap2 = gap2, reliefD = reliefD, selFaceNames = selFaceNames, automiter = automiter, MainObject = MainObject)
+    bendAflip = (bendA - 180)
+    miterA1List2, miterA2List2, gap1List2, gap2List2, reliefDList2, wallsolid_common_list2 = smMiter(bendR = bendR, bendA = bendAflip, miterA1 = miterA1, miterA2 = miterA2, flipped = flipped, extLen = extLen, gap1 = gap1, 
+                                      sign = -1.0, offset = offset, gap2 = gap2, reliefD = reliefD, selFaceNames = selFaceNames, automiter = automiter, MainObject = MainObject)
+
+    miterA1List = [x if a > b else y for x, y, a, b in zip(miterA1List1, miterA1List2, wallsolid_common_list1, wallsolid_common_list2)]
+    miterA2List = [x if a > b else y for x, y, a, b in zip(miterA2List1, miterA2List2, wallsolid_common_list1, wallsolid_common_list2)]
+    gap1List = [x + y for x, y in zip(gap1List1, gap1List2)]
+    gap2List = [x + y for x, y in zip(gap2List1, gap2List2)]
+    reliefDList = [min(x , y) for x, y in zip(reliefDList1, reliefDList2)]
+
   else :
     miterA1List, miterA2List, gap1List, gap2List, reliefDList = ( [0.0],[0.0],[gap1],[gap2],[reliefD])
 
