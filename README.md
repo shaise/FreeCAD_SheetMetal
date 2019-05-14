@@ -4,11 +4,13 @@ A simple sheet metal workbench for FreeCAD
 ![Demo Workflow](../master/Resources/SheetMetal4.gif)
 
 #### Developers:
-* Folding tools:<br/>Shai Seger [@shaise](https://github.com/shaise)<br/>
-                  [@jaisekjames](https://github.com/jaisekjames)<br/>
-                  Cerem Cem ASLAN [@ceremcem](https://github.com/ceremcem)<br/>
-                  Based and inspired by Javier Martínez's ([@JMG1](https://github.com/JMG1)) code
-* Unfolding tool: Copyright 2014 by Ulrich Brammer <ulrich1a[at]users.sourceforge.net> AKA [@ulrich1a](https://github.com/ulrich1a)
+* Folding tools:  
+                  - Shai Seger [@shaise](https://github.com/shaise)  
+                  - [@jaisekjames](https://github.com/jaisekjames)  
+                  - Cerem Cem ASLAN [@ceremcem](https://github.com/ceremcem)<br/>
+                  - Based and inspired by Javier Martínez's ([@JMG1](https://github.com/JMG1)) code
+* Unfolding tool:  
+                  - Copyright 2014 by Ulrich Brammer <ulrich1a[at]users.sourceforge.net> AKA [@ulrich1a](https://github.com/ulrich1a)
 
 # Terminology 
 
@@ -19,13 +21,13 @@ A simple sheet metal workbench for FreeCAD
 As a simple test case, consider the following example: 
 
 * Inputs: 
-    - Thickness: 2mm 
-    - K-factor: 0.38 (ANSI)
-    - Leg length: 48.12mm
-    - Inner effective radius: 1.64mm
-    - Flange length: 51.76mm
-* Output
-    - End to mold-line distance: 50mm
+    - Thickness: 2mm  
+    - K-factor: 0.38 (ANSI)  
+    - Leg length: 48.12mm  
+    - Inner effective radius: 1.64mm  
+    - Flange length: 51.76mm  
+* Output:  
+    - End to mold-line distance: 50mm  
 
 You can find a simple calculator in `./tools/calc-unfold.py`. 
 
@@ -64,6 +66,11 @@ To use the Material Definition Sheet, follow the steps:
 For installation and how to use, please visit:  
 http://theseger.com/projects/2015/06/sheet-metal-addon-for-freecad/  
 Starting from FreeCAD 0.17 it can be installed via the [Addon Manager](https://github.com/FreeCAD/FreeCAD-addons) (from Tools menu)
+
+#### References
+* Development repo: https://github.com/shaise/FreeCAD_SheetMetal  
+* FreeCAD wiki page: https://www.freecadweb.org/wiki/SheetMetal_Workbench  
+* Authors webpage: http://theseger.com/projects/2015/06/sheet-metal-addon-for-freecad/  
 
 #### Release notes: 
 * V0.2.31 24 Apr 2019:  Added better K factor control by ceremcem. Thank you!
