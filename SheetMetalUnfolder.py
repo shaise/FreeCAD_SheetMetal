@@ -2445,6 +2445,9 @@ class SMUnfoldTaskPanel:
             self.kFactSpin.setProperty("value", manKFactor)
             self.checkKfact.setChecked(True)
             self.updateKfactorStandard(virtual_material["standard"])
+        elif self.material_sheet_name is None:
+            self.checkKfact.setChecked(True)
+          
 
     def get_root_obj(self):
         selobj = Gui.Selection.getSelection()[0]
