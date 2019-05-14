@@ -7,7 +7,7 @@ A simple sheet metal workbench for FreeCAD
 * Folding tools:  
                   - Shai Seger [@shaise](https://github.com/shaise)  
                   - [@jaisekjames](https://github.com/jaisekjames)  
-                  - Cerem Cem ASLAN [@ceremcem](https://github.com/ceremcem)
+                  - Cerem Cem ASLAN [@ceremcem](https://github.com/ceremcem)  
                   - Based and inspired by Javier Martínez's ([@JMG1](https://github.com/JMG1)) code
 * Unfolding tool:  
                   - Copyright 2014 by Ulrich Brammer <ulrich1a[at]users.sourceforge.net> AKA [@ulrich1a](https://github.com/ulrich1a)
