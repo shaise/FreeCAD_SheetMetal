@@ -16,12 +16,42 @@
   <layout class="QVBoxLayout" name="verticalLayout_2">
    <item>
     <layout class="QVBoxLayout" name="verticalLayout">
+     <property name="sizeConstraint">
+      <enum>QLayout::SetMaximumSize</enum>
+     </property>
      <item>
       <widget class="QCheckBox" name="checkSketch">
        <property name="text">
         <string>Generate projection sketch</string>
        </property>
       </widget>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="materalDefinitionSheetLayout">
+       <item>
+        <widget class="QCheckBox" name="checkUseMds">
+         <property name="text">
+          <string>Use Material Definition Sheet</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QComboBox" name="availableMds"/>
+       </item>
+       <item>
+        <widget class="QPushButton" name="mdsApply">
+         <property name="maximumSize">
+          <size>
+           <width>50</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>Apply</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </item>
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout">
