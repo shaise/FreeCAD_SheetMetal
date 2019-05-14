@@ -1653,7 +1653,7 @@ class SheetTree(object):
       except Exception as e:
           #theFace = Part.makeFilledFace(wires)
           theFace = faces[0]
-          SMError('got execption: ', str(e))
+          SMError('got exception: ', str(e))
           #Part.show(theFace, 'exception')
     keyList = []
     for key in bend_node.edgeDict:
