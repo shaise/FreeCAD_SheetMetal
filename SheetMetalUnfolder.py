@@ -2071,6 +2071,31 @@ class SheetTree(object):
     return (theShell + nodeShell, theFoldLines + nodeFoldLines)
 
 #  from Defeaturing WB: Export to Step
+def sew_Shape():
+    """checking Shape""" 
+    
+    doc=FreeCAD.ActiveDocument
+    docG = FreeCADGui.ActiveDocument
+       
+    sel=FreeCADGui.Selection.getSelection()
+    if len (sel) == 1:
+        o = sel[0]
+        if hasattr(o,'Shape'):
+            sh = o.Shape.copy()
+            sh.sewShape()
+            sl = Part.Solid(sh)
+            docG.getObject(o.Name).Visibility = False
+            Part.show(sl)
+            ao = FreeCAD.ActiveDocument.ActiveObject
+            ao.Label = 'Solid'
+            docG.ActiveObject.ShapeColor=docG.getObject(o.Name).ShapeColor
+            docG.ActiveObject.LineColor=docG.getObject(o.Name).LineColor
+            docG.ActiveObject.PointColor=docG.getObject(o.Name).PointColor
+            docG.ActiveObject.DiffuseColor=docG.getObject(o.Name).DiffuseColor
+            docG.ActiveObject.Transparency=docG.getObject(o.Name).Transparency
+    else:
+        FreeCAD.Console.PrintError('select only one object')
+
 
 def makeSolidExpSTEP():
     
@@ -2094,6 +2119,7 @@ def makeSolidExpSTEP():
             __objs__=[]
             __objs__.append(sel[0])
             import ImportGui
+            stop
             ImportGui.export(__objs__,tempfilepath)
             del __objs__
             # docG.getObject(sel[0].Name).Visibility = False
@@ -2190,9 +2216,10 @@ def getUnfold(k_factor_lookup):
               if TheTree.error_code is not None:
                 if (TheTree.error_code == 1):
                     FreeCAD.Console.PrintError("Error at Face"+ str(TheTree.failed_face_idx+1) + "\n")
-                    FreeCAD.Console.PrintError("Trying to repeat the unfold process again with the sanitized copied Shape\n");
+                    FreeCAD.Console.PrintError("Trying to repeat the unfold process again with the Sewed copied Shape\n");
                     FreeCAD.ActiveDocument.openTransaction("sanitize")
-                    makeSolidExpSTEP();
+                    # makeSolidExpSTEP();
+                    sew_Shape();
                     FreeCAD.ActiveDocument.commitTransaction()
                     ob = FreeCAD.ActiveDocument.ActiveObject;
                     ob_Name = ob.Name
