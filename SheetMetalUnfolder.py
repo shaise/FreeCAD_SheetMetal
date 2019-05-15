@@ -101,7 +101,7 @@ if __name__ == '__main__':
 '''
 
 
-import Part, FreeCAD, FreeCADGui, os
+import Part, FreeCAD, FreeCADGui, os, sys
 from PySide import QtGui, QtCore
 from FreeCAD import Base
 from FreeCAD import Gui
@@ -110,6 +110,10 @@ import Draft
 import Drawing
 from SheetMetalCmd import iconPath
 from lookup import get_val_from_range
+
+import Part
+import tempfile
+
 
 genSketchChecked = True
 genSketchColor = '#000080'      
@@ -192,6 +196,76 @@ def equal_vertex(vert1, vert2, p=5):
   # compares two vertices 
   return (round(vert1.X - vert2.X,p)==0 and round(vert1.Y - vert2.Y,p)==0 and round(vert1.Z - vert2.Z,p)==0)
 
+from math import sqrt
+
+def sk_distance(p0, p1):
+    return sqrt((p0[0] - p1[0])**2 + (p0[1] - p1[1])**2)
+
+def sanitizeSkBsp(s_name, knot_tolerance):
+    # s_name = 'Sketch001'
+    s=FreeCAD.ActiveDocument.getObject(s_name)
+    FreeCAD.Console.PrintWarning('check to sanitize\n')
+    if 'Sketcher' in s.TypeId:
+        FreeCAD.ActiveDocument.openTransaction('Sanitizing')
+        idx_to_del = []
+        geo_to_del = []
+        # check for duplicates in splines
+        if len (s.Geometry) > 2: #cleaning algo approx valid for more than 2 splines
+            for i,g in enumerate (s.Geometry):
+                if 'BSplineCurve object' in str(g):
+                    j=i+1
+                    for bg in s.Geometry[(i + 1):]:
+                        if 'BSplineCurve object' in str(bg):
+                            if j not in idx_to_del:
+                                if (len(g.KnotSequence) == len(bg.KnotSequence)):
+                                    #print('equal knot nbrs')
+                                    eqp = True
+                                    if sk_distance(g.StartPoint,bg.StartPoint) > knot_tolerance:
+                                        if sk_distance(g.StartPoint,bg.EndPoint) > knot_tolerance:
+                                            eqp = False
+                                    if sk_distance(g.EndPoint,bg.EndPoint) > knot_tolerance:
+                                        if sk_distance(g.EndPoint,bg.StartPoint) > knot_tolerance:
+                                            eqp = False        
+                                    # print(simu_dist(g.StartPoint,bg.StartPoint))
+                                    # print(simu_dist(g.StartPoint,bg.EndPoint))
+                                    # print(simu_dist(g.EndPoint,bg.StartPoint))
+                                    # #if simu_dist(g.StartPoint,bg.StartPoint) > knot_tolerance:
+                                    # #        eqp = False
+                                    # print(simu_dist(g.EndPoint,bg.EndPoint))
+                                    #if simu_dist(g.EndPoint,bg.EndPoint) > knot_tolerance:
+                                    #        eqp = False        
+                                    # for k,kn in enumerate (bg.KnotSequence):
+                                        #if abs(kn-g.KnotSequence[k]) > knot_tolerance:
+                                    #    print (kn,g.KnotSequence[k])
+                                    #    if abs(kn-g.KnotSequence[k]) > knot_tolerance:
+                                        #if (kn == g.KnotSequence[k]):
+                                    #        eqp = False
+                                    if (eqp):
+                                        print ('identical splines found') #,g,bg)
+                                        if j not in idx_to_del:
+                                            idx_to_del.append(j)
+                        j+=1
+        j=0
+        #print(idx_to_del)
+        if len(idx_to_del) >0:
+            FreeCAD.Console.PrintMessage(u'sanitizing '+s.Label)
+            FreeCAD.Console.PrintMessage('\n')
+            idx_to_del.sort() 
+            #print(idx_to_del)
+            idx_to_del.reverse() 
+            #print(idx_to_del)
+            #stop
+            for i, e in enumerate(idx_to_del):
+                #print('to delete ',s.Geometry[(e)],e)
+                print('deleting identical geo')
+                #print(s.Geometry)
+                s.delGeometry(e)
+                #print(s.Geometry)
+        FreeCAD.ActiveDocument.commitTransaction()
+        return s.Geometry
+    else:
+        return None
+##
 def equal_vector(vec1, vec2, p=5):
   # compares two vectors 
   return (round(vec1.x - vec2.x,p)==0 and round(vec1.y - vec2.y,p)==0 and round(vec1.z - vec2.z,p)==0)
@@ -1613,7 +1687,8 @@ class SheetTree(object):
             theFace = Part.Face(myWire)
             #theFace = Part.makeFace(myWire, 'Part::FaceMakerSimple')
         except:
-            FreeCAD.Console.PrintLog('got exception at Face: '+ str(fIdx+1) +' len eList: '+ str(len(eList)) + '\n')
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            FreeCAD.Console.PrintLog('got exception at Face: '+ str(fIdx+1) +' len eList: '+ str(len(eList)) + ' at line '+str(exc_tb.tb_lineno)+'\n')
             #for w in eList:
               #Part.show(w, 'exceptEdge')
               #print 'exception type: ', str(w.Curve)
@@ -1657,9 +1732,10 @@ class SheetTree(object):
           #theFace = Part.Face(wires[0], wires[1:])
           #theFace = Part.makeFace(myWire, 'Part::FaceMakerSimple')
       except Exception as e:
+          exc_type, exc_obj, exc_tb = sys.exc_info()
           #theFace = Part.makeFilledFace(wires)
           theFace = faces[0]
-          SMError('got exception: ', str(e))
+          SMError('at line '+str(exc_tb.tb_lineno)+' got execption: ', str(e))
           #Part.show(theFace, 'exception')
     keyList = []
     for key in bend_node.edgeDict:
@@ -1994,7 +2070,66 @@ class SheetTree(object):
     FreeCAD.Console.PrintLog("ufo finish face" + str(node.idx +1) + "\n")
     return (theShell + nodeShell, theFoldLines + nodeFoldLines)
 
+#  from Defeaturing WB: Export to Step
+def sew_Shape():
+    """checking Shape""" 
+    
+    doc=FreeCAD.ActiveDocument
+    docG = FreeCADGui.ActiveDocument
+       
+    sel=FreeCADGui.Selection.getSelection()
+    if len (sel) == 1:
+        o = sel[0]
+        if hasattr(o,'Shape'):
+            sh = o.Shape.copy()
+            sh.sewShape()
+            sl = Part.Solid(sh)
+            docG.getObject(o.Name).Visibility = False
+            Part.show(sl)
+            ao = FreeCAD.ActiveDocument.ActiveObject
+            ao.Label = 'Solid'
+            docG.ActiveObject.ShapeColor=docG.getObject(o.Name).ShapeColor
+            docG.ActiveObject.LineColor=docG.getObject(o.Name).LineColor
+            docG.ActiveObject.PointColor=docG.getObject(o.Name).PointColor
+            docG.ActiveObject.DiffuseColor=docG.getObject(o.Name).DiffuseColor
+            docG.ActiveObject.Transparency=docG.getObject(o.Name).Transparency
+    else:
+        FreeCAD.Console.PrintError('select only one object')
 
+
+def makeSolidExpSTEP():
+    
+    doc=FreeCAD.ActiveDocument
+    docG = FreeCADGui.ActiveDocument
+    if doc is not None:
+        fname = doc.FileName
+        if len(fname) == 0:
+            fileNm='untitled'
+        else:
+            fileNm = os.path.basename(fname)
+            fileNm = os.path.splitext(fileNm)[0]
+        tempdir = tempfile.gettempdir() # get the current temporary directory
+        #print(tempdir)
+        #fileNm = os.path.basename(fname)
+        # tempfilepath = os.path.join(tempdir,fname.rstrip(".fcstd").rstrip(".FCStd") + u'_cp.stp')
+        tempfilepath = os.path.join(tempdir,fileNm + u'_cp.stp')
+        print(tempfilepath)
+        sel=FreeCADGui.Selection.getSelection()
+        if len (sel) == 1:
+            __objs__=[]
+            __objs__.append(sel[0])
+            import ImportGui
+            stop
+            ImportGui.export(__objs__,tempfilepath)
+            del __objs__
+            # docG.getObject(sel[0].Name).Visibility = False
+            ImportGui.insert(tempfilepath,doc.Name)
+            FreeCADGui.SendMsgToActiveView("ViewFit")
+        else:
+            FreeCAD.Console.PrintError('select only one object')
+    else:
+        FreeCAD.Console.PrintError('select only one object')
+##
 
 
 def getUnfold(k_factor_lookup):
@@ -2003,6 +2138,8 @@ def getUnfold(k_factor_lookup):
     folds = None
     theName = None
     mylist = Gui.Selection.getSelectionEx()
+    faceSel = ""; ob_Name = ""
+    err_code = 0
     # print 'Die Selektion: ',mylist
     # print 'Zahl der Selektionen: ', mylist.__len__()
     
@@ -2077,9 +2214,27 @@ def getUnfold(k_factor_lookup):
                         FreeCAD.Console.PrintLog("Show time: "+ str(showTime - solidTime) + " total time: "+ str(showTime - startzeit) + "\n")
               
               if TheTree.error_code is not None:
-                FreeCAD.Console.PrintError("Error "+ unfold_error[TheTree.error_code] +
+                if (TheTree.error_code == 1):
+                    FreeCAD.Console.PrintError("Error at Face"+ str(TheTree.failed_face_idx+1) + "\n")
+                    FreeCAD.Console.PrintError("Trying to repeat the unfold process again with the Sewed copied Shape\n");
+                    FreeCAD.ActiveDocument.openTransaction("sanitize")
+                    # makeSolidExpSTEP();
+                    sew_Shape();
+                    FreeCAD.ActiveDocument.commitTransaction()
+                    ob = FreeCAD.ActiveDocument.ActiveObject;
+                    ob_Name = ob.Name
+                    # print('obn',ob_Name)
+                    ob.Label = o.Object.Label + u"_copy"
+                    FreeCADGui.Selection.clearSelection()
+                    FreeCADGui.Selection.addSelection(ob,o.SubElementNames[0])
+                    faceSel = o.SubElementNames[0]
+                    err_code = TheTree.error_code
+                    #QtGui.QMessageBox.information(mw,"Tip","""<b>Try to repeat the unfold process<br>again with the <font color = red>sanitized copied Shape</font></b>""")
+                    # import SheetMetalUnfolder; import importlib; importlib.reload(SheetMetalUnfolder);
+                else:
+                    FreeCAD.Console.PrintError("Error "+ unfold_error[TheTree.error_code] +
                      " at Face"+ str(TheTree.failed_face_idx+1) + "\n")
-                QtGui.QMessageBox.information(mw,"Error",unfold_error[TheTree.error_code])
+                    QtGui.QMessageBox.information(mw,"Error",unfold_error[TheTree.error_code])
               else:
                 FreeCAD.Console.PrintLog("unfold successful\n")
     
@@ -2090,7 +2245,7 @@ def getUnfold(k_factor_lookup):
           else:
             mw=FreeCADGui.getMainWindow()
             QtGui.QMessageBox.information(mw,"Selection Error","""Sheet UFO works only with a flat face as starter!\n Select a flat face.""")
-    return resPart, folds, normalVect, theName
+    return resPart, folds, normalVect, theName, err_code, faceSel, ob_Name
 
 
 def SMGetGeoSegment(e):
@@ -2447,7 +2602,6 @@ class SMUnfoldTaskPanel:
             self.updateKfactorStandard(virtual_material["standard"])
         elif self.material_sheet_name is None:
             self.checkKfact.setChecked(True)
-          
 
     def get_root_obj(self):
         selobj = Gui.Selection.getSelection()[0]
@@ -2684,16 +2838,36 @@ class SMUnfoldTaskPanel:
             99: 0.5
         }
         """
+        genStep = False; err_cd = 0
         try:
-            s, foldComp, norm, thename = getUnfold(k_factor_lookup)
+            s, foldComp, norm, thename, err_cd, fSel, obN  = getUnfold(k_factor_lookup)
             foldLines = foldComp.Edges
         except Exception as e:
-            s = None
-            QtGui.QApplication.restoreOverrideCursor()
-            SMError(e.args)
-            import traceback; traceback.print_exc()
-            msg = """Unfold is failing.<br>Please try to select a different face to unfold your object"""
-            QtGui.QMessageBox.question(None,"Warning",msg,QtGui.QMessageBox.Ok)
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            SMError('exception at line '+str(exc_tb.tb_lineno),e.args)
+            if err_cd == 1:
+                try:
+                    genstep = True;
+                    s, foldComp, norm, thename, err_cd, fSel, obN = getUnfold(k_factor_lookup)
+                    orN = FreeCADGui.Selection.getSelection()[0].Name
+                    if len (orN) > 0:
+                        FreeCAD.ActiveDocument.removeObject(orN);
+                    foldLines = foldComp.Edges
+                except Exception as e:
+                    exc_type, exc_obj, exc_tb = sys.exc_info()
+                    s = None
+                    QtGui.QApplication.restoreOverrideCursor()
+                    SMError('exception at line '+str(exc_tb.tb_lineno),e.args)
+                    import traceback; traceback.print_exc()
+                    msg = """Unfold is failing.<br>Please try to select a different face to unfold your object"""
+                    QtGui.QMessageBox.question(None,"Warning",msg,QtGui.QMessageBox.Ok)
+            else:
+                s = None
+                QtGui.QApplication.restoreOverrideCursor()
+                SMError(e.args)
+                import traceback; traceback.print_exc()
+                msg = """Unfold is failing.<br>Please try to select a different face to unfold your object"""
+                QtGui.QMessageBox.question(None,"Warning",msg,QtGui.QMessageBox.Ok)
         if (s is not None):
           doc.openTransaction("Unfold")
           a = doc.addObject("Part::Feature","Unfold")
@@ -2710,17 +2884,36 @@ class SMUnfoldTaskPanel:
             self.generateSketch(edges, "Unfold_Sketch", self.genColor.colorF())
             sku = doc.ActiveObject
             if bendSketchChecked:
+              tidy=False
               docG = FreeCADGui.ActiveDocument
               try:
                 doc.addObject("Part::Face", "mainFace").Sources = (sku, )
                 doc.recompute()
                 newface = doc.ActiveObject
-                owEdgs = newface.Shape.OuterWire.Edges
-                faceEdgs = newface.Shape.Edges
+                try:
+                  owEdgs = newface.Shape.OuterWire.Edges
+                  faceEdgs = newface.Shape.Edges
+                except:
+                  exc_type, exc_obj, exc_tb = sys.exc_info()
+                  SMError('Exception at line '+str(exc_tb.tb_lineno)+': Outline Sketch failed, re-trying after tidying up')
+                  tidy=True
+                  knot_tolerance = 0.001
+                  sname = sku.Name
+                  uGeo = sanitizeSkBsp(sname,knot_tolerance)
+                  owEdgs = sku.Shape.Edges
+                  faceEdgs = sku.Shape.Edges
+                  doc.recompute()                
+                #faceEdgs = newface.Shape.Edges
                 doc.removeObject(newface.Name)
                 #Part.show(newface)
                 self.generateSketch(owEdgs, "Unfold_Sketch_Outline", self.genColor.colorF())
                 sko = doc.ActiveObject
+                if tidy:
+                  SMError('tidying up Unfold_Sketch_Outline')
+                  knot_tolerance = 0.001
+                  sname = sko.Name
+                  print(sname,sku.Label)
+                  uGeo = sanitizeSkBsp(sname,knot_tolerance) 
                 intEdgs = []; idx = []
                 for i, e in enumerate(faceEdgs):
                   for oe in owEdgs:
@@ -2735,8 +2928,9 @@ class SMUnfoldTaskPanel:
                 docG.getObject(sku.Name).Visibility = False
                 #doc.recompute()
               except:
-                doc.removeObject(newface.Name)
-                SMError('Exception: Outline Sketch not created')
+                exc_type, exc_obj, exc_tb = sys.exc_info()
+                #doc.removeObject(newface.Name)
+                SMError('Exception at line '+str(exc_tb.tb_lineno)+': Outline Sketch not created')
             if len(foldLines) > 0 and bendSketchChecked:
               foldEdges = []
               foldEdges.append(grp2[0])
