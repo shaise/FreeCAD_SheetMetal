@@ -70,6 +70,7 @@ Starting from FreeCAD 0.17 it can be installed via the [Addon Manager](https://g
 * Development repo: https://github.com/shaise/FreeCAD_SheetMetal  
 * FreeCAD wiki page: https://www.freecadweb.org/wiki/SheetMetal_Workbench  
 * Authors webpage: http://theseger.com/projects/2015/06/sheet-metal-addon-for-freecad/  
+* FreeCAD Forum announcement/discussion [thread](https://forum.freecadweb.org/viewtopic.php?f=10&t=11303) 
 
 #### Release notes: 
 * V0.2.31 24 Apr 2019:  Added better K factor control by ceremcem. Thank you!
