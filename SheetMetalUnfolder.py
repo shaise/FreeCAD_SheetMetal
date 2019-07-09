@@ -1735,7 +1735,7 @@ class SheetTree(object):
           exc_type, exc_obj, exc_tb = sys.exc_info()
           #theFace = Part.makeFilledFace(wires)
           theFace = faces[0]
-          SMError('at line '+str(exc_tb.tb_lineno)+' got execption: ', str(e))
+          SMError('at line '+str(exc_tb.tb_lineno)+' got exception: ', str(e))
           #Part.show(theFace, 'exception')
     keyList = []
     for key in bend_node.edgeDict:
