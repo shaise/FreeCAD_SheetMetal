@@ -353,8 +353,8 @@ def smBend(bendR = 1.0, bendA = 90.0, miterA1 = 0.0,miterA2 = 0.0, BendType = "M
 
     miterA1List = [x if a > b else y for x, y, a, b in zip(miterA1List1, miterA1List2, wallsolid_common_list1, wallsolid_common_list2)]
     miterA2List = [x if a > b else y for x, y, a, b in zip(miterA2List1, miterA2List2, wallsolid_common_list1, wallsolid_common_list2)]
-    gap1List = [x + y for x, y in zip(gap1List1, gap1List2)]
-    gap2List = [x + y for x, y in zip(gap2List1, gap2List2)]
+    gap1List = [max(x,y) for x, y in zip(gap1List1, gap1List2)]
+    gap2List = [max(x,y) for x, y in zip(gap2List1, gap2List2)]
     reliefDList = [min(x , y) for x, y in zip(reliefDList1, reliefDList2)]
 
   else :
