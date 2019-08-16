@@ -142,7 +142,7 @@ unfold_error = {
   14: ('Analysis: the code can not handle edges without neighbor faces'), 
   15: ('Analysis: the code needs a face at all sheet edges'), 
   16: ('Analysis: did not find startangle of bend, please post failing sample for analysis'),
-  17: ('Analysis: Type of surface not supported for sheet metal parts'), # <SurfaceOfExtrusion object> fix me?
+  17: ('Analysis: Type of surface not supported for sheet metal parts'), # <SurfaceOfExtrusion object> FIXME?
   # error codes for the unfolding
   20: ('Unfold: section wire with less than 4 edges'),
   21: ('Unfold: Unfold: section wire not closed'),
@@ -441,7 +441,7 @@ class SheetTree(object):
         # Part.show(self.__Shape.Faces[f_idx])
         # print 'the object is a face! vertices: ', len(self.__Shape.Faces[f_idx].Vertexes)
         F_type = self.__Shape.Faces[f_idx].Surface
-        # fixme: through an error, if not Plane Object
+        # FIXME: through an error, if not Plane Object
         FreeCAD.Console.PrintLog('It is a: ' + str(F_type) + '\n')
         FreeCAD.Console.PrintLog('Orientation: ' + str(self.__Shape.Faces[f_idx].Orientation) + '\n')
         
@@ -460,7 +460,7 @@ class SheetTree(object):
           #s_Posi = self.__Shape.Faces[f_idx].Surface.Position
           #k = 0
           # while k < len(self.__Shape.Faces[f_idx].Vertexes):
-          # fixme: what if measurepoint is outside?
+          # FIXME: what if measurepoint is outside?
           
         if self.__Shape.isInside(mvec, 0.00001, True):
           measure_pos = mvec
@@ -593,7 +593,7 @@ class SheetTree(object):
           
     # Simple strategy applied: look if the connecting face has vertexes
     # with sheet-thickness distance to the top face.
-    # fix me: this will fail with sharpened sheet edges with two faces
+    # FIXME: this will fail with sharpened sheet edges with two faces
     # between top and bottom.
     if the_index is not None:
       distVerts = 0
@@ -772,7 +772,7 @@ class SheetTree(object):
             
       if oppoPoint is None:
         print(' error need always an opposite point in a side face!')
-        # fix me: need a proper error condition.
+        # FIXME: need a proper error condition.
       
       #vec1 = Base.Vector(theNode.axis.x, theNode.axis.y, theNode.axis.z) # make a copy
       vec1 = (oppoPoint - origin).normalize()
@@ -822,7 +822,7 @@ class SheetTree(object):
             
       if oppoPoint is None:
         print(' error need always an opposite point in a side face!')
-        # fix me: need a proper error condition.
+        # FIXME: need a proper error condition.
       #vec1 = Base.Vector(radVector.x, radVector.y, radVector.z) # make a copy
       vec1 = (oppoPoint - origin).normalize()
 
@@ -988,7 +988,7 @@ class SheetTree(object):
       such_list.append(k)
     
     if F_type == "<Plane object>":
-      newNode.node_type = 'Flat' # fixme
+      newNode.node_type = 'Flat' # FIXME
       FreeCAD.Console.PrintLog("Face"+ str(face_idx+1) + " Type: "+ str(newNode.node_type) + "\n")
 
       s_Posi = self.__Shape.Faces[face_idx].Surface.Position
@@ -1035,7 +1035,7 @@ class SheetTree(object):
           distVector = counterMiddle.sub(faceMiddle)
           counterDistance = distVector.Length
           
-          if counterDistance < 2*self.__thickness: # small stripes are a risk, fix me!
+          if counterDistance < 2*self.__thickness: # FIXME: small stripes are a risk!
             FreeCAD.Console.PrintLog( "found counter-face"+ str(i + 1) + "\n")
             counterFaceList.append([i, counterDistance])
             gotCFace = True
@@ -1125,7 +1125,7 @@ class SheetTree(object):
 
 
     if F_type == "<Cylinder object>":
-      newNode.node_type = 'Bend' # fixme
+      newNode.node_type = 'Bend' # FIXME
       s_Center = self.__Shape.Faces[face_idx].Surface.Center
       s_Axis = self.__Shape.Faces[face_idx].Surface.Axis
       newNode.axis = s_Axis
@@ -1157,7 +1157,7 @@ class SheetTree(object):
 
 
       # calculate mean point of face:
-      # fixme implement also for cylindric faces
+      # FIXME implement also for cylindric faces
 
       # Search the face at the opposite site of the sheet:
       #for i in range(len(such_list)):
@@ -1442,7 +1442,7 @@ class SheetTree(object):
       
       return bPoint
     
-    divisions = 12 # fix me! need a dependence on something useful.
+    divisions = 12 # FIXME need a dependence on something useful.
     
     
     fWireList = aFace.Wires[:]
@@ -1508,7 +1508,7 @@ class SheetTree(object):
           if vert0Idx is None:
             #print 'catastrophy: ', fEdge.Vertexes[0].Point, ' ', fEdge.Vertexes[1].Point, ' ', eType
             Part.show(fEdge, 'catastrophyEdge')
-            # fix me, need proper failure mode.
+            # FIXME, need proper failure mode.
           if vert1Idx:
             if vert1Idx < vert0Idx:
               edgeKey = vert0Idx + (vert1Idx << 8)
@@ -1567,7 +1567,7 @@ class SheetTree(object):
             uEdge = Part.makeLine(uVert0, uVert1)
             #Part.show(uEdge, 'Line'+str(j)+'_')
     
-          elif "Circle" in eType:  #fix me! need to check if circle ends are at different radii!
+          elif "Circle" in eType:  #FIXME need to check if circle ends are at different radii!
             FreeCAD.Console.PrintLog('j: '+ str(j) + ' eType: '+ str(eType) + '\n')
             parList = fEdge.ParameterRange
             #print "the Parameterrange: ", parList[0], " , ", parList[1], " Type: ",eType
@@ -1830,7 +1830,7 @@ class SheetTree(object):
     #print 'got ', len(wires), ' wires'
     #Part.show(Part.Compound(wires), 'slice')
     theComp = Part.Compound(wires)
-    # fix me, what if there are no wires?
+    # FIXME, what if there are no wires?
     wireList =[]
      
     for fEdge in theComp.Edges:
@@ -1855,7 +1855,7 @@ class SheetTree(object):
         wireList.append(edgeL)
         #Part.show(lWire, 'foldLine'+str(bend_node.idx +1)+'_')
       else:
-        print('fix me! make errorcondition')
+        print('FIXME! make errorcondition')
         
     return wireList
   
