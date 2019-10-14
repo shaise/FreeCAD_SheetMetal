@@ -1012,9 +1012,9 @@ class AddWallCommandClass():
   """Add Wall command"""
 
   def GetResources(self):
-    return {'Pixmap'  : os.path.join( iconPath , 'AddWall.svg') , # the name of a svg file available in the resources
-            'MenuText': "Make Wall" ,
-            'ToolTip' : "Extends a wall from a side face of metal sheet"}
+    return {'Pixmap'  : os.path.join( iconPath , 'AddWall.svg'), # the name of a svg file available in the resources
+            'MenuText': QtCore.QT_TRANSLATE_NOOP('SheetMetal','Make Wall'),
+            'ToolTip' : QtCore.QT_TRANSLATE_NOOP('SheetMetal','Extends a wall from a side face of metal sheet')}
  
   def Activated(self):
     doc = FreeCAD.ActiveDocument
@@ -1109,9 +1109,9 @@ class SMExtrudeCommandClass():
   """Extrude face"""
 
   def GetResources(self):
-    return {'Pixmap'  : os.path.join( iconPath , 'SMExtrude.svg') , # the name of a svg file available in the resources
-            'MenuText': "Extend Face" ,
-            'ToolTip' : "Extend a face along normal"}
+    return {'Pixmap'  : os.path.join( iconPath , 'SMExtrude.svg'), # the name of a svg file available in the resources
+            'MenuText': QtCore.QT_TRANSLATE_NOOP('SheetMetal','Extend Face'),
+            'ToolTip' : QtCore.QT_TRANSLATE_NOOP('SheetMetal','Extend a face along normal')}
  
   def Activated(self):
     doc = FreeCAD.ActiveDocument
