@@ -120,7 +120,7 @@ genObjTransparency = 70
 manKFactor = None
 kFactorStandard = None
 
-# to do: 
+# TODO: Error Codes
 # - Put error numbers into the text
 # - Put user help into more texts
 unfold_error = {
@@ -147,7 +147,7 @@ unfold_error = {
   24: ('Unfold: bend-face without child not implemented'),
   25: ('Unfold: '),
   26: ('Unfold: not handled curve type in unbendFace'),
-  -1: ('unknown error')} 
+  -1: ('Unknown error')}
 
 
 def SMLog(* args):
@@ -313,43 +313,43 @@ class Simple_node(object):
   These new faces are added to the index list.
   '''
   def __init__(self, f_idx=None, Parent_node= None, Parent_edge = None, k_factor_lookup = None):
-    self.idx = f_idx  # index of the "top-face"
-    self.c_face_idx = None # face index to the opposite face of the sheet (counter-face)
-    self.node_type = None  # 'Flat' or 'Bend'
-    self.p_node = Parent_node   # Parent node
-    self.p_edge = Parent_edge # the connecting edge to the parent node
-    self.child_list = [] # List of child-nodes = link to tree structure
-    self.child_idx_lists = [] # List of lists with child_idx and child_edge
-    # need also a list of indices of child faces
-    self.sheet_edges = [] # List of edges without child-face 
-    self.axis = None # direction of the axis of the detected cylindrical face
-    self.facePosi = None 
-    self.bendCenter = None # Vector of the center of the detected cylindrical face
-    self.distCenter = None # Value used to detect faces at opposite side of the bend
-    self.innerRadius = None # nominal radius of the bend 
+    self.idx = f_idx             # Index of the "top-face"
+    self.c_face_idx = None       # Face index to the opposite face of the sheet (counter-face)
+    self.node_type = None        # 'Flat' or 'Bend'
+    self.p_node = Parent_node    # Parent node
+    self.p_edge = Parent_edge    # The connecting edge to the parent node
+    self.child_list = []         # List of child-nodes = link to tree structure
+    self.child_idx_lists = []    # List of lists with child_idx and child_edge
+    # need a list of indices of child faces
+    self.sheet_edges = []        # List of edges without child-face
+    self.axis = None             # Direction of the axis of the detected cylindrical face
+    self.facePosi = None
+    self.bendCenter = None       # Vector of the center of the detected cylindrical face
+    self.distCenter = None       # Value used to detect faces at opposite side of the bend
+    self.innerRadius = None      # nominal radius of the bend
     # self.axis for 'Flat'-face: vector pointing from the surface into the metal
-    self.bend_dir = None # bend direction values: "up" or "down"
-    self.bend_angle = None # angle in radians
-    self.tan_vec = None # direction of translation for Bend nodes
-    self.oppositePoint = None # Point of a vertex on the opposite site, used to align points to the sheet plane
-    self.vertexDict = {} # Vertexes of a bend, original and unbend coordinates, flags p, c, t, o
-    self.edgeDict = {} # unbend edges dictionary, key is a combination of indexes to vertexDict.
-    self.k_factor_lookup = k_factor_lookup # k-factor lookup dictionary, according to ANSI standard
-    self._trans_length = None # length of translation for Bend nodes
-    self.analysis_ok = True # indicator if something went wrong with the analysis of the face
-    self.error_code = None # index to unfold_error dictionary
-    # here the new features of the nodes:
-    self.nfIndexes = [] # list of all face-indexes of a node (flat and bend: folded state)
-    self.seam_edges = [] # list with edges to seams
+    self.bend_dir = None         # Bend direction values: "up" or "down"
+    self.bend_angle = None       # Angle in radians
+    self.tan_vec = None          # Direction of translation for Bend nodes
+    self.oppositePoint = None    # Point of a vertex on the opposite site, used to align points to the sheet plane
+    self.vertexDict = {}         # Vertexes of a bend, original and unbend coordinates, flags p, c, t, o
+    self.edgeDict = {}           # Unbend edges dictionary, key is a combination of indexes to vertexDict.
+    self._trans_length = None    # Length of translation for Bend nodes
+    self.analysis_ok = True      # Indicator if something went wrong with the analysis of the face
+    self.error_code = None       # Index to unfold_error dictionary
+    self.k_factor_lookup = k_factor_lookup # K-factor lookup dictionary, according to ANSI standard
+    # new node features:
+    self.nfIndexes = []          # List of all face-indexes of a node (flat and bend: folded state)
+    self.seam_edges = []         # List with edges to seams
     # bend faces are needed for movement simulation at single other bends.
     # otherwise unfolded faces are recreated from self.b_edges
-    self.node_flattened_faces = [] # faces of a flattened bend node.
-    self.unfoldTopList = None # source of identical side edges
-    self.unfoldCounterList = None # source of identical side edges
-    self.actual_angle = None # state of angle in refolded sheet metal part
-    self.p_wire = None # wire common with parent node, used for bend node
-    self.c_wire = None # wire common with child node, used for bend node
-    self.b_edges = [] # list of edges in a bend node, that needs to be recalculated, at unfolding
+    self.node_flattened_faces = [] # Faces of a flattened bend node
+    self.unfoldTopList = None      # Source of identical side edges
+    self.unfoldCounterList = None  # Source of identical side edges
+    self.actual_angle = None     # State of angle in refolded sheet metal part
+    self.p_wire = None           # Wire common with parent node, used for bend node
+    self.c_wire = None           # Wire common with child node, used for bend node
+    self.b_edges = []            # List of edges in a bend node, that needs to be recalculated, at unfolding
 
   def get_Face_idx(self):
     # get the face index from the tree-element
@@ -429,10 +429,10 @@ class SheetTree(object):
       # Make a first estimate of the thickness
       estimated_thickness = theVol/(self.__Shape.Area / 2.0)
       FreeCAD.Console.PrintLog( "approximate Thickness: " + str(estimated_thickness) + "\n")
-      # Measure the real thickness of the initial face: Use Orientation and
-      # Axis to make an measurement vector
-      
-    
+      # Measure the real thickness of the initial face:
+      # Use Orientation and Axis to make a measurement vector
+
+
       if hasattr(self.__Shape.Faces[f_idx],'Surface'):
         # Part.show(self.__Shape.Faces[f_idx])
         # print 'the object is a face! vertices: ', len(self.__Shape.Faces[f_idx].Vertexes)
@@ -523,20 +523,19 @@ class SheetTree(object):
     wires_e_list is the list of wires lists of the top face without the parent-edge
     theNode: the actual node to be filled with data.
     '''
-    
-    # How to begin?
-    # searching for all faces that have two vertices in common with 
+
+    # Where to start?
+    # Searching for all faces that have two vertices in common with
     # an edge from the list should give the sheet edge.
     # But, we also need to look at the sheet edge, in order to not claim
     # faces from the next node!
-    # Then we have to treat those faces that belong to more than one
-    # node. Those faces needs to be cut and the face list needs to be updated.
-    # look also at the number of wires of the top face. More wires will
+    # Then we have to treat those faces that belong to more than one node.
+    # Those faces needs to be cut and the face list needs to be updated.
+    # Look also at the number of wires of the top face. More wires will
     # indicate a hole or a feature.
-    #print " When will this be called"
+
     found_indices = []
     # A search strategy for faces based on the wires_e_lists is needed.
-    # 
 
     for theWire in wires_e_lists:
       for theEdge in theWire:
@@ -563,14 +562,13 @@ class SheetTree(object):
                       #self.index_list.remove(i) # remove this face from the index_list
                       #Part.show(self.f_list[i])
     FreeCAD.Console.PrintLog("found_indices: " + str(found_indices) + "\n")
-                
 
 
   def is_sheet_edge_face(self, ise_edge, tree_node): # ise_edge: IsSheetEdge_edge
-    # idea: look at properties of neighbor face
-    # look at edges with distance of sheet-thickness.
-    #    if found and surface == cylinder, check if it could be a bend-node.  
-    # look at number of edges:
+    # Idea: look at properties of neighbor face
+    # Look at edges with distance of sheet-thickness.
+    #    if found and surface == cylinder, check if it could be a bend-node.
+    # Look at number of edges:
     # A face with 3 edges is at the sheet edge Cylinder-face or triangle (oh no!)
     # need to look also at surface!
     # A sheet edge face with more as 4 edges, is common to more than 1 node.
@@ -745,11 +743,11 @@ class SheetTree(object):
     F_type = str(self.f_list[theNode.idx].Surface)
     if F_type == "<Plane object>":
       tan_vec = theEdge.Vertexes[eIdx].Point - theEdge.Vertexes[otherIdx].Point
-      #o_thick = Base.Vector(o_vec.x, o_vec.y, o_vec.z) 
+      #o_thick = Base.Vector(o_vec.x, o_vec.y, o_vec.z)
       tan_vec.normalize()
-      #New approach: search for the nearest vertex at the opposite site.
+      # New approach: search for the nearest vertex at the opposite site.
       # The cut is done between the Vertex indicated by eIdx and the nearest
-      # opposite vertex. This approach should avoid the generation of 
+      # opposite vertex. This approach should avoid the generation of
       # additional short edges in the side faces.
       searchAxis = theNode.axis
       #else:
@@ -1213,8 +1211,8 @@ class SheetTree(object):
         # it will be difficult to have all vertexes of the faces of a bend to fit together.
         # Therefore a dictionary is introduced, which holds the original coordinates and
         # the unbend coordinates for the vertexes of the bend. It contains also flags,
-        # indicating if a point is part of the parent node (p) or child node (c), top face (t) or
-        # opposite face (o). All in newNode.vertexDict
+        # indicating if a point is part of the parent node (p) or child node (c),
+        # top face (t) or opposite face (o). All in newNode.vertexDict
         # Structure: key: Flagstring, Base.Vector(original), Base.Vector(unbend)
         # The unbend coordinates should be added before processing the top face and the
         # opposite face in the generateBendShell2 procedure.
@@ -1981,14 +1979,14 @@ class SheetTree(object):
     for i in search_List:
       #Part.show(self.f_list[i])
       for theEdge in self.f_list[i].Edges:
-        FreeCAD.Console.PrintLog("find last Edge in Face: "+ str(i)+ " at Edge: "+ str(theEdge) + "\n")
+        FreeCAD.Console.PrintLog("Find last Edge in Face: "+ str(i)+ " at Edge: "+ str(theEdge) + "\n")
         if len(theEdge.Vertexes)>1:
           if equal_vertex(theEdge.Vertexes[0], startVert):
             last_idx = 1
           if equal_vertex(theEdge.Vertexes[1], startVert):
             last_idx = 0
           if last_idx is not None:
-            FreeCAD.Console.PrintLog("test for the last Edge\n")
+            FreeCAD.Console.PrintLog("Test for the last Edge\n")
             if self.isVertOpposite(theEdge.Vertexes[last_idx], theNode):
               lastEdge = theEdge.copy()
               search_List.remove(i)
@@ -2122,9 +2120,9 @@ def makeSolidExpSTEP():
             ImportGui.insert(tempfilepath,doc.Name)
             FreeCADGui.SendMsgToActiveView("ViewFit")
         else:
-            FreeCAD.Console.PrintError('select only one object')
+            FreeCAD.Console.PrintError('Select only one object')      
     else:
-        FreeCAD.Console.PrintError('select only one object')
+        FreeCAD.Console.PrintError('Select only one object')
 ##
 
 
@@ -2190,9 +2188,9 @@ def getUnfold(k_factor_lookup):
                       try:
                           TheSolid = Part.Solid(newShell)
                           solidTime = time.clock()
-                          FreeCAD.Console.PrintLog("time to make the solid: "+ str(solidTime - unfoldTime) + "\n")
+                          FreeCAD.Console.PrintLog("Time to make the solid: "+ str(solidTime - unfoldTime) + "\n")
                       except:
-                          FreeCAD.Console.PrintLog("couldn't make a solid, show only a shell, Faces in List: "+ str(len(theFaceList)) +"\n")
+                          FreeCAD.Console.PrintLog("Couldn't make a solid, show only a shell, Faces in List: "+ str(len(theFaceList)) +"\n")
                           resPart = newShell
                           #Part.show(newShell)
                           showTime = time.clock()
@@ -2232,9 +2230,9 @@ def getUnfold(k_factor_lookup):
                      " at Face"+ str(TheTree.failed_face_idx+1) + "\n")
                     QtGui.QMessageBox.information(mw,"Error",unfold_error[TheTree.error_code])
               else:
-                FreeCAD.Console.PrintLog("unfold successful\n")
-    
-                      
+                FreeCAD.Console.PrintLog("Unfold successful\n")
+
+
             else:
               mw=FreeCADGui.getMainWindow()
               QtGui.QMessageBox.information(mw,"Selection Error","""Sheet UFO works only with a flat face as starter!\n Select a flat face.""")
@@ -2977,18 +2975,18 @@ class SMUnfoldTaskPanel:
         self.checkSeparate.setEnabled(self.checkSketch.isChecked())
         #self.genColor.setEnabled(self.checkSketch.isChecked())
         #self.bendColor.setEnabled(self.checkSketch.isChecked() and self.checkSeparate.isChecked())
-        
+
     def retranslateUi(self):
-        self.form.setWindowTitle(_translate("SheetMetal", "Unfold sheet metal object", None))
-        self.checkSketch.setText(_translate("SheetMetal", "Generate projection sketch", None))
+        self.form.setWindowTitle(_translate("SheetMetal",   "Unfold sheet metal object", None))
+        self.checkSketch.setText(_translate("SheetMetal",   "Generate projection sketch", None))
         self.checkSeparate.setText(_translate("SheetMetal", "Separate projection layers", None))
-        self.checkKfact.setText(_translate("SheetMetal", "Manual K-factor", None))
-        self.label.setText(_translate("SheetMetal", "Unfold object transparency", None))
-        self.transSpin.setSuffix(_translate("SheetMetal", "%", None))
-        self.BendLbl.setText(_translate("SheetMetal", "    Bend lines color", None))
-        self.InternalLbl.setText(_translate("SheetMetal", "    Internal lines color", None))
-        self.kfactorAnsi.setText(_translate("SheetMetal", "ANSI", None))
-        self.kfactorDin.setText(_translate("SheetMetal", "DIN", None))
+        self.checkKfact.setText(_translate("SheetMetal",    "Manual K-factor", None))
+        self.label.setText(_translate("SheetMetal",         "Unfold object transparency", None))
+        self.transSpin.setSuffix(_translate("SheetMetal",   "%", None))
+        self.BendLbl.setText(_translate("SheetMetal",       "    Bend lines color", None))
+        self.InternalLbl.setText(_translate("SheetMetal",   "    Internal lines color", None))
+        self.kfactorAnsi.setText(_translate("SheetMetal",   "ANSI", None))
+        self.kfactorDin.setText(_translate("SheetMetal",    "DIN", None))
         self.checkUseMds.setText(_translate("SMUnfoldTaskPanel", "Use Material Definition Sheet", None))
         self.mdsApply.setText(_translate("SMUnfoldTaskPanel", "Apply", None))
 
@@ -2999,10 +2997,10 @@ class SMUnfoldCommandClass():
   def GetResources(self):
     __dir__ = os.path.dirname(__file__)
     iconPath = os.path.join( __dir__, 'Resources', 'icons' )
-    return {'Pixmap'  : os.path.join( iconPath , 'SMUnfold.svg') , # the name of a svg file available in the resources
-            'MenuText': "Unfold" ,
+    return {'Pixmap'  : os.path.join( iconPath , 'SMUnfold.svg'), # the name of a svg file available in the resources
+            'MenuText': "Unfold",
             'ToolTip' : "Flatten folded sheet metal object"}
- 
+
   def Activated(self):
     try:
         taskd = SMUnfoldTaskPanel()
@@ -3042,8 +3040,8 @@ class SMUnfoldUnattendedCommandClass():
   def GetResources(self):
     __dir__ = os.path.dirname(__file__)
     iconPath = os.path.join( __dir__, 'Resources', 'icons' )
-    return {'Pixmap'  : os.path.join( iconPath , 'SMUnfoldUnattended.svg') , # the name of a svg file available in the resources
-            'MenuText': "Unattended Unfold" ,
+    return {'Pixmap'  : os.path.join( iconPath , 'SMUnfoldUnattended.svg'), # the name of a svg file available in the resources
+            'MenuText': "Unattended Unfold",
             'ToolTip' : "Flatten folded sheet metal object with default options."}
 
   def Activated(self):
