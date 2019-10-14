@@ -23,7 +23,9 @@
 #  
 ###################################################################################
 
+from PySide import QtCore, QtGui
 import smwb_locator
+
 smWBpath = os.path.dirname(smwb_locator.__file__)
 smWB_icons_path =  os.path.join( smWBpath, 'Resources', 'icons')
 
@@ -36,6 +38,7 @@ class SMWorkbench (Workbench):
  
     global main_smWB_Icon
     global SHEETMETALWB_VERSION
+    global QtCore
     
     MenuText = 'Sheet Metal '+SHEETMETALWB_VERSION
     ToolTip = QtCore.QT_TRANSLATE_NOOP('SheetMetal','Sheet Metal workbench allows for designing and unfolding sheet metal parts')
