@@ -19,17 +19,17 @@
 #  along with this program; if not, write to the Free Software
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
-#  
-#  
+#
+#
+# CHANGELOG
 # sheet_ufo.py git-version
 # July 2018
-# added sortEdgesTolerant: more robust generation of Wires for unbend Faces
-# generate fold lines, to be used in drawings of the unfolded part.
-# fixed calculation of Bend Angle, not working in some cases
-
-
+# - added sortEdgesTolerant: more robust generation of Wires for unbend Faces
+# - generate fold lines, to be used in drawings of the unfolded part.
+# - fixed calculation of Bend Angle, not working in some cases
+#
 # sheet_ufo20.py
-# removal of dead code
+# - removal of dead code
 
 # sheet_ufo19.py
 # changes from June 2018
@@ -37,41 +37,37 @@
 # - supports now non orthogonals cut in the bends
 # - seams do not get a face, just do not call makeSeamFace
 #   this avoids internal faces in the unfold under certain cases.
- 
 
 # sheet_ufo18.py
-# Changes done in 2016 and June 2018
-# allow more complex bends: not only straight cut side edges
-# tested some code, not published
+# - Changes done in 2016 and June 2018
+# - allow more complex bends: not only straight cut side edges
+# - tested some code, not published
 
 # sheet_ufo17.py
-# Refactored version December 2015
-# Clear division of tasks between analysis and folding
-
-# To do:
-# change code to handle face indexes in the node instead of faces
-
+# - Refactored version December 2015
+# - Clear division of tasks between analysis and folding
 
 # sheet_ufo16.py
-# Die Weiterreichung eines schon geschnittenen Seitenfaces macht Probleme.
-# Die Seitenfaces passen hinterher nicht mehr mit den Hauptflächen zusammen.
+# - Die Weiterreichung eines schon geschnittenen Seitenfaces macht Probleme.
+# - Die Seitenfaces passen hinterher nicht mehr mit den Hauptflächen zusammen.
 
-# Geänderter Ansatz: lasse die Seitenflächen in der Suchliste und 
+# Geänderter Ansatz: lasse die Seitenflächen in der Suchliste und
 # schneide jeweils nur den benötigten Teil raus.
-# Ich brauche jetzt eine Suchliste und eine Unfoldliste für die 
+# Ich brauche jetzt eine Suchliste und eine Unfoldliste für die
 # Face-Indices.
 
-# To do: 
+# TODO:
 # - handle a selected seam
 # - handle not-circle-curves in bends, done
 # - detect features like welded screws
 # - make a view-provider for bends
 # - make the k-factor selectable
 # - upfold or unfold single bends
- 
+# - change code to handle face indexes in the node instead of faces
+
 
 # ideas:
-# during analysis make a mesh-like structure for the bend-node
+# During analysis make a mesh-like structure for the bend-node
 # list of edges in the bend-node
 # for each face store a list with edge-indices.
 # the reason is, each edge has to be recalculated at unfolding
