@@ -2,34 +2,34 @@
 # -*- coding: utf-8 -*-
 #
 #  sheet_ufo.py
-#  
+#
 #  Copyright 2014, 2018 Ulrich Brammer <ulrich@Pauline>
-#  
+#
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation; either version 2 of the License, or
 #  (at your option) any later version.
-#  
+#
 #  This program is distributed in the hope that it will be useful,
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #  GNU General Public License for more details.
-#  
+#
 #  You should have received a copy of the GNU General Public License
 #  along with this program; if not, write to the Free Software
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
-#  
-#  
+#
+#
+# CHANGELOG
 # sheet_ufo.py git-version
 # July 2018
-# added sortEdgesTolerant: more robust generation of Wires for unbend Faces
-# generate fold lines, to be used in drawings of the unfolded part.
-# fixed calculation of Bend Angle, not working in some cases
-
-
+# - added sortEdgesTolerant: more robust generation of Wires for unbend Faces
+# - generate fold lines, to be used in drawings of the unfolded part.
+# - fixed calculation of Bend Angle, not working in some cases
+#
 # sheet_ufo20.py
-# removal of dead code
+# - removal of dead code
 
 # sheet_ufo19.py
 # changes from June 2018
@@ -37,41 +37,37 @@
 # - supports now non orthogonals cut in the bends
 # - seams do not get a face, just do not call makeSeamFace
 #   this avoids internal faces in the unfold under certain cases.
- 
 
 # sheet_ufo18.py
-# Changes done in 2016 and June 2018
-# allow more complex bends: not only straight cut side edges
-# tested some code, not published
+# - Changes done in 2016 and June 2018
+# - allow more complex bends: not only straight cut side edges
+# - tested some code, not published
 
 # sheet_ufo17.py
-# Refactored version December 2015
-# Clear division of tasks between analysis and folding
-
-# To do:
-# change code to handle face indexes in the node instead of faces
-
+# - Refactored version December 2015
+# - Clear division of tasks between analysis and folding
 
 # sheet_ufo16.py
-# Die Weiterreichung eines schon geschnittenen Seitenfaces macht Probleme.
-# Die Seitenfaces passen hinterher nicht mehr mit den Hauptflächen zusammen.
+# - Die Weiterreichung eines schon geschnittenen Seitenfaces macht Probleme.
+# - Die Seitenfaces passen hinterher nicht mehr mit den Hauptflächen zusammen.
 
-# Geänderter Ansatz: lasse die Seitenflächen in der Suchliste und 
+# Geänderter Ansatz: lasse die Seitenflächen in der Suchliste und
 # schneide jeweils nur den benötigten Teil raus.
-# Ich brauche jetzt eine Suchliste und eine Unfoldliste für die 
+# Ich brauche jetzt eine Suchliste und eine Unfoldliste für die
 # Face-Indices.
 
-# To do: 
+# TODO:
 # - handle a selected seam
 # - handle not-circle-curves in bends, done
 # - detect features like welded screws
 # - make a view-provider for bends
 # - make the k-factor selectable
 # - upfold or unfold single bends
- 
+# - change code to handle face indexes in the node instead of faces
+
 
 # ideas:
-# during analysis make a mesh-like structure for the bend-node
+# During analysis make a mesh-like structure for the bend-node
 # list of edges in the bend-node
 # for each face store a list with edge-indices.
 # the reason is, each edge has to be recalculated at unfolding
@@ -79,7 +75,7 @@
 # face all edges are calculated.
 # Edges perpendicular to the sheet may only be moved to the new location?
 # Need to think about it! No only at the end of the bend node.
-# Edges in the middle of the bend node will be sheared, because the 
+# Edges in the middle of the bend node will be sheared, because the
 # neutral line is not in the middle of the sheet-thickness.
 # OK this is more complex, than I thought at the beginning.
 
@@ -91,7 +87,7 @@
 '''
 
 def main():
-	
+
 	return 0
 
 if __name__ == '__main__':
@@ -116,31 +112,31 @@ import tempfile
 
 
 genSketchChecked = True
-genSketchColor = '#000080'      
+genSketchColor = '#000080'
 bendSketchChecked = False
-bendSketchColor = '#c00000'      
+bendSketchColor = '#c00000'
 intSketchColor = '#ff5733'
 genObjTransparency = 70
 manKFactor = None
 kFactorStandard = None
 
-# to do: 
+# TODO: Error Codes
 # - Put error numbers into the text
 # - Put user help into more texts
 unfold_error = {
   # error codes for the tree-object
-  1: ('starting: volume unusable, needs a real 3D-sheet-metal with thickness'), 
-  2: ('Starting: invalid point for thickness measurement'), 
-  3: ('Starting: invalid thickness'), 
-  4: ('Starting: invalid shape'), 
-  5: ('Starting: Shape has unneeded edges. Please use function refine shape from the Part Workbench before unfolding!'), 
-  # error codes for the bend-analysis 
-  10: ('Analysis: zero wires in sheet edge analysis'), 
-  11: ('Analysis: double bends not implemented'), 
-  12: ('Analysis: more than one bend-child actually not supported'), 
-  13: ('Analysis: Sheet thickness invalid for this face!'), 
-  14: ('Analysis: the code can not handle edges without neighbor faces'), 
-  15: ('Analysis: the code needs a face at all sheet edges'), 
+  1: ('starting: volume unusable, needs a real 3D-sheet-metal with thickness'),
+  2: ('Starting: invalid point for thickness measurement'),
+  3: ('Starting: invalid thickness'),
+  4: ('Starting: invalid shape'),
+  5: ('Starting: Shape has unneeded edges. Please use function refine shape from the Part Workbench before unfolding!'),
+  # error codes for the bend-analysis
+  10: ('Analysis: zero wires in sheet edge analysis'),
+  11: ('Analysis: double bends not implemented'),
+  12: ('Analysis: more than one bend-child actually not supported'),
+  13: ('Analysis: Sheet thickness invalid for this face!'),
+  14: ('Analysis: the code can not handle edges without neighbor faces'),
+  15: ('Analysis: the code needs a face at all sheet edges'),
   16: ('Analysis: did not find startangle of bend, please post failing sample for analysis'),
   17: ('Analysis: Type of surface not supported for sheet metal parts'), # <SurfaceOfExtrusion object> FIXME?
   # error codes for the unfolding
@@ -151,7 +147,7 @@ unfold_error = {
   24: ('Unfold: bend-face without child not implemented'),
   25: ('Unfold: '),
   26: ('Unfold: not handled curve type in unbendFace'),
-  -1: ('unknown error')} 
+  -1: ('Unknown error')}
 
 
 def SMLog(* args):
@@ -179,7 +175,7 @@ def SMWarning(* args):
     message += str(x)
   FreeCAD.Console.PrintWarning(message + "\n")
 
-def SMErrorBox(* args):  
+def SMErrorBox(* args):
     message = ""
     for x in args:
         message += str(x)
@@ -193,7 +189,7 @@ def SMErrorBox(* args):
     msg_box.exec_()
 
 def equal_vertex(vert1, vert2, p=5):
-  # compares two vertices 
+  # compares two vertices
   return (round(vert1.X - vert2.X,p)==0 and round(vert1.Y - vert2.Y,p)==0 and round(vert1.Z - vert2.Z,p)==0)
 
 from math import sqrt
@@ -225,7 +221,7 @@ def sanitizeSkBsp(s_name, knot_tolerance):
                                             eqp = False
                                     if sk_distance(g.EndPoint,bg.EndPoint) > knot_tolerance:
                                         if sk_distance(g.EndPoint,bg.StartPoint) > knot_tolerance:
-                                            eqp = False        
+                                            eqp = False
                                     # print(simu_dist(g.StartPoint,bg.StartPoint))
                                     # print(simu_dist(g.StartPoint,bg.EndPoint))
                                     # print(simu_dist(g.EndPoint,bg.StartPoint))
@@ -233,7 +229,7 @@ def sanitizeSkBsp(s_name, knot_tolerance):
                                     # #        eqp = False
                                     # print(simu_dist(g.EndPoint,bg.EndPoint))
                                     #if simu_dist(g.EndPoint,bg.EndPoint) > knot_tolerance:
-                                    #        eqp = False        
+                                    #        eqp = False
                                     # for k,kn in enumerate (bg.KnotSequence):
                                         #if abs(kn-g.KnotSequence[k]) > knot_tolerance:
                                     #    print (kn,g.KnotSequence[k])
@@ -250,9 +246,9 @@ def sanitizeSkBsp(s_name, knot_tolerance):
         if len(idx_to_del) >0:
             FreeCAD.Console.PrintMessage(u'sanitizing '+s.Label)
             FreeCAD.Console.PrintMessage('\n')
-            idx_to_del.sort() 
+            idx_to_del.sort()
             #print(idx_to_del)
-            idx_to_del.reverse() 
+            idx_to_del.reverse()
             #print(idx_to_del)
             #stop
             for i, e in enumerate(idx_to_del):
@@ -267,7 +263,7 @@ def sanitizeSkBsp(s_name, knot_tolerance):
         return None
 ##
 def equal_vector(vec1, vec2, p=5):
-  # compares two vectors 
+  # compares two vectors
   return (round(vec1.x - vec2.x,p)==0 and round(vec1.y - vec2.y,p)==0 and round(vec1.z - vec2.z,p)==0)
 
 def radial_vector(point, axis_pnt, axis):
@@ -317,57 +313,57 @@ class Simple_node(object):
   These new faces are added to the index list.
   '''
   def __init__(self, f_idx=None, Parent_node= None, Parent_edge = None, k_factor_lookup = None):
-    self.idx = f_idx  # index of the "top-face"
-    self.c_face_idx = None # face index to the opposite face of the sheet (counter-face)
-    self.node_type = None  # 'Flat' or 'Bend'
-    self.p_node = Parent_node   # Parent node
-    self.p_edge = Parent_edge # the connecting edge to the parent node
-    self.child_list = [] # List of child-nodes = link to tree structure
-    self.child_idx_lists = [] # List of lists with child_idx and child_edge
-    # need also a list of indices of child faces
-    self.sheet_edges = [] # List of edges without child-face 
-    self.axis = None # direction of the axis of the detected cylindrical face
-    self.facePosi = None 
-    self.bendCenter = None # Vector of the center of the detected cylindrical face
-    self.distCenter = None # Value used to detect faces at opposite side of the bend
-    self.innerRadius = None # nominal radius of the bend 
+    self.idx = f_idx             # Index of the "top-face"
+    self.c_face_idx = None       # Face index to the opposite face of the sheet (counter-face)
+    self.node_type = None        # 'Flat' or 'Bend'
+    self.p_node = Parent_node    # Parent node
+    self.p_edge = Parent_edge    # The connecting edge to the parent node
+    self.child_list = []         # List of child-nodes = link to tree structure
+    self.child_idx_lists = []    # List of lists with child_idx and child_edge
+    # need a list of indices of child faces
+    self.sheet_edges = []        # List of edges without child-face
+    self.axis = None             # Direction of the axis of the detected cylindrical face
+    self.facePosi = None
+    self.bendCenter = None       # Vector of the center of the detected cylindrical face
+    self.distCenter = None       # Value used to detect faces at opposite side of the bend
+    self.innerRadius = None      # nominal radius of the bend
     # self.axis for 'Flat'-face: vector pointing from the surface into the metal
-    self.bend_dir = None # bend direction values: "up" or "down"
-    self.bend_angle = None # angle in radians
-    self.tan_vec = None # direction of translation for Bend nodes
-    self.oppositePoint = None # Point of a vertex on the opposite site, used to align points to the sheet plane
-    self.vertexDict = {} # Vertexes of a bend, original and unbend coordinates, flags p, c, t, o
-    self.edgeDict = {} # unbend edges dictionary, key is a combination of indexes to vertexDict.
-    self.k_factor_lookup = k_factor_lookup # k-factor lookup dictionary, according to ANSI standard
-    self._trans_length = None # length of translation for Bend nodes
-    self.analysis_ok = True # indicator if something went wrong with the analysis of the face
-    self.error_code = None # index to unfold_error dictionary
-    # here the new features of the nodes:
-    self.nfIndexes = [] # list of all face-indexes of a node (flat and bend: folded state)
-    self.seam_edges = [] # list with edges to seams
+    self.bend_dir = None         # Bend direction values: "up" or "down"
+    self.bend_angle = None       # Angle in radians
+    self.tan_vec = None          # Direction of translation for Bend nodes
+    self.oppositePoint = None    # Point of a vertex on the opposite site, used to align points to the sheet plane
+    self.vertexDict = {}         # Vertexes of a bend, original and unbend coordinates, flags p, c, t, o
+    self.edgeDict = {}           # Unbend edges dictionary, key is a combination of indexes to vertexDict.
+    self._trans_length = None    # Length of translation for Bend nodes
+    self.analysis_ok = True      # Indicator if something went wrong with the analysis of the face
+    self.error_code = None       # Index to unfold_error dictionary
+    self.k_factor_lookup = k_factor_lookup # K-factor lookup dictionary, according to ANSI standard
+    # new node features:
+    self.nfIndexes = []          # List of all face-indexes of a node (flat and bend: folded state)
+    self.seam_edges = []         # List with edges to seams
     # bend faces are needed for movement simulation at single other bends.
     # otherwise unfolded faces are recreated from self.b_edges
-    self.node_flattened_faces = [] # faces of a flattened bend node.
-    self.unfoldTopList = None # source of identical side edges
-    self.unfoldCounterList = None # source of identical side edges
-    self.actual_angle = None # state of angle in refolded sheet metal part
-    self.p_wire = None # wire common with parent node, used for bend node
-    self.c_wire = None # wire common with child node, used for bend node
-    self.b_edges = [] # list of edges in a bend node, that needs to be recalculated, at unfolding
+    self.node_flattened_faces = [] # Faces of a flattened bend node
+    self.unfoldTopList = None      # Source of identical side edges
+    self.unfoldCounterList = None  # Source of identical side edges
+    self.actual_angle = None     # State of angle in refolded sheet metal part
+    self.p_wire = None           # Wire common with parent node, used for bend node
+    self.c_wire = None           # Wire common with child node, used for bend node
+    self.b_edges = []            # List of edges in a bend node, that needs to be recalculated, at unfolding
 
   def get_Face_idx(self):
     # get the face index from the tree-element
     return self.idx
-    
+
   @property
   def k_Factor(self):
     global manKFactor
 
     k = None
-    if manKFactor is not None: 
+    if manKFactor is not None:
         k = manKFactor
     else:
-        # obtain the K-factor from the lookup table 
+        # obtain the K-factor from the lookup table
         if kFactorStandard is None:
             raise ValueError('K-factor standard declaration is required!')
         k = get_val_from_range(self.k_factor_lookup, self.innerRadius / self.thickness)
@@ -377,12 +373,12 @@ class Simple_node(object):
         pass
     else:
         raise ValueError('Unrecognized K-factor standard: %s' % (str(kFactorStandard)))
-    return k 
-        
+    return k
+
   @k_Factor.setter
   def k_Factor(self, val):
-    SMError("k_Factor is a readonly property! Won't set to:", val) 
-    
+    SMError("k_Factor is a readonly property! Won't set to:", val)
+
 
 class SheetTree(object):
   def __init__(self, TheShape, f_idx, k_factor_lookup):
@@ -393,14 +389,14 @@ class SheetTree(object):
     self.error_code = None
     self.failed_face_idx = None
     self.k_factor_lookup = k_factor_lookup
-    
+
     if not self.__Shape.isValid():
       FreeCAD.Console.PrintLog("The shape is not valid!" + "\n")
       self.error_code = 4  # Starting: invalid shape
       self.failed_face_idx = f_idx
-    
+
     #Part.show(self.__Shape)
-    
+
     # List of indices to the shape.Faces. The list is used a lot for face searches.
     # Some faces will be cut and the new ones added to the list.
     # So a list of faces independent of the shape is needed.
@@ -421,7 +417,7 @@ class SheetTree(object):
       #print 'got case which needs a refine shape from the Part workbench!'
       #self.error_code = 5
       #self.failed_face_idx = f_idx
-      
+
 
     theVol = self.__Shape.Volume
     if theVol < 0.0001:
@@ -433,10 +429,10 @@ class SheetTree(object):
       # Make a first estimate of the thickness
       estimated_thickness = theVol/(self.__Shape.Area / 2.0)
       FreeCAD.Console.PrintLog( "approximate Thickness: " + str(estimated_thickness) + "\n")
-      # Measure the real thickness of the initial face: Use Orientation and
-      # Axis to make an measurement vector
-      
-    
+      # Measure the real thickness of the initial face:
+      # Use Orientation and Axis to make a measurement vector
+
+
       if hasattr(self.__Shape.Faces[f_idx],'Surface'):
         # Part.show(self.__Shape.Faces[f_idx])
         # print 'the object is a face! vertices: ', len(self.__Shape.Faces[f_idx].Vertexes)
@@ -444,10 +440,10 @@ class SheetTree(object):
         # FIXME: through an error, if not Plane Object
         FreeCAD.Console.PrintLog('It is a: ' + str(F_type) + '\n')
         FreeCAD.Console.PrintLog('Orientation: ' + str(self.__Shape.Faces[f_idx].Orientation) + '\n')
-        
+
         # Need a point on the surface to measure the thickness.
         # Sheet edges could be sloping, so there is a danger to measure
-        # right at the edge. 
+        # right at the edge.
         # Try with Arithmetic mean of plane vertices
         m_vec = Base.Vector(0.0,0.0,0.0) # calculating a mean vector
         for Vvec in self.__Shape.Faces[f_idx].Vertexes:
@@ -455,13 +451,13 @@ class SheetTree(object):
             m_vec = m_vec.add(Vvec.Point)
         mvec = m_vec.multiply(1.0/len(self.__Shape.Faces[f_idx].Vertexes))
         FreeCAD.Console.PrintLog("mvec: " + str(mvec) + "\n")
-        
+
         #if hasattr(self.__Shape.Faces[f_idx].Surface,'Position'):
           #s_Posi = self.__Shape.Faces[f_idx].Surface.Position
           #k = 0
           # while k < len(self.__Shape.Faces[f_idx].Vertexes):
           # FIXME: what if measurepoint is outside?
-          
+
         if self.__Shape.isInside(mvec, 0.00001, True):
           measure_pos = mvec
           gotValidMeasurePosition = True
@@ -476,7 +472,7 @@ class SheetTree(object):
             if self.__Shape.isInside(measure_pos, 0.00001, True):
               gotValidMeasurePosition = True
               break
-          
+
         # Description: Checks if a point is inside a solid with a certain tolerance.
         # If the 3rd parameter is True a point on a face is considered as inside
         #if not self.__Shape.isInside(measure_pos, 0.00001, True):
@@ -485,7 +481,7 @@ class SheetTree(object):
           self.error_code = 2
           self.failed_face_idx = f_idx
 
-        
+
         if hasattr(self.__Shape.Faces[f_idx].Surface,'Axis'):
           s_Axis =  self.__Shape.Faces[f_idx].Surface.Axis
           # print 'We have an axis: ', s_Axis
@@ -498,12 +494,12 @@ class SheetTree(object):
               Meassure_axis = Part.makeLine(measure_pos,measure_pos.sub(s_Axismp))
               ext_Vec = Base.Vector(-s_Axis.x, -s_Axis.y, -s_Axis.z)
               # Meassure_axis = Part.makeLine(measure_pos,measure_pos.sub(s_Axis.multiply(2.0*estimated_thickness)))
-            else:                    
+            else:
               # Meassure_axis = Part.makeLine(measure_pos,measure_pos.add(s_Axis.multiply(2.0*estimated_thickness)))
               Meassure_axis = Part.makeLine(measure_pos,measure_pos.add(s_Axismp))
               ext_Vec = Base.Vector(s_Axis.x, s_Axis.y, s_Axis.z)
             # Part.show(Meassure_axis)
-                
+
         lostShape = self.__Shape.copy()
         lLine = Meassure_axis.common(lostShape)
         lLine = Meassure_axis.common(self.__Shape)
@@ -512,7 +508,7 @@ class SheetTree(object):
         for mEdge in lLine.Edges:
           if equal_vertex(mEdge.Vertexes[0], measVert) or equal_vertex(mEdge.Vertexes[1], measVert):
             self.__thickness = mEdge.Length
-        
+
         # self.__thickness = lLine.Length
         if (self.__thickness < estimated_thickness) or (self.__thickness > 1.9 * estimated_thickness):
           self.error_code = 3
@@ -527,20 +523,19 @@ class SheetTree(object):
     wires_e_list is the list of wires lists of the top face without the parent-edge
     theNode: the actual node to be filled with data.
     '''
-    
-    # How to begin?
-    # searching for all faces that have two vertices in common with 
+
+    # Where to start?
+    # Searching for all faces that have two vertices in common with
     # an edge from the list should give the sheet edge.
     # But, we also need to look at the sheet edge, in order to not claim
     # faces from the next node!
-    # Then we have to treat those faces that belong to more than one
-    # node. Those faces needs to be cut and the face list needs to be updated.
-    # look also at the number of wires of the top face. More wires will
+    # Then we have to treat those faces that belong to more than one node.
+    # Those faces needs to be cut and the face list needs to be updated.
+    # Look also at the number of wires of the top face. More wires will
     # indicate a hole or a feature.
-    #print " When will this be called"
+
     found_indices = []
     # A search strategy for faces based on the wires_e_lists is needed.
-    # 
 
     for theWire in wires_e_lists:
       for theEdge in theWire:
@@ -567,18 +562,17 @@ class SheetTree(object):
                       #self.index_list.remove(i) # remove this face from the index_list
                       #Part.show(self.f_list[i])
     FreeCAD.Console.PrintLog("found_indices: " + str(found_indices) + "\n")
-                
 
 
   def is_sheet_edge_face(self, ise_edge, tree_node): # ise_edge: IsSheetEdge_edge
-    # idea: look at properties of neighbor face
-    # look at edges with distance of sheet-thickness.
-    #    if found and surface == cylinder, check if it could be a bend-node.  
-    # look at number of edges:
+    # Idea: look at properties of neighbor face
+    # Look at edges with distance of sheet-thickness.
+    #    if found and surface == cylinder, check if it could be a bend-node.
+    # Look at number of edges:
     # A face with 3 edges is at the sheet edge Cylinder-face or triangle (oh no!)
     # need to look also at surface!
     # A sheet edge face with more as 4 edges, is common to more than 1 node.
-    
+
     # get the face which has a common edge with ise_edge
     the_index = None
     has_sheet_distance_vertex = False
@@ -590,7 +584,7 @@ class SheetTree(object):
           break
       if the_index is not None:
         break
-          
+
     # Simple strategy applied: look if the connecting face has vertexes
     # with sheet-thickness distance to the top face.
     # FIXME: this will fail with sharpened sheet edges with two faces
@@ -619,12 +613,12 @@ class SheetTree(object):
           break
 
     else:
-      tree_node.analysis_ok = False 
+      tree_node.analysis_ok = False
       tree_node.error_code = 15  # Analysis: the code needs a face at all sheet edges
       self.error_code = 15
       self.failed_face_idx = tree_node.idx
       Part.show(self.f_list[tree_node.idx])
-            
+
     return has_sheet_distance_vertex
 
 
@@ -635,7 +629,7 @@ class SheetTree(object):
       distFailure = vF_vert.distanceToPlane (theNode.facePosi, theNode.axis) - self.__thickness
     elif F_type == "<Cylinder object>":
       distFailure = vF_vert.distanceToLine (theNode.bendCenter, theNode.axis) - theNode.distCenter
-    else: 
+    else:
       distFailure = 100.0
       theNode.error_code = 17  # Analysis: the code needs a face at all sheet edges
       self.error_code = 17
@@ -650,7 +644,7 @@ class SheetTree(object):
   def getDistanceToFace(self, theVert, theNode):
     F_type = str(self.f_list[theNode.idx].Surface)
     vF_vert = Base.Vector(theVert.X, theVert.Y, theVert.Z)
-    # a positive distance should go through the sheet metal 
+    # a positive distance should go through the sheet metal
     if F_type == "<Plane object>":
       dist = vF_vert.distanceToPlane (theNode.facePosi, theNode.axis)
     if F_type == "<Cylinder object>":
@@ -668,7 +662,7 @@ class SheetTree(object):
     # make a cut-tool perpendicular to the ise_edge
     # cut the face and select the good one to add to the node
     # make another cut, in order to add the residual face(s) to the face list.
-    
+
     # Search edges in the face with a vertex common with ise_edge
     F_type = str(self.f_list[tree_node.idx].Surface)
     needCut0 = True
@@ -685,7 +679,7 @@ class SheetTree(object):
     if needCut0:
       #print "need Cut at 0 with fIdx: ", fIdx
       nFace = self.cutEdgeFace(0, fIdx, ise_edge, tree_node)
-      
+
       tree_node.nfIndexes.append(self.max_f_idx)
       self.f_list.append(nFace)
       firstCutFaceIdx = self.max_f_idx
@@ -697,8 +691,8 @@ class SheetTree(object):
       #Part.show(nFace)
     #else:
     #  Part.show(theEdge)
-        
-    needCut1 = True        
+
+    needCut1 = True
     for sEdge in self.f_list[fIdx].Edges:
       if equal_vertex(ise_edge.Vertexes[1], sEdge.Vertexes[0]):
         if self.isVertOpposite(sEdge.Vertexes[1], tree_node):
@@ -728,52 +722,52 @@ class SheetTree(object):
     #  Part.show(theEdge)
 
 
-    
+
   def cutEdgeFace(self, eIdx, fIdx, theEdge, theNode):
     ''' This function cuts a face in two pieces.
-    one piece is connected to the node. 
-    The residual piece is discarded. 
+    one piece is connected to the node.
+    The residual piece is discarded.
     The function returns the piece that has a common edge with the top face of theNode.
     '''
     #print "now the face cutter: ", fIdx, ' ', eIdx, ' ', theNode.idx
     #Part.show(theEdge, 'EdgeToCut'+ str(theNode.idx+1)+'_')
     #Part.show(self.f_list[fIdx], 'FaceToCut'+ str(theNode.idx+1)+'_')
-    
+
     if eIdx == 0:
       otherIdx = 1
     else:
       otherIdx = 0
-    
+
     origin = theEdge.Vertexes[eIdx].Point
-    
+
     F_type = str(self.f_list[theNode.idx].Surface)
     if F_type == "<Plane object>":
       tan_vec = theEdge.Vertexes[eIdx].Point - theEdge.Vertexes[otherIdx].Point
-      #o_thick = Base.Vector(o_vec.x, o_vec.y, o_vec.z) 
+      #o_thick = Base.Vector(o_vec.x, o_vec.y, o_vec.z)
       tan_vec.normalize()
-      #New approach: search for the nearest vertex at the opposite site.
+      # New approach: search for the nearest vertex at the opposite site.
       # The cut is done between the Vertex indicated by eIdx and the nearest
-      # opposite vertex. This approach should avoid the generation of 
+      # opposite vertex. This approach should avoid the generation of
       # additional short edges in the side faces.
       searchAxis = theNode.axis
       #else:
         #searchAxis = radVector
-            
+
       maxDistance = 1000
       oppoPoint = None
       #print('need to check Face', str(fIdx+1), ' with ', len(self.f_list[fIdx].Vertexes))
       for theVert in self.f_list[fIdx].Vertexes:
-        # need to check if theVert has 
+        # need to check if theVert has
         if self.isVertOpposite(theVert, theNode):
           vertDist = theVert.Point.distanceToLine(origin, searchAxis)
           if vertDist < maxDistance:
             maxDistance = vertDist
             oppoPoint = theVert.Point
-            
+
       if oppoPoint is None:
         print(' error need always an opposite point in a side face!')
         # FIXME: need a proper error condition.
-      
+
       #vec1 = Base.Vector(theNode.axis.x, theNode.axis.y, theNode.axis.z) # make a copy
       vec1 = (oppoPoint - origin).normalize()
 
@@ -786,9 +780,9 @@ class SheetTree(object):
       Spnt2 = origin - vec1 + crossVec
       Spnt3 = origin + vec1 +  vec1 + crossVec
       Spnt4 = origin + vec1 +  vec1 - crossVec
-  
-      
-      
+
+
+
     if F_type == "<Cylinder object>":
       ePar = theEdge.parameterAt(theEdge.Vertexes[eIdx])
       FreeCAD.Console.PrintLog("Idx: " + str(eIdx) + " ePar: " + str(ePar) + "\n")
@@ -796,30 +790,30 @@ class SheetTree(object):
       tan_vec = theEdge.tangentAt(ePar)
       if ePar < otherPar:
         tan_vec.multiply(-1.0)
-      
+
       #tan_line = Part.makeLine(theEdge.Vertexes[eIdx].Point.add(tan_vec), theEdge.Vertexes[eIdx].Point)
       #Part.show(tan_line, 'tan_line'+ str(theNode.idx+1)+'_')
-      
+
       edge_vec = theEdge.Vertexes[eIdx].copy().Point
       radVector = radial_vector(edge_vec, theNode.bendCenter, theNode.axis)
       if theNode.bend_dir == "down":
         radVector.multiply(-1.0)
-  
+
       #rad_line = Part.makeLine(theEdge.Vertexes[eIdx].Point.add(radVector), theEdge.Vertexes[eIdx].Point)
       #Part.show(rad_line, 'rad_line'+ str(theNode.idx+1)+'_')
       searchAxis = radVector
-            
+
       maxDistance = 1000
       oppoPoint = None
       #print('need to check Face', str(fIdx+1), ' with ', len(self.f_list[fIdx].Vertexes))
       for theVert in self.f_list[fIdx].Vertexes:
-        # need to check if theVert has 
+        # need to check if theVert has
         if self.isVertOpposite(theVert, theNode):
           vertDist = theVert.Point.distanceToLine(origin, searchAxis)
           if vertDist < maxDistance:
             maxDistance = vertDist
             oppoPoint = theVert.Point
-            
+
       if oppoPoint is None:
         print(' error need always an opposite point in a side face!')
         # FIXME: need a proper error condition.
@@ -835,12 +829,12 @@ class SheetTree(object):
       Spnt2 = origin - vec1 + crossVec
       Spnt3 = origin + vec1 +  vec1 + crossVec
       Spnt4 = origin + vec1 +  vec1 - crossVec
-    
+
     Sedge1 = Part.makeLine(Spnt1,Spnt2)
     Sedge2 = Part.makeLine(Spnt2,Spnt3)
     Sedge3 = Part.makeLine(Spnt3,Spnt4)
     Sedge4 = Part.makeLine(Spnt4,Spnt1)
-        
+
     Sw1 = Part.Wire([Sedge1, Sedge2, Sedge3, Sedge4])
     # Part.show(Sw1, 'cutWire'+ str(theNode.idx+1)+'_')
     Sf1=Part.Face(Sw1) #
@@ -849,18 +843,18 @@ class SheetTree(object):
     cut_solid = Sf1.extrude(tan_vec.multiply(self.__thickness))
     #Part.show(cut_solid, 'cut_solid'+ str(theNode.idx+1)+'_')
     #cut_opposite = Sf1.extrude(tan_vec.multiply(-5.0))
-    
+
     cutFaces_node = self.f_list[fIdx].cut(cut_solid)
     for cFace in cutFaces_node.Faces:
       for myVert in cFace.Vertexes:
         if equal_vertex(theEdge.Vertexes[eIdx], myVert):
           nodeFace = cFace
-          #print "The nodeFace Idx: ", fIdx, ' eIdx: ', eIdx 
+          #print "The nodeFace Idx: ", fIdx, ' eIdx: ', eIdx
           #Part.show(nodeFace)
           break
 
     return nodeFace #, residueFace
-    
+
 
   def getBendAngle(self, newNode, wires_e_lists):
     ''' Get the bend angle for a node connected to a bend face,
@@ -872,14 +866,14 @@ class SheetTree(object):
     P_edge = newNode.p_edge
     face_idx = newNode.idx
     theFace = self.__Shape.Faces[face_idx]
-    
+
     s_Axis = newNode.axis
     s_Center = newNode.bendCenter
-    
+
     #Start to investigate the angles at self.__Shape.Faces[face_idx].ParameterRange[0]
     angle_0 = theFace.ParameterRange[0]
     angle_1 = theFace.ParameterRange[1]
-    
+
     # idea: identify the angle at edge_vec = P_edge.Vertexes[0].copy().Point
     # This will be = angle_start
     # calculate the tan_vec from valueAt
@@ -888,7 +882,7 @@ class SheetTree(object):
     edgeAngle, edgePar = theFace.Surface.parameter(edge_vec)
 
     #print 'the angles: ', angle_0, ' ', angle_1, ' ', edgeAngle, ' ', edgeAngle - 2*math.pi
-    
+
     if equal_angle(angle_0, edgeAngle):
       angle_start = angle_0
       angle_end = angle_1
@@ -896,7 +890,7 @@ class SheetTree(object):
       angle_start = angle_1
       angle_end = angle_0
     len_start = edgePar
-      
+
     newNode.bend_angle = angle_end - angle_start
     angle_tan = angle_start + newNode.bend_angle/6.0 # need to have the angle_tan before correcting the sign
 
@@ -913,7 +907,7 @@ class SheetTree(object):
     if triple_prod < 0:
       newNode.axis = -newNode.axis
       s_Axis = -s_Axis
-      
+
     #tan_vec = radial_vector(tanPos, s_Center, s_Axis)
     tan_vec = s_Axis.cross(first_vec)
     #Part.show(Part.makeLine(tanPos, tanPos + 10 * tan_vec), 'tan_Vec')
@@ -927,7 +921,7 @@ class SheetTree(object):
         newNode.tan_vec = -pTanVec
       else:
         newNode.tan_vec = pTanVec
-        
+
     if newNode.bend_dir == 'up':
       innerRadius = theFace.Surface.Radius
     else:
@@ -944,9 +938,9 @@ class SheetTree(object):
     #print 'newNode._trans_length: ', newNode._trans_length
     cAngle_0 = self.__Shape.Faces[newNode.c_face_idx].ParameterRange[0]
     cAngle_1 = self.__Shape.Faces[newNode.c_face_idx].ParameterRange[1]
-    
+
     cFaceAngle = cAngle_1 - cAngle_0
-    
+
     if newNode.bend_angle > 0:
       if cFaceAngle > 0:
         diffAngle = newNode.bend_angle - cFaceAngle
@@ -957,13 +951,9 @@ class SheetTree(object):
         diffAngle = cFaceAngle + newNode.bend_angle
       else:
         diffAngle = newNode.bend_angle - cFaceAngle
-      
-        
+
+
     #print 'node angles: ', newNode.bend_angle, ' ', diffAngle
-
-
-
-
 
 
 
@@ -975,18 +965,18 @@ class SheetTree(object):
     # put the node into the tree
     newNode = Simple_node(face_idx, P_node, P_edge, self.k_factor_lookup)
     F_type = str(self.__Shape.Faces[face_idx].Surface)
-    
+
     # This face should be a node in the tree, and is therefore known!
     # removed from the list of all unknown faces
     self.index_list.remove(face_idx)
     # This means, it could also not be found as neighbor face anymore.
     #newNode.node_faces.append(self.f_list[face_idx].copy())
     newNode.nfIndexes.append(face_idx)
-    
-    such_list = [] 
+
+    such_list = []
     for k in self.index_list:
       such_list.append(k)
-    
+
     if F_type == "<Plane object>":
       newNode.node_type = 'Flat' # FIXME
       FreeCAD.Console.PrintLog("Face"+ str(face_idx+1) + " Type: "+ str(newNode.node_type) + "\n")
@@ -997,13 +987,13 @@ class SheetTree(object):
       s_Axis = self.__Shape.Faces[face_idx].Surface.Axis
       if s_Ori == 'Forward':
         ext_Vec = Base.Vector(-s_Axis.x, -s_Axis.y, -s_Axis.z)
-      else:                    
+      else:
         ext_Vec = Base.Vector(s_Axis.x, s_Axis.y, s_Axis.z)
 
       newNode.axis = ext_Vec
       axis_line = Part.makeLine(s_Posi.add(ext_Vec), s_Posi)
       #Part.show(axis_line, 'axis_line'+str(face_idx+1))
-      
+
       # need a mean point of the face to avoid false counter faces
       faceMiddle = Base.Vector(0.0,0.0,0.0) # calculating a mean vector
       for Vvec in self.__Shape.Faces[face_idx].OuterWire.Vertexes:
@@ -1011,7 +1001,7 @@ class SheetTree(object):
       faceMiddle = faceMiddle.multiply(1.0/len(self.__Shape.Faces[face_idx].OuterWire.Vertexes))
       faceMiddle = faceMiddle.add(self.__thickness * ext_Vec)
       #Part.show(Part.makeLine(faceMiddle, faceMiddle + 2*ext_Vec), 'faceMiddle'+str(face_idx))
-      
+
       counterFaceList = []
       gotCFace = False
       # search for the counter face
@@ -1024,17 +1014,17 @@ class SheetTree(object):
           #print 'checking Face', str(i+1), ' dist_v: ', dist_v
           if (dist_v > self.cFaceTol) or (dist_v < -self.cFaceTol):
               counter_found = False
-  
+
         if counter_found:
           # need a mean point of the face to avoid false counter faces
           counterMiddle = Base.Vector(0.0,0.0,0.0) # calculating a mean vector
           for Vvec in self.__Shape.Faces[i].OuterWire.Vertexes:
               counterMiddle = counterMiddle.add(Vvec.Point)
           counterMiddle = counterMiddle.multiply(1.0/len(self.__Shape.Faces[i].OuterWire.Vertexes))
-          
+
           distVector = counterMiddle.sub(faceMiddle)
           counterDistance = distVector.Length
-          
+
           if counterDistance < 2*self.__thickness: # FIXME: small stripes are a risk!
             FreeCAD.Console.PrintLog( "found counter-face"+ str(i + 1) + "\n")
             counterFaceList.append([i, counterDistance])
@@ -1042,7 +1032,7 @@ class SheetTree(object):
           else:
             counter_found = False
             FreeCAD.Console.PrintLog("faceMiddle: " + str(faceMiddle) + " counterMiddle: "+ str(counterMiddle) + "\n")
-      
+
       if gotCFace:
         newNode.c_face_idx = counterFaceList[0][0]
         if len(counterFaceList) > 1: # check if more than one counterFace was detected!
@@ -1054,7 +1044,7 @@ class SheetTree(object):
         self.index_list.remove(newNode.c_face_idx)
         newNode.nfIndexes.append(newNode.c_face_idx)
 
-            
+
       #if newNode.c_face_idx == None:
       #  Part.show(axis_line)
       # if the parent is a bend: check the bend angle and correct it.
@@ -1071,7 +1061,7 @@ class SheetTree(object):
             #print 'compare angles, bend: ', newNode.p_node.bend_angle, ' ', angle
             newNode.p_node.bend_angle = angle # This seems to be an improvement!
             # newNode.p_node.bend_angle = (angle + newNode.p_node.bend_angle) / 2.0 # this is a bad approach
-          
+
           # update the newNode.p_node.vertexDict with the Vertex data
           # from the own vertexes corresponding to the parent edge: P_edge
           topVertIndexes = range(len(self.__Shape.Faces[face_idx].Vertexes))
@@ -1083,7 +1073,7 @@ class SheetTree(object):
               myFlatVertIndexes.append(vertIdx)
             if equal_vertex(theVert, P_edge.Vertexes[1]):
               myFlatVertIndexes.append(vertIdx)
-              
+
           rotatedFace = self.f_list[face_idx].copy()
           trans_vec = newNode.p_node.tan_vec * newNode.p_node._trans_length
           rotatedFace.rotate(self.f_list[newNode.p_node.idx].Surface.Center,newNode.p_node.axis,math.degrees(-newNode.p_node.bend_angle))
@@ -1108,7 +1098,7 @@ class SheetTree(object):
             for cVert in self.__Shape.Faces[newNode.p_node.c_face_idx].Vertexes:
               if equal_vertex(theVert, cVert):
                 myFlatVertIndexes.append(vertIdx)
-              
+
           rotatedFace = self.f_list[newNode.c_face_idx].copy()
           trans_vec = newNode.p_node.tan_vec * newNode.p_node._trans_length
           rotatedFace.rotate(self.f_list[newNode.p_node.idx].Surface.Center,newNode.p_node.axis,math.degrees(-newNode.p_node.bend_angle))
@@ -1132,7 +1122,7 @@ class SheetTree(object):
       newNode.bendCenter = s_Center
       edge_vec = P_edge.Vertexes[0].copy().Point
       FreeCAD.Console.PrintLog("edge_vec: "+ str(edge_vec) + "\n")
-      
+
       if P_node.node_type == 'Flat':
         dist_c = edge_vec.distanceToPlane (s_Center, P_node.axis) # distance to center
       else:
@@ -1142,7 +1132,7 @@ class SheetTree(object):
           dist_c = edge_vec.distanceToPlane (s_Center, radVector.multiply(-1.0))
         else:
           dist_c = edge_vec.distanceToPlane (s_Center, radVector)
-          
+
       if dist_c < 0.0:
         newNode.bend_dir = "down"
         thick_test = self.__Shape.Faces[face_idx].Surface.Radius - self.__thickness
@@ -1168,7 +1158,7 @@ class SheetTree(object):
           dist_c = vF_vert.distanceToLine (s_Center, s_Axis) - thick_test
           if (dist_c > self.cFaceTol) or (dist_c < -self.cFaceTol):
             counter_found = False
-  
+
         if counter_found:
           # to do calculate mean point of counter face
 
@@ -1188,9 +1178,9 @@ class SheetTree(object):
         Part.show(self.__Shape.Faces[face_idx], 'FailedFace'+ str(face_idx + 1) +'_')
         return newNode
 
-        
+
       else:
-        # Need a Vertex from the parent node on the opposite side of the 
+        # Need a Vertex from the parent node on the opposite side of the
         # sheet metal part. This vertex is used to align other vertexes
         # to the unbended sheet metal plane.
         # The used vertex should be one of the opposite Face of the parent
@@ -1199,7 +1189,7 @@ class SheetTree(object):
           searchAxis = P_node.axis
         else:
           searchAxis = radVector
-              
+
         maxDistance = 1000
         bestPoint = None
         for theVert in self.__Shape.Faces[P_node.c_face_idx].Vertexes:
@@ -1207,23 +1197,23 @@ class SheetTree(object):
           if vertDist < maxDistance:
             maxDistance = vertDist
             bestPoint = theVert.Point
-             
+
         newNode.oppositePoint = bestPoint
         #Part.show(Part.makeLine(bestPoint, edge_vec), 'bestPoint'+str(face_idx+1)+'_')
-        
+
         self.getBendAngle(newNode, wires_e_lists)
-              
-         # As I have learned, that it is necessary to apply corrections to Points / Vertexes,
+
+        # As I have learned, that it is necessary to apply corrections to Points / Vertexes,
         # it will be difficult to have all vertexes of the faces of a bend to fit together.
         # Therefore a dictionary is introduced, which holds the original coordinates and
         # the unbend coordinates for the vertexes of the bend. It contains also flags,
-        # indicating if a point is part of the parent node (p) or child node (c), top face (t) or
-        # opposite face (o). All in newNode.vertexDict
+        # indicating if a point is part of the parent node (p) or child node (c),
+        # top face (t) or opposite face (o). All in newNode.vertexDict
         # Structure: key: Flagstring, Base.Vector(original), Base.Vector(unbend)
         # The unbend coordinates should be added before processing the top face and the
         # opposite face in the generateBendShell2 procedure.
-        # Next is to identify for each vertex in the edges the corresponding vertex in 
-        # newNode.vertexDict. 
+        # Next is to identify for each vertex in the edges the corresponding vertex in
+        # newNode.vertexDict.
         # Create a dictionary for the unbend edges. The key is a combination of the
         # vertex indexes. The higher index is shifted 16 bits. simple_node.edgeDict
         # Next is to unbend the edges, using the points in newNode.vertexDict as
@@ -1250,7 +1240,7 @@ class SheetTree(object):
           #print('make vertexDict: ', flagStr, ' ', str(face_idx+1))
           newNode.vertexDict[vertDictIdx] = flagStr, origVec, unbendVec
           vertDictIdx += 1
-  
+
         for theVert in self.__Shape.Faces[newNode.c_face_idx].Vertexes:
           flagStr = 'o'
           origVec = theVert.Point
@@ -1263,7 +1253,7 @@ class SheetTree(object):
           #print('make vertexDict: ', flagStr, ' ', str(face_idx+1))
           newNode.vertexDict[vertDictIdx] = flagStr, origVec, unbendVec
           vertDictIdx += 1
-      
+
     # Part.show(self.__Shape.Faces[newNode.c_face_idx])
     # Part.show(self.__Shape.Faces[newNode.idx])
     if newNode.c_face_idx is None:
@@ -1296,7 +1286,7 @@ class SheetTree(object):
     # For each relevant face a t_node is created and linked into the tree
     # the linking is done in the call of self.make_new_face_node
     #print "Bend_analysis Face", face_idx +1 ,
-    # analysis_ok = True # not used anymore? 
+    # analysis_ok = True # not used anymore?
     # edge_list = []
     if self.error_code is None:
       wires_edge_lists = []
@@ -1320,7 +1310,7 @@ class SheetTree(object):
       t_node = self.make_new_face_node(face_idx, parent_node, parent_edge, wires_edge_lists)
       # Need also the edge_list in the node!
       FreeCAD.Console.PrintLog("The list after make_new_face_node: " + str(self.index_list) + "\n")
-      
+
       # in the new code, only the list of child faces will be analyzed.
       removalList = []
       for child_info in t_node.child_idx_lists:
@@ -1343,10 +1333,10 @@ class SheetTree(object):
         t_node.child_idx_lists.remove(seams)
     else:
       FreeCAD.Console.PrintError('got error code: '+ str(self.error_code) + ' at Face'+ str(self.failed_face_idx+1) + "\n")
-      
 
-  
-  
+
+
+
   def searchNode(self, theIdx, sNode):
     # search for a Node with theIdx in sNode.idx
     FreeCAD.Console.PrintLog("my Idx: "+ str(sNode.idx) + "\n")
@@ -1359,7 +1349,7 @@ class SheetTree(object):
       for n_node in sNode.child_list:
         childFaces.append(n_node.idx)
       FreeCAD.Console.PrintLog("my children: "+ str(childFaces) + "\n")
-      
+
       for n_node in sNode.child_list:
         nextSearch = self.searchNode(theIdx, n_node)
         if nextSearch is not None:
@@ -1369,9 +1359,9 @@ class SheetTree(object):
       FreeCAD.Console.PrintLog("This is the result: "+ str(result.idx) + "\n")
     else:
       FreeCAD.Console.PrintLog("This is the result: None\n")
-    
+
     return result
-    
+
     # suche bei mir. wenn ja liefere ab
     # sonst sind Kinder da?
     # Wenn Kinder vorhanden, frag solange Kinder bis gefunden
@@ -1381,7 +1371,7 @@ class SheetTree(object):
   def rotateVec(self, vec, phi, rAxis):
     ''' rotate a vector by the angle phi around the axis rAxis'''
     #https://de.wikipedia.org/wiki/Drehmatrix
-    rVec = rAxis.cross(vec).cross(rAxis).multiply(math.cos(phi)) + rAxis.cross(vec)*math.sin(phi) + rAxis*rAxis.dot(vec) 
+    rVec = rAxis.cross(vec).cross(rAxis).multiply(math.cos(phi)) + rAxis.cross(vec)*math.sin(phi) + rAxis*rAxis.dot(vec)
     return rVec
 
 
@@ -1391,25 +1381,25 @@ class SheetTree(object):
     each edge in a list the point indexes to the vertexes of the bend node.
     key: Index to myEdgeList, content: List of indexes to the self.vertexDict.
     '''
-    
+
     axis = bend_node.axis
     cent = bend_node.bendCenter
     bRad = bend_node.innerRadius
     thick = self.__thickness
-    
+
     kFactor = bend_node.k_Factor
-    
+
     transRad = bRad + kFactor * thick
     if kFactorStandard == 'din':
         conv = ', converted from DIN'
     else:
-        conv = '' 
+        conv = ''
     SMMessage("transRad Face: %d, r: %.2f, thickness: %.2f, K-factor: %.2f (ANSI%s)" % (fIdx+1, bRad, thick, kFactor, conv))
     tanVec = bend_node.tan_vec
     aFace = self.f_list[fIdx]
-    
+
     normVec = radial_vector(bend_node.p_edge.Vertexes[0].Point, cent, axis)
-    
+
     if mode == 'top':
       chord = cent.sub(bend_node.p_edge.Vertexes[0].Point)
       norm = axis.cross(chord)
@@ -1439,12 +1429,12 @@ class SheetTree(object):
         bPoint = cent + rotVec + correctionVec + tanVec*transRad*angle
       else:
         bPoint = cent + rotVec + tanVec*transRad*angle
-      
+
       return bPoint
-    
+
     divisions = 12 # FIXME need a dependence on something useful.
-    
-    
+
+
     fWireList = aFace.Wires[:]
     #newWires = []
     edgeLists = []
@@ -1453,7 +1443,7 @@ class SheetTree(object):
         uEdge = None
         idxList, closedW = self.sortEdgesTolerant(aWire.Edges)
         #print('Wire', str(fIdx+1), ' has ', len(idxList), ' edges, closed: ', closedW)
-        
+
         eList = []  # is the list of unbend edges
         j=0
         for fEdgeIdx in idxList:
@@ -1470,7 +1460,7 @@ class SheetTree(object):
           edgeKey = None
           vert0Idx = None
           vert1Idx = None
-          
+
           #print 'edge vertexes: ', str(fIdx+1), ' ', mode, ' ', fEdge.Vertexes[0].Point, ' ', fEdge.Vertexes[1].Point
           for oVertIdx in bend_node.vertexDict:
             flagStr, origVec, unbendVec = bend_node.vertexDict[oVertIdx]
@@ -1517,15 +1507,15 @@ class SheetTree(object):
             # x << n: x shifted left by n bits = Multiplication
           else:
             edgeKey = vert0Idx
-            
+
           #print 'edgeKey: ', edgeKey, ' ', str(fIdx+1), ' ', mode, ' ', uVert0, ' ', uVert1
-          
+
           urollPts = []
-          
+
           if ("<Ellipse object>" in eType):
             minPar, maxPar = fEdge.ParameterRange
             FreeCAD.Console.PrintLog("the Parameterrange: "+ str(minPar)+ " to " + str(maxPar)+ " Type: "+str(eType) + "\n")
-            
+
             # compare minimal 1/curvature with curve-lenght to decide on division
             iMulti = (maxPar-minPar)/24
             maxCurva = 0.0
@@ -1535,18 +1525,18 @@ class SheetTree(object):
               curva = fEdge.Curve.curvature(minPar + i*iMulti)
               if curva > maxCurva:
                 maxCurva = curva
-            
+
             decisionAngle = fEdge.Length * maxCurva
             # print 'Face', str(fIdx+1), ' EllidecisionAngle: ', decisionAngle
             # Part.show(fEdge, 'EllideciAng'+str(decisionAngle)+ '_')
-            
+
             if decisionAngle < 0.1:
               eDivisions = 4
             elif decisionAngle < 0.5:
               eDivisions = 6
             else:
               eDivisions = 12
-            
+
             iMulti = (maxPar-minPar)/eDivisions
             urollPts.append(uVert0)
             for i in range(1,eDivisions):
@@ -1554,19 +1544,19 @@ class SheetTree(object):
               bPosi = unbendPoint(posi)
               urollPts.append(bPosi)
             urollPts.append(uVert1)
-            
+
             uCurve = Part.BSplineCurve()
             uCurve.interpolate(urollPts)
             uEdge = uCurve.toShape()
             #Part.show(uEdge, 'Elli'+str(j)+'_')
-     
+
           elif "<Line" in eType:
             #print 'j: ',j , ' eType: ', eType, ' fIdx: ', fIdx, ' verts: ', fEdge.Vertexes[0].Point, ' ', fEdge.Vertexes[1].Point
             #Part.show(fEdge)
             #print 'unbend Line: ', uVert0, ' ', uVert1
             uEdge = Part.makeLine(uVert0, uVert1)
             #Part.show(uEdge, 'Line'+str(j)+'_')
-    
+
           elif "Circle" in eType:  #FIXME need to check if circle ends are at different radii!
             FreeCAD.Console.PrintLog('j: '+ str(j) + ' eType: '+ str(eType) + '\n')
             parList = fEdge.ParameterRange
@@ -1576,11 +1566,11 @@ class SheetTree(object):
             #print 'Face', str(bend_node.idx+1), 'bAxis: ', axis, ' cAxis: ', fEdge.Curve.Axis
             uEdge = Part.makeLine(uVert0, uVert1)
             #Part.show(uEdge, 'CircleLine'+str(j)+'_')
-    
+
           elif ("<BSplineCurve object>" in eType) or ("<BezierCurve object>" in eType):
             minPar, maxPar = fEdge.ParameterRange
             #print "the Parameterrange: ", minPar, " - ", maxPar, " Type: ",eType
-            
+
             # compare minimal 1/curvature with curve-lenght to decide on division
             iMulti = (maxPar-minPar)/24
             maxCurva = 0.0
@@ -1599,11 +1589,11 @@ class SheetTree(object):
               curva = testEdge.Curve.curvature(minPar + i*iMulti)
               if curva > maxCurva:
                 maxCurva = curva
-            
+
             decisionAngle = testEdge.Length * maxCurva
             #print 'Face', str(fIdx+1), ' decisionAngle: ', decisionAngle
             #Part.show(testEdge, 'deciAng'+str(decisionAngle)+ '_')
-            
+
             if decisionAngle > 1000.0:
               bDivisions = 4
             else:
@@ -1645,7 +1635,7 @@ class SheetTree(object):
             FreeCAD.Console.PrintLog('unbendFace, curve type not handled: ' + str(eType) + ' in Face' + str(fIdx+1) + '\n')
             self.error_code = 26
             self.failed_face_idx = fIdx
-          
+
           # in mode 'side' check, if not the top or counter edge can be used instead.
           if mode == 'side':
             if edgeKey in bend_node.edgeDict:
@@ -1659,15 +1649,15 @@ class SheetTree(object):
           j += 1
         edgeLists.append(eList)
     # end of for what?
-    
+
     # Here we store the unbend top and counter outer edge list in the node data.
-    # These are needed later as edges in the new side faces. 
+    # These are needed later as edges in the new side faces.
     if mode == 'top':
       bend_node.unfoldTopList = edgeLists[0]
     if mode == 'counter':
       bend_node.unfoldCounterList = edgeLists[0]
-    
-    
+
+
     if len(edgeLists) == 1:
       eList = Part.__sortEdges__(edgeLists[0])
       myWire = Part.Wire(eList)
@@ -1721,7 +1711,7 @@ class SheetTree(object):
         #Part.show(Part.Face(myWire))
       try:
           #theFace = Part.Face(wires)
-          #print 'make cutted face\n' 
+          #print 'make cutted face\n'
           theFace = faces[0].copy()
           for f in faces[1:]:
             f.translate(-normVec)
@@ -1751,7 +1741,7 @@ class SheetTree(object):
       a new sorted list of indexes to edges of the original wire
       flag if wire is closed or not (a wire of a cylinder mantle is not closed!)
     '''
-    eIndex = 0 
+    eIndex = 0
     newEdgeList = []
     idxList = list(range(len(myEdgeList)))
     newIdxList = [eIndex]
@@ -1759,7 +1749,7 @@ class SheetTree(object):
     idxList.remove(eIndex)
     gotConnection = False
     closedWire = False
-    
+
     startVert  = myEdgeList[eIndex].Vertexes[0]
     if len(myEdgeList[eIndex].Vertexes) > 1:
       vert = myEdgeList[eIndex].Vertexes[1]
@@ -1786,7 +1776,7 @@ class SheetTree(object):
             vert = edge.Vertexes[0]
             break
       if (len(idxList) == 0):
-        gotConnection = True 
+        gotConnection = True
       if equal_vertex(vert, startVert):
         #print 'got last connection'
         gotConnection = True
@@ -1794,7 +1784,7 @@ class SheetTree(object):
       #Part.show(myEdgeList[eIdx], 'tolEdge'+str(eIdx+1)+'_')
     #print 'tolerant wire: ', len(myEdgeList)
     return newIdxList, closedWire
-    
+
 
   def makeFoldLines(self, bend_node, nullVec):
     axis = bend_node.axis
@@ -1805,11 +1795,11 @@ class SheetTree(object):
     transRad = bRad + kFactor * thick
     tanVec = bend_node.tan_vec
     theFace = self.f_list[bend_node.idx]
-    
+
     angle_0 = theFace.ParameterRange[0]
     angle_1 = theFace.ParameterRange[1]
     length_0 = theFace.ParameterRange[2]
-    
+
     halfAngle = (angle_0 + angle_1) / 2
     bLinePoint0 = theFace.valueAt(halfAngle,length_0)
     #bLinePoint1 = theFace.valueAt(halfAngle,length_1)
@@ -1820,9 +1810,9 @@ class SheetTree(object):
     testDist = -bLinePoint0.distanceToPlane(sliceVec * distance, sliceVec)
     if math.fabs(testDist) > math.fabs(distance):
       sliceVec = -sliceVec
-    
-    
-    #Part.show(Part.makePolygon([origin,sliceVec * distance]), 'distance') 
+
+
+    #Part.show(Part.makePolygon([origin,sliceVec * distance]), 'distance')
     #print 'distance: ', distance, ' testDist: ', testDist
     wires = []
     for i in theFace.slice(sliceVec, distance):
@@ -1832,7 +1822,7 @@ class SheetTree(object):
     theComp = Part.Compound(wires)
     # FIXME, what if there are no wires?
     wireList =[]
-     
+
     for fEdge in theComp.Edges:
       eType = str(fEdge.Curve)
       #print "the type of curve: ", eType
@@ -1846,9 +1836,9 @@ class SheetTree(object):
           if angle < 0:
             angle = angle + 2*math.pi
           rotVec = self.rotateVec(posi.sub(cent), -angle, axis)
-          
+
           bPosi = cent + rotVec + tanVec*transRad*angle
-          
+
           urollPts.append(bPosi)
         edgeL = Part.makeLine(urollPts[0], urollPts[1])
         lWire = Part.Wire([edgeL])
@@ -1856,9 +1846,9 @@ class SheetTree(object):
         #Part.show(lWire, 'foldLine'+str(bend_node.idx +1)+'_')
       else:
         print('FIXME! make errorcondition')
-        
+
     return wireList
-  
+
   def unbendVertDict(self, bend_node, cent, axis, nullVec):
     '''
     calculate the unbend points in the vertexDict.
@@ -1889,7 +1879,7 @@ class SheetTree(object):
     chord = cent.sub(bend_node.oppositePoint)
     norm = axis.cross(chord)
     oppCompRadialVec = axis.cross(norm)
-      
+
     for i in bend_node.vertexDict:
       flagStr, origVec, unbendVec = bend_node.vertexDict[i]
       if (not ('p' in flagStr)) and (not ('c' in flagStr)):
@@ -1899,40 +1889,40 @@ class SheetTree(object):
           unbendVec = unbendDictPoint(origVec, oppCompRadialVec)
         #print 'unbendDictPoint for ', flagStr
         bend_node.vertexDict[i] = flagStr, origVec, unbendVec
-        
+
     #for i in bend_node.vertexDict:
       #flagStr, origVec, unbendVec = bend_node.vertexDict[i]
       #print 'vDict Face', str(bend_node.idx+1), ' ', i, ' ', flagStr, ' ', origVec, ' ', unbendVec
-          
+
   def generateBendShell2(self, bend_node):
     '''
-    This function takes a cylindrical bend part of sheet metal and 
+    This function takes a cylindrical bend part of sheet metal and
     returns a flat version of that bend part.
     '''
     theCenter = bend_node.bendCenter   # theCyl.Surface.Center
     theAxis = bend_node.axis           # theCyl.Surface.Axis
     # theRadius = theCyl.Surface.Radius # need to include the k-Factor
-    
+
     zeroVert = bend_node.p_edge.Vertexes[0]
     nullVec = radial_vector(zeroVert.Point, theCenter, theAxis)
     #nullVec_line = Part.makeLine(theCenter, theCenter + nullVec*bend_node.innerRadius)
     #Part.show(nullVec_line, 'nullVec_line'+ str(bend_node.idx+1)+'_')
     #tanVec_line = Part.makeLine(zeroVert.Point, zeroVert.Point + bend_node.tan_vec*bend_node.innerRadius)
     #Part.show(tanVec_line, 'tanVec_line'+ str(bend_node.idx+1)+'_')
-    
+
     # calculate the unbend points in the bend_ node.vertexDict
     self.unbendVertDict(bend_node, theCenter, theAxis, nullVec)
-    
-    
+
+
     bendFaceList = bend_node.nfIndexes[:]
     bendFaceList.remove(bend_node.idx)
     bendFaceList.remove(bend_node.c_face_idx)
-    
+
     flat_shell = []
     flat_shell.append(self.unbendFace(bend_node.idx, bend_node, nullVec, 'top'))
     flat_shell.append(self.unbendFace(bend_node.c_face_idx, bend_node, nullVec, 'counter'))
-    
-    
+
+
     for i in bendFaceList:
       bFace = self.unbendFace(i, bend_node, nullVec)
       flat_shell.append(bFace)
@@ -1954,7 +1944,7 @@ class SheetTree(object):
     startVert = sEdge.Vertexes[0]
     start_idx = 0
     end_idx = 1
-    
+
     search_List = theNode.nfIndexes[:]
     FreeCAD.Console.PrintLog("This is the search_List: " + str(search_List) + "\n")
     search_List.remove(theNode.idx)
@@ -1985,14 +1975,14 @@ class SheetTree(object):
     for i in search_List:
       #Part.show(self.f_list[i])
       for theEdge in self.f_list[i].Edges:
-        FreeCAD.Console.PrintLog("find last Edge in Face: "+ str(i)+ " at Edge: "+ str(theEdge) + "\n")
+        FreeCAD.Console.PrintLog("Find last Edge in Face: "+ str(i)+ " at Edge: "+ str(theEdge) + "\n")
         if len(theEdge.Vertexes)>1:
           if equal_vertex(theEdge.Vertexes[0], startVert):
             last_idx = 1
           if equal_vertex(theEdge.Vertexes[1], startVert):
             last_idx = 0
           if last_idx is not None:
-            FreeCAD.Console.PrintLog("test for the last Edge\n")
+            FreeCAD.Console.PrintLog("Test for the last Edge\n")
             if self.isVertOpposite(theEdge.Vertexes[last_idx], theNode):
               lastEdge = theEdge.copy()
               search_List.remove(i)
@@ -2003,7 +1993,7 @@ class SheetTree(object):
               last_idx = None
       if last_idx is not None:
         break
-        
+
     # find the middleEdge
     mid_idx = None
     midEdge = None
@@ -2036,7 +2026,7 @@ class SheetTree(object):
 
 
   def unfold_tree2(self, node):
-    # This function traverses the tree and unfolds the faces 
+    # This function traverses the tree and unfolds the faces
     # beginning at the outermost nodes.
     #print "unfold_tree face", node.idx + 1
     theShell = []
@@ -2072,11 +2062,11 @@ class SheetTree(object):
 
 #  from Defeaturing WB: Export to Step
 def sew_Shape():
-    """checking Shape""" 
-    
+    """checking Shape"""
+
     doc=FreeCAD.ActiveDocument
     docG = FreeCADGui.ActiveDocument
-       
+
     sel=FreeCADGui.Selection.getSelection()
     if len (sel) == 1:
         o = sel[0]
@@ -2098,7 +2088,7 @@ def sew_Shape():
 
 
 def makeSolidExpSTEP():
-    
+
     doc=FreeCAD.ActiveDocument
     docG = FreeCADGui.ActiveDocument
     if doc is not None:
@@ -2126,9 +2116,9 @@ def makeSolidExpSTEP():
             ImportGui.insert(tempfilepath,doc.Name)
             FreeCADGui.SendMsgToActiveView("ViewFit")
         else:
-            FreeCAD.Console.PrintError('select only one object')
+            FreeCAD.Console.PrintError('Select only one object')      
     else:
-        FreeCAD.Console.PrintError('select only one object')
+        FreeCAD.Console.PrintError('Select only one object')
 ##
 
 
@@ -2142,7 +2132,7 @@ def getUnfold(k_factor_lookup):
     err_code = 0
     # print 'Die Selektion: ',mylist
     # print 'Zahl der Selektionen: ', mylist.__len__()
-    
+
     if mylist.__len__() == 0:
       mw=FreeCADGui.getMainWindow()
       QtGui.QMessageBox.information(mw,"Error","""One flat face needs to be selected!""")
@@ -2173,7 +2163,7 @@ def getUnfold(k_factor_lookup):
                 TheTree.Bend_analysis(f_number, None) # traverses the shape and builds the tree-structure
                 endzeit = time.clock()
                 FreeCAD.Console.PrintLog("Analytical time: "+ str(endzeit-startzeit) + "\n")
-                
+
                 if TheTree.error_code is None:
                   # TheTree.showFaces()
                   theFaceList, foldLines = TheTree.unfold_tree2(TheTree.root) # traverses the tree-structure
@@ -2190,13 +2180,13 @@ def getUnfold(k_factor_lookup):
                         #for newFace in theFaceList:
                           #Part.show(newFace)
                     else:
-                      
+
                       try:
                           TheSolid = Part.Solid(newShell)
                           solidTime = time.clock()
-                          FreeCAD.Console.PrintLog("time to make the solid: "+ str(solidTime - unfoldTime) + "\n")
+                          FreeCAD.Console.PrintLog("Time to make the solid: "+ str(solidTime - unfoldTime) + "\n")
                       except:
-                          FreeCAD.Console.PrintLog("couldn't make a solid, show only a shell, Faces in List: "+ str(len(theFaceList)) +"\n")
+                          FreeCAD.Console.PrintLog("Couldn't make a solid, show only a shell, Faces in List: "+ str(len(theFaceList)) +"\n")
                           resPart = newShell
                           #Part.show(newShell)
                           showTime = time.clock()
@@ -2206,13 +2196,13 @@ def getUnfold(k_factor_lookup):
                           cleanSolid = TheSolid.removeSplitter()
                           #Part.show(cleanSolid)
                           resPart = cleanSolid
-                          
+
                         except:
                           #Part.show(TheSolid)
                           resPart = TheSolid
                         showTime = time.clock()
                         FreeCAD.Console.PrintLog("Show time: "+ str(showTime - solidTime) + " total time: "+ str(showTime - startzeit) + "\n")
-              
+
               if TheTree.error_code is not None:
                 if (TheTree.error_code == 1):
                     FreeCAD.Console.PrintError("Error at Face"+ str(TheTree.failed_face_idx+1) + "\n")
@@ -2236,9 +2226,9 @@ def getUnfold(k_factor_lookup):
                      " at Face"+ str(TheTree.failed_face_idx+1) + "\n")
                     QtGui.QMessageBox.information(mw,"Error",unfold_error[TheTree.error_code])
               else:
-                FreeCAD.Console.PrintLog("unfold successful\n")
-    
-                      
+                FreeCAD.Console.PrintLog("Unfold successful\n")
+
+
             else:
               mw=FreeCADGui.getMainWindow()
               QtGui.QMessageBox.information(mw,"Selection Error","""Sheet UFO works only with a flat face as starter!\n Select a flat face.""")
@@ -2258,7 +2248,7 @@ def SMGetGeoSegment(e):
         else:
             return Part.Circle(e.Curve.Center,e.Curve.Axis,e.Curve.Radius)
     return None
-  
+
 def SMmakeSketchfromEdges (edges, name):
     precision = 0.1 # precision in Bspline to BiArcs
     quasidef = 0.01 #quasi deflection for Ellipses and Parabola
@@ -2278,7 +2268,7 @@ def SMmakeSketchfromEdges (edges, name):
             for edg in plines.Edges:
                 seg = SMGetGeoSegment(edg)
                 if seg is not None:
-                    geo.append(seg)            
+                    geo.append(seg)
         else:
             seg = SMGetGeoSegment(e)
             if seg is not None:
@@ -2287,11 +2277,11 @@ def SMmakeSketchfromEdges (edges, name):
     return usk
 
 
-      
+
 #############################################################################
 # Gui Part. Widget generated from UnfoldOptions.ui using pyuic
 #############################################################################
-           
+
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
 except AttributeError:
@@ -2305,7 +2295,7 @@ try:
 except AttributeError:
     def _translate(context, text, disambig):
         return QtGui.QApplication.translate(context, text, disambig)
-      
+
 # loading presets
 pg = FreeCAD.ParamGet("User parameter:BaseApp/Preferences/Mod/sheetmetal")
 if pg.IsEmpty():
@@ -2338,7 +2328,7 @@ class QColorButton(QtGui.QPushButton):
 
     def color(self):
         return self._color
-        
+
     def colorF(self):
         return QtGui.QColor(self._color).getRgbF()
 
@@ -2348,8 +2338,8 @@ class QColorButton(QtGui.QPushButton):
             dlg.setCurrentColor(QtGui.QColor('self._color'))
         if dlg.exec_():
             self.setColor(dlg.currentColor().name())
-        
-        
+
+
 import re
 
 
@@ -2398,7 +2388,7 @@ def findObjectsByTypeRecursive(doc, type):
       for _o in get_linked_objs_recursive([obj]):
         if _o.TypeId == type:
           objects.append(_o)
-  return objects 
+  return objects
 
 # Start of spreadsheet functions
 cell_regex = re.compile('^([A-Z]+)([0-9]+)$')
@@ -2417,7 +2407,7 @@ class SMUnfoldTaskPanel:
     def __init__(self):
         global genSketchChecked, genObjTransparency, manKFactor, kFactorStandard
         self.pg = FreeCAD.ParamGet("User parameter:BaseApp/Preferences/Mod/sheetmetal")
-        
+
         # Get the material name if possible
         self.material_sheet_name = None
         material_sheet_regex_str = "material_([a-zA-Z0-9_\.]+)"
@@ -2449,7 +2439,7 @@ class SMUnfoldTaskPanel:
 
         spreadsheets = findObjectsByTypeRecursive(FreeCAD.ActiveDocument, 'Spreadsheet::Sheet')
         self.availableMdsObjects = [o for o in spreadsheets if material_sheet_regex.match(o.Label)]
-                        
+
         self.obj = None
         self.form = SMUnfoldTaskPanel = QtGui.QWidget()
         self.form.setObjectName("SMUnfoldTaskPanel")
@@ -2473,7 +2463,7 @@ class SMUnfoldTaskPanel:
         self.checkSeparate.setObjectName(_fromUtf8("checkSeparate"))
         self.checkSeparate.stateChanged.connect(self.checkSketchChange)
         self.verticalLayout.addWidget(self.checkSeparate)
-        
+
         self.horizontalLayout_3 = QtGui.QHBoxLayout()
         self.BendLbl = QtGui.QLabel(self.form)
         self.BendLbl.setObjectName(_fromUtf8("BendLbl"))
@@ -2483,7 +2473,7 @@ class SMUnfoldTaskPanel:
         self.bendColor.setColor(bendSketchColor)
         self.horizontalLayout_3.addWidget(self.bendColor)
         self.verticalLayout.addLayout(self.horizontalLayout_3)
-        
+
         self.horizontalLayout_4 = QtGui.QHBoxLayout()
         self.InternalLbl = QtGui.QLabel(self.form)
         self.InternalLbl.setObjectName(_fromUtf8("InternalLbl"))
@@ -2493,11 +2483,11 @@ class SMUnfoldTaskPanel:
         self.internalColor.setColor(intSketchColor)
         self.horizontalLayout_4.addWidget(self.internalColor)
         self.verticalLayout.addLayout(self.horizontalLayout_4)
-        
-        # Material Definition Sheet selection 
-        # TODO: This control currently extends the "MDS assignment (the 
-        # label renaming hack)". However, in the future (when Propageted Properties 
-        # are available) the same control will use a propagated property of the 
+
+        # Material Definition Sheet selection
+        # TODO: This control currently extends the "MDS assignment (the
+        # label renaming hack)". However, in the future (when Propageted Properties
+        # are available) the same control will use a propagated property of the
         # selected object as the information storage (instead of renaming the label)
         self.materalDefinitionSheetLayout = QtGui.QHBoxLayout()
         self.materalDefinitionSheetLayout.setObjectName(_fromUtf8("materalDefinitionSheetLayout"))
@@ -2517,7 +2507,7 @@ class SMUnfoldTaskPanel:
 
         self.verticalLayout.addLayout(self.materalDefinitionSheetLayout)
 
-        # Manual K-factor selection 
+        # Manual K-factor selection
         self.horizontalLayout = QtGui.QHBoxLayout()
         self.horizontalLayout.setSizeConstraint(QtGui.QLayout.SetDefaultConstraint)
         self.horizontalLayout.setObjectName(_fromUtf8("horizontalLayout"))
@@ -2548,8 +2538,8 @@ class SMUnfoldTaskPanel:
         default_k_factor = float(self.pg.GetString('manualKFactor') or 0.40)
         self.kFactSpin.setProperty("value", default_k_factor)
         self.kFactSpin.setObjectName(_fromUtf8("kFactSpin"))
-        self.horizontalLayout.addWidget(self.kFactSpin) 
-        # ANSI/DIN selection        
+        self.horizontalLayout.addWidget(self.kFactSpin)
+        # ANSI/DIN selection
         self.kfactorAnsi = QtGui.QRadioButton(SMUnfoldTaskPanel)
         self.kfactorAnsi.setObjectName(_fromUtf8("kfactorAnsi"))
         self.horizontalLayout.addWidget(self.kfactorAnsi)
@@ -2565,7 +2555,7 @@ class SMUnfoldTaskPanel:
         self.horizontalLayout_2.setObjectName(_fromUtf8("horizontalLayout_2"))
         self.label = QtGui.QLabel(self.form)
         self.label.setObjectName(_fromUtf8("label"))
-        self.horizontalLayout_2.addWidget(self.label)        
+        self.horizontalLayout_2.addWidget(self.label)
         self.transSpin = QtGui.QSpinBox(self.form)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Maximum, QtGui.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
@@ -2586,7 +2576,7 @@ class SMUnfoldTaskPanel:
         if bendSketchChecked:
           self.checkSeparate.setCheckState(QtCore.Qt.CheckState.Checked)
 
-        self.kFactSpin.setEnabled(False)          
+        self.kFactSpin.setEnabled(False)
         self.transSpin.setProperty("value", genObjTransparency)
 
         self.updateKfactorStandard()
@@ -2619,7 +2609,7 @@ class SMUnfoldTaskPanel:
 
     def getStandardButtons(self):
         return int(QtGui.QDialogButtonBox.Ok)
-        
+
     def mdsApplyPressed(self):
         SMMessage("INFO: Changed material of '%s' from '%s' to '%s'"
                 % (self.root_label, self.material_sheet_name, self.new_mds_name))
@@ -2664,7 +2654,7 @@ class SMUnfoldTaskPanel:
             i += 1
 
         self.availableMds.setCurrentIndex(curr)
-        
+
     def updateKfactorStandard(self, transient_std=None):
         global kFactorStandard
         if transient_std is None:
@@ -2691,7 +2681,7 @@ class SMUnfoldTaskPanel:
         bendSketchChecked = self.checkSeparate.isChecked()
         bendSketchColor = self.bendColor.color()
         intSketchColor = self.internalColor.color()
-        
+
         ##print(self.checkSeparate.isChecked())
         pg = FreeCAD.ParamGet("User parameter:BaseApp/Preferences/Mod/sheetmetal")
         if bendSketchChecked:
@@ -2706,7 +2696,7 @@ class SMUnfoldTaskPanel:
         pg.SetString("bendColor",bendSketchColor)
         pg.SetString("genColor",genSketchColor)
         pg.SetString("intColor",intSketchColor)
-                
+
         if self.checkKfact.isChecked():
             if self.kfactorAnsi.isChecked():
                 kFactorStandard = 'ansi'
@@ -2714,7 +2704,7 @@ class SMUnfoldTaskPanel:
                 kFactorStandard = 'din'
             else:
                 SMErrorBox("K-factor standard must be explicitly selected")
-                return        
+                return
             pg.SetString("kFactorStandard", kFactorStandard)
             manKFactor = self.kFactSpin.value()
             self.pg.SetString('manualKFactor', str(manKFactor))
@@ -2722,7 +2712,7 @@ class SMUnfoldTaskPanel:
             self.setMds(self.getManualKFactorString(manKFactor, kFactorStandard))
         else:
             manKFactor = None
-            kFactorStandard = None 
+            kFactorStandard = None
             self.updateKfactorStandard()
             if self.new_mds_name != self.material_sheet_name:
                 SMErrorBox("Please 'Apply' your new Material Definition Sheet name first.")
@@ -2741,16 +2731,16 @@ class SMUnfoldTaskPanel:
 
             key_cell = None
             value_cell = None
-            options_cell = None 
+            options_cell = None
             for cell in get_cells(lookup_sheet):
                 if lookup_sheet.get(cell) == 'Radius / Thickness':
-                    key_cell = cell 
+                    key_cell = cell
                 if lookup_sheet.get(cell) == 'K-factor':
-                    value_cell = cell                     
+                    value_cell = cell
                 if lookup_sheet.get(cell) == 'Options':
-                    options_cell = cell 
+                    options_cell = cell
                 if key_cell is not None and value_cell is not None and options_cell is not None:
-                    break 
+                    break
 
             lookup_sheet_err = None
             if key_cell is None:
@@ -2770,28 +2760,28 @@ class SMUnfoldTaskPanel:
 
             [key_column_name, key_column_row] = get_cell_tuple(key_cell)
             value_column_name = get_cell_tuple(value_cell)[0]
-                
-            # Build K-factor lookup table 
+
+            # Build K-factor lookup table
             k_factor_lookup = {}
             for i in range(key_column_row + 1, 1000):
                 try:
                     key = float(lookup_sheet.get(key_column_name + str(i)))
                 except:
-                    break            
+                    break
                 value = float(lookup_sheet.get(value_column_name + str(i)))
 
                 #SMMessage("Found key/value: %f : %f" % (key, value))
-                k_factor_lookup[key] = value 
-            
-            # Get the options 
+                k_factor_lookup[key] = value
+
+            # Get the options
             # ----------------
-            
+
             # Ignore any saved K-factor standard settings when using a M.D.S.
-            # because user might be using a third party library that depends 
-            # on a different K-factor standard, so project might contain mixed 
-            # K-factor standards. 
-            kFactorStandard = None  
-            
+            # because user might be using a third party library that depends
+            # on a different K-factor standard, so project might contain mixed
+            # K-factor standards.
+            kFactorStandard = None
+
             [opt_col, opt_row] = get_cell_tuple(options_cell)
             i = 1
             while True:
@@ -2804,19 +2794,19 @@ class SMUnfoldTaskPanel:
                     value = lookup_sheet.get(opt_value_cell)
                 except:
                     break
-                    
+
                 #print "Found option: ", option, ":", value
                 if option == 'K-factor standard':
                     if value in ["ANSI", "DIN"]:
                         kFactorStandard = value.lower()
                     else:
                         SMErrorBox('Invalid K-factor standard: %s \nin %s' % (value, self.material_sheet_name))
-                        return                        
-                
+                        return
+
             if kFactorStandard is None:
                 SMErrorBox("'K-factor standard' option is required (ANSI or DIN) in %s" % self.material_sheet_name)
                 return
-            
+
             SMMessage("Obtained K-factor lookup table is:", k_factor_lookup)
         elif not self.checkKfact.isChecked():
             msg = "Unfold operation needs to know K-factor value(s) to be used."
@@ -2830,7 +2820,7 @@ class SMUnfoldTaskPanel:
             k_factor_lookup = {}  # manual value will be used
 
         """
-        # For debugging purposes 
+        # For debugging purposes
         k_factor_lookup = {
             1: 0.25,
             3: 0.35,
@@ -2902,7 +2892,7 @@ class SMUnfoldTaskPanel:
                   uGeo = sanitizeSkBsp(sname,knot_tolerance)
                   owEdgs = sku.Shape.Edges
                   faceEdgs = sku.Shape.Edges
-                  doc.recompute()                
+                  doc.recompute()
                 #faceEdgs = newface.Shape.Edges
                 doc.removeObject(newface.Name)
                 #Part.show(newface)
@@ -2913,7 +2903,7 @@ class SMUnfoldTaskPanel:
                   knot_tolerance = 0.001
                   sname = sko.Name
                   print(sname,sku.Label)
-                  uGeo = sanitizeSkBsp(sname,knot_tolerance) 
+                  uGeo = sanitizeSkBsp(sname,knot_tolerance)
                 intEdgs = []; idx = []
                 for i, e in enumerate(faceEdgs):
                   for oe in owEdgs:
@@ -2941,7 +2931,7 @@ class SMUnfoldTaskPanel:
         doc.recompute()
         FreeCAD.ActiveDocument.recompute()
         return True
-        
+
     def generateSketch(self, edges, name, color):
         docG = FreeCADGui.ActiveDocument
         p = Part.makeCompound(edges)
@@ -2959,21 +2949,21 @@ class SMUnfoldTaskPanel:
 
     def getStandardButtons(self):
         return int(QtGui.QDialogButtonBox.Ok) + int(QtGui.QDialogButtonBox.Cancel)
-        
+
     def checkKfactChange(self):
         checked = self.checkKfact.isChecked()
         if not checked and not self.checkUseMds.isChecked():
             # not allowed to uncheck unless "Use MDS" box is checked
             # (radio-button behavior)
             # FIXME: NOT WORKING! Why? >>See .clicked.connect note<< -> self.checkKfact.setChecked(True)
-            # return 
+            # return
             pass
         self.kFactSpin.setEnabled(checked)
         self.kfactorAnsi.setEnabled(checked)
         self.kfactorDin.setEnabled(checked)
         if checked:
             self.checkUseMds.setChecked(False)
-        
+
     def checkUseMdsChange(self):
         self.populateMdsList()
 
@@ -2981,18 +2971,18 @@ class SMUnfoldTaskPanel:
         self.checkSeparate.setEnabled(self.checkSketch.isChecked())
         #self.genColor.setEnabled(self.checkSketch.isChecked())
         #self.bendColor.setEnabled(self.checkSketch.isChecked() and self.checkSeparate.isChecked())
-        
+
     def retranslateUi(self):
-        self.form.setWindowTitle(_translate("SheetMetal", "Unfold sheet metal object", None))
-        self.checkSketch.setText(_translate("SheetMetal", "Generate projection sketch", None))
+        self.form.setWindowTitle(_translate("SheetMetal",   "Unfold sheet metal object", None))
+        self.checkSketch.setText(_translate("SheetMetal",   "Generate projection sketch", None))
         self.checkSeparate.setText(_translate("SheetMetal", "Separate projection layers", None))
-        self.checkKfact.setText(_translate("SheetMetal", "Manual K-factor", None))
-        self.label.setText(_translate("SheetMetal", "Unfold object transparency", None))
-        self.transSpin.setSuffix(_translate("SheetMetal", "%", None))
-        self.BendLbl.setText(_translate("SheetMetal", "    Bend lines color", None))
-        self.InternalLbl.setText(_translate("SheetMetal", "    Internal lines color", None))
-        self.kfactorAnsi.setText(_translate("SheetMetal", "ANSI", None))
-        self.kfactorDin.setText(_translate("SheetMetal", "DIN", None))
+        self.checkKfact.setText(_translate("SheetMetal",    "Manual K-factor", None))
+        self.label.setText(_translate("SheetMetal",         "Unfold object transparency", None))
+        self.transSpin.setSuffix(_translate("SheetMetal",   "%", None))
+        self.BendLbl.setText(_translate("SheetMetal",       "    Bend lines color", None))
+        self.InternalLbl.setText(_translate("SheetMetal",   "    Internal lines color", None))
+        self.kfactorAnsi.setText(_translate("SheetMetal",   "ANSI", None))
+        self.kfactorDin.setText(_translate("SheetMetal",    "DIN", None))
         self.checkUseMds.setText(_translate("SMUnfoldTaskPanel", "Use Material Definition Sheet", None))
         self.mdsApply.setText(_translate("SMUnfoldTaskPanel", "Apply", None))
 
@@ -3012,7 +3002,7 @@ class SMUnfoldCommandClass():
         taskd = SMUnfoldTaskPanel()
     except ValueError as e:
         SMErrorBox(e.args[0])
-        return 
+        return
 
     pg = FreeCAD.ParamGet("User parameter:BaseApp/Preferences/Mod/sheetmetal")
     if pg.GetBool("bendSketch"):
@@ -3028,7 +3018,7 @@ class SMUnfoldCommandClass():
     taskd.internalColor.setColor(pg.GetString("intColor"))
     FreeCADGui.Control.showDialog(taskd)
     return
-   
+
   def IsActive(self):
     if len(Gui.Selection.getSelection()) != 1 or len(Gui.Selection.getSelectionEx()[0].SubElementNames) != 1:
       return False
@@ -3056,7 +3046,7 @@ class SMUnfoldUnattendedCommandClass():
         taskd = SMUnfoldTaskPanel()
     except ValueError as e:
         SMErrorBox(e.args[0])
-        return 
+        return
 
     pg = FreeCAD.ParamGet("User parameter:BaseApp/Preferences/Mod/sheetmetal")
     if pg.GetBool("bendSketch"):
