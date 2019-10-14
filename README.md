@@ -88,7 +88,9 @@ Starting from FreeCAD 0.17 it can be installed via the [Addon Manager](https://g
 * V0.2.04 21 Sep 2018:  Fix K-Factor bug
 * V0.2.03 20 Sep 2018:  Merge [@easyw][easyw] PR: Add separate color for inner sketch lines. (issue [#46][46]). Change Gui layout
 * V0.2.02 15 Sep 2018:  Add color selection for unfold sketches (issue [#41][41])
-* V0.2.01 15 Sep 2018:  Fix bug when not generating sketch (issue [#42][42]). Support separate color for bend lines (issue [#41][41])  
+* V0.2.01 15 Sep 2018:  
+  * Fix bug when not generating sketch (issue [#42][42])  
+  * Support separate color for bend lines (issue [#41][41])  
 * V0.2.00 04 Sep 2018:  Make SheetMetal compatible with Python 3 and QT 5
 * V0.1.40 20 Aug 2018:  Merge [Ulrich][ulrich]'s V20 unfolder script - supports many more sheet metal cases and more robust
 * V0.1.32 25 Jun 2018:  New feature: Option to separately unfold bends. Thank you [@jaisejames][jaisejames]!
