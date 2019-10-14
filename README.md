@@ -106,10 +106,10 @@ Starting from FreeCAD 0.17 it can be installed via the [Addon Manager](https://g
   * Setting miter angle now works with unfold command  
 * V0.1.13 10 May 2018:  Change unbending method so shape refinement can work.
 * V0.1.12 25 Mar 2018:  Allow negative bend angles. Change XPM icons to SVG
-* V0.1.11 01 Feb 2018:  fix Issue #23: when there is a gap only on one side, an extra face is added to the other
+* V0.1.11 01 Feb 2018:  Fix Issue [#23][23]: when there is a gap only on one side, an extra face is added to the other
 * V0.1.10 11 Nov 2017:  Add miter option to bends. By [@jaisejames][jaisejames]
 * V0.1.02 22 Jun 2017:  Fix nesting bug, when saving and loading file
-* V0.1.01 03 Mar 2017:  Support version 0.17. (starting from build 10423)
+* V0.1.01 03 Mar 2017:  Support version 0.17 (starting from build 10423)
 * V0.0.13 07 Sep 2015:  Add negative gaps for extrude function. (per deveee request)
 * V0.012  07 Sep 2015:  Fix issue submitted by deveee
 * V0.010  13 Jun 2015:  Add [Ulrich][ulrich]'s great unfolding tool. Thanks!!!
@@ -121,6 +121,7 @@ Starting from FreeCAD 0.17 it can be installed via the [Addon Manager](https://g
 [ceremcem]: https://github.com/ceremcem
 [jaisejames]: https://github.com/jaisekjames
 [easyw]: https://github.com/easyw
+[23]: https://github.com/shaise/FreeCAD_SheetMetal/issues/23
 [30]: https://github.com/shaise/FreeCAD_SheetMetal/issues/30
 [33]: https://github.com/shaise/FreeCAD_SheetMetal/issues/33
 [41]: https://github.com/shaise/FreeCAD_SheetMetal/issues/41
