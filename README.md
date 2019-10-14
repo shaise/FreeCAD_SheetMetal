@@ -73,44 +73,56 @@ Starting from FreeCAD 0.17 it can be installed via the [Addon Manager](https://g
 * FreeCAD Forum announcement/discussion [thread](https://forum.freecadweb.org/viewtopic.php?f=10&t=11303) 
 
 #### Release notes: 
-* V0.2.31 24 Apr 2019:  Added better K factor control by ceremcem. Thank you!
-* V0.2.30 30 Mar 2019:  Added Fold-on-sketch-line tool by jaisejames. Thank you!
-* V0.2.22 24 Jan 2019:  Fix some typos, Issue #54
-* V0.2.21 20 Jan 2019:  Fix some typos, Issue #52
-* V0.2.20 10 Jan 2019:  Added sheetmetal generation from base wire by jaisejames. Thank you!
-* V0.2.10 01 Nov 2018:  Merge new features by jaisejames. Thank you!
-** Added Edge based selection
-** Added Auto-mitering
-** Added Sketch based Wall
-** Added Sketch based Guided wall
-** Added Relief factor
-** Added Material Inside, thk inside, Offset options
+* V0.2.31 24 Apr 2019:  Added better K factor control by [@ceremcem][ceremcem]. Thank you!
+* V0.2.30 30 Mar 2019:  Added Fold-on-sketch-line tool by [@jaisejames][jaisejames]. Thank you!
+* V0.2.22 24 Jan 2019:  Fix some typos, Issue [#54][54]
+* V0.2.21 20 Jan 2019:  Fix some typos, Issue [#52][52]
+* V0.2.20 10 Jan 2019:  Added sheetmetal generation from base wire by [@jaisejames][jaisejames]. Thank you!
+* V0.2.10 01 Nov 2018:  Merge new features by [@jaisejames][jaisejames]. Thank you!  
+  * Added Edge based selection
+  * Added Auto-mitering
+  * Added Sketch based Wall
+  * Added Sketch based Guided wall
+  * Added Relief factor
+  * Added Material Inside, thk inside, Offset options
 * V0.2.04 21 Sep 2018:  Fix K-Factor bug
-* V0.2.03 20 Sep 2018:  Merge easyw PR: Add separate color for inner sketch lines. (issue #46). Change Gui layout
-* V0.2.02 15 Sep 2018:  Add color selection for unfold sketches (issue #41)
-* V0.2.01 15 Sep 2018:  Fix bug when not generating sketch (issue #42). Support separate color for bend lines (issue #41)
+* V0.2.03 20 Sep 2018:  Merge [@easyw][easyw] PR: Add separate color for inner sketch lines. (issue [#46][46]). Change Gui layout
+* V0.2.02 15 Sep 2018:  Add color selection for unfold sketches (issue [#41][41])
+* V0.2.01 15 Sep 2018:  Fix bug when not generating sketch (issue [#42][42]). Support separate color for bend lines (issue [#41][41])  
 * V0.2.00 04 Sep 2018:  Make SheetMetal compatible with Python 3 and QT 5
-* V0.1.40 20 Aug 2018:  Merge Ulrich's V20 unfolder script - supports many more sheet metal cases and more robust
-* V0.1.32 25 Jun 2018:  New feature: Option to separately unfold bends. Thank you jaisejames!
+* V0.1.40 20 Aug 2018:  Merge [Ulrich][ulrich]'s V20 unfolder script - supports many more sheet metal cases and more robust
+* V0.1.32 25 Jun 2018:  New feature: Option to separately unfold bends. Thank you [@jaisejames][jaisejames]!
 * V0.1.31 25 Jun 2018:  Support ellipses and parabolas, Try standard sketch conversion first
-* V0.1.30 25 Jun 2018:  <br/>
-New feature: Generate unfold sketch with folding marks. Issue #33. Thank you easyw-fc! <br/>
-New feature: K-Factor foe unfolding is now editable. Issue #30 <br/>
+* V0.1.30 25 Jun 2018:  
+  * New feature: Generate unfold sketch with folding marks. Issue [#33][33]. Thank you [@easyw][easyw]!  
+  * New feature: K-Factor foe unfolding is now editable. Issue [#30][30]  
 * V0.1.21 19 Jun 2018:  Fixed back negative bend angles, restrict miter to +/- 80 degrees
-* V0.1.20 19 Jun 2018:  <br/>
-Add bend extension to make the bended wall wider<br/>
-Add relief shape selection (rounded or flat)<br/>
-Double clicking on a bent in the tree view, brings a dialog to select different faces (good when editing the base object breaks the bend, and new faces need to be selected)<br/>
-Setting miter angle now works with unfold command<br/>
-Thank you jaisejames for all these new features!!
+* V0.1.20 19 Jun 2018: (Thank you [@jaisejames][jaisejames] for all these new features!!)
+  * Add bend extension to make the bended wall wider  
+  * Add relief shape selection (rounded or flat)  
+  * Double clicking on a bent in the tree view, brings a dialog to select different faces (good when editing the base object breaks the bend, and new faces need to be selected)  
+  * Setting miter angle now works with unfold command  
 * V0.1.13 10 May 2018:  Change unbending method so shape refinement can work.
 * V0.1.12 25 Mar 2018:  Allow negative bend angles. Change XPM icons to SVG
 * V0.1.11 01 Feb 2018:  fix Issue #23: when there is a gap only on one side, an extra face is added to the other
-* V0.1.10 11 Nov 2017:  Add miter option to bends. By @jaisejames
+* V0.1.10 11 Nov 2017:  Add miter option to bends. By [@jaisejames][jaisejames]
 * V0.1.02 22 Jun 2017:  Fix nesting bug, when saving and loading file
-* V0.1.01 03 Mar 2017:  Support version 0.17. (strting from build 10423)
+* V0.1.01 03 Mar 2017:  Support version 0.17. (starting from build 10423)
 * V0.0.13 07 Sep 2015:  Add negative gaps for extrude function. (per deveee request)
 * V0.012  07 Sep 2015:  Fix issue submitted by deveee
-* V0.010  13 Jun 2015:  Add Ulrich's great unfolding tool. Thanks!!!
+* V0.010  13 Jun 2015:  Add [Ulrich][ulrich]'s great unfolding tool. Thanks!!!
 * V0.002  12 Jun 2015:  Fix Save/Load issues  
 * V0.001  11 Jun 2015:  Initial version
+
+
+[ulrich]: https://github.com/ulrich1a
+[ceremcem]: https://github.com/ceremcem
+[jaisejames]: https://github.com/jaisekjames
+[easyw]: https://github.com/easyw
+[30]: https://github.com/shaise/FreeCAD_SheetMetal/issues/30
+[33]: https://github.com/shaise/FreeCAD_SheetMetal/issues/33
+[41]: https://github.com/shaise/FreeCAD_SheetMetal/issues/41
+[42]: https://github.com/shaise/FreeCAD_SheetMetal/issues/42
+[46]: https://github.com/shaise/FreeCAD_SheetMetal/issues/46
+[52]: https://github.com/shaise/FreeCAD_SheetMetal/issues/52
+[54]: https://github.com/shaise/FreeCAD_SheetMetal/issues/54
