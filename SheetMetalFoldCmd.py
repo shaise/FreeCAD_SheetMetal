@@ -294,9 +294,9 @@ class AddFoldWallCommandClass():
   """Add Wall command"""
 
   def GetResources(self):
-    return {'Pixmap'  : os.path.join( iconPath , 'AddFoldWall.svg') , # the name of a svg file available in the resources
-            'MenuText': "Fold a Wall" ,
-            'ToolTip' : "Fold a wall of metal sheet"}
+    return {'Pixmap'  : os.path.join( iconPath , 'AddFoldWall.svg'), # the name of a svg file available in the resources
+            'MenuText': QtCore.QT_TRANSLATE_NOOP('SheetMetal','Fold a Wall'),
+            'ToolTip' : QtCore.QT_TRANSLATE_NOOP('SheetMetal','Fold a wall of metal sheet')}
  
   def Activated(self):
     doc = FreeCAD.ActiveDocument
