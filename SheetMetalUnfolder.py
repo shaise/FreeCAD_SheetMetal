@@ -2994,8 +2994,8 @@ class SMUnfoldCommandClass():
     __dir__ = os.path.dirname(__file__)
     iconPath = os.path.join( __dir__, 'Resources', 'icons' )
     return {'Pixmap'  : os.path.join( iconPath , 'SMUnfold.svg'), # the name of a svg file available in the resources
-            'MenuText': "Unfold",
-            'ToolTip' : "Flatten folded sheet metal object"}
+            'MenuText': QtCore.QT_TRANSLATE_NOOP('SheetMetal','Unfold'),
+            'ToolTip' : QtCore.QT_TRANSLATE_NOOP('SheetMetal','Flatten folded sheet metal object')}
 
   def Activated(self):
     try:
@@ -3037,8 +3037,8 @@ class SMUnfoldUnattendedCommandClass():
     __dir__ = os.path.dirname(__file__)
     iconPath = os.path.join( __dir__, 'Resources', 'icons' )
     return {'Pixmap'  : os.path.join( iconPath , 'SMUnfoldUnattended.svg'), # the name of a svg file available in the resources
-            'MenuText': "Unattended Unfold",
-            'ToolTip' : "Flatten folded sheet metal object with default options."}
+            'MenuText': QtCore.QT_TRANSLATE_NOOP('SheetMetal','Unattended Unfold'),
+            'ToolTip' : QtCore.QT_TRANSLATE_NOOP('SheetMetal','Flatten folded sheet metal object with default options')}
 
   def Activated(self):
     SMMessage("Running unattended unfold...")

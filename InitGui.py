@@ -38,7 +38,7 @@ class SMWorkbench (Workbench):
     global SHEETMETALWB_VERSION
     
     MenuText = 'Sheet Metal '+SHEETMETALWB_VERSION
-    ToolTip = "Sheet metal workbench"
+    ToolTip = QtCore.QT_TRANSLATE_NOOP('SheetMetal','Sheet Metal workbench allows for designing and unfolding sheet metal parts')
     Icon = main_smWB_Icon
     
     def Initialize(self):
