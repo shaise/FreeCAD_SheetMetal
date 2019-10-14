@@ -1,20 +1,20 @@
 # FreeCAD SheetMetal Workbench
 A simple sheet metal workbench for FreeCAD
 
-![Demo Workflow](../master/Resources/SheetMetal4.gif)
+![Demo Workflow](Resources/SheetMetal4.gif)
 
 #### Developers:
 * Folding tools:  
-                  - Shai Seger [@shaise](https://github.com/shaise)  
-                  - [@jaisekjames](https://github.com/jaisekjames)  
-                  - Cerem Cem ASLAN [@ceremcem](https://github.com/ceremcem)  
-                  - Based and inspired by Javier Martínez's ([@JMG1](https://github.com/JMG1)) code
+  > [@shaise](https://github.com/shaise) Shai Seger  
+  > [@jaisekjames](https://github.com/jaisekjames)  
+  > [@ceremcem](https://github.com/ceremcem) Cerem Cem ASLAN  
+  > ([@JMG1](https://github.com/JMG1)) Based and inspired by Javier Martínez's code
 * Unfolding tool:  
-                  - Copyright 2014 by Ulrich Brammer <ulrich1a[at]users.sourceforge.net> AKA [@ulrich1a](https://github.com/ulrich1a)
+  > Copyright 2014 by Ulrich Brammer <ulrich1a[at]users.sourceforge.net> AKA [@ulrich1a](https://github.com/ulrich1a)
 
 # Terminology 
 
-![Terminology](./tools/terminology.png)
+![Terminology](tools/terminology.png)
 
 # Test case 
 
@@ -29,7 +29,7 @@ As a simple test case, consider the following example:
 * Output:  
     - End to mold-line distance: 50mm  
 
-You can find a simple calculator in `./tools/calc-unfold.py`. 
+You can find a simple calculator in [`tools/calc-unfold.py`](tools/calc-unfold.py). 
 
 # Material Definition Sheet 
 
