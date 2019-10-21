@@ -59,7 +59,8 @@ To use the Material Definition Sheet, follow the steps:
 4. Use "Unfold Task Panel" to assign the material sheet.
 5. Unfold as usual.
 
-[Here](https://user-images.githubusercontent.com/6639874/56642679-a749f600-6680-11e9-944a-82e447d9dc4e.gif) is a screencast in action.
+### Screencast
+![Screencast](https://user-images.githubusercontent.com/6639874/56642679-a749f600-6680-11e9-944a-82e447d9dc4e.gif) 
  
 #### Installation
 For installation and how to use, please visit:  
