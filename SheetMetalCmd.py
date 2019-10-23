@@ -50,6 +50,7 @@ def smIsPartDesign(obj):
 def smIsOperationLegal(body, selobj):
     #FreeCAD.Console.PrintLog(str(selobj) + " " + str(body) + " " + str(smBelongToBody(selobj, body)) + "\n")
     if smIsPartDesign(selobj) and not smBelongToBody(selobj, body):
+        # how to add QtCore.QT_TRANSLATE_NOOP() to this ?
         smWarnDialog("The selected geometry does not belong to the active Body.\nPlease make the container of this item active by\ndouble clicking on it.")
         return False
     return True    
@@ -689,6 +690,7 @@ class SMBendWall:
     obj.addProperty("App::PropertyFloatList", "bendAList", "ParametersEx3", "Bend angle List")
     obj.Proxy = self
 
+  # Add translations here?
   def execute(self, fp):
     '''"Print a short message when doing a recomputation, this method is mandatory" '''
     if (not hasattr(fp,"miterangle1")):
@@ -926,11 +928,13 @@ class SMBendWallTaskPanel:
       self.obj = None
       self.form = QtGui.QWidget()
       self.form.setObjectName("SMBendWallTaskPanel")
+      # translate
       self.form.setWindowTitle("Binded faces/edges list")
       self.grid = QtGui.QGridLayout(self.form)
       self.grid.setObjectName("grid")
       self.title = QtGui.QLabel(self.form)
       self.grid.addWidget(self.title, 0, 0, 1, 2)
+      # translate
       self.title.setText("Select new face(s)/Edge(s) and press Update")
 
       # tree
@@ -1083,7 +1087,8 @@ class SMExtrudeWall:
   def __init__(self, obj):
     '''"Add Wall with radius bend" '''
     selobj = Gui.Selection.getSelectionEx()[0]
-    
+
+    #transate
     obj.addProperty("App::PropertyLength","length","Parameters","Length of wall").length = 10.0
     obj.addProperty("App::PropertyDistance","gap1","Parameters","Gap from left side").gap1 = 0.0
     obj.addProperty("App::PropertyDistance","gap2","Parameters","Gap from right side").gap2 = 0.0

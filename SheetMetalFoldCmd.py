@@ -50,6 +50,7 @@ def smIsPartDesign(obj):
 def smIsOperationLegal(body, selobj):
     #FreeCAD.Console.PrintLog(str(selobj) + " " + str(body) + " " + str(smBelongToBody(selobj, body)) + "\n")
     if smIsPartDesign(selobj) and not smBelongToBody(selobj, body):
+        # how to add QtCore.QT_TRANSLATE_NOOP() to this ?
         smWarnDialog("The selected geometry does not belong to the active Body.\nPlease make the container of this item active by\ndouble clicking on it.")
         return False
     return True    
@@ -58,6 +59,7 @@ def smthk(obj, foldface) :
   normal = foldface.normalAt(0,0)
   theVol = obj.Volume
   if theVol < 0.0001:
+      # translate
       SMError("Shape is not a real 3D-object or to small for a metal-sheet!")
   else:
       # Make a first estimate of the thickness
@@ -185,7 +187,8 @@ class SMFoldWall:
   def __init__(self, obj):
     '''"Add Wall with radius bend" '''
     selobj = Gui.Selection.getSelectionEx()
-    
+
+    #translate
     obj.addProperty("App::PropertyLength","radius","Parameters","Bend Radius").radius = 1.0
     obj.addProperty("App::PropertyAngle","angle","Parameters","Bend angle").angle = 90.0
     obj.addProperty("App::PropertyLinkSub", "baseObject", "Parameters", "Base object").baseObject = (selobj[0].Object, selobj[0].SubElementNames)

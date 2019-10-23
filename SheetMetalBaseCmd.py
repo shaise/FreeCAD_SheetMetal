@@ -50,6 +50,7 @@ def smIsSketchObject(obj):
 def smIsOperationLegal(body, selobj):
     #FreeCAD.Console.PrintLog(str(selobj) + " " + str(body) + " " + str(smBelongToBody(selobj, body)) + "\n")
     if smIsSketchObject(selobj) and not smBelongToBody(selobj, body):
+        # how to add QtCore.QT_TRANSLATE_NOOP() to this ?
         smWarnDialog("The selected geometry does not belong to the active Body.\nPlease make the container of this item active by\ndouble clicking on it.")
         return False
     return True    
