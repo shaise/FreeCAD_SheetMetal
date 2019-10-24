@@ -130,3 +130,6 @@ Starting from FreeCAD 0.17 it can be installed via the [Addon Manager](https://g
 [46]: https://github.com/shaise/FreeCAD_SheetMetal/issues/46
 [52]: https://github.com/shaise/FreeCAD_SheetMetal/issues/52
 [54]: https://github.com/shaise/FreeCAD_SheetMetal/issues/54
+
+## License
+GPLv3 (see [LICENSE](LICENSE))
