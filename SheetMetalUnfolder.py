@@ -110,6 +110,11 @@ from lookup import get_val_from_range
 import Part
 import tempfile
 
+# Backward compatibility to Py2
+import sys
+if sys.version_info.major < 3:
+    import time
+    time.process_time = time.clock
 
 genSketchChecked = True
 genSketchColor = '#000080'
