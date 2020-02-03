@@ -2157,18 +2157,18 @@ def getUnfold(k_factor_lookup):
               FreeCAD.Console.PrintLog("name: "+ str(subelement) + "\n")
               f_number = int(o.SubElementNames[0].lstrip('Face'))-1
               #print f_number
-              startzeit = time.clock()
+              startzeit = time.process_time()
               TheTree = SheetTree(o.Object.Shape, f_number, k_factor_lookup) # initializes the tree-structure
               if TheTree.error_code is None:
                 TheTree.Bend_analysis(f_number, None) # traverses the shape and builds the tree-structure
-                endzeit = time.clock()
+                endzeit = time.process_time()
                 FreeCAD.Console.PrintLog("Analytical time: "+ str(endzeit-startzeit) + "\n")
 
                 if TheTree.error_code is None:
                   # TheTree.showFaces()
                   theFaceList, foldLines = TheTree.unfold_tree2(TheTree.root) # traverses the tree-structure
                   if TheTree.error_code is None:
-                    unfoldTime = time.clock()
+                    unfoldTime = time.process_time()
                     FreeCAD.Console.PrintLog("time to run the unfold: "+ str(unfoldTime - endzeit) + "\n")
                     folds = Part.Compound(foldLines)
                     #Part.show(folds, 'Fold_Lines')
@@ -2183,13 +2183,13 @@ def getUnfold(k_factor_lookup):
 
                       try:
                           TheSolid = Part.Solid(newShell)
-                          solidTime = time.clock()
+                          solidTime = time.process_time()
                           FreeCAD.Console.PrintLog("Time to make the solid: "+ str(solidTime - unfoldTime) + "\n")
                       except:
                           FreeCAD.Console.PrintLog("Couldn't make a solid, show only a shell, Faces in List: "+ str(len(theFaceList)) +"\n")
                           resPart = newShell
                           #Part.show(newShell)
-                          showTime = time.clock()
+                          showTime = time.process_time()
                           FreeCAD.Console.PrintLog("Show time: "+ str(showTime - unfoldTime) + "\n")
                       else:
                         try:
@@ -2200,7 +2200,7 @@ def getUnfold(k_factor_lookup):
                         except:
                           #Part.show(TheSolid)
                           resPart = TheSolid
-                        showTime = time.clock()
+                        showTime = time.process_time()
                         FreeCAD.Console.PrintLog("Show time: "+ str(showTime - solidTime) + " total time: "+ str(showTime - startzeit) + "\n")
 
               if TheTree.error_code is not None:
