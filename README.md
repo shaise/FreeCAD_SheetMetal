@@ -3,6 +3,10 @@ A simple sheet metal workbench for FreeCAD
 
 ![Demo Workflow](Resources/SheetMetal4.gif)
 
+### Tutorial by Joko Engineering:
+
+[![Tutorial](Resources/smvideo.jpg)](https://youtu.be/xidvQYkC4so "FreeCAD - The Elegant Sheet Metal Workbench")
+
 #### Developers:
 * Folding tools:  
   > [@shaise](https://github.com/shaise) Shai Seger  
