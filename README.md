@@ -122,7 +122,7 @@ Starting from FreeCAD 0.17 it can be installed via the [Addon Manager](https://g
 * V0.002  12 Jun 2015:  Fix Save/Load issues  
 * V0.001  11 Jun 2015:  Initial version
 
-
+[lorenz]: https://github.com/looooo
 [ulrich]: https://github.com/ulrich1a
 [ceremcem]: https://github.com/ceremcem
 [jaisejames]: https://github.com/jaisekjames
