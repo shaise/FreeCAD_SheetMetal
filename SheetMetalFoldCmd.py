@@ -62,8 +62,8 @@ def smthk(obj, foldface) :
   else:
       # Make a first estimate of the thickness
       estimated_thk = theVol/(obj.Area / 2.0)
-  p1 = foldface.CenterOfMass
-  p2 = foldface.CenterOfMass + estimated_thk * -1.3 * normal
+  p1 = foldface.Vertexes[0].Point
+  p2 = p1 + estimated_thk * -1.3 * normal
   e1 = Part.makeLine(p1, p2)
   thkedge = obj.common(e1)
   thk = thkedge.Length
