@@ -79,7 +79,8 @@ Starting from FreeCAD 0.17 it can be installed via the [Addon Manager](https://g
 * Authors webpage: http://theseger.com/projects/2015/06/sheet-metal-addon-for-freecad/  
 * FreeCAD Forum announcement/discussion [thread](https://forum.freecadweb.org/viewtopic.php?f=10&t=11303) 
 
-#### Release notes: 
+#### Release notes:
+* V0.2.33 09 Mar 2020:  Fix bend radius bug on sketch bends. Thank you Léo Flaventin!
 * V0.2.32 02 Jan 2020:  Python 3.8 update by [@looooo][lorenz]. Thank you!
 * V0.2.31 24 Apr 2019:  Added better K factor control by [@ceremcem][ceremcem]. Thank you!
 * V0.2.30 30 Mar 2019:  Added Fold-on-sketch-line tool by [@jaisejames][jaisejames]. Thank you!
