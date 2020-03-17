@@ -1055,6 +1055,7 @@ class AddWallCommandClass():
       SMBendWall(a)
       SMViewProviderFlat(a.ViewObject)
       activeBody.addObject(a)
+    FreeCADGui.Selection.clearSelection()
     doc.recompute()
     doc.commitTransaction()
     return
@@ -1155,6 +1156,7 @@ class SMExtrudeCommandClass():
       SMExtrudeWall(a)
       SMViewProviderFlat(a.ViewObject)
       activeBody.addObject(a)
+    FreeCADGui.Selection.clearSelection()
     doc.recompute()
     doc.commitTransaction()
     return
