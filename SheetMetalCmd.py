@@ -31,6 +31,10 @@ __dir__ = os.path.dirname(__file__)
 iconPath = os.path.join( __dir__, 'Resources', 'icons' )
 smEpsilon = 0.0000001
 
+# IMPORTANT: please remember to change the element map version in case of any
+# changes in modeling logic
+smElementMapVersion = 'sm1.'
+
 def smWarnDialog(msg):
     diag = QtGui.QMessageBox(QtGui.QMessageBox.Warning, 'Error in macro MessageBox', msg)
     diag.setWindowModality(QtCore.Qt.ApplicationModal)
@@ -57,7 +61,7 @@ def smIsOperationLegal(body, selobj):
 def smStrEdge(e):
     return "[" + str(e.valueAt(e.FirstParameter)) + " , " + str(e.valueAt(e.LastParameter)) + "]"
 
-def smMakeReliefFace(edge, dir, gap, reliefW, reliefD, reliefType):
+def smMakeReliefFace(edge, dir, gap, reliefW, reliefD, reliefType, op=''):
     p1 = edge.valueAt(edge.FirstParameter + gap)
     p2 = edge.valueAt(edge.FirstParameter + gap + reliefW )
     if reliefType == "Round" and reliefD > reliefW :
@@ -77,9 +81,13 @@ def smMakeReliefFace(edge, dir, gap, reliefW, reliefD, reliefType):
       e4 = Part.makeLine(p4, p1)
 
     w = Part.Wire([e1,e2,e3,e4])
-    return Part.Face(w)
+    face = Part.Face(w)
+    if hasattr(face, 'mapShapes'):
+        face.mapShapes([(edge,face)],[],op)
+    return face
  
-def smMakeFace(edge, dir, extLen, gap1 = 0.0, gap2 = 0.0, angle1 = 0.0, angle2 = 0.0):
+def smMakeFace(edge, dir, extLen, gap1 = 0.0,
+               gap2 = 0.0, angle1 = 0.0, angle2 = 0.0, op = ''):
     len1 = extLen * math.tan(math.radians(angle1))
     len2 = extLen * math.tan(math.radians(angle2))
 
@@ -97,7 +105,10 @@ def smMakeFace(edge, dir, extLen, gap1 = 0.0, gap2 = 0.0, angle1 = 0.0, angle2 =
       w = Part.makePolygon([p1,p2,p5,p1])
     else :
       w = Part.makePolygon([p1,p2,p3,p4,p1])
-    return Part.Face(w)
+    face = Part.Face(w)
+    if hasattr(face, 'mapShapes'):
+        face.mapShapes([(edge,face)],None,op)
+    return face
     
 def smRestrict(var, fromVal, toVal):
     if var < fromVal:
@@ -227,7 +238,8 @@ def smMiter(bendR = 1.0, bendA = 90.0, miterA1 = 0.0, miterA2 = 0.0, flipped = F
       if bendA > 0.0 :
         # create bend
         # narrow the wall if we have gaps
-        revFace = smMakeFace(lenEdge, thkDir, thk, (bendR + thk)*1.5, (bendR + thk)*1.5)
+        revFace = smMakeFace(lenEdge, thkDir, thk,
+                (bendR + thk)*1.5, (bendR + thk)*1.5, op='SMR')
         if revFace.normalAt(0,0) != FaceDir :
           revFace.reverse()
         bendSolid = revFace.revolve(revAxisP, revAxisV, bendA)
@@ -238,7 +250,7 @@ def smMiter(bendR = 1.0, bendA = 90.0, miterA1 = 0.0, miterA2 = 0.0, flipped = F
       #print(revAxisP,revAxisV)
 
       # narrow the wall if we have gaps
-      BendFace = smMakeFace(lenEdge, FaceDir, extLen, gap1, gap2)
+      BendFace = smMakeFace(lenEdge, FaceDir, extLen, gap1, gap2, op='SMB')
       if BendFace.normalAt(0,0) != thkDir :
         BendFace.reverse()
       WallSolid = BendFace.extrude(thkDir * thk)
@@ -522,12 +534,14 @@ def smBend(bendR = 1.0, bendA = 90.0, miterA1 = 0.0,miterA2 = 0.0, BendType = "M
     # remove relief if needed
     if reliefD > 0.0 :
       if reliefW > 0.0 and ( gap1 > 0.0 or Agap1 > 0.0 ):
-        reliefFace1 = smMakeReliefFace(MlenEdge, FaceDir* -1, gap1-reliefW, reliefW, reliefDn, reliefType)
+        reliefFace1 = smMakeReliefFace(MlenEdge, FaceDir* -1, gap1-reliefW,
+                reliefW, reliefDn, reliefType, op='SMF')
         reliefSolid1 = reliefFace1.extrude(thkDir * thk)
         #Part.show(reliefSolid1)
         CutSolids.append(reliefSolid1)
       if reliefW > 0.0 and ( gap2 > 0.0 or Agap2 > 0.0 ):
-        reliefFace2 = smMakeReliefFace(MlenEdge, FaceDir* -1, leng-gap2, reliefW, reliefDn, reliefType)
+        reliefFace2 = smMakeReliefFace(MlenEdge, FaceDir* -1, leng-gap2,
+                reliefW, reliefDn, reliefType, op='SMFF')
         reliefSolid2 = reliefFace2.extrude(thkDir * thk)
         #Part.show(reliefSolid2)
         CutSolids.append(reliefSolid2)
@@ -572,9 +586,9 @@ def smBend(bendR = 1.0, bendA = 90.0, miterA1 = 0.0,miterA2 = 0.0, BendType = "M
                     break
 
       if reliefD == 0.0 and ( gap1 == 0.1 or gap2 == 0.1 ) :
-        CutFace = smMakeFace(MlenEdge, thkDir, thk, 0, 0)
+        CutFace = smMakeFace(MlenEdge, thkDir, thk, 0, 0, op='SMC')
       else :
-        CutFace = smMakeFace(MlenEdge, thkDir, thk, gap1, gap2)
+        CutFace = smMakeFace(MlenEdge, thkDir, thk, gap1, gap2, op='SMC')
       CutSolid = CutFace.extrude(FaceDir * offset )
       CfaceSolid = Cface.extrude(thkDir * thk)
       CutSolid = CutSolid.common(CfaceSolid)
@@ -593,7 +607,7 @@ def smBend(bendR = 1.0, bendA = 90.0, miterA1 = 0.0,miterA2 = 0.0, BendType = "M
     # Produce Offset Solid
     if offset > 0.0 :
       # create wall
-      offset_face = smMakeFace(lenEdge, FaceDir, -offset)
+      offset_face = smMakeFace(lenEdge, FaceDir, -offset, op='SMO')
       OffsetSolid = offset_face.extrude(thkDir * thk)
       resultSolid = resultSolid.fuse(OffsetSolid)
 
@@ -611,7 +625,8 @@ def smBend(bendR = 1.0, bendA = 90.0, miterA1 = 0.0,miterA2 = 0.0, BendType = "M
 
     elif extLen > 0.0 :
       # create wall
-      Wall_face = smMakeFace(lenEdge, FaceDir, extLen, gap1-extend1, gap2-extend2, miterA1List[i], miterA2List[i])
+      Wall_face = smMakeFace(lenEdge, FaceDir, extLen, gap1-extend1,
+              gap2-extend2, miterA1List[i], miterA2List[i], op='SMW')
       wallSolid = Wall_face.extrude(thkDir * thk)
       #Part.show(wallSolid)
       wallSolid.rotate(revAxisP, revAxisV, bendA)
@@ -623,7 +638,7 @@ def smBend(bendR = 1.0, bendA = 90.0, miterA1 = 0.0,miterA2 = 0.0, BendType = "M
       if bendA > 0.0 :
         # create bend
         # narrow the wall if we have gaps
-        revFace = smMakeFace(lenEdge, thkDir, thk, gap1, gap2)
+        revFace = smMakeFace(lenEdge, thkDir, thk, gap1, gap2, op='SMR')
         if revFace.normalAt(0,0) != FaceDir :
           revFace.reverse()
         bendSolid = revFace.revolve(revAxisP, revAxisV, bendA)
@@ -638,7 +653,7 @@ def smBend(bendR = 1.0, bendA = 90.0, miterA1 = 0.0,miterA2 = 0.0, BendType = "M
         # create bend
         unfoldLength = ( bendR + kfactor * thk ) * bendA * math.pi / 180.0
         # narrow the wall if we have gaps
-        unfoldFace = smMakeFace(lenEdge, thkDir, thk, gap1, gap2)
+        unfoldFace = smMakeFace(lenEdge, thkDir, thk, gap1, gap2, op='SMR')
         if unfoldFace.normalAt(0,0) != FaceDir :
           unfoldFace.reverse()
         unfoldSolid = unfoldFace.extrude(FaceDir * unfoldLength)
@@ -688,6 +703,10 @@ class SMBendWall:
     obj.addProperty("App::PropertyFloatList", "LengthList", "ParametersEx3", "Length of Wall List")
     obj.addProperty("App::PropertyFloatList", "bendAList", "ParametersEx3", "Bend angle List")
     obj.Proxy = self
+
+  def getElementMapVersion(self, _fp, ver, _prop, restored):
+      if not restored:
+          return smElementMapVersion + ver
 
   def execute(self, fp):
     '''"Print a short message when doing a recomputation, this method is mandatory" '''
@@ -1036,6 +1055,7 @@ class AddWallCommandClass():
       SMBendWall(a)
       SMViewProviderFlat(a.ViewObject)
       activeBody.addObject(a)
+    FreeCADGui.Selection.clearSelection()
     doc.recompute()
     doc.commitTransaction()
     return
@@ -1090,6 +1110,10 @@ class SMExtrudeWall:
     obj.addProperty("App::PropertyLinkSub", "baseObject", "Parameters", "Base object").baseObject = (selobj.Object, selobj.SubElementNames)
     obj.Proxy = self
 
+  def getElementMapVersion(self, _fp, ver, _prop, restored):
+      if not restored:
+          return smElementMapVersion + ver
+
   def execute(self, fp):
 
     # pass selected object shape
@@ -1132,6 +1156,7 @@ class SMExtrudeCommandClass():
       SMExtrudeWall(a)
       SMViewProviderFlat(a.ViewObject)
       activeBody.addObject(a)
+    FreeCADGui.Selection.clearSelection()
     doc.recompute()
     doc.commitTransaction()
     return
