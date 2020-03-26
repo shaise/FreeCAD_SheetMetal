@@ -807,9 +807,9 @@ class SMBendWall:
       Main_Object = s
 
     fp.Shape = s
-    Gui.ActiveDocument.getObject(fp.baseObject[0].Name).Visibility = False
+    fp.baseObject[0].ViewObject.Visibility = False
     if fp.Sketch :
-      Gui.ActiveDocument.getObject(fp.Sketch.Name).Visibility = False
+      fp.Sketch.ViewObject.Visibility = False
 
 
 class SMViewProviderTree:
@@ -1125,7 +1125,7 @@ class SMExtrudeWall:
     else:
       s,f = smBend(bendA = 0.0, extLen = fp.length.Value, gap1 = fp.gap1.Value, gap2 = fp.gap2.Value, reliefW = 0.0,
                 selFaceNames = face, MainObject = Main_Object)
-    Gui.ActiveDocument.getObject(fp.baseObject[0].Name).Visibility = False
+    fp.baseObject[0].ViewObject.Visibility = False
     fp.Shape = s
     
 
