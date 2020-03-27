@@ -308,7 +308,7 @@ class AddFoldWallCommandClass():
     if not smIsOperationLegal(activeBody, selobj):
         return
     doc.openTransaction("Bend")
-    if activeBody == None or not smIsPartDesign(selobj):
+    if activeBody is None or not smIsPartDesign(selobj):
       a = doc.addObject("Part::FeaturePython","Fold")
       SMFoldWall(a)
       SMFoldViewProvider(a.ViewObject)
