@@ -518,7 +518,7 @@ class SheetTree(object):
         if (self.__thickness < estimated_thickness) or (self.__thickness > 1.9 * estimated_thickness):
           self.error_code = 3
           self.failed_face_idx = f_idx
-          FreeCAD.Console.PrintLog("estimated thickness: " + str(estimated_thickness) + " measured thickness: " + self.__thickness + "\n")
+          FreeCAD.Console.PrintLog("estimated thickness: " + str(estimated_thickness) + " measured thickness: " + str(self.__thickness) + "\n")
           Part.show(lLine, 'Measurement_Thickness_trial')
 
 
