@@ -2623,7 +2623,7 @@ class SMUnfoldTaskPanel:
         self.mdsApply.setEnabled(False)
 
     def setMds(self, mds_name):
-        if mds_name is None:
+        if mds_name is None or not self.checkUseMds.isChecked():
             self.root_obj.Label = self.root_label
         else:
             self.root_obj.Label = "%s_%s" % (self.root_label, mds_name)
