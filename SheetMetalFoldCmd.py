@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 ###################################################################################
 #
-#  SheetMetalCmd.py
+#  SheetMetalFoldCmd.py
 #  
 #  Copyright 2015 Shai Seger <shaise at gmail dot com>
 #  
@@ -105,6 +105,19 @@ def smFold(bendR = 1.0, bendA = 90.0, kfactor = 0.45, invertbend = False, flippe
       revAxisP = edge.valueAt(edge.FirstParameter)
       revAxisV = edge.valueAt(edge.LastParameter) - edge.valueAt(edge.FirstParameter)
       revAxisV.normalize()
+
+      #To check face iversion on BOPTool Split
+      face1 = cutface.childShapes()[1]
+      solid1 = cutSolid.childShapes()[1]
+      checksolid = face1.childShapes()[0].common(solid1)
+      #Part.show(checksolid,"checksolid")
+
+      if not(checksolid.Faces) :
+        ca = 1
+        cb = 0
+      else :
+        ca = 0
+        cb = 1
 
       if not(invertbend) :
         face0 = cutface.childShapes()[0]
