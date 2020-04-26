@@ -109,7 +109,7 @@ def smFold(bendR = 1.0, bendA = 90.0, kfactor = 0.45, invertbend = False, flippe
       #To check face iversion on BOPTool Split
       face1 = cutface.childShapes()[1]
       solid1 = cutSolid.childShapes()[1]
-      checksolid = face1.childShapes()[0].common(solid1)
+      checksolid = face1.common(solid1)
       #Part.show(checksolid,"checksolid")
 
       if not(checksolid.Faces) :
