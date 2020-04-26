@@ -120,14 +120,14 @@ def smFold(bendR = 1.0, bendA = 90.0, kfactor = 0.45, invertbend = False, flippe
         cb = 1
 
       if not(invertbend) :
-        face0 = cutface.childShapes()[0]
-        face1 = cutface.childShapes()[1]
+        face0 = cutface.childShapes()[ca]
+        face1 = cutface.childShapes()[cb]
         solid0 = cutSolid.childShapes()[0]
         solid1 = cutSolid.childShapes()[1]
       else :
         bendA = -bendA
-        face0 = cutface.childShapes()[1]
-        face1 = cutface.childShapes()[0]
+        face0 = cutface.childShapes()[cb]
+        face1 = cutface.childShapes()[ca]
         solid0 = cutSolid.childShapes()[1]
         solid1 = cutSolid.childShapes()[0]
       #Part.show(solid0)
