@@ -69,6 +69,14 @@ def smthk(obj, foldface) :
   thk = thkedge.Length
   return thk
 
+def smCutFace(Face, obj) :
+  # find face Modified During loop
+  for face in obj.Faces :
+    face_common = face.common(Face)
+    if face_common.Faces :
+      break
+  return face
+
 def smFold(bendR = 1.0, bendA = 90.0, kfactor = 0.45, invertbend = False, flipped = False, unfold = False,
             bendlinesketch = None, selFaceNames = '', MainObject = None):
 
@@ -83,30 +91,63 @@ def smFold(bendR = 1.0, bendA = 90.0, kfactor = 0.45, invertbend = False, flippe
   if not(unfold) :
     if bendlinesketch and bendA > 0.0 :
       foldface = FoldShape.getElement(selFaceNames[0])
+      tool = bendlinesketch.Shape.copy()
       normal = foldface.normalAt(0,0)
       thk = smthk(FoldShape, foldface)
+
+      unfoldLength = ( bendR + kfactor * thk ) * bendA * math.pi / 180.0
+      neturalradius =  ( bendR + kfactor * thk ) * math.tan(math.radians(bendA / 2.0)) * 2.0
+      offsetdistance = neturalradius - unfoldLength
+      #print([neturalradius,unfoldLength,offsetdistance])
+
+      #To get facedir
+      tool_faces = tool.extrude(normal * -thk)
+      cutSolid = BOPTools.SplitAPI.slice(FoldShape, tool_faces.Faces, "Standard", 0.0)
+      #Part.show(tool_faces)
+      #Part.show(cutSolid,"cutSolid_check")
+      if not(invertbend) :
+        solid0 = cutSolid.childShapes()[0]
+      else :
+        solid0 = cutSolid.childShapes()[1]
+      cutFaceDir = smCutFace(tool_faces.Faces[0], solid0)
+      facenormal = cutFaceDir.Faces[0].normalAt(0,0)
+      #Part.show(solid0,"solid0_check")
+      #Part.show(cutFaceDir,"cutFaceDir")
+      #print(facenormal)
 
       if not(flipped) :
         offset = thk * kfactor
       else :
-        offset = thk - ( thk * kfactor )
+        offset = thk * (1 - kfactor)
 
-      tool = bendlinesketch.Shape
+      tool.translate(facenormal * offsetdistance / 2.0)
       tool_faces = tool.extrude(normal * -thk)
       #Part.show(tool_faces)
       cutSolid = BOPTools.SplitAPI.slice(FoldShape, tool_faces.Faces, "Standard", 0.0)
       cutface = BOPTools.SplitAPI.slice(foldface, tool.Edges, "Standard", 0.0)
+      #Part.show(cutSolid,"cutSolid")
+      #Part.show(cutface,"cutface")
+
       sketch = tool.copy()
       sketch.translate(normal * -offset)
       cutface.translate(normal * -offset)
-      Axis = FoldShape.common(sketch)
-      #Part.show(Axis)
+      Axis = cutface.childShapes()[0].common(sketch)
+      #Part.show(Axis,"Axis")
       edge = Axis.Edges[0]
       revAxisP = edge.valueAt(edge.FirstParameter)
       revAxisV = edge.valueAt(edge.LastParameter) - edge.valueAt(edge.FirstParameter)
       revAxisV.normalize()
 
-      #To check face iversion on BOPTool Split
+      # To check sktech line direction
+      if (normal.cross(revAxisV) - facenormal).Length > smEpsilon:
+        revAxisV = revAxisV * -1
+        #print(revAxisV)
+
+      if flipped :
+        revAxisV = revAxisV * -1
+        #print(revAxisV)
+
+     #To check face iversion on BOPTool Split
       face1 = cutface.childShapes()[1]
       solid1 = cutSolid.childShapes()[1]
       checksolid = face1.common(solid1)
@@ -125,25 +166,14 @@ def smFold(bendR = 1.0, bendA = 90.0, kfactor = 0.45, invertbend = False, flippe
         solid0 = cutSolid.childShapes()[0]
         solid1 = cutSolid.childShapes()[1]
       else :
-        bendA = -bendA
         face0 = cutface.childShapes()[cb]
         face1 = cutface.childShapes()[ca]
         solid0 = cutSolid.childShapes()[1]
         solid1 = cutSolid.childShapes()[0]
+      solid1.translate(facenormal * offsetdistance )
+      face1.translate(facenormal * offsetdistance )      
       #Part.show(solid0)
       #Part.show(solid1)
-
-      # To check sktech line direction
-      tool_copy = tool.copy()
-      if flipped :
-        tool_copy.translate(normal * -thk)
-      solid1_copy = solid1.copy()
-      solid1_copy.rotate(revAxisP, revAxisV, bendA)
-      common_edge = solid1_copy.common(tool_copy)
-      #Part.show(common_edge)
-
-      if not(common_edge.Edges) :
-        revAxisV = revAxisV * -1
 
       solid1.rotate(revAxisP, revAxisV, bendA)
       #Part.show(solid1)
@@ -151,7 +181,7 @@ def smFold(bendR = 1.0, bendA = 90.0, kfactor = 0.45, invertbend = False, flippe
       #Part.show(face1)
 
       facelist = [face0, face1]
-      joinface = BOPTools.JoinAPI.connect(facelist)
+      joinface = BOPTools.JoinAPI.connect(facelist,offsetdistance*1.2)
       #Part.show(joinface)
       filletedface = joinface.makeFillet(bendR + offset, joinface.Edges)
       #Part.show(filletedface)
