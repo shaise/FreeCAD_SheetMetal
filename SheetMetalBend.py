@@ -86,19 +86,17 @@ def smBend(thk = 1.0, radius = 1.0, selEdgeNames = '', MainObject = None):
     if filletedoffsetface.Area > filletedface.Area :
       offsetsolid1 = cutface.makeOffsetShape(-thk, 0.0, fill = True)
       #Part.show(offsetsolid1,'offsetsolid1')   
-      cutsolid = cutface.makeOffsetShape(-thk * 2.0, 0.0, fill = True)
-      #Part.show(cutsolid,'cutsolid')      
     else:    
       offsetsolid1 = cutface.makeOffsetShape(-thk, 0.0, fill = True)
       #Part.show(offsetsolid1,'offsetsolid1')
-      offsetsolid2 = cutface.makeOffsetShape(thk, 0.0, fill = True)
-      #Part.show(offsetsolid2,'offsetsolid2')
-      cutsolid = offsetsolid1.fuse(offsetsolid2)
-      #Part.show(cutsolid,'cutsolid')
-    resultSolid = resultSolid.cut(cutsolid)
-    #Part.show(resultsolid,'resultsolid')
-    resultSolid = resultSolid.fuse(offsetsolid1)
+    cutsolid = BOPTools.JoinAPI.cutout_legacy(resultSolid, offsetsolid1, 0.0)
+    #Part.show(cutsolid,'cutsolid')
+    offsetsolid1 = cutsolid.fuse(offsetsolid1)
+    #Part.show(offsetsolid1,'offsetsolid1')   
+    resultSolid = BOPTools.JoinAPI.cutout_legacy(resultSolid, offsetsolid1, 0.0)
     #Part.show(resultsolid,'resultsolid')    
+    resultSolid = resultSolid.fuse(offsetsolid1)
+    #Part.show(resultsolid,'resultsolid')   
 
   return resultSolid
 
@@ -126,7 +124,7 @@ class SMBend:
     fp.baseObject[0].ViewObject.Visibility = False
 
 
-class SMBendViewProvider:
+class SMBendViewProviderTree:
   "A View provider that nests children objects under the created one"
       
   def __init__(self, obj):
@@ -183,7 +181,62 @@ class SMBendViewProvider:
     self.Object.baseObject[0].ViewObject.Visibility=False
     self.Object.ViewObject.Visibility=True
     return False
-	  
+
+class SMBendViewProviderFlat:
+  "A View provider that nests children objects under the created one"
+      
+  def __init__(self, obj):
+    obj.Proxy = self
+    self.Object = obj.Object
+      
+  def attach(self, obj):
+    self.Object = obj.Object
+    return
+
+  def updateData(self, fp, prop):
+    return
+
+  def getDisplayModes(self,obj):
+    modes=[]
+    return modes
+
+  def setDisplayMode(self,mode):
+    return mode
+
+  def onChanged(self, vp, prop):
+    return
+
+  def __getstate__(self):
+    #        return {'ObjectName' : self.Object.Name}
+    return None
+
+  def __setstate__(self,state):
+    if state is not None:
+      import FreeCAD
+      doc = FreeCAD.ActiveDocument #crap
+      self.Object = doc.getObject(state['ObjectName'])
+
+  def claimChildren(self):
+
+    return None
+ 
+  def getIcon(self):
+    return os.path.join( iconPath , 'AddBend.svg')
+      
+  def setEdit(self,vobj,mode):
+    taskd = SMBendTaskPanel()
+    taskd.obj = vobj.Object
+    taskd.update()
+    self.Object.ViewObject.Visibility=False
+    self.Object.baseObject[0].ViewObject.Visibility=True
+    FreeCADGui.Control.showDialog(taskd)
+    return True
+
+  def unsetEdit(self,vobj,mode):
+    FreeCADGui.Control.closeDialog()
+    self.Object.baseObject[0].ViewObject.Visibility=False
+    self.Object.ViewObject.Visibility=True
+    return False 
 
 class SMBendTaskPanel:
     '''A TaskPanel for the Sheetmetal'''
@@ -295,12 +348,12 @@ class AddBendCommandClass():
     if activeBody is None or not smIsPartDesign(selobj):
       a = doc.addObject("Part::FeaturePython","Bend")
       SMBend(a)
-      SMBendViewProvider(a.ViewObject)
+      SMBendViewProviderTree(a.ViewObject)
     else:
       #FreeCAD.Console.PrintLog("found active body: " + activeBody.Name)
       a = doc.addObject("PartDesign::FeaturePython","Bend")
       SMBend(a)
-      SMBendViewProvider(a.ViewObject)
+      SMBendViewProviderFlat(a.ViewObject)
       activeBody.addObject(a)
     FreeCADGui.Selection.clearSelection()
     doc.recompute()
