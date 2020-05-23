@@ -218,7 +218,7 @@ class SMBendViewProviderFlat:
 
   def claimChildren(self):
 
-    return None
+    return []
  
   def getIcon(self):
     return os.path.join( iconPath , 'AddBend.svg')

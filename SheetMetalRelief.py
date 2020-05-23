@@ -252,7 +252,7 @@ class SMReliefViewProviderFlat:
 
   def claimChildren(self):
 
-    return None
+    return []
  
   def getIcon(self):
     return os.path.join( iconPath , 'AddRelief.svg')
