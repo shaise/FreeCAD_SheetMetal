@@ -346,12 +346,12 @@ class AddBendCommandClass():
         return
     doc.openTransaction("Add Bend")
     if activeBody is None or not smIsPartDesign(selobj):
-      a = doc.addObject("Part::FeaturePython","Bend")
+      a = doc.addObject("Part::FeaturePython","SolidBend")
       SMSolidBend(a)
       SMBendViewProviderTree(a.ViewObject)
     else:
       #FreeCAD.Console.PrintLog("found active body: " + activeBody.Name)
-      a = doc.addObject("PartDesign::FeaturePython","Bend")
+      a = doc.addObject("PartDesign::FeaturePython","SolidBend")
       SMSolidBend(a)
       SMBendViewProviderFlat(a.ViewObject)
       activeBody.addObject(a)
