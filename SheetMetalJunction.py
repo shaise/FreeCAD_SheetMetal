@@ -209,10 +209,10 @@ class SMJViewProviderFlat:
     return []
  
   def getIcon(self):
-    return os.path.join( iconPath , 'AddBend.svg')
+    return os.path.join( iconPath , 'AddJunction.svg')
       
   def setEdit(self,vobj,mode):
-    taskd = SMBendTaskPanel()
+    taskd = SMJunctionTaskPanel()
     taskd.obj = vobj.Object
     taskd.update()
     self.Object.ViewObject.Visibility=False

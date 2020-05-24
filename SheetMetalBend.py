@@ -58,7 +58,7 @@ def smIsOperationLegal(body, selobj):
         return False
     return True    
  
-def smBend(thk = 1.0, radius = 1.0, selEdgeNames = '', MainObject = None):
+def smSolidBend(thk = 1.0, radius = 1.0, selEdgeNames = '', MainObject = None):
   import BOPTools.SplitFeatures, BOPTools.JoinFeatures
 
   BendR = thk + radius
@@ -100,7 +100,7 @@ def smBend(thk = 1.0, radius = 1.0, selEdgeNames = '', MainObject = None):
 
   return resultSolid
 
-class SMBend:
+class SMSolidBend:
   def __init__(self, obj):
     '''"Add Bend to Solid" '''
     selobj = Gui.Selection.getSelectionEx()[0]
@@ -118,7 +118,7 @@ class SMBend:
     '''"Print a short message when doing a recomputation, this method is mandatory" '''
     # pass selected object shape
     Main_Object = fp.baseObject[0].Shape.copy()
-    s = smBend(thk = fp.thickness.Value, radius = fp.radius.Value, selEdgeNames = fp.baseObject[1], 
+    s = smSolidBend(thk = fp.thickness.Value, radius = fp.radius.Value, selEdgeNames = fp.baseObject[1], 
                 MainObject = Main_Object)
     fp.Shape = s
     fp.baseObject[0].ViewObject.Visibility = False
@@ -347,12 +347,12 @@ class AddBendCommandClass():
     doc.openTransaction("Add Bend")
     if activeBody is None or not smIsPartDesign(selobj):
       a = doc.addObject("Part::FeaturePython","Bend")
-      SMBend(a)
+      SMSolidBend(a)
       SMBendViewProviderTree(a.ViewObject)
     else:
       #FreeCAD.Console.PrintLog("found active body: " + activeBody.Name)
       a = doc.addObject("PartDesign::FeaturePython","Bend")
-      SMBend(a)
+      SMSolidBend(a)
       SMBendViewProviderFlat(a.ViewObject)
       activeBody.addObject(a)
     FreeCADGui.Selection.clearSelection()
