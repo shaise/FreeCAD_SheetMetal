@@ -80,6 +80,7 @@ Starting from FreeCAD 0.17 it can be installed via the [Addon Manager](https://g
 * FreeCAD Forum announcement/discussion [thread](https://forum.freecadweb.org/viewtopic.php?f=10&t=11303) 
 
 #### Release notes:
+* V0.2.41 01 Jun 2020:  Added Drop down Menu
 * V0.2.40 24 May 2020:  Added added tools for conversion of solid corners to sheetmetal by [@jaisejames][jaisejames]. Thank you!
 * V0.2.34 09 Mar 2020:  Rename "my commands" context menu to sheet metal
 * V0.2.33 09 Mar 2020:  Fix bend radius bug on sketch bends. Thank you Léo Flaventin!

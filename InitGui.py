@@ -32,7 +32,7 @@ smWB_icons_path =  os.path.join( smWBpath, 'Resources', 'icons')
 global main_smWB_Icon
 main_smWB_Icon = os.path.join( smWB_icons_path , 'SMLogo.svg')
 
-SHEETMETALWB_VERSION = 'V0.2.40'
+SHEETMETALWB_VERSION = 'V0.2.41'
 
 class SMWorkbench (Workbench):
  
@@ -55,7 +55,7 @@ class SMWorkbench (Workbench):
         import SheetMetalBend
         self.list = ["SMBase", "SMMakeWall", "SMExtrudeFace", "SMFoldWall", "SMUnfold", "SMMakeRelief", "SMMakeJunction", "SMMakeBend"] # A list of command names created in the line above
         self.appendToolbar("Sheet Metal",self.list) # creates a new toolbar with your commands
-        # self.appendMenu("My New Menu",self.list) # creates a new menu
+        self.appendMenu("Sheet Metal",self.list) # creates a new menu
         # self.appendMenu(["An existing Menu","My submenu"],self.list) # appends a submenu to an existing menu
  
     def Activated(self):
