@@ -2773,7 +2773,10 @@ class SMUnfoldTaskPanel:
                     key = float(lookup_sheet.get(key_column_name + str(i)))
                 except:
                     break
-                value = float(lookup_sheet.get(value_column_name + str(i)))
+                try:
+                    value = float(lookup_sheet.get(value_column_name + str(i)))
+                except ValueError:
+                    continue
 
                 #SMMessage("Found key/value: %f : %f" % (key, value))
                 k_factor_lookup[key] = value
