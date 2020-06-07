@@ -44,16 +44,16 @@ To use the Material Definition Sheet, follow the steps:
 2. Create a spreadsheet with the name of `material_foo`
 3. Create a table layout in `material_foo`, like the following (see [this table](https://user-images.githubusercontent.com/6639874/56498031-b017bc00-6508-11e9-8b14-6076513d8488.png)):
 
-    | Radius / Thickness | K-factor | | Options | | 
-    | ---| ---| --- | --- | --- |
-    | 1 | 0.38 | | K-factor standard | ANSI |
-    | 3 | 0.43 | | | |
-    | 99 | 0.5 | | | |
+    | Radius / Thickness | K-factor (ANSI) | 
+    | ---| ---| 
+    | 1 | 0.38 | 
+    | 3 | 0.43 | 
+    | 99 | 0.5 | 
     
     Notes: 
     
     1. The cell names are case/space sensitive.
-    2. Possible values for `K-factor standard` is `ANSI` or `DIN`. 
+    2. Possible values for `K-factor` is `K-factor (ANSI)` or `K-factor (DIN)`. 
     3. `Radius / Thickness` means `Radius over Thickness`. Eg. if inner radius is `1.64mm` and material thickness is `2mm` then `Radius / Thickness == 1.64/2 = 0.82` so `0.38` will be used as the K-factor. See [lookup.py](https://github.com/ceremcem/FreeCAD_SheetMetal/blob/k-factor-from-lookup/lookup.py#L46-L68) for more examples.
 
 4. Use "Unfold Task Panel" to assign the material sheet.

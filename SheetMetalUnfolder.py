@@ -2753,23 +2753,33 @@ class SMUnfoldTaskPanel:
             key_cell = None
             value_cell = None
             options_cell = None
+            kFactorStandard = None
             for cell in get_cells(lookup_sheet):
-                if lookup_sheet.get(cell) == 'Radius / Thickness':
+                content = lookup_sheet.get(cell)
+                if content == 'Radius / Thickness':
                     key_cell = cell
-                if lookup_sheet.get(cell) == 'K-factor':
-                    value_cell = cell
+                try: 
+                    m = re.search('(K-[fF]actor)\s?\(?([a-zA-Z]*)\)?', content)
+                    if m:
+                        value_cell = cell
+                        kFactorStandard = m.group(2).lower() or None
+                except:
+                    pass 
+
                 if lookup_sheet.get(cell) == 'Options':
                     options_cell = cell
-                if key_cell is not None and value_cell is not None and options_cell is not None:
-                    break
+                if key_cell is not None and value_cell is not None:
+                    if (options_cell is not None) or (kFactorStandard is not None):
+                        break
 
             lookup_sheet_err = None
             if key_cell is None:
                 lookup_sheet_err = "No cell can be found with name: 'Radius / Thickness'"
             if value_cell is None:
-                lookup_sheet_err = "No cell can be found with name: 'K-factor'"
-            if options_cell is None:
-                lookup_sheet_err = "No cell can be found with name: 'Options'"
+                lookup_sheet_err = "No cell can be found with name: 'K-factor (ANSI/DIN)'"
+            if kFactorStandard is None:
+                if options_cell is None:
+                    lookup_sheet_err = "No 'Options' column or 'K-factor (????)' cell found."
 
             if lookup_sheet_err is not None:
                 lookup_sheet_err += '<p>'
@@ -2804,28 +2814,31 @@ class SMUnfoldTaskPanel:
             # because user might be using a third party library that depends
             # on a different K-factor standard, so project might contain mixed
             # K-factor standards.
-            kFactorStandard = None
 
-            [opt_col, opt_row] = get_cell_tuple(options_cell)
-            i = 1
-            while True:
-                opt_key_cell = "%s%i" % (opt_col, opt_row + i)
-                next_col = chr(ord(opt_col) + 1)
-                opt_value_cell = "%s%i" % (next_col, opt_row + i)
-                i += 1
-                try:
-                    option = lookup_sheet.get(opt_key_cell)
-                    value = lookup_sheet.get(opt_value_cell)
-                except:
-                    break
+            if options_cell is not None:
+                [opt_col, opt_row] = get_cell_tuple(options_cell)
+                i = 1
+                while True:
+                    opt_key_cell = "%s%i" % (opt_col, opt_row + i)
+                    next_col = chr(ord(opt_col) + 1)
+                    opt_value_cell = "%s%i" % (next_col, opt_row + i)
+                    i += 1
+                    try:
+                        option = lookup_sheet.get(opt_key_cell)
+                        value = lookup_sheet.get(opt_value_cell)
+                    except:
+                        break
 
-                #print "Found option: ", option, ":", value
-                if option == 'K-factor standard':
-                    if value in ["ANSI", "DIN"]:
+                    #print "Found option: ", option, ":", value
+                    if option == 'K-factor standard':
+                        if kFactorStandard is not None: 
+                            SMErrorBox("Multiple K-factor definitions in %s", self.material_sheet_name)
+                            return 
                         kFactorStandard = value.lower()
-                    else:
-                        SMErrorBox('Invalid K-factor standard: %s \nin %s' % (value, self.material_sheet_name))
-                        return
+                    
+            if kFactorStandard not in ["ansi", "din"]:
+                SMErrorBox('Invalid K-factor standard: %s \nin %s' % (kFactorStandard, self.material_sheet_name))
+                return
 
             if kFactorStandard is None:
                 SMErrorBox("'K-factor standard' option is required (ANSI or DIN) in %s" % self.material_sheet_name)
