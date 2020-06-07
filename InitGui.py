@@ -25,6 +25,7 @@
 
 from PySide import QtCore, QtGui
 import smwb_locator
+from engineering_mode import engineering_mode_enabled
 
 smWBpath = os.path.dirname(smwb_locator.__file__)
 smWB_icons_path =  os.path.join( smWBpath, 'Resources', 'icons')
@@ -39,6 +40,7 @@ class SMWorkbench (Workbench):
     global main_smWB_Icon
     global SHEETMETALWB_VERSION
     global QtCore
+    global engineering_mode_enabled
     
     MenuText = 'Sheet Metal '+SHEETMETALWB_VERSION
     ToolTip = QtCore.QT_TRANSLATE_NOOP('SheetMetal','Sheet Metal workbench allows for designing and unfolding sheet metal parts')
@@ -51,6 +53,9 @@ class SMWorkbench (Workbench):
         import SheetMetalBaseCmd
         import SheetMetalFoldCmd        
         self.list = ["SMBase", "SMMakeWall", "SMExtrudeFace", "SMFoldWall", "SMUnfold"] # A list of command names created in the line above
+        if engineering_mode_enabled(): 
+            self.list.append("SMUnfoldUnattended")
+
         self.appendToolbar("My Commands",self.list) # creates a new toolbar with your commands
         # self.appendMenu("My New Menu",self.list) # creates a new menu
         # self.appendMenu(["An existing Menu","My submenu"],self.list) # appends a submenu to an existing menu

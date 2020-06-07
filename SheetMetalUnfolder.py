@@ -106,6 +106,7 @@ import Draft
 import Drawing
 from SheetMetalCmd import iconPath
 from lookup import get_val_from_range
+from engineering_mode import engineering_mode_enabled
 
 import Part
 import tempfile
@@ -184,7 +185,10 @@ def SMErrorBox(* args):
     message = ""
     for x in args:
         message += str(x)
-    SMError(message)
+    # Error boxes mostly use HTML tags to format. Strip the HTML tags for 
+    # better console readability. 
+    stripped_message = re.sub('<[^<]+?>', '', message)
+    SMError(stripped_message) 
     mw = FreeCADGui.getMainWindow()
     msg_box = QtGui.QMessageBox(mw)
     msg_box.setTextFormat(QtCore.Qt.TextFormat.RichText)
@@ -192,6 +196,7 @@ def SMErrorBox(* args):
     msg_box.setWindowTitle("Error")
     msg_box.setIcon(QtGui.QMessageBox.Critical)
     msg_box.exec_()
+
 
 def equal_vertex(vert1, vert2, p=5):
   # compares two vertices
@@ -2412,6 +2417,10 @@ class SMUnfoldTaskPanel:
     def __init__(self):
         global genSketchChecked, genObjTransparency, manKFactor, kFactorStandard
         self.pg = FreeCAD.ParamGet("User parameter:BaseApp/Preferences/Mod/sheetmetal")
+        if engineering_mode_enabled():
+          SMMessage("Engineering mode is enabled.")
+        else:
+          SMWarning("Engineering mode is not enabled.")
 
         # Get the material name if possible
         self.material_sheet_name = None
@@ -2440,7 +2449,7 @@ class SMUnfoldTaskPanel:
                   "kfactor": float(virtual_material_match.group(1)),
                   "standard": virtual_material_match.group(2)
                 }
-                #SMMessage("This is a Manual K-factor", virtual_material)
+                SMMessage("This is a Manual K-factor", virtual_material)
 
         spreadsheets = findObjectsByTypeRecursive(FreeCAD.ActiveDocument, 'Spreadsheet::Sheet')
         self.availableMdsObjects = [o for o in spreadsheets if material_sheet_regex.match(o.Label)]
@@ -2596,7 +2605,14 @@ class SMUnfoldTaskPanel:
             self.checkKfact.setChecked(True)
             self.updateKfactorStandard(virtual_material["standard"])
         elif self.material_sheet_name is None:
-            self.checkKfact.setChecked(True)
+            if engineering_mode_enabled():
+              # do nothing, user should explicitly select the K-Factor
+              # see https://github.com/shaise/FreeCAD_SheetMetal/pull/79#issuecomment-487774249
+              # ------------------------------------
+              # Neither MDS nor virtual material is defined. Uncheck the MKF checkbox: 
+              self.checkKfact.setChecked(False)
+            else:
+              self.checkKfact.setChecked(True)
 
     def get_root_obj(self):
         selobj = Gui.Selection.getSelection()[0]
