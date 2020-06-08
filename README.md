@@ -33,16 +33,16 @@ You can find a simple calculator in [`tools/calc-unfold.py`](tools/calc-unfold.p
 
 # Material Definition Sheet 
 
+### Description 
+
 You can use a Spreadsheet object to declare K-factor values inside the project file permanently. This will allow: 
 
 * Different K-factor values to be used for each bend in your model 
 * Sharing the same material definition for multiple objects 
 
-To use the Material Definition Sheet, follow the steps:
+### Usage 
 
-1. Determine your material name (eg. `foo`)
-2. Create a spreadsheet with the name of `material_foo`
-3. Create a table layout in `material_foo`, like the following (see [this table](https://user-images.githubusercontent.com/6639874/56498031-b017bc00-6508-11e9-8b14-6076513d8488.png)):
+1. Create a spreadsheet with the name of `material_foo` with the following content (see [this table](https://user-images.githubusercontent.com/6639874/56498031-b017bc00-6508-11e9-8b14-6076513d8488.png)):
 
     | Radius / Thickness | K-factor (ANSI) | 
     | ---| ---| 
@@ -56,13 +56,30 @@ To use the Material Definition Sheet, follow the steps:
     2. Possible values for `K-factor` is `K-factor (ANSI)` or `K-factor (DIN)`. 
     3. `Radius / Thickness` means `Radius over Thickness`. Eg. if inner radius is `1.64mm` and material thickness is `2mm` then `Radius / Thickness == 1.64/2 = 0.82` so `0.38` will be used as the K-factor. See [lookup.py](https://github.com/ceremcem/FreeCAD_SheetMetal/blob/k-factor-from-lookup/lookup.py#L46-L68) for more examples.
 
-4. Use "Unfold Task Panel" to assign the material sheet.
-5. Unfold as usual.
+2. Use "Unfold Task Panel" to assign the material sheet.
+3. Unfold as usual.
 
 ### Screencast
 ![Screencast](https://user-images.githubusercontent.com/6639874/56642679-a749f600-6680-11e9-944a-82e447d9dc4e.gif) 
  
-#### Installation
+# Engineering Mode 
+
+### Description
+
+Some sort of parameters effect the fabrication process but are impossible to inspect visually, such as K-factor, which makes them susceptible to go unnoticed until the actual erroneous production took place. 
+
+In engineering mode, such "non-visually-inspectable" values are not assigned with default values and explicit user input is required. "Engineering mode" is a safer UX mode for production environments. 
+
+### Activating 
+
+To activate the "Engineering Mode", you need to create the following empty file: 
+```
+.FreeCAD/Mod/sheetmetal/engineering-mode-enabled.txt
+```
+
+To deactivate engineering mode, simply delete that flag file. 
+
+# Installation
 For installation and how to use, please visit:  
 http://theseger.com/projects/2015/06/sheet-metal-addon-for-freecad/  
 Starting from FreeCAD 0.17 it can be installed via the [Addon Manager](https://github.com/FreeCAD/FreeCAD-addons) (from Tools menu)
