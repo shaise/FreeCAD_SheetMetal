@@ -41,6 +41,8 @@ class SMWorkbench (Workbench):
     global SHEETMETALWB_VERSION
     global QtCore
     global engineering_mode_enabled
+    global smWBpath
+    global smWB_icons_path
     
     MenuText = 'Sheet Metal '+SHEETMETALWB_VERSION
     ToolTip = QtCore.QT_TRANSLATE_NOOP('SheetMetal','Sheet Metal workbench allows for designing and unfolding sheet metal parts')
@@ -61,7 +63,9 @@ class SMWorkbench (Workbench):
         self.appendToolbar("Sheet Metal",self.list) # creates a new toolbar with your commands
         self.appendMenu("Sheet Metal",self.list) # creates a new menu
         # self.appendMenu(["An existing Menu","My submenu"],self.list) # appends a submenu to an existing menu
- 
+        FreeCADGui.addPreferencePage(os.path.join(smWBpath, 'SMprefs.ui'),'SheetMetal')
+        FreeCADGui.addIconPath(smWB_icons_path)
+
     def Activated(self):
         "This function is executed when the workbench is activated"
         return
