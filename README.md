@@ -78,12 +78,9 @@ In engineering mode, such "non-visually-inspectable" values are not assigned wit
 
 ### Activating 
 
-To activate the "Engineering Mode", you need to create the following empty file: 
-```
-.FreeCAD/Mod/sheetmetal/engineering-mode-enabled.txt
-```
-
-To deactivate engineering mode, simply delete that flag file. 
+1. Switch to SheetMetal WB at least once.
+2. Edit -> Preferences -> SheetMetal 
+3. Select `enabled` in `Engineering UX Mode` field.
 
 # Installation
 For installation and how to use, please visit:  
