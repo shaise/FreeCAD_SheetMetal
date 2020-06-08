@@ -33,7 +33,7 @@ smWB_icons_path =  os.path.join( smWBpath, 'Resources', 'icons')
 global main_smWB_Icon
 main_smWB_Icon = os.path.join( smWB_icons_path , 'SMLogo.svg')
 
-SHEETMETALWB_VERSION = 'V0.2.32'
+SHEETMETALWB_VERSION = 'V0.2.41'
 
 class SMWorkbench (Workbench):
  
@@ -51,13 +51,15 @@ class SMWorkbench (Workbench):
         import SheetMetalCmd # import here all the needed files that create your FreeCAD commands
         import SheetMetalUnfolder
         import SheetMetalBaseCmd
-        import SheetMetalFoldCmd        
-        self.list = ["SMBase", "SMMakeWall", "SMExtrudeFace", "SMFoldWall", "SMUnfold"] # A list of command names created in the line above
+        import SheetMetalFoldCmd
+        import SheetMetalRelief
+        import SheetMetalJunction
+        import SheetMetalBend
+        self.list = ["SMBase", "SMMakeWall", "SMExtrudeFace", "SMFoldWall", "SMUnfold", "SMMakeRelief", "SMMakeJunction", "SMMakeBend"] # A list of command names created in the line above
         if engineering_mode_enabled(): 
-            self.list.append("SMUnfoldUnattended")
-
-        self.appendToolbar("My Commands",self.list) # creates a new toolbar with your commands
-        # self.appendMenu("My New Menu",self.list) # creates a new menu
+            self.list.insert(self.list.index("SMUnfold") + 1,"SMUnfoldUnattended")
+        self.appendToolbar("Sheet Metal",self.list) # creates a new toolbar with your commands
+        self.appendMenu("Sheet Metal",self.list) # creates a new menu
         # self.appendMenu(["An existing Menu","My submenu"],self.list) # appends a submenu to an existing menu
  
     def Activated(self):
@@ -71,7 +73,7 @@ class SMWorkbench (Workbench):
     def ContextMenu(self, recipient):
         "This is executed whenever the user right-clicks on screen"
         # "recipient" will be either "view" or "tree"
-        self.appendContextMenu("My commands",self.list) # add commands to the context menu
+        self.appendContextMenu("Sheet Metal",self.list) # add commands to the context menu
  
     def GetClassName(self): 
         # this function is mandatory if this is a full python workbench

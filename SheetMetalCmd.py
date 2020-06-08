@@ -807,9 +807,9 @@ class SMBendWall:
       Main_Object = s
 
     fp.Shape = s
-    fp.baseObject[0].Visibility = False
+    fp.baseObject[0].ViewObject.Visibility = False
     if fp.Sketch :
-      fp.Sketch.Visibility = False
+      fp.Sketch.ViewObject.Visibility = False
 
 
 class SMViewProviderTree:
@@ -1055,6 +1055,7 @@ class AddWallCommandClass():
       SMBendWall(a)
       SMViewProviderFlat(a.ViewObject)
       activeBody.addObject(a)
+    FreeCADGui.Selection.clearSelection()
     doc.recompute()
     doc.commitTransaction()
     return
@@ -1124,7 +1125,7 @@ class SMExtrudeWall:
     else:
       s,f = smBend(bendA = 0.0, extLen = fp.length.Value, gap1 = fp.gap1.Value, gap2 = fp.gap2.Value, reliefW = 0.0,
                 selFaceNames = face, MainObject = Main_Object)
-    fp.baseObject[0].Visibility = False
+    fp.baseObject[0].ViewObject.Visibility = False
     fp.Shape = s
     
 
@@ -1155,6 +1156,7 @@ class SMExtrudeCommandClass():
       SMExtrudeWall(a)
       SMViewProviderFlat(a.ViewObject)
       activeBody.addObject(a)
+    FreeCADGui.Selection.clearSelection()
     doc.recompute()
     doc.commitTransaction()
     return

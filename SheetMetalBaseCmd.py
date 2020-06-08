@@ -69,7 +69,7 @@ def smBase(thk = 2.0, length = 10.0, radius = 1.0, Side = "Inside", MainObject =
       else :
         wire = WireList
       #Part.show(wire)
-      filletedWire = DraftGeomUtils.filletWire(wire, (radius * 1.5) )
+      filletedWire = DraftGeomUtils.filletWire(wire, (radius + thk / 2) )
       #Part.show(filletedWire)
       offsetwire = filletedWire.makeOffset2D(thk/2.0, openResult = True )
       #Part.show(offsetwire)

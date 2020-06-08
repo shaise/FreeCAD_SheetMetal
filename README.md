@@ -1,7 +1,13 @@
 # FreeCAD SheetMetal Workbench
+[![Total alerts](https://img.shields.io/lgtm/alerts/g/shaise/FreeCAD_SheetMetal.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/shaise/FreeCAD_SheetMetal/alerts/) [![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/shaise/FreeCAD_SheetMetal.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/shaise/FreeCAD_SheetMetal/context:python)  
+
 A simple sheet metal workbench for FreeCAD
 
 ![Demo Workflow](Resources/SheetMetal4.gif)
+
+### Tutorial by Joko Engineering:
+
+[![Tutorial](Resources/smvideo.jpg)](https://youtu.be/xidvQYkC4so "FreeCAD - The Elegant Sheet Metal Workbench")
 
 #### Developers:
 * Folding tools:  
@@ -90,7 +96,11 @@ Starting from FreeCAD 0.17 it can be installed via the [Addon Manager](https://g
 * Authors webpage: http://theseger.com/projects/2015/06/sheet-metal-addon-for-freecad/  
 * FreeCAD Forum announcement/discussion [thread](https://forum.freecadweb.org/viewtopic.php?f=10&t=11303) 
 
-#### Release notes: 
+#### Release notes:
+* V0.2.41 01 Jun 2020:  Added Drop down Menu
+* V0.2.40 24 May 2020:  Added added tools for conversion of solid corners to sheetmetal by [@jaisejames][jaisejames]. Thank you!
+* V0.2.34 09 Mar 2020:  Rename "my commands" context menu to sheet metal
+* V0.2.33 09 Mar 2020:  Fix bend radius bug on sketch bends. Thank you Léo Flaventin!
 * V0.2.32 02 Jan 2020:  Python 3.8 update by [@looooo][lorenz]. Thank you!
 * V0.2.31 24 Apr 2019:  Added better K factor control by [@ceremcem][ceremcem]. Thank you!
 * V0.2.30 30 Mar 2019:  Added Fold-on-sketch-line tool by [@jaisejames][jaisejames]. Thank you!
@@ -135,7 +145,7 @@ Starting from FreeCAD 0.17 it can be installed via the [Addon Manager](https://g
 * V0.002  12 Jun 2015:  Fix Save/Load issues  
 * V0.001  11 Jun 2015:  Initial version
 
-
+[lorenz]: https://github.com/looooo
 [ulrich]: https://github.com/ulrich1a
 [ceremcem]: https://github.com/ceremcem
 [jaisejames]: https://github.com/jaisekjames
