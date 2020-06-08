@@ -1,19 +1,23 @@
 __author__ = "ceremcem"
 """
 Description:
-
+-----------------------------------------------------------------------------------
 This macro automatically updates all unfold operations as well as their related 
-TechDraw views. It depends on some LinkStage3 features, see 
+TechDraw views. It depends on LinkStage3 features, see 
 https://github.com/realthunder/FreeCAD_assembly3 for more info.
 
 Usage: 
-
-1. Put your processed object into an assembly container. 
+-----------------------------------------------------------------------------------
+1. Put your processed (final) object into an assembly container. 
 2. Create an "Element" for the unfold face
 3. Rename the element to "foo_unfold_face"
 4. Run this macro 
-5. See "foo_unfold" sketch is created properly. 
-6. See any TechDraw ProjGroup source is updated properly
+5. See "foo_unfold" and "foo_unfold_solid" is created properly. 
+6. Create a TechDraw view by those two objects 
+7. Re-run this script. If sources are being updated successfully, then those two 
+    objects should be marked as invisible. 
+8. Re-run this script if any changes has been made to the original sketch and 
+    see any TechDraw ProjGroup source is updated properly
 """
 
 import FreeCAD
@@ -33,6 +37,23 @@ unfold_sketch_regex = re.compile('.+_unfold_face')
 
 echo("--------------------- Updating unfold ------------------------------\n")
 
+def get_related_views(doc, labels):
+	related_views = {}
+	for x in doc.Objects:
+		if x.TypeId == 'TechDraw::DrawPage': 
+			for view in x.Views:
+				try: 
+					_src = view.Source[0]
+				except Exception as e:
+					continue
+				#print "source of ", view.Label, ' in ', x.Label, " is: ", _src.Label
+				if _src.Label in labels:
+					# This view uses our unfolded output, update this view at the end 
+					echo("* Found related TechDraw ProjGroup: %s\n" % view.Label)
+					related_views[_src.Label] = view 
+	return related_views
+
+
 for o in doc.Objects:
 	try:
 		_o = o.TypeId
@@ -45,35 +66,36 @@ for o in doc.Objects:
 		match = unfold_sketch_regex.match(o.Label)
 		if match:
 			output_name = o.Label[:-5]  # remove the "_face" postfix
+			output_name_solid = output_name + '_solid'
 			echo("* Found unfold job: " + output_name + " \n")
 
-			related_views = []
-			for x in doc.Objects:
-				if x.TypeId == 'TechDraw::DrawPage': 
-					for view in x.Views:
-						try: 
-							_src = view.Source[0]
-						except Exception as e:
-							continue
-						#print "source of ", view.Label, ' in ', x.Label, " is: ", _src.Label
-						if _src.Label == output_name:
-							# This view uses our unfolded output, update this view at the end 
-							echo("* Found related TechDraw ProjGroup: %s\n" % view.Label)
-							related_views.append(view)
+			related_views = get_related_views(doc, [output_name, output_name_solid])
+			echo("* Found %d TechView views\n" % len(related_views.keys()))
 			
-			# mark current output as "to be deleted"
+			# backup current unfolded outputs
 			tmp_postfix = "_TMP"
 			old = None		
+			old_solid = None
+			need_recomputation = False
 			try:
 				old = doc.getObjectsByLabel(output_name)[0]
 				old.Label += tmp_postfix
-				doc.recompute()
+				need_recomputation = True 
+			except:
+				pass
+			try:
+				old_solid = doc.getObjectsByLabel(output_name_solid)[0]
+				old_solid.Label += tmp_postfix
+				need_recomputation = True 
 			except:
 				pass
 			
+			if need_recomputation: 
+				doc.recompute()
+			
 			# Get the unfold face id
 			# TODO: This extraction (achieving `unfold_face_id`) is a very dirty hack. 
-			# Tidy up as soon as possible. 
+			# Tidy up ASAP. 
 			face_elem = doc.getObjectsByLabel(output_name + '_face')[0]
 			asm_container = face_elem.Parents[0][0]
 			target_obj_path = asm_container.getSubObjects()[0]
@@ -83,35 +105,60 @@ for o in doc.Objects:
 			Gui.Selection.clearSelection()
 			Gui.Selection.addSelection(doc.Name, unfold_face_id[0], unfold_face_id[1])
 			Gui.runCommand('SMUnfoldUnattended')
-		
+
 			try:
-				# Remove unnecessary unfolded solid
-				doc.removeObject('Unfold')
-				
-				# Properly rename the output
-				sketch = doc.getObjectsByLabel('Unfold_Sketch')[0]
+				# Get the newest object's names 
+				new_solid_name = map(lambda x: x.Label, filter(lambda x: re.match('Unfold[0-9]*$', x.Label), doc.Objects))
+				new_solid_name.sort(reverse=True)
+				new_solid_name = new_solid_name[0]
+	
+				new_sketch_name = map(lambda x: x.Label, filter(lambda x: re.match('Unfold_Sketch[0-9]*$', x.Label), doc.Objects))
+				new_sketch_name.sort(reverse=True)
+				new_sketch_name = new_sketch_name[0]
+
+				# Solid object is useful for laser cut operations
+				solid = doc.getObjectsByLabel(new_solid_name)[0]
+				solid.Label = output_name_solid
+								
+				sketch = doc.getObjectsByLabel(new_sketch_name)[0]
 				sketch.Label = output_name
-				sketch.Visibility = False
 				
 				# Update the source of related views
-				if len(related_views) > 0:
-					for view in related_views:
-						echo("* Updating %s source as %s\n" % (view.Label, sketch.Label))
-						view.Source = [sketch]
-				else:
-					warn('No TechDraw view is updated.\n')
+				for name, view in related_views.items():
+					if name == sketch.Label: 
+						obj = sketch
+					elif name == solid.Label:
+						obj = solid 
+					echo("* %s is used to update %s\n" % (obj.Label, view.Label))
+					view.Source = [obj]
+					# set visibility to false if a related view is found and updated. 
+					obj.Visibility = False
 
 				# remove the temporary object
-				if old is not None:
-					doc.removeObject(old.Name)
-					doc.recompute()
-			except:
-				warn('Something went wrong.\n')
-				# restore the previous sketch
-				if old is not None:
-					echo("* Restoring the previous sketch.\n")
-					old.Label = old.Label[:-(len(tmp_postfix))]
-					doc.recompute()
+				needs_recomputation = False 
+				for o in [old, old_solid]:
+					if o is not None:
+						#echo("removing the old object: %s\n" % o.Name)
+						doc.removeObject(o.Name)
+						needs_recomputation = True
+				if needs_recomputation:
+					doc.recompute() 
+
+			except Exception as e:
+			 	warn("Something went wrong, restoring the previous sketches...\n")
+				# For debugging purposes: 
+				#e_message = ('Error on line {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
+				#warn('%s: %s, %s.\n' % e_message)
+
+				needs_recomputation = False
+				for o in [old, old_solid]:
+					if o is not None:
+						orig_label = o.Label[:-(len(tmp_postfix))] 
+						echo("* Restoring the previous %s.\n" % orig_label)
+						o.Label = orig_label
+						needs_recomputation = True
+				if needs_recomputation:
+					doc.recompute() 
 
 doc.recompute()
 Gui.Selection.clearSelection()
