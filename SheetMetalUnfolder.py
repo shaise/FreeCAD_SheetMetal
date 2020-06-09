@@ -106,6 +106,7 @@ import Draft
 import Drawing
 from SheetMetalCmd import iconPath
 from lookup import get_val_from_range
+from engineering_mode import engineering_mode_enabled
 
 import Part
 import tempfile
@@ -184,7 +185,10 @@ def SMErrorBox(* args):
     message = ""
     for x in args:
         message += str(x)
-    SMError(message)
+    # Error boxes mostly use HTML tags to format. Strip the HTML tags for 
+    # better console readability. 
+    stripped_message = re.sub('<[^<]+?>', '', message)
+    SMError(stripped_message) 
     mw = FreeCADGui.getMainWindow()
     msg_box = QtGui.QMessageBox(mw)
     msg_box.setTextFormat(QtCore.Qt.TextFormat.RichText)
@@ -192,6 +196,7 @@ def SMErrorBox(* args):
     msg_box.setWindowTitle("Error")
     msg_box.setIcon(QtGui.QMessageBox.Critical)
     msg_box.exec_()
+
 
 def equal_vertex(vert1, vert2, p=5):
   # compares two vertices
@@ -2412,6 +2417,10 @@ class SMUnfoldTaskPanel:
     def __init__(self):
         global genSketchChecked, genObjTransparency, manKFactor, kFactorStandard
         self.pg = FreeCAD.ParamGet("User parameter:BaseApp/Preferences/Mod/sheetmetal")
+        if engineering_mode_enabled():
+          SMMessage("Engineering mode is enabled.")
+        else:
+          SMWarning("Engineering mode is not enabled.")
 
         # Get the material name if possible
         self.material_sheet_name = None
@@ -2440,7 +2449,7 @@ class SMUnfoldTaskPanel:
                   "kfactor": float(virtual_material_match.group(1)),
                   "standard": virtual_material_match.group(2)
                 }
-                #SMMessage("This is a Manual K-factor", virtual_material)
+                SMMessage("This is a Manual K-factor", virtual_material)
 
         spreadsheets = findObjectsByTypeRecursive(FreeCAD.ActiveDocument, 'Spreadsheet::Sheet')
         self.availableMdsObjects = [o for o in spreadsheets if material_sheet_regex.match(o.Label)]
@@ -2596,7 +2605,14 @@ class SMUnfoldTaskPanel:
             self.checkKfact.setChecked(True)
             self.updateKfactorStandard(virtual_material["standard"])
         elif self.material_sheet_name is None:
-            self.checkKfact.setChecked(True)
+            if engineering_mode_enabled():
+              # do nothing, user should explicitly select the K-Factor
+              # see https://github.com/shaise/FreeCAD_SheetMetal/pull/79#issuecomment-487774249
+              # ------------------------------------
+              # Neither MDS nor virtual material is defined. Uncheck the MKF checkbox: 
+              self.checkKfact.setChecked(False)
+            else:
+              self.checkKfact.setChecked(True)
 
     def get_root_obj(self):
         selobj = Gui.Selection.getSelection()[0]
@@ -2737,23 +2753,33 @@ class SMUnfoldTaskPanel:
             key_cell = None
             value_cell = None
             options_cell = None
+            kFactorStandard = None
             for cell in get_cells(lookup_sheet):
-                if lookup_sheet.get(cell) == 'Radius / Thickness':
+                content = lookup_sheet.get(cell)
+                if content == 'Radius / Thickness':
                     key_cell = cell
-                if lookup_sheet.get(cell) == 'K-factor':
-                    value_cell = cell
+                try: 
+                    m = re.search('(K-[fF]actor)\s?\(?([a-zA-Z]*)\)?', content)
+                    if m:
+                        value_cell = cell
+                        kFactorStandard = m.group(2).lower() or None
+                except:
+                    pass 
+
                 if lookup_sheet.get(cell) == 'Options':
                     options_cell = cell
-                if key_cell is not None and value_cell is not None and options_cell is not None:
-                    break
+                if key_cell is not None and value_cell is not None:
+                    if (options_cell is not None) or (kFactorStandard is not None):
+                        break
 
             lookup_sheet_err = None
             if key_cell is None:
                 lookup_sheet_err = "No cell can be found with name: 'Radius / Thickness'"
             if value_cell is None:
-                lookup_sheet_err = "No cell can be found with name: 'K-factor'"
-            if options_cell is None:
-                lookup_sheet_err = "No cell can be found with name: 'Options'"
+                lookup_sheet_err = "No cell can be found with name: 'K-factor (ANSI/DIN)'"
+            if kFactorStandard is None:
+                if options_cell is None:
+                    lookup_sheet_err = "No 'Options' column or 'K-factor (????)' cell found."
 
             if lookup_sheet_err is not None:
                 lookup_sheet_err += '<p>'
@@ -2773,7 +2799,10 @@ class SMUnfoldTaskPanel:
                     key = float(lookup_sheet.get(key_column_name + str(i)))
                 except:
                     break
-                value = float(lookup_sheet.get(value_column_name + str(i)))
+                try:
+                    value = float(lookup_sheet.get(value_column_name + str(i)))
+                except ValueError:
+                    continue
 
                 #SMMessage("Found key/value: %f : %f" % (key, value))
                 k_factor_lookup[key] = value
@@ -2785,28 +2814,31 @@ class SMUnfoldTaskPanel:
             # because user might be using a third party library that depends
             # on a different K-factor standard, so project might contain mixed
             # K-factor standards.
-            kFactorStandard = None
 
-            [opt_col, opt_row] = get_cell_tuple(options_cell)
-            i = 1
-            while True:
-                opt_key_cell = "%s%i" % (opt_col, opt_row + i)
-                next_col = chr(ord(opt_col) + 1)
-                opt_value_cell = "%s%i" % (next_col, opt_row + i)
-                i += 1
-                try:
-                    option = lookup_sheet.get(opt_key_cell)
-                    value = lookup_sheet.get(opt_value_cell)
-                except:
-                    break
+            if options_cell is not None:
+                [opt_col, opt_row] = get_cell_tuple(options_cell)
+                i = 1
+                while True:
+                    opt_key_cell = "%s%i" % (opt_col, opt_row + i)
+                    next_col = chr(ord(opt_col) + 1)
+                    opt_value_cell = "%s%i" % (next_col, opt_row + i)
+                    i += 1
+                    try:
+                        option = lookup_sheet.get(opt_key_cell)
+                        value = lookup_sheet.get(opt_value_cell)
+                    except:
+                        break
 
-                #print "Found option: ", option, ":", value
-                if option == 'K-factor standard':
-                    if value in ["ANSI", "DIN"]:
+                    #print "Found option: ", option, ":", value
+                    if option == 'K-factor standard':
+                        if kFactorStandard is not None: 
+                            SMErrorBox("Multiple K-factor definitions in %s", self.material_sheet_name)
+                            return 
                         kFactorStandard = value.lower()
-                    else:
-                        SMErrorBox('Invalid K-factor standard: %s \nin %s' % (value, self.material_sheet_name))
-                        return
+                    
+            if kFactorStandard not in ["ansi", "din"]:
+                SMErrorBox('Invalid K-factor standard: %s \nin %s' % (kFactorStandard, self.material_sheet_name))
+                return
 
             if kFactorStandard is None:
                 SMErrorBox("'K-factor standard' option is required (ANSI or DIN) in %s" % self.material_sheet_name)
