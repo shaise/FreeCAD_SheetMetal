@@ -1404,7 +1404,8 @@ class SheetTree(object):
         conv = ', converted from DIN'
     else:
         conv = ''
-    SMMessage("transRad Face: %d, r: %.2f, thickness: %.2f, K-factor: %.2f (ANSI%s)" % (fIdx+1, bRad, thick, kFactor, conv))
+    # Should only be enabled for debugging purposes:
+    #SMMessage("transRad Face: %d, r: %.2f, thickness: %.2f, K-factor: %.2f (ANSI%s)" % (fIdx+1, bRad, thick, kFactor, conv))
     tanVec = bend_node.tan_vec
     aFace = self.f_list[fIdx]
 
