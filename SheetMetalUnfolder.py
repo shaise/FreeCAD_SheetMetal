@@ -2974,7 +2974,7 @@ class SMUnfoldTaskPanel:
         docG = FreeCADGui.ActiveDocument
         p = Part.makeCompound(edges)
         try:
-            sk = Draft.makeSketch(p.Edges, autoconstraints = True)
+            sk = Draft.makeSketch(p.Edges, autoconstraints = True,addTo=None,delete=False,name=name)
             sk.Label = name
         except:
             doc = FreeCAD.ActiveDocument
