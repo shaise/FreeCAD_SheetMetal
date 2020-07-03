@@ -76,6 +76,12 @@ def get_related_views(doc, labels):
 originals = [App.ActiveDocument, Gui.ActiveDocument]
 try:
 	for doc_name, doc in App.listDocuments().items():
+		unfold_objects=map(lambda x: x.Label, filter(lambda x: re.match('Unfold.*$', x.Label), doc.Objects))
+		if unfold_objects:
+			error("%s contains objects with Unfold* prefix, please rename them: %s\n" % (doc_name, ', '.join(unfold_objects)))
+			raise Exception("Stopping before a possible conflict.")
+
+	for doc_name, doc in App.listDocuments().items():
 		Gui.ActiveDocument=Gui.getDocument(doc_name)
 		App.ActiveDocument=App.getDocument(doc_name)
 		App.setActiveDocument(App.ActiveDocument.Name) # Interesting. Why do we need to assign this manually?
