@@ -219,9 +219,9 @@ def smFold(bendR = 1.0, bendA = 90.0, kfactor = 0.5, invertbend = False, flipped
       #print([neturalRadius, neturalLength, unfoldLength, offsetdistance, scalefactor])
 
       #To get facedir
-      tool_faces = tool.extrude(normal * -thk)
-      #Part.show(tool_faces, "tool_faces")
-      cutSolid = BOPTools.SplitAPI.slice(FoldShape, tool_faces.Faces, "Standard", 0.0)
+      toolFaces = tool.extrude(normal * -thk)
+      #Part.show(toolFaces, "toolFaces")
+      cutSolid = BOPTools.SplitAPI.slice(FoldShape, toolFaces.Faces, "Standard", 0.0)
       #Part.show(cutSolid,"cutSolid_check")
 
       if not(invertbend) :
@@ -229,28 +229,44 @@ def smFold(bendR = 1.0, bendA = 90.0, kfactor = 0.5, invertbend = False, flipped
       else :
         solid0 = cutSolid.childShapes()[1]
 
-      cutFaceDir = smCutFace(tool_faces.Faces[0], solid0)
+      cutFaceDir = smCutFace(toolFaces.Faces[0], solid0)
       #Part.show(cutFaceDir,"cutFaceDir")
       facenormal = cutFaceDir.Faces[0].normalAt(0,0)
       #print(facenormal)
 
       if position == "middle" :
         tool.translate(facenormal * -unfoldLength / 2.0 )
-        tool_faces = tool.extrude(normal * -thk)
-        cutSolid = BOPTools.SplitAPI.slice(FoldShape, tool_faces.Faces, "Standard", 0.0)
-        if not(invertbend) :
-          solid0 = cutSolid.childShapes()[0]
-        else :
-          solid0 = cutSolid.childShapes()[1]
+        toolFaces = tool.extrude(normal * -thk)
       elif position == "backward" :
         tool.translate(facenormal * -unfoldLength )
-        tool_faces = tool.extrude(normal * -thk)
-        cutSolid = BOPTools.SplitAPI.slice(FoldShape, tool_faces.Faces, "Standard", 0.0)
-        if not(invertbend) :
-          solid0 = cutSolid.childShapes()[0]
+        toolFaces = tool.extrude(normal * -thk)
+
+      #To get split solid
+      solidlist = []
+      toolExtr = toolFaces.extrude(facenormal * unfoldLength)
+      #Part.show(toolExtr,"toolExtr")
+      CutSolids = FoldShape.cut(toolExtr)
+      #Part.show(Solids,"Solids")
+      solid2list, solid1list = [], []
+      for solid in CutSolids.Solids :
+        checksolid = toolFaces.common(solid)
+        if checksolid.Faces :
+            solid1list.append(solid)
         else :
-          solid0 = cutSolid.childShapes()[1]
+            solid2list.append(solid)
+
+      if len(solid1list) > 1 :
+        solid0 = solid1list[0].multiFuse(solid1list[1:])
+      else :
+        solid0 = solid1list[0]
       #Part.show(solid0,"solid0")
+
+      if len(solid2list) > 1 :
+        solid1 = solid2list[0].multiFuse(solid2list[1:])
+      else :
+        solid1 = solid2list[0]
+      #Part.show(solid0,"solid0")
+      #Part.show(solid1,"solid1")
 
       bendEdges = FoldShape.common(tool)
       #Part.show(bendEdges,"bendEdges")
@@ -272,20 +288,19 @@ def smFold(bendR = 1.0, bendA = 90.0, kfactor = 0.5, invertbend = False, flipped
         #print(revAxisV)
 
       # To get bend surface 
-      bendSurf = tool.revolve(revAxisP, revAxisV, bendA)
+      revLine = Part.LineSegment(tool.Vertexes[0].Point, tool.Vertexes[-1].Point ).toShape()
+      bendSurf = revLine.revolve(revAxisP, revAxisV, bendA)
       #Part.show(bendSurf,"bendSurf")
+
+      bendSurfTest = bendSurf.makeOffsetShape(bendR/2.0, 0.0, fill = False)
+      #Part.show(bendSurfTest,"bendSurfTest")
+      offset =  1
+      if bendSurfTest.Area < bendSurf.Area and not(flipped) :
+        offset =  -1
+      elif bendSurfTest.Area > bendSurf.Area and flipped :
+        offset =  -1
+      #print(offset)
      
-      tool.translate(facenormal * unfoldLength)
-      tool_faces = tool.extrude(normal * -thk)
-      #Part.show(tool_faces,"tool_faces")
-      cutSolid2 = BOPTools.SplitAPI.slice(FoldShape, tool_faces.Faces, "Standard", 0.0)
-      #Part.show(cutSolid2,"cutSolid2")
-
-      if not(invertbend) :
-        solid1 = cutSolid2.childShapes()[1]        
-      else :
-        solid1 = cutSolid2.childShapes()[0]    
-
       # To get bend solid
       flatsolid = FoldShape.cut(solid0)
       flatsolid = flatsolid.cut( solid1)
@@ -301,25 +316,15 @@ def smFold(bendR = 1.0, bendA = 90.0, kfactor = 0.5, invertbend = False, flipped
         #Part.show(bendsolid,"bendsolid")
         bendSolidlist.append(bendsolid)
 
-      if not(invertbend) :
-        offset1 = thk / 2.0
-        offset2 = thk
-      else :
-        offset1 =thk / 2.0 * -1
-        offset2 =thk  * -1
-
-      bendSurf1 = bendSurf.makeOffsetShape(offset1, 0.0, fill = False)
+      #for faces in bendSurf.Faces :
+      bendSurf1 = bendSurf.makeOffsetShape(thk / 2.0 * offset, 0.0, fill = False)
       #Part.show(bendSurf1,"bendSurf1")
-      solidlist = []
       for solid in bendSolidlist :
-        #cutbendSurf = bendSurf1.cut(solid)
-        #bendFace = bendSurf1.cut(cutbendSurf)
         bendFace = BOPTools.SplitAPI.slice(bendSurf1, [bendSurf1, solid], "Standard", 0.0)
         #Part.show(bendFace,"bendFace")
-        bendFace1 = bendFace.childShapes()[1].makeOffsetShape(-offset1, 0.0, fill = False)
-        #bendFace1 = bendFace.makeOffsetShape(-offset1, 0.0, fill = False)
+        bendFace1 = bendFace.childShapes()[1].makeOffsetShape(-thk / 2.0 * offset, 0.0, fill = False)
         #Part.show(bendFace1,"bendFace1")
-        offsetsolid = bendFace1.makeOffsetShape(offset2, 0.0, fill = True)
+        offsetsolid = bendFace1.makeOffsetShape( thk * offset, 0.0, fill = True)
         #Part.show(offsetsolid, "offsetsolid")
         solidlist.append(offsetsolid)
 
