@@ -2425,7 +2425,7 @@ class SMUnfoldTaskPanel:
 
         # Get the material name if possible
         self.material_sheet_name = None
-        material_sheet_regex_str = "material_([a-zA-Z0-9_\.]+)"
+        material_sheet_regex_str = "material_([a-zA-Z0-9_\-\[\]\.]+)"
         material_sheet_regex = re.compile(material_sheet_regex_str)
         material_regex = re.compile(".+_%s" % material_sheet_regex_str)
         self.root_obj = self.get_root_obj()
