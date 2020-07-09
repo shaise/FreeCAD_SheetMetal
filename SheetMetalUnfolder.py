@@ -2640,7 +2640,12 @@ class SMUnfoldTaskPanel:
         self.mdsApply.setEnabled(False)
 
     def setMds(self, mds_name):
-        if mds_name is None or not self.checkUseMds.isChecked():
+        # in engineering_mode, user should not loose any data, so 
+        # manual k-factor is also saved upon "unfold" operation. 
+        using_manual_kFactor = not self.checkUseMds.isChecked()
+        advanced_mode = engineering_mode_enabled() or not using_manual_kFactor
+
+        if mds_name is None or not advanced_mode:
             self.root_obj.Label = self.root_label
         else:
             self.root_obj.Label = "%s_%s" % (self.root_label, mds_name)
