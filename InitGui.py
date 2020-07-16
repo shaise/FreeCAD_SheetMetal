@@ -25,6 +25,7 @@
 
 from PySide import QtCore, QtGui
 import smwb_locator
+import os
 from engineering_mode import engineering_mode_enabled
 
 smWBpath = os.path.dirname(smwb_locator.__file__)
