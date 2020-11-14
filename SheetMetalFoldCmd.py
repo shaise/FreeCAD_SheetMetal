@@ -31,6 +31,8 @@ __dir__ = os.path.dirname(__file__)
 iconPath = os.path.join( __dir__, 'Resources', 'icons' )
 smEpsilon = 0.0000001
 
+import SheetMetalBendSolid
+
 def smWarnDialog(msg):
     diag = QtGui.QMessageBox(QtGui.QMessageBox.Warning, 'Error in macro MessageBox', msg)
     diag.setWindowModality(QtCore.Qt.ApplicationModal)
@@ -62,8 +64,9 @@ def smthk(obj, foldface) :
   else:
       # Make a first estimate of the thickness
       estimated_thk = theVol/(obj.Area / 2.0)
+#  p1 = foldface.CenterOfMass
   p1 = foldface.Vertexes[0].Point
-  p2 = p1 + estimated_thk * -1.3 * normal
+  p2 = p1 + estimated_thk * -1.5 * normal
   e1 = Part.makeLine(p1, p2)
   thkedge = obj.common(e1)
   thk = thkedge.Length
@@ -77,8 +80,8 @@ def smCutFace(Face, obj) :
       break
   return face
 
-def smFold(bendR = 1.0, bendA = 90.0, kfactor = 0.45, invertbend = False, flipped = False, unfold = False,
-            bendlinesketch = None, selFaceNames = '', MainObject = None):
+def smFold(bendR = 1.0, bendA = 90.0, kfactor = 0.5, invertbend = False, flipped = False, unfold = False,
+            position = "forward", bendlinesketch = None, selFaceNames = '', MainObject = None):
 
   import BOPTools.SplitFeatures, BOPTools.JoinFeatures
   FoldShape = MainObject.Shape
@@ -94,52 +97,82 @@ def smFold(bendR = 1.0, bendA = 90.0, kfactor = 0.45, invertbend = False, flippe
       tool = bendlinesketch.Shape.copy()
       normal = foldface.normalAt(0,0)
       thk = smthk(FoldShape, foldface)
+      print(thk)
+
+     # if not(flipped) :
+        #offset =  thk * kfactor 
+      #else :
+        #offset = thk * (1 - kfactor )
 
       unfoldLength = ( bendR + kfactor * thk ) * bendA * math.pi / 180.0
-      neturalradius =  ( bendR + kfactor * thk ) * math.tan(math.radians(bendA / 2.0)) * 2.0
-      offsetdistance = neturalradius - unfoldLength
-      #print([neturalradius,unfoldLength,offsetdistance])
+      neturalRadius =  ( bendR + kfactor * thk )
+      #neturalLength =  ( bendR + kfactor * thk ) * math.tan(math.radians(bendA / 2.0)) * 2.0
+      #offsetdistance = neturalLength - unfoldLength
+      #scalefactor = neturalLength / unfoldLength
+      #print([neturalRadius, neturalLength, unfoldLength, offsetdistance, scalefactor])
 
       #To get facedir
-      tool_faces = tool.extrude(normal * -thk)
-      cutSolid = BOPTools.SplitAPI.slice(FoldShape, tool_faces.Faces, "Standard", 0.0)
-      #Part.show(tool_faces)
+      toolFaces = tool.extrude(normal * -thk)
+      #Part.show(toolFaces, "toolFaces")
+      cutSolid = BOPTools.SplitAPI.slice(FoldShape, toolFaces.Faces, "Standard", 0.0)
       #Part.show(cutSolid,"cutSolid_check")
+
       if not(invertbend) :
         solid0 = cutSolid.childShapes()[0]
       else :
         solid0 = cutSolid.childShapes()[1]
-      cutFaceDir = smCutFace(tool_faces.Faces[0], solid0)
-      facenormal = cutFaceDir.Faces[0].normalAt(0,0)
-      #Part.show(solid0,"solid0_check")
+
+      cutFaceDir = smCutFace(toolFaces.Faces[0], solid0)
       #Part.show(cutFaceDir,"cutFaceDir")
+      facenormal = cutFaceDir.Faces[0].normalAt(0,0)
       #print(facenormal)
 
-      if not(flipped) :
-        offset = thk * kfactor
+      if position == "middle" :
+        tool.translate(facenormal * -unfoldLength / 2.0 )
+        toolFaces = tool.extrude(normal * -thk)
+      elif position == "backward" :
+        tool.translate(facenormal * -unfoldLength )
+        toolFaces = tool.extrude(normal * -thk)
+
+      #To get split solid
+      solidlist = []
+      toolExtr = toolFaces.extrude(facenormal * unfoldLength)
+      #Part.show(toolExtr,"toolExtr")
+      CutSolids = FoldShape.cut(toolExtr)
+      #Part.show(Solids,"Solids")
+      solid2list, solid1list = [], []
+      for solid in CutSolids.Solids :
+        checksolid = toolFaces.common(solid)
+        if checksolid.Faces :
+            solid1list.append(solid)
+        else :
+            solid2list.append(solid)
+
+      if len(solid1list) > 1 :
+        solid0 = solid1list[0].multiFuse(solid1list[1:])
       else :
-        offset = thk * (1 - kfactor)
+        solid0 = solid1list[0]
+      #Part.show(solid0,"solid0")
 
-      tool.translate(facenormal * offsetdistance / 2.0)
-      tool_faces = tool.extrude(normal * -thk)
-      #Part.show(tool_faces)
-      cutSolid = BOPTools.SplitAPI.slice(FoldShape, tool_faces.Faces, "Standard", 0.0)
-      cutface = BOPTools.SplitAPI.slice(foldface, tool.Edges, "Standard", 0.0)
-      #Part.show(cutSolid,"cutSolid")
-      #Part.show(cutface,"cutface")
+      if len(solid2list) > 1 :
+        solid1 = solid2list[0].multiFuse(solid2list[1:])
+      else :
+        solid1 = solid2list[0]
+      #Part.show(solid0,"solid0")
+      #Part.show(solid1,"solid1")
 
-      sketch = tool.copy()
-      sketch.translate(normal * -offset)
-      cutface.translate(normal * -offset)
-      Axis = cutface.childShapes()[0].common(sketch)
-      #Part.show(Axis,"Axis")
-      edge = Axis.Edges[0]
-      revAxisP = edge.valueAt(edge.FirstParameter)
-      revAxisV = edge.valueAt(edge.LastParameter) - edge.valueAt(edge.FirstParameter)
+      bendEdges = FoldShape.common(tool)
+      #Part.show(bendEdges,"bendEdges")
+      bendEdge = bendEdges.Edges[0]
+      if not(flipped) :
+        revAxisP = bendEdge.valueAt(bendEdge.FirstParameter) + normal * bendR
+      else :
+        revAxisP = bendEdge.valueAt(bendEdge.FirstParameter) - normal * (thk +  bendR)
+      revAxisV = bendEdge.valueAt(bendEdge.LastParameter) - bendEdge.valueAt(bendEdge.FirstParameter)
       revAxisV.normalize()
 
       # To check sktech line direction
-      if (normal.cross(revAxisV) - facenormal).Length > smEpsilon:
+      if (normal.cross(revAxisV).normalize() - facenormal).Length > smEpsilon:
         revAxisV = revAxisV * -1
         #print(revAxisV)
 
@@ -147,75 +180,42 @@ def smFold(bendR = 1.0, bendA = 90.0, kfactor = 0.45, invertbend = False, flippe
         revAxisV = revAxisV * -1
         #print(revAxisV)
 
-     #To check face iversion on BOPTool Split
-      face1 = cutface.childShapes()[1]
-      solid1 = cutSolid.childShapes()[1]
-      checksolid = face1.common(solid1)
-      #Part.show(checksolid,"checksolid")
+      # To get bend surface 
+      revLine = Part.LineSegment(tool.Vertexes[0].Point, tool.Vertexes[-1].Point ).toShape()
+      bendSurf = revLine.revolve(revAxisP, revAxisV, bendA)
+      #Part.show(bendSurf,"bendSurf")
 
-      if not(checksolid.Faces) :
-        ca = 1
-        cb = 0
-      else :
-        ca = 0
-        cb = 1
-
-      if not(invertbend) :
-        face0 = cutface.childShapes()[ca]
-        face1 = cutface.childShapes()[cb]
-        solid0 = cutSolid.childShapes()[0]
-        solid1 = cutSolid.childShapes()[1]
-      else :
-        face0 = cutface.childShapes()[cb]
-        face1 = cutface.childShapes()[ca]
-        solid0 = cutSolid.childShapes()[1]
-        solid1 = cutSolid.childShapes()[0]
-      solid1.translate(facenormal * offsetdistance )
-      face1.translate(facenormal * offsetdistance )      
-      #Part.show(solid0)
-      #Part.show(solid1)
-
+      bendSurfTest = bendSurf.makeOffsetShape(bendR/2.0, 0.0, fill = False)
+      #Part.show(bendSurfTest,"bendSurfTest")
+      offset =  1
+      if bendSurfTest.Area < bendSurf.Area and not(flipped) :
+        offset =  -1
+      elif bendSurfTest.Area > bendSurf.Area and flipped :
+        offset =  -1
+      #print(offset)
+     
+      # To get bend solid
+      flatsolid = FoldShape.cut(solid0)
+      flatsolid = flatsolid.cut( solid1)
+      #Part.show(flatsolid,"flatsolid")
+      flatfaces = foldface.common(flatsolid)
+      #Part.show(flatfaces,"flatface")
+      solid1.translate(facenormal * (-unfoldLength))
+      #Part.show(solid1,"solid1")
       solid1.rotate(revAxisP, revAxisV, bendA)
-      #Part.show(solid1)
-      face1.rotate(revAxisP, revAxisV, bendA)
-      #Part.show(face1)
+      #Part.show(solid1,"rotatedsolid1")
+      bendSolidlist =[]
+      for flatface in flatfaces.Faces :
+        bendsolid = SheetMetalBendSolid.BendSolid(flatface, bendEdge, bendR, thk, neturalRadius, revAxisV, flipped)
+        #Part.show(bendsolid,"bendsolid")
+        solidlist.append(bendsolid)
 
-      facelist = [face0, face1]
-      joinface = BOPTools.JoinAPI.connect(facelist,offsetdistance*1.2)
-      #Part.show(joinface)
-      filletedface = joinface.makeFillet(bendR + offset, joinface.Edges)
-      #Part.show(filletedface)
-      offsetfacelist = []
-      offsetsolidlist = []
-      for face in filletedface.Faces :
-        if not(issubclass(type(face.Surface),Part.Plane)):
-          offsetface = face.makeOffsetShape(offset-thk, 0.0)
-          #Part.show(offsetface)
-          offsetfacelist.append(offsetface)
-      for face in offsetfacelist :
-        offsetsolid = face.makeOffsetShape(thk, 0.0, fill = True)
-        #Part.show(offsetsolid)
-        offsetsolidlist.append(offsetsolid)
-      if len(offsetsolidlist) > 1 :
-        offsetsolid = offsetsolidlist[0].multiFuse(offsetsolidlist[1:])
-      else :
-        offsetsolid = offsetsolidlist[0]
-      cutsolid1 = BOPTools.JoinAPI.cutout_legacy(solid0, offsetsolid, 0.0)
-      cutsolid2 = BOPTools.JoinAPI.cutout_legacy(solid1, offsetsolid, 0.0)
-      # To Check cut solid in correct direction 
-      solid0_c = cutsolid1.common(solid1)
-      #Part.show(solid0_c,"solid1")
-      solid1_c = cutsolid2.common(solid0)
-      #Part.show(solid1_c,"solid2")
-      if solid0_c.Edges :
-        solid0 = solid0.cut(cutsolid1)
-        cutsolid1 = BOPTools.JoinAPI.cutout_legacy(solid0, offsetsolid, 0.0)
-      if solid1_c.Edges :
-        solid1 = solid1.cut(cutsolid2)
-        cutsolid2 = BOPTools.JoinAPI.cutout_legacy(solid1, offsetsolid, 0.0)
-      solidlist = [cutsolid1, cutsolid2, offsetsolid]
-      resultsolid = BOPTools.JoinAPI.connect(solidlist)
-  
+      solidlist.append(solid0)
+      solidlist.append(solid1)
+      #resultsolid = Part.makeCompound(solidlist)
+      #resultsolid = BOPTools.JoinAPI.connect(solidlist)
+      resultsolid = solidlist[0].multiFuse(solidlist[1:])
+
   else :
     if bendlinesketch and bendA > 0.0 :
       resultsolid = FoldShape
@@ -237,13 +237,17 @@ class SMFoldWall:
     obj.addProperty("App::PropertyFloatConstraint","kfactor","Parameters","Gap from left side").kfactor = (0.5,0.0,1.0,0.01)
     obj.addProperty("App::PropertyBool","invert","Parameters","Invert bend direction").invert = False
     obj.addProperty("App::PropertyBool","unfold","Parameters","Invert bend direction").unfold = False
+    obj.addProperty("App::PropertyEnumeration", "Position", "Parameters","Bend Line Position").Position = ["forward", "middle", "backward"]
     obj.Proxy = self
 
   def execute(self, fp):
     '''"Print a short message when doing a recomputation, this method is mandatory" '''
-    
+
+    if (not hasattr(fp,"Position")):
+      fp.addProperty("App::PropertyEnumeration", "Position", "Parameters","Bend Line Position").Position = ["forward", "middle", "backward"]
+
     s = smFold(bendR = fp.radius.Value, bendA = fp.angle.Value, flipped = fp.invert, unfold = fp.unfold, kfactor = fp.kfactor, bendlinesketch = fp.BendLine,
-                invertbend = fp.invertbend, selFaceNames = fp.baseObject[1], MainObject = fp.baseObject[0])
+                position = fp.Position, invertbend = fp.invertbend, selFaceNames = fp.baseObject[1], MainObject = fp.baseObject[0])
     fp.Shape = s
 
 class SMFoldViewProvider:
