@@ -233,10 +233,10 @@ class SMFoldWall:
     obj.addProperty("App::PropertyAngle","angle","Parameters","Bend angle").angle = 90.0
     obj.addProperty("App::PropertyLinkSub", "baseObject", "Parameters", "Base object").baseObject = (selobj[0].Object, selobj[0].SubElementNames)
     obj.addProperty("App::PropertyLink","BendLine","Parameters","Bend Reference Line List").BendLine = selobj[1].Object
-    obj.addProperty("App::PropertyBool","invertbend","Parameters","Invert bend direction").invertbend = False
-    obj.addProperty("App::PropertyFloatConstraint","kfactor","Parameters","Gap from left side").kfactor = (0.5,0.0,1.0,0.01)
+    obj.addProperty("App::PropertyBool","invertbend","Parameters","Invert Solid bend direction").invertbend = False
+    obj.addProperty("App::PropertyFloatConstraint","kfactor","Parameters","Netural Axis Position").kfactor = (0.5,0.0,1.0,0.01)
     obj.addProperty("App::PropertyBool","invert","Parameters","Invert bend direction").invert = False
-    obj.addProperty("App::PropertyBool","unfold","Parameters","Invert bend direction").unfold = False
+    obj.addProperty("App::PropertyBool","unfold","Parameters","Unfold Bend").unfold = False
     obj.addProperty("App::PropertyEnumeration", "Position", "Parameters","Bend Line Position").Position = ["forward", "middle", "backward"]
     obj.Proxy = self
 
