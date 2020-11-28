@@ -45,16 +45,16 @@ def smBelongToBody(item, body):
         if obj.Name == item.Name:
             return True
     return False
-    
+
 def smIsPartDesign(obj):
     return str(obj).find("<PartDesign::") == 0
-        
+
 def smIsOperationLegal(body, selobj):
     #FreeCAD.Console.PrintLog(str(selobj) + " " + str(body) + " " + str(smBelongToBody(selobj, body)) + "\n")
     if smIsPartDesign(selobj) and not smBelongToBody(selobj, body):
         smWarnDialog("The selected geometry does not belong to the active Body.\nPlease make the container of this item active by\ndouble clicking on it.")
         return False
-    return True    
+    return True
 
 def smFace(sel_item, obj) :
   # find face if Edge Selected
@@ -67,7 +67,6 @@ def smFace(sel_item, obj) :
   elif type(sel_item) == Part.Face :
     selFace = sel_item
   return selFace
-
 
 def smthk(obj, foldface) :
   normal = foldface.normalAt(0,0)
@@ -149,8 +148,7 @@ def smSketchOnSheetMetal(kfactor = 0.5, sketch = '', flipped = False, selFaceNam
   resultSolid = MainObject.Shape.copy()
   selElement = resultSolid.getElement(selFaceNames[0])
   LargeFace = smFace(selElement, resultSolid)
-  sketch_face = Part.makeFace(sketch.Shape.Wires,"Part::FaceMakerBullseye" )
-
+  sketch_face = Part.makeFace(sketch.Shape.Wires,"Part::FaceMakerBullseye")
 
   #To get thk of sheet, top face normal
   thk = smthk(resultSolid, LargeFace)
@@ -159,7 +157,7 @@ def smSketchOnSheetMetal(kfactor = 0.5, sketch = '', flipped = False, selFaceNam
   #To get top face normal, flatsolid
   solidlist = []
   normal = LargeFace.normalAt(0,0)
-  #To check face direction 
+  #To check face direction
   coeff = normal.dot(sketch_face.Faces[0].normalAt(0,0))
   if coeff < 0 :
     sketch_face.reverse()
@@ -172,35 +170,35 @@ def smSketchOnSheetMetal(kfactor = 0.5, sketch = '', flipped = False, selFaceNam
 
   if BalanceFaces.Faces :
     for BalanceFace in BalanceFaces.Faces :
-      #Part.show(BalanceFace,"BalanceFace") 
+      #Part.show(BalanceFace,"BalanceFace")
       TopFace = LargeFace
-      #Part.show(TopFace,"TopFace") 
+      #Part.show(TopFace,"TopFace")
       #flipped = False
       while BalanceFace.Faces :
         BendEdge = smGetEdge(BalanceFace, TopFace)
-        #Part.show(BendEdge,"BendEdge") 
+        #Part.show(BendEdge,"BendEdge")
         facelist = resultSolid.ancestorsOfType(BendEdge, Part.Face)
-  
+
         #To get bend radius, bend angle
         for cylface in facelist :
           if issubclass(type(cylface.Surface),Part.Cylinder) :
             break
         if not(issubclass(type(cylface.Surface),Part.Cylinder)) :
           break
-        #Part.show(cylface,"cylface") 
+        #Part.show(cylface,"cylface")
         for planeface in facelist :
           if issubclass(type(planeface.Surface),Part.Plane) :
             break
-        #Part.show(planeface,"planeface")       
+        #Part.show(planeface,"planeface")
         normal = planeface.normalAt(0,0)
         revAxisV = cylface.Surface.Axis
         revAxisP = cylface.Surface.Center
         bendA = bendAngle(cylface, revAxisP)
-        #print([bendA, revAxisV, revAxisP, cylface.Orientation]) 
+        #print([bendA, revAxisV, revAxisP, cylface.Orientation])
 
         #To check bend direction
         offsetface = cylface.makeOffsetShape(-thk, 0.0, fill = False)
-        #Part.show(offsetface,"offsetface") 
+        #Part.show(offsetface,"offsetface")
         if offsetface.Area < cylface.Area :
           bendR = cylface.Surface.Radius - thk
           flipped = True
@@ -212,7 +210,7 @@ def smSketchOnSheetMetal(kfactor = 0.5, sketch = '', flipped = False, selFaceNam
         unfoldLength = ( bendR + kfactor * thk ) * abs(bendA) * math.pi / 180.0
         neturalRadius =  ( bendR + kfactor * thk )
         #print([unfoldLength,neturalRadius])
-  
+
         #To get faceNormal, bend face
         faceNormal = normal.cross(revAxisV).normalize()
         #print(faceNormal)
@@ -220,20 +218,20 @@ def smSketchOnSheetMetal(kfactor = 0.5, sketch = '', flipped = False, selFaceNam
           offsetSolid = cylface.makeOffsetShape(bendR/2.0, 0.0, fill = True)
         else:
           offsetSolid = cylface.makeOffsetShape(-bendR/2.0, 0.0, fill = True)
-        #Part.show(offsetSolid,"offsetSolid") 
+        #Part.show(offsetSolid,"offsetSolid")
         tool = BendEdge.copy()
         FaceArea = tool.extrude(faceNormal * -unfoldLength )
-        #Part.show(FaceArea,"FaceArea") 
-        #Part.show(BalanceFace,"BalanceFace") 
+        #Part.show(FaceArea,"FaceArea")
+        #Part.show(BalanceFace,"BalanceFace")
         SolidFace = offsetSolid.common(FaceArea)
-        #Part.show(BendSolidFace,"BendSolidFace") 
+        #Part.show(BendSolidFace,"BendSolidFace")
         if not(SolidFace.Faces):
           faceNormal = faceNormal * -1
           FaceArea = tool.extrude(faceNormal * -unfoldLength )
         BendSolidFace = BalanceFace.common(FaceArea)
         #Part.show(FaceArea,"FaceArea")
         #Part.show(BendSolidFace,"BendSolidFace")
-        #print([bendR, bendA, revAxisV, revAxisP, normal, flipped, BendSolidFace.Faces[0].normalAt(0,0)]) 
+        #print([bendR, bendA, revAxisV, revAxisP, normal, flipped, BendSolidFace.Faces[0].normalAt(0,0)])
     
         bendsolid = SheetMetalBendSolid.BendSolid(BendSolidFace.Faces[0], BendEdge, bendR, thk, neturalRadius, revAxisV, flipped)
         #Part.show(bendsolid,"bendsolid")
@@ -247,10 +245,10 @@ def smSketchOnSheetMetal(kfactor = 0.5, sketch = '', flipped = False, selFaceNam
         sketch_face.translate(faceNormal * unfoldLength)
         #Part.show(sketch_face,"sketch_face")
         sketch_face.rotate(revAxisP, -revAxisV, bendA)
-        #Part.show(sketch_face,"Rsketch_face") 
-        TopFace = smCutFace(sketch_face, resultSolid) 
+        #Part.show(sketch_face,"Rsketch_face")
+        TopFace = smCutFace(sketch_face, resultSolid)
         #Part.show(TopFace,"TopFace") 
-  
+
         #To get top face normal, flatsolid
         normal = TopFace.normalAt(0,0)
         Flatface = sketch_face.common(TopFace)
@@ -278,7 +276,7 @@ class SMSketchOnSheet:
   def __init__(self, obj):
     '''"Add Sketch On Sheet metal" '''
     selobj = Gui.Selection.getSelectionEx()
-    
+
     obj.addProperty("App::PropertyLinkSub", "baseObject", "Parameters", "Base object").baseObject = (selobj[0].Object, selobj[0].SubElementNames)
     obj.addProperty("App::PropertyLink","Sketch","Parameters","Sketch on Sheetmetal").Sketch = selobj[1].Object
     obj.addProperty("App::PropertyFloatConstraint","kfactor","Parameters","Gap from left side").kfactor = (0.5,0.0,1.0,0.01)
@@ -292,11 +290,11 @@ class SMSketchOnSheet:
 
 class SMSketchOnSheetVP:
   "A View provider that nests children objects under the created one"
-      
+
   def __init__(self, obj):
     obj.Proxy = self
     self.Object = obj.Object
-      
+
   def attach(self, obj):
     self.Object = obj.Object
     return
@@ -336,11 +334,11 @@ class SMSketchOnSheetVP:
 
 class SMSketchOnSheetPDVP:
   "A View provider that nests children objects under the created one"
-      
+
   def __init__(self, obj):
     obj.Proxy = self
     self.Object = obj.Object
-      
+
   def attach(self, obj):
     self.Object = obj.Object
     return
@@ -373,7 +371,7 @@ class SMSketchOnSheetPDVP:
     if hasattr(self.Object,"Sketch"):
       objs.append(self.Object.Sketch)
     return objs
- 
+
   def getIcon(self):
     return os.path.join( iconPath , 'SketchOnSheet.svg')
 
@@ -384,7 +382,7 @@ class AddSketchOnSheetCommandClass():
     return {'Pixmap'  : os.path.join( iconPath , 'SketchOnSheet.svg'), # the name of a svg file available in the resources
             'MenuText': QtCore.QT_TRANSLATE_NOOP('SheetMetal','Sketch On Sheet metal'),
             'ToolTip' : QtCore.QT_TRANSLATE_NOOP('SheetMetal','Sketch On Sheet metal')}
- 
+
   def Activated(self):
     doc = FreeCAD.ActiveDocument
     view = Gui.ActiveDocument.ActiveView
@@ -408,7 +406,7 @@ class AddSketchOnSheetCommandClass():
     doc.recompute()
     doc.commitTransaction()
     return
-   
+
   def IsActive(self):
     if len(Gui.Selection.getSelection()) < 2 :
       return False
