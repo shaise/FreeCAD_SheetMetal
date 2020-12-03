@@ -389,6 +389,15 @@ class Simple_node(object):
   def k_Factor(self, val):
     SMError("k_Factor is a readonly property! Won't set to:", val)
 
+def get_surface(face):
+  # 'searchSubShape' is used to distinguish upstream FreeCAD with LinkStage3
+  # branch, which has a different implementation of findPlane()
+  if hasattr(face, 'searchSubShape'):
+    try:
+      return face.findPlane()
+    except Exception:
+      pass
+  return face.Surface
 
 class SheetTree(object):
   def __init__(self, TheShape, f_idx, k_factor_lookup):
@@ -492,23 +501,14 @@ class SheetTree(object):
           self.failed_face_idx = f_idx
 
 
-        if hasattr(self.__Shape.Faces[f_idx].Surface,'Axis'):
-          s_Axis =  self.__Shape.Faces[f_idx].Surface.Axis
-          # print 'We have an axis: ', s_Axis
-          if hasattr(self.__Shape.Faces[f_idx].Surface,'Position'):
-            s_Posi = self.__Shape.Faces[f_idx].Surface.Position
-            # print 'We have a position: ', s_Posi
-            s_Ori = self.__Shape.Faces[f_idx].Orientation
-            s_Axismp = Base.Vector(s_Axis.x, s_Axis.y, s_Axis.z).multiply(2.0*estimated_thickness)
-            if s_Ori == 'Forward':
-              Meassure_axis = Part.makeLine(measure_pos,measure_pos.sub(s_Axismp))
-              ext_Vec = Base.Vector(-s_Axis.x, -s_Axis.y, -s_Axis.z)
-              # Meassure_axis = Part.makeLine(measure_pos,measure_pos.sub(s_Axis.multiply(2.0*estimated_thickness)))
-            else:
-              # Meassure_axis = Part.makeLine(measure_pos,measure_pos.add(s_Axis.multiply(2.0*estimated_thickness)))
-              Meassure_axis = Part.makeLine(measure_pos,measure_pos.add(s_Axismp))
-              ext_Vec = Base.Vector(s_Axis.x, s_Axis.y, s_Axis.z)
-            # Part.show(Meassure_axis)
+        surface = get_surface(self.__Shape.Faces[f_idx])
+        s_Axis =  surface.Axis
+        s_Posi = surface.Position
+        # print 'We have a position: ', s_Posi
+        s_Axismp = Base.Vector(s_Axis.x, s_Axis.y, s_Axis.z).multiply(2.0*estimated_thickness)
+        # Part.show(Meassure_axis)
+        Meassure_axis = Part.makeLine(measure_pos,measure_pos.sub(s_Axismp))
+        ext_Vec = Base.Vector(-s_Axis.x, -s_Axis.y, -s_Axis.z)
 
         lostShape = self.__Shape.copy()
         lLine = Meassure_axis.common(lostShape)
@@ -633,7 +633,7 @@ class SheetTree(object):
 
 
   def isVertOpposite(self, theVert, theNode):
-    F_type = str(self.f_list[theNode.idx].Surface)
+    F_type = str(get_surface(self.f_list[theNode.idx]))
     vF_vert = Base.Vector(theVert.X, theVert.Y, theVert.Z)
     if F_type == "<Plane object>":
       distFailure = vF_vert.distanceToPlane (theNode.facePosi, theNode.axis) - self.__thickness
@@ -652,7 +652,7 @@ class SheetTree(object):
       return False
 
   def getDistanceToFace(self, theVert, theNode):
-    F_type = str(self.f_list[theNode.idx].Surface)
+    F_type = str(get_surface(self.f_list[theNode.idx]))
     vF_vert = Base.Vector(theVert.X, theVert.Y, theVert.Z)
     # a positive distance should go through the sheet metal
     if F_type == "<Plane object>":
@@ -674,7 +674,7 @@ class SheetTree(object):
     # make another cut, in order to add the residual face(s) to the face list.
 
     # Search edges in the face with a vertex common with ise_edge
-    F_type = str(self.f_list[tree_node.idx].Surface)
+    F_type = str(get_surface(self.f_list[tree_node.idx]))
     needCut0 = True
     firstCutFaceIdx = None
     for sEdge in self.f_list[fIdx].Edges:
@@ -750,7 +750,7 @@ class SheetTree(object):
 
     origin = theEdge.Vertexes[eIdx].Point
 
-    F_type = str(self.f_list[theNode.idx].Surface)
+    F_type = str(get_surface(self.f_list[theNode.idx]))
     if F_type == "<Plane object>":
       tan_vec = theEdge.Vertexes[eIdx].Point - theEdge.Vertexes[otherIdx].Point
       #o_thick = Base.Vector(o_vec.x, o_vec.y, o_vec.z)
@@ -965,8 +965,6 @@ class SheetTree(object):
 
     #print 'node angles: ', newNode.bend_angle, ' ', diffAngle
 
-
-
   def make_new_face_node(self, face_idx, P_node, P_edge, wires_e_lists):
     # e_list: list of edges of the top face of a node without the parent-edge (P_edge)
     # analyze the face and get type of face ("Flat" or "Bend")
@@ -974,7 +972,6 @@ class SheetTree(object):
     # In case of "Bend" get angle, k_factor and trans_length
     # put the node into the tree
     newNode = Simple_node(face_idx, P_node, P_edge, self.k_factor_lookup)
-    F_type = str(self.__Shape.Faces[face_idx].Surface)
 
     # This face should be a node in the tree, and is therefore known!
     # removed from the list of all unknown faces
@@ -987,18 +984,16 @@ class SheetTree(object):
     for k in self.index_list:
       such_list.append(k)
 
+    surface = get_surface(self.__Shape.Faces[face_idx])
+    F_type = str(surface)
+
     if F_type == "<Plane object>":
       newNode.node_type = 'Flat' # FIXME
-      FreeCAD.Console.PrintLog("Face"+ str(face_idx+1) + " Type: "+ str(newNode.node_type) + "\n")
 
-      s_Posi = self.__Shape.Faces[face_idx].Surface.Position
+      s_Posi = surface.Position
       newNode.facePosi = s_Posi
-      s_Ori = self.__Shape.Faces[face_idx].Orientation
-      s_Axis = self.__Shape.Faces[face_idx].Surface.Axis
-      if s_Ori == 'Forward':
-        ext_Vec = Base.Vector(-s_Axis.x, -s_Axis.y, -s_Axis.z)
-      else:
-        ext_Vec = Base.Vector(s_Axis.x, s_Axis.y, s_Axis.z)
+      s_Axis = surface.Axis
+      ext_Vec = Base.Vector(-s_Axis.x, -s_Axis.y, -s_Axis.z)
 
       newNode.axis = ext_Vec
       axis_line = Part.makeLine(s_Posi.add(ext_Vec), s_Posi)
@@ -2160,7 +2155,7 @@ def getUnfold(k_factor_lookup):
         else:
           subelement = o.SubObjects[0]
           if hasattr(subelement,'Surface'):
-            s_type = str(subelement.Surface)
+            s_type = str(get_surface(subelement))
             if s_type == "<Plane object>":
               normalVect = subelement.normalAt(0,0)
               mw=FreeCADGui.getMainWindow()
