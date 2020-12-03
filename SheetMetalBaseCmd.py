@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 ###################################################################################
 #
-#  SheetMetalCmd.py
+#  SheetMetalBaseCmd.py
 #  
 #  Copyright 2015 Shai Seger <shaise at gmail dot com>
 #  
@@ -25,7 +25,6 @@
 
 from FreeCAD import Gui
 from PySide import QtCore, QtGui
-import DraftGeomUtils
 
 import FreeCAD, FreeCADGui, Part, os
 __dir__ = os.path.dirname(__file__)
@@ -35,7 +34,7 @@ def smWarnDialog(msg):
     diag = QtGui.QMessageBox(QtGui.QMessageBox.Warning, 'Error in macro MessageBox', msg)
     diag.setWindowModality(QtCore.Qt.ApplicationModal)
     diag.exec_()
- 
+
 def smBelongToBody(item, body):
     if (body is None):
         return False
@@ -43,60 +42,48 @@ def smBelongToBody(item, body):
         if obj.Name == item.Name:
             return True
     return False
-    
+
 def smIsSketchObject(obj):
     return str(obj).find("<Sketcher::") == 0
-        
+
 def smIsOperationLegal(body, selobj):
     #FreeCAD.Console.PrintLog(str(selobj) + " " + str(body) + " " + str(smBelongToBody(selobj, body)) + "\n")
     if smIsSketchObject(selobj) and not smBelongToBody(selobj, body):
         smWarnDialog("The selected geometry does not belong to the active Body.\nPlease make the container of this item active by\ndouble clicking on it.")
         return False
-    return True    
+    return True
 
 def smBase(thk = 2.0, length = 10.0, radius = 1.0, Side = "Inside", MainObject = None):
   WireList = MainObject.Shape.Wires[0]
+  mat = MainObject.getGlobalPlacement()
+  normal = mat.multVec(FreeCAD.Vector(0,0,1))
   #print(sketch_normal)
   if WireList.isClosed() :
     sketch_face = Part.makeFace(MainObject.Shape.Wires,"Part::FaceMakerBullseye" )
     wallSolid = sketch_face.extrude(sketch_face.normalAt(0,0) * thk )
-  else : 
+  else :
     if len(WireList.Edges) > 1 :
-      if Side == "Inside" :
-        wire = WireList.makeOffset2D(thk/2.0, openResult = True, join = 2 )
+      wire_extr = WireList.extrude(normal * -length )
+      #Part.show(wire_extr,"wire_extr")
+      if Side == "Middle" :
+        wire_extr = wire_extr.makeOffsetShape(-thk/2.0, 0.0, fill = False, join = 2)
       elif Side == "Outside" :
-        wire = WireList.makeOffset2D(-thk/2.0, openResult = True, join = 2 )
-      else :
-        wire = WireList
-      #Part.show(wire)
-      filletedWire = DraftGeomUtils.filletWire(wire, (radius + thk / 2) )
-      #Part.show(filletedWire)
-      offsetwire = filletedWire.makeOffset2D(thk/2.0, openResult = True )
-      #Part.show(offsetwire)
-      sketch_face = offsetwire.makeOffset2D(thk, openResult = True, fill = True )
-      #Part.show(sketch_face)
-      Edge_Dir = sketch_face.normalAt(0,0)
-      offsetSolid = offsetwire.extrude(Edge_Dir * length )
-      CutList =[]
-      for x in offsetSolid.Faces :
-        if issubclass(type(x.Surface),Part.Plane):
-          offsetSolid = x.extrude(x.normalAt(0,0) * -thk )
-          CutList.append(offsetSolid)
-          #Part.show(offsetSolid)
-      wallSolid = sketch_face.extrude(Edge_Dir * length )
-      offsetSolids = CutList[0].multiFuse(CutList[1:])
-      wallSolid = wallSolid.fuse(offsetSolids)
-    else : 
+        wire_extr = wire_extr.makeOffsetShape(-thk, 0.0, fill = False, join = 2)
+      #Part.show(wire_extr,"wire_extr")
+      filleted_extr = wire_extr.makeFillet((radius + thk / 2.0), wire_extr.Edges)
+      #Part.show(filleted_extr,"filleted_extr")
+      offset_extr = filleted_extr.makeOffsetShape(-thk/2.0, 0.0, fill = False)
+      #Part.show(offset_extr,"offset_extr")
+      wallSolid = filleted_extr.makeOffsetShape(thk, 0.0, fill = True)
+      #Part.show(wallSolid,"wallSolid")
+    else :
       if MainObject.TypeId == 'Sketcher::SketchObject' :
-         mat = MainObject.getGlobalPlacement()
-         normal = mat.multVec(FreeCAD.Vector(0,0,1))
          sketch_face = MainObject.Shape.Wires[0].extrude(normal * -length )
          #Part.show(sketch_face)
          wallSolid = sketch_face.extrude(sketch_face.Faces[0].normalAt(0,0) * -thk )
 
   Gui.ActiveDocument.getObject(MainObject.Name).Visibility = False
   return wallSolid
-
 
 ###################################################################################
 #  Base Bend
@@ -106,7 +93,7 @@ class SMBaseBend:
   def __init__(self, obj):
     '''"Add Wall with radius bend" '''
     selobj = Gui.Selection.getSelectionEx()[0]
-    
+
     obj.addProperty("App::PropertyLength","radius","Parameters","Bend Radius").radius = 1.0
     obj.addProperty("App::PropertyLength","thickness","Parameters","thickness of sheetmetal").thickness = 1.0
     obj.addProperty("App::PropertyEnumeration", "BendSide", "Parameters","Relief Type").BendSide = ["Outside", "Inside", "Middle"]
@@ -119,14 +106,13 @@ class SMBaseBend:
     s = smBase(thk = fp.thickness.Value, length = fp.length.Value, radius = fp.radius.Value, Side = fp.BendSide, MainObject = fp.BendSketch)
     fp.Shape = s
 
-
 class SMBaseViewProvider:
   "A View provider that nests children objects under the created one"
-      
+
   def __init__(self, obj):
     obj.Proxy = self
     self.Object = obj.Object
-      
+
   def attach(self, obj):
     self.Object = obj.Object
     return
@@ -159,19 +145,18 @@ class SMBaseViewProvider:
     if hasattr(self.Object,"BendSketch"):
       objs.append(self.Object.BendSketch)
     return objs
- 
+
   def getIcon(self):
     return os.path.join( iconPath , 'AddBase.svg')
 
-
 class AddBaseCommandClass():
-  """Add Wall command"""
+  """Add Base command"""
 
   def GetResources(self):
     return {'Pixmap'  : os.path.join( iconPath , 'AddBase.svg'), # the name of a svg file available in the resources
             'MenuText': QtCore.QT_TRANSLATE_NOOP('SheetMetal','Make Base Wall'),
             'ToolTip' : QtCore.QT_TRANSLATE_NOOP('SheetMetal','Create a sheetmetal wall from a sketch')}
- 
+
   def Activated(self):
     doc = FreeCAD.ActiveDocument
     view = Gui.ActiveDocument.ActiveView
@@ -182,7 +167,7 @@ class AddBaseCommandClass():
 #    if not smIsOperationLegal(activeBody, selobj):
 #        return
     doc.openTransaction("BaseBend")
-    if activeBody is None or not smIsSketchObject(selobj):
+    if activeBody is None :
       a = doc.addObject("Part::FeaturePython","BaseBend")
       SMBaseBend(a)
       SMBaseViewProvider(a.ViewObject)
@@ -191,11 +176,11 @@ class AddBaseCommandClass():
       a = doc.addObject("PartDesign::FeaturePython","BaseBend")
       SMBaseBend(a)
       SMBaseViewProvider(a.ViewObject)
-      activeBody.addObject(a)    
+      activeBody.addObject(a)
     doc.recompute()
     doc.commitTransaction()
     return
-   
+
   def IsActive(self):
     if len(Gui.Selection.getSelection()) != 1 :
       return False
