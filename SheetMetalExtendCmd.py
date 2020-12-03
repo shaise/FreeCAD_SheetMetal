@@ -30,6 +30,7 @@ import FreeCAD, FreeCADGui, Part, os, math
 __dir__ = os.path.dirname(__file__)
 iconPath = os.path.join( __dir__, 'Resources', 'icons' )
 smEpsilon = 0.0000001
+import BOPTools.SplitFeatures
 
 # IMPORTANT: please remember to change the element map version in case of any
 # changes in modeling logic
@@ -147,7 +148,16 @@ def smExtrude(extLength = 10.0, gap1 = 0.0, gap2 = 0.0, substraction = False, of
       else :
         pass
 
-    #wallSolid = None
+    Topface_Solid = Cface.Wires[0].extrude(Cface.normalAt(0,0) * -thk)
+    #Part.show(Topface_Solid,"Topface_Solid")
+    SplitSolids = BOPTools.SplitAPI.slice(finalShape, Topface_Solid.Faces, "Standard", 0.0)
+    #Part.show(SplitSolids,"SplitSolids")
+    for SplitSolid in SplitSolids.Solids:
+      check_face = SplitSolid.common(Cface)
+      if check_face.Faces:
+          break
+    #Part.show(SplitSolid,"SplitSolid")
+
     solidlist =[]
     if sketches :
       Wall_face = Part.makeFace(sketch.Shape.Wires, "Part::FaceMakerBullseye")
@@ -156,14 +166,13 @@ def smExtrude(extLength = 10.0, gap1 = 0.0, gap2 = 0.0, substraction = False, of
         thkDir = thkDir * -1
       wallSolid = Wall_face.extrude(thkDir * thk)
       #Part.show(wallSolid, "wallSolid")
-      if substraction :
-        cut_Wall_face = Wall_face.makeOffset2D(offset, fill = True, openResult = True, join = 2, intersection = False)
-        cut_face = Wall_face.fuse(cut_Wall_face)
-        CutSolid = cut_face.extrude(thkDir * thk)
-        #Part.show(CutSolid, "CutSolid")
-        finalShape = finalShape.cut(CutSolid)
-        #Part.show(finalShape,"finalShape")
       solidlist.append(wallSolid)
+      if substraction :
+        for solid in wallSolid.Solids :
+          CutSolid = solid.makeOffsetShape(offset, 0.0, fill = False, join = 2)
+          #Part.show(CutSolid, "CutSolid")
+          finalShape = finalShape.cut(CutSolid)
+          #Part.show(finalShape,"finalShape")
 
     elif extLength > 0.0 :
       # create wall
@@ -173,18 +182,14 @@ def smExtrude(extLength = 10.0, gap1 = 0.0, gap2 = 0.0, substraction = False, of
       solidlist.append(wallSolid)
 
     if len(solidlist) > 0 :
-      Topface_Solid = Cface.extrude(Cface.normalAt(0,0) * -thk)
-      #Part.show(Topface_Solid,"Topface_Solid")
-      #solidlist.append(Topface_Solid)
-      resultSolid = Topface_Solid.fuse(solidlist[0])
+      resultSolid = SplitSolid.fuse(solidlist[0])
       resultSolid = resultSolid.removeSplitter()
+      #Part.show(resultSolid,"resultSolid")
       # merge final list
       finalShape = finalShape.cut(resultSolid)
+      #Part.show(finalShape,"finalShape")
       finalShape = finalShape.fuse(resultSolid)
-
-  #finalShape = finalShape.removeSplitter()
   return finalShape
-
 
 class SMExtrudeWall:
   def __init__(self, obj):
