@@ -52,6 +52,7 @@ class SMWorkbench (Workbench):
     def Initialize(self):
         "This function is executed when FreeCAD starts"
         import SheetMetalCmd # import here all the needed files that create your FreeCAD commands
+        import SheetMetalExtendCmd
         import SheetMetalUnfolder
         import SheetMetalBaseCmd
         import SheetMetalFoldCmd

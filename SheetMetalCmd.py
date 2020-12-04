@@ -855,11 +855,8 @@ class SMViewProviderTree:
     return objs
  
   def getIcon(self):
-    if isinstance(self.Object.Proxy,SMBendWall):
-      return os.path.join( iconPath , 'AddWall.svg')
-    elif isinstance(self.Object.Proxy,SMExtrudeWall):
-      return os.path.join( iconPath , 'SMExtrude.svg')
-      
+    return os.path.join( iconPath , 'AddWall.svg')
+
   def setEdit(self,vobj,mode):
     taskd = SMBendWallTaskPanel()
     taskd.obj = vobj.Object
@@ -917,10 +914,7 @@ class SMViewProviderFlat:
     return objs
  
   def getIcon(self):
-    if isinstance(self.Object.Proxy,SMBendWall):
-      return os.path.join( iconPath , 'AddWall.svg')
-    elif isinstance(self.Object.Proxy,SMExtrudeWall):
-      return os.path.join( iconPath , 'SMExtrude.svg')
+    return os.path.join( iconPath , 'AddWall.svg')
 
   def setEdit(self,vobj,mode):
     taskd = SMBendWallTaskPanel()
@@ -936,7 +930,6 @@ class SMViewProviderFlat:
     self.Object.baseObject[0].ViewObject.Visibility=False
     self.Object.ViewObject.Visibility=True
     return False
-
 
 class SMBendWallTaskPanel:
     '''A TaskPanel for the Sheetmetal'''
@@ -1073,103 +1066,3 @@ class AddWallCommandClass():
 
 Gui.addCommand('SMMakeWall',AddWallCommandClass())
 
-###########################################################################################
-# Extrude
-###########################################################################################
-
-def smExtrude(extLength = 10.0, selFaceNames = '', selObject = ''):
-  
-#  selFace = Gui.Selection.getSelectionEx()[0].SubObjects[0]
-#  selObjectName = Gui.Selection.getSelection()[0].Name
-  AAD = FreeCAD.ActiveDocument
-  for selFaceName in selFaceNames:
-    selFace = selObject.getElement(selFaceName)
-
-    # extrusion direction
-    V_extDir = selFace.normalAt( 0,0 )
-
-    # extrusion
-    wallFace = selFace.extrude( V_extDir*extLength )
-    finalShape = selObject.fuse( wallFace )
-  
-  #finalShape = finalShape.removeSplitter()
-  #finalShape = Part.Solid(finalShape.childShapes()[0])  
-  #Gui.ActiveDocument.getObject( selObjectName ).Visibility = False
-  return finalShape
-
-
-  
-class SMExtrudeWall:
-  def __init__(self, obj):
-    '''"Add Wall with radius bend" '''
-    selobj = Gui.Selection.getSelectionEx()[0]
-    
-    obj.addProperty("App::PropertyLength","length","Parameters","Length of wall").length = 10.0
-    obj.addProperty("App::PropertyDistance","gap1","Parameters","Gap from left side").gap1 = 0.0
-    obj.addProperty("App::PropertyDistance","gap2","Parameters","Gap from right side").gap2 = 0.0
-    obj.addProperty("App::PropertyLinkSub", "baseObject", "Parameters", "Base object").baseObject = (selobj.Object, selobj.SubElementNames)
-    obj.Proxy = self
-
-  def getElementMapVersion(self, _fp, ver, _prop, restored):
-      if not restored:
-          return smElementMapVersion + ver
-
-  def execute(self, fp):
-
-    # pass selected object shape
-    Main_Object = fp.baseObject[0].Shape.copy()
-    face = fp.baseObject[1]
-
-    if fp.gap1.Value == 0.0 and fp.gap2.Value == 0.0:
-      s = smExtrude(extLength = fp.length.Value, selFaceNames = face, selObject = Main_Object)
-    else:
-      s,f = smBend(bendA = 0.0, extLen = fp.length.Value, gap1 = fp.gap1.Value, gap2 = fp.gap2.Value, reliefW = 0.0,
-                selFaceNames = face, MainObject = Main_Object)
-    fp.baseObject[0].ViewObject.Visibility = False
-    fp.Shape = s
-    
-
-class SMExtrudeCommandClass():
-  """Extrude face"""
-
-  def GetResources(self):
-    return {'Pixmap'  : os.path.join( iconPath , 'SMExtrude.svg'), # the name of a svg file available in the resources
-            'MenuText': QtCore.QT_TRANSLATE_NOOP('SheetMetal','Extend Face'),
-            'ToolTip' : QtCore.QT_TRANSLATE_NOOP('SheetMetal','Extend a face along normal')}
- 
-  def Activated(self):
-    doc = FreeCAD.ActiveDocument
-    view = Gui.ActiveDocument.ActiveView
-    activeBody = None
-    selobj = Gui.Selection.getSelectionEx()[0].Object
-    if hasattr(view,'getActiveObject'):
-      activeBody = view.getActiveObject('pdbody')
-    if not smIsOperationLegal(activeBody, selobj):
-        return      
-    doc.openTransaction("Extend")
-    if (activeBody is None):
-      a = doc.addObject("Part::FeaturePython","Extend")
-      SMExtrudeWall(a)
-      SMViewProviderTree(a.ViewObject)
-    else:
-      a = doc.addObject("PartDesign::FeaturePython","Extend")
-      SMExtrudeWall(a)
-      SMViewProviderFlat(a.ViewObject)
-      activeBody.addObject(a)
-    FreeCADGui.Selection.clearSelection()
-    doc.recompute()
-    doc.commitTransaction()
-    return
-   
-  def IsActive(self):
-    if len(Gui.Selection.getSelection()) < 1 or len(Gui.Selection.getSelectionEx()[0].SubElementNames) < 1:
-      return False
-    selobj = Gui.Selection.getSelection()[0]
-    if selobj.isDerivedFrom("Sketcher::SketchObject"):
-      return False
-    for selFace in Gui.Selection.getSelectionEx()[0].SubObjects:
-      if type(selFace) == Part.Vertex :
-        return False
-    return True
-
-Gui.addCommand('SMExtrudeFace',SMExtrudeCommandClass())
