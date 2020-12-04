@@ -53,17 +53,23 @@ def smIsOperationLegal(body, selobj):
         return False
     return True
 
-def smBase(thk = 2.0, length = 10.0, radius = 1.0, Side = "Inside", MainObject = None):
+def smBase(thk = 2.0, length = 10.0, radius = 1.0, Side = "Inside", midplane = False, reverse = False, MainObject = None):
   WireList = MainObject.Shape.Wires[0]
   mat = MainObject.getGlobalPlacement()
   normal = mat.multVec(FreeCAD.Vector(0,0,1))
   #print(sketch_normal)
   if WireList.isClosed() :
-    sketch_face = Part.makeFace(MainObject.Shape.Wires,"Part::FaceMakerBullseye" )
-    wallSolid = sketch_face.extrude(sketch_face.normalAt(0,0) * thk )
+    sketch_face = Part.makeFace(MainObject.Shape.Wires,"Part::FaceMakerBullseye")
+    wallSolid = sketch_face.extrude(sketch_face.normalAt(0,0) * thk)
   else :
     if len(WireList.Edges) > 1 :
-      wire_extr = WireList.extrude(normal * -length )
+      if midplane :
+        WireList.translate(normal * length/2.0)
+        wire_extr = WireList.extrude(normal * -length)
+      elif reverse:
+        wire_extr = WireList.extrude(normal * length)
+      else :
+        wire_extr = WireList.extrude(normal * -length)
       #Part.show(wire_extr,"wire_extr")
       if Side == "Middle" :
         wire_extr = wire_extr.makeOffsetShape(-thk/2.0, 0.0, fill = False, join = 2)
@@ -78,20 +84,16 @@ def smBase(thk = 2.0, length = 10.0, radius = 1.0, Side = "Inside", MainObject =
       #Part.show(wallSolid,"wallSolid")
     else :
       if MainObject.TypeId == 'Sketcher::SketchObject' :
-         sketch_face = MainObject.Shape.Wires[0].extrude(normal * -length )
+         sketch_face = MainObject.Shape.Wires[0].extrude(normal * -length)
          #Part.show(sketch_face)
-         wallSolid = sketch_face.extrude(sketch_face.Faces[0].normalAt(0,0) * -thk )
+         wallSolid = sketch_face.extrude(sketch_face.Faces[0].normalAt(0,0) * -thk)
 
   Gui.ActiveDocument.getObject(MainObject.Name).Visibility = False
   return wallSolid
 
-###################################################################################
-#  Base Bend
-###################################################################################
-
 class SMBaseBend:
   def __init__(self, obj):
-    '''"Add Wall with radius bend" '''
+    '''"Add wall or Wall with radius bend" '''
     selobj = Gui.Selection.getSelectionEx()[0]
 
     obj.addProperty("App::PropertyLength","radius","Parameters","Bend Radius").radius = 1.0
@@ -99,11 +101,18 @@ class SMBaseBend:
     obj.addProperty("App::PropertyEnumeration", "BendSide", "Parameters","Relief Type").BendSide = ["Outside", "Inside", "Middle"]
     obj.addProperty("App::PropertyLength","length","Parameters","Length of wall").length = 100.0
     obj.addProperty("App::PropertyLink", "BendSketch", "Parameters", "Wall Sketch object").BendSketch = selobj.Object
+    obj.addProperty("App::PropertyBool","MidPlane","Parameters","Extrude Symmetric to Plane").MidPlane = False
+    obj.addProperty("App::PropertyBool","Reverse","Parameters","Reverse Extrusion Direction").Reverse = False
     obj.Proxy = self
 
   def execute(self, fp):
     '''"Print a short message when doing a recomputation, this method is mandatory" '''
-    s = smBase(thk = fp.thickness.Value, length = fp.length.Value, radius = fp.radius.Value, Side = fp.BendSide, MainObject = fp.BendSketch)
+    if (not hasattr(fp,"MidPlane")):
+      obj.addProperty("App::PropertyBool","MidPlane","Parameters","Extrude Symmetric to Plane").MidPlane = False
+      obj.addProperty("App::PropertyBool","Reverse","Parameters","Reverse Extrusion Direction").Reverse = False
+
+    s = smBase(thk = fp.thickness.Value, length = fp.length.Value, radius = fp.radius.Value, Side = fp.BendSide, 
+                  midplane = fp.MidPlane, reverse = fp.Reverse, MainObject = fp.BendSketch)
     fp.Shape = s
 
 class SMBaseViewProvider:
