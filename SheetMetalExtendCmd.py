@@ -95,8 +95,8 @@ def smFace(selItem, obj) :
     selFace = selItem
   return selFace
 
-def smExtrude(extLength = 10.0, gap1 = 0.0, gap2 = 0.0, substraction = False, offset = 0.02, sketch = '', selFaceNames = '',
-                 selObject = ''):
+def smExtrude(extLength = 10.0, gap1 = 0.0, gap2 = 0.0, substraction = False, offset = 0.02, refine = True, sketch = '',
+                 selFaceNames = '', selObject = ''):
   
 #  selFace = Gui.Selection.getSelectionEx()[0].SubObjects[0]
 #  selObjectName = Gui.Selection.getSelection()[0].Name
@@ -183,7 +183,8 @@ def smExtrude(extLength = 10.0, gap1 = 0.0, gap2 = 0.0, substraction = False, of
 
     if len(solidlist) > 0 :
       resultSolid = SplitSolid.fuse(solidlist[0])
-      resultSolid = resultSolid.removeSplitter()
+      if refine :
+        resultSolid = resultSolid.removeSplitter()
       #Part.show(resultSolid,"resultSolid")
       # merge final list
       finalShape = finalShape.cut(resultSolid)
@@ -203,6 +204,7 @@ class SMExtrudeWall:
     obj.addProperty("App::PropertyLink","Sketch","ParametersExt","Wall Sketch")
     obj.addProperty("App::PropertyBool","UseSubstraction","ParametersExt","Use Parameters").UseSubstraction = False
     obj.addProperty("App::PropertyDistance","Offset","ParametersExt","Offset for substraction").Offset = 0.02
+    obj.addProperty("App::PropertyBool","Refine","ParametersExt","Use Parameters").Refine = True
     obj.Proxy = self
 
   def getElementMapVersion(self, _fp, ver, _prop, restored):
@@ -214,12 +216,13 @@ class SMExtrudeWall:
       obj.addProperty("App::PropertyLink","Sketch","ParametersExt","Wall Sketch")
       obj.addProperty("App::PropertyBool","UseSubstraction","ParametersExt","Use Parameters").UseSubstraction = False
       obj.addProperty("App::PropertyDistance","Offset","ParametersExt","Offset for substraction").Offset = 0.02
+      obj.addProperty("App::PropertyBool","Refine","ParametersExt","Use Parameters").Refine = False
     # pass selected object shape
     Main_Object = fp.baseObject[0].Shape.copy()
     face = fp.baseObject[1]
 
     s = smExtrude(extLength = fp.length.Value,  gap1 = fp.gap1.Value, gap2 = fp.gap2.Value, substraction = fp.UseSubstraction, 
-                    offset = fp.Offset.Value, sketch = fp.Sketch, selFaceNames = face, selObject = Main_Object)
+                    offset = fp.Offset.Value, refine = fp.Refine, sketch = fp.Sketch, selFaceNames = face, selObject = Main_Object)
     fp.baseObject[0].ViewObject.Visibility = False
     if fp.Sketch :
       fp.Sketch.ViewObject.Visibility = False
