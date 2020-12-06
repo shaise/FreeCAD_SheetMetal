@@ -394,7 +394,9 @@ def get_surface(face):
   # branch, which has a different implementation of findPlane()
   if hasattr(face, 'searchSubShape'):
     try:
-      return face.findPlane()
+      surface = face.findPlane()
+      if surface:
+          return surface
     except Exception:
       pass
   return face.Surface
