@@ -399,7 +399,10 @@ def get_surface(face):
           return surface
     except Exception:
       pass
-  return face.Surface
+  surface = face.Surface
+  if face.Orientation == 'Reversed' and isinstance(surface, Part.Plane):
+    return Part.Plane(surface.Position, -surface.Axis)
+  return surface
 
 class SheetTree(object):
   def __init__(self, TheShape, f_idx, k_factor_lookup):
