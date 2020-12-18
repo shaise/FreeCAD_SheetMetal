@@ -25,6 +25,7 @@
 
 from FreeCAD import Gui
 from PySide import QtCore, QtGui
+from FreeCAD import Base
 
 import FreeCAD, FreeCADGui, Part, os, math
 __dir__ = os.path.dirname(__file__)
@@ -95,11 +96,70 @@ def smFace(selItem, obj) :
     selFace = selItem
   return selFace
 
-def smExtrude(extLength = 10.0, gap1 = 0.0, gap2 = 0.0, substraction = False, offset = 0.02, refine = True, sketch = '',
-                 selFaceNames = '', selObject = ''):
-  
-#  selFace = Gui.Selection.getSelectionEx()[0].SubObjects[0]
-#  selObjectName = Gui.Selection.getSelection()[0].Name
+def smTouchFace(Face, obj, thk) :
+  # find face Modified During loop
+  for face in obj.Faces :
+    face_common = face.common(Face)
+    if face_common.Faces :
+      edge = face.Vertexes[0].extrude(face.normalAt(0,0) * -thk*2)
+      edge_common = obj.common(edge)
+      #print(edge_common.Length)
+      if edge_common.Length == thk :
+        break
+  return face
+
+def smgetSubface(face, obj, edge, thk):
+  normal = face.normalAt(0,0)
+  faceVert = face.Vertexes[0].Point
+  pt1 = edge.Vertexes[0].Point.projectToPlane(faceVert, normal)
+  pt2 = edge.Vertexes[1].Point.projectToPlane(faceVert, normal)
+  vec1 = (pt2-pt1)
+  wallsolidlist =[]
+  for solid in obj.Solids:
+    pt_list =[]
+    for vertex in solid.Vertexes :
+      poi = vertex.Point
+      pt = poi.projectToPlane(faceVert, normal)
+      pt_list.append(pt)
+    p1 = Base.Vector(min([pts.x for pts in pt_list]), min([pts.y for pts in pt_list]), min([pts.z for pts in pt_list]))
+    p2 = Base.Vector(max([pts.x for pts in pt_list]), max([pts.y for pts in pt_list]), max([pts.z for pts in pt_list]))
+    #print([p1, p2])
+    vec2 = (p2 - p1)
+    angle1 = vec2.getAngle(vec1)
+    angle = math.degrees(angle1)
+    #print(angle)
+    e = Part.makeLine(p1, p2)
+    e.rotate(p1, normal, -angle)
+    vec2 = (e.valueAt(e.LastParameter) - e.valueAt(e.FirstParameter)).normalize()
+    coeff = vec2.dot(vec1.normalize())
+    print(coeff)
+    if coeff != 1.0 :
+      angle = 90 - angle
+    e = Part.Line(p1, p2).toShape()
+    e1 = e.copy() 
+    e1.rotate(p1, normal, -angle)
+    e2 = e.copy() 
+    e2.rotate(p2, normal, 90-angle)
+    section1 = e1.section(e2)
+    #Part.show(section1,'section1')
+    p3 = section1.Vertexes[0].Point
+    e3 = e.copy() 
+    e3.rotate(p1, normal, 90-angle)
+    e4 = e.copy() 
+    e4.rotate(p2, normal, -angle)
+    section2 = e3.section(e4)
+    #Part.show(section2,'section2')
+    p4 = section2.Vertexes[0].Point
+    w = Part.makePolygon([p1,p3,p2,p4,p1])
+    #Part.show(w, "wire")
+    face = Part.Face(w)
+    wallSolid = face.extrude(normal * -thk)
+    wallsolidlist.append(wallSolid)
+  return wallsolidlist
+
+def smExtrude(extLength = 10.0, gap1 = 0.0, gap2 = 0.0, substraction = False, offset = 0.02, refine = True, 
+                            sketch = '', selFaceNames = '', selObject = ''):
+
   finalShape = selObject
   for selFaceName in selFaceNames:
     selItem = selObject.getElement(selFaceName)
@@ -155,9 +215,16 @@ def smExtrude(extLength = 10.0, gap1 = 0.0, gap2 = 0.0, substraction = False, of
     for SplitSolid in SplitSolids.Solids:
       check_face = SplitSolid.common(Cface)
       if check_face.Faces:
+          SplitSolid1 = SplitSolid
           break
-    #Part.show(SplitSolid,"SplitSolid")
+    #Part.show(SplitSolid1,"SplitSolid1")
+    for SplitSolid in SplitSolids.Solids:
+      if not(SplitSolid.isSame(SplitSolid1)) :
+        SplitSolid2 = SplitSolid
+        break
+    #Part.show(SplitSolid2, "SplitSolid2")
 
+    #wallSolid = None
     solidlist =[]
     if sketches :
       Wall_face = Part.makeFace(sketch.Shape.Wires, "Part::FaceMakerBullseye")
@@ -167,8 +234,14 @@ def smExtrude(extLength = 10.0, gap1 = 0.0, gap2 = 0.0, substraction = False, of
       wallSolid = Wall_face.extrude(thkDir * thk)
       #Part.show(wallSolid, "wallSolid")
       solidlist.append(wallSolid)
+      overlap_solid = wallSolid.common(SplitSolid2)
+      #Part.show(overlap_solid, "overlap_solid")
+      substract_face = smTouchFace(wallSolid, SplitSolid2, thk)
+      #Part.show(substract_face, "substract_face")
+      overlap_solidlist = smgetSubface(substract_face, overlap_solid, lenEdge, thk)
+
       if substraction :
-        for solid in wallSolid.Solids :
+        for solid in overlap_solidlist:
           CutSolid = solid.makeOffsetShape(offset, 0.0, fill = False, join = 2)
           #Part.show(CutSolid, "CutSolid")
           finalShape = finalShape.cut(CutSolid)
@@ -182,7 +255,7 @@ def smExtrude(extLength = 10.0, gap1 = 0.0, gap2 = 0.0, substraction = False, of
       solidlist.append(wallSolid)
 
     if len(solidlist) > 0 :
-      resultSolid = SplitSolid.fuse(solidlist[0])
+      resultSolid = SplitSolid1.fuse(solidlist[0])
       if refine :
         resultSolid = resultSolid.removeSplitter()
       #Part.show(resultSolid,"resultSolid")
@@ -190,6 +263,8 @@ def smExtrude(extLength = 10.0, gap1 = 0.0, gap2 = 0.0, substraction = False, of
       finalShape = finalShape.cut(resultSolid)
       #Part.show(finalShape,"finalShape")
       finalShape = finalShape.fuse(resultSolid)
+
+  #Part.show(finalShape,"finalShape")
   return finalShape
 
 class SMExtrudeWall:
