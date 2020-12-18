@@ -97,7 +97,7 @@ def smFace(selItem, obj) :
   return selFace
 
 def smTouchFace(Face, obj, thk) :
-  # find face Modified During loop
+  # find face Modified During loop & if it is not a thickness side face
   for face in obj.Faces :
     face_common = face.common(Face)
     if face_common.Faces :
@@ -109,11 +109,14 @@ def smTouchFace(Face, obj, thk) :
   return face
 
 def smgetSubface(face, obj, edge, thk):
+  # Project thickness side edge to get one side of rectangle
   normal = face.normalAt(0,0)
   faceVert = face.Vertexes[0].Point
   pt1 = edge.Vertexes[0].Point.projectToPlane(faceVert, normal)
   pt2 = edge.Vertexes[1].Point.projectToPlane(faceVert, normal)
   vec1 = (pt2-pt1)
+
+  # find min & max point of cut shape
   wallsolidlist =[]
   for solid in obj.Solids:
     pt_list =[]
@@ -124,17 +127,23 @@ def smgetSubface(face, obj, edge, thk):
     p1 = Base.Vector(min([pts.x for pts in pt_list]), min([pts.y for pts in pt_list]), min([pts.z for pts in pt_list]))
     p2 = Base.Vector(max([pts.x for pts in pt_list]), max([pts.y for pts in pt_list]), max([pts.z for pts in pt_list]))
     #print([p1, p2])
+
+    # Find angle between diagnoal & thickness side edge
     vec2 = (p2 - p1)
     angle1 = vec2.getAngle(vec1)
     angle = math.degrees(angle1)
     #print(angle)
+
+    # Check & correct orientation of diagnoal edge rotation
     e = Part.makeLine(p1, p2)
     e.rotate(p1, normal, -angle)
     vec2 = (e.valueAt(e.LastParameter) - e.valueAt(e.FirstParameter)).normalize()
     coeff = vec2.dot(vec1.normalize())
-    print(coeff)
+    #print(coeff)
     if coeff != 1.0 :
       angle = 90 - angle
+
+    # Create Cut Rectangle Face from min/max points & angle
     e = Part.Line(p1, p2).toShape()
     e1 = e.copy() 
     e1.rotate(p1, normal, -angle)
@@ -193,7 +202,7 @@ def smExtrude(extLength = 10.0, gap1 = 0.0, gap2 = 0.0, substraction = False, of
         break
     #Part.show(Cface, "Cface")
 
-    # main Length Edge
+    # Main Length Edge, Extrusion direction
     MlenEdge = lenEdge
     leng = MlenEdge.Length
     revAxisV.normalize()
@@ -208,6 +217,7 @@ def smExtrude(extLength = 10.0, gap1 = 0.0, gap2 = 0.0, substraction = False, of
       else :
         pass
 
+    # Split solid Based on Top Face into two solid
     Topface_Solid = Cface.Wires[0].extrude(Cface.normalAt(0,0) * -thk)
     #Part.show(Topface_Solid,"Topface_Solid")
     SplitSolids = BOPTools.SplitAPI.slice(finalShape, Topface_Solid.Faces, "Standard", 0.0)
@@ -224,7 +234,7 @@ def smExtrude(extLength = 10.0, gap1 = 0.0, gap2 = 0.0, substraction = False, of
         break
     #Part.show(SplitSolid2, "SplitSolid2")
 
-    #wallSolid = None
+    # Make solid from sketch, if sketch is present
     solidlist =[]
     if sketches :
       Wall_face = Part.makeFace(sketch.Shape.Wires, "Part::FaceMakerBullseye")
@@ -234,12 +244,17 @@ def smExtrude(extLength = 10.0, gap1 = 0.0, gap2 = 0.0, substraction = False, of
       wallSolid = Wall_face.extrude(thkDir * thk)
       #Part.show(wallSolid, "wallSolid")
       solidlist.append(wallSolid)
+
+      # To find Overlapping Solid, non thickness side Face that touch Overlapping Solid 
       overlap_solid = wallSolid.common(SplitSolid2)
       #Part.show(overlap_solid, "overlap_solid")
       substract_face = smTouchFace(wallSolid, SplitSolid2, thk)
       #Part.show(substract_face, "substract_face")
+
+      # To get solids that aligned/normal to touching face
       overlap_solidlist = smgetSubface(substract_face, overlap_solid, lenEdge, thk)
 
+      # Substract solid from Initial Solid
       if substraction :
         for solid in overlap_solidlist:
           CutSolid = solid.makeOffsetShape(offset, 0.0, fill = False, join = 2)
@@ -248,18 +263,20 @@ def smExtrude(extLength = 10.0, gap1 = 0.0, gap2 = 0.0, substraction = False, of
           #Part.show(finalShape,"finalShape")
 
     elif extLength > 0.0 :
-      # create wall
+      # create wall, if edge or face selected
       Wall_face = smMakeFace(lenEdge, FaceDir, extLength, gap1, gap2, op='SMW')
       wallSolid = Wall_face.extrude(thkDir * thk)
       #Part.show(wallSolid,"wallSolid")
       solidlist.append(wallSolid)
 
+    # Fuse All solid created to Split solid 
     if len(solidlist) > 0 :
       resultSolid = SplitSolid1.fuse(solidlist[0])
       if refine :
         resultSolid = resultSolid.removeSplitter()
       #Part.show(resultSolid,"resultSolid")
-      # merge final list
+
+      # Merge final list
       finalShape = finalShape.cut(resultSolid)
       #Part.show(finalShape,"finalShape")
       finalShape = finalShape.fuse(resultSolid)
