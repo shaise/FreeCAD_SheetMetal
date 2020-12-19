@@ -305,10 +305,10 @@ class SMExtrudeWall:
 
   def execute(self, fp):
     if (not hasattr(fp,"Sketch")):
-      obj.addProperty("App::PropertyLink","Sketch","ParametersExt","Wall Sketch")
-      obj.addProperty("App::PropertyBool","UseSubstraction","ParametersExt","Use Parameters").UseSubstraction = False
-      obj.addProperty("App::PropertyDistance","Offset","ParametersExt","Offset for substraction").Offset = 0.02
-      obj.addProperty("App::PropertyBool","Refine","ParametersExt","Use Parameters").Refine = False
+      fp.addProperty("App::PropertyLink","Sketch","ParametersExt","Wall Sketch")
+      fp.addProperty("App::PropertyBool","UseSubstraction","ParametersExt","Use Parameters").UseSubstraction = False
+      fp.addProperty("App::PropertyDistance","Offset","ParametersExt","Offset for substraction").Offset = 0.02
+      fp.addProperty("App::PropertyBool","Refine","ParametersExt","Use Parameters").Refine = False
     # pass selected object shape
     Main_Object = fp.baseObject[0].Shape.copy()
     face = fp.baseObject[1]
