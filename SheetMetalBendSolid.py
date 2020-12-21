@@ -1,27 +1,27 @@
 # -*- coding: utf-8 -*-
-###################################################################################
+##############################################################################
 #
 #  SheetMetalBendSolid.py
-#  
+#
 #  Copyright 2020 Jaise James <jaisejames at gmail dot com>
-#  
+#
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation; either version 2 of the License, or
 #  (at your option) any later version.
-#  
+#
 #  This program is distributed in the hope that it will be useful,
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #  GNU General Public License for more details.
-#  
+#
 #  You should have received a copy of the GNU General Public License
 #  along with this program; if not, write to the Free Software
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
-#  
-#  
-###################################################################################
+#
+#
+##############################################################################
 import FreeCAD, Part, math
 
 
@@ -53,16 +53,16 @@ def WrapFace(Face, Radius, axis, normal, zeroVert, cent, zeroVertNormal):
     Edges = []
     for e in Face.Edges:
         #print(type(e.Curve))
-        if isinstance(e.Curve, (Part.Circle, Part.ArcOfCircle)) : 
+        if isinstance(e.Curve, (Part.Circle, Part.ArcOfCircle)) :
             #bspline = gg.Curve.toBSpline()
             poles = e.discretize(Number=50)
             bspline=Part.BSplineCurve()
             bspline.interpolate(poles)
             #bs = bspline.toShape()
-            #Part.show(bs,"bspline")            
+            #Part.show(bs,"bspline")
             Edges.append(WrapBSpline(bspline, Radius, zeroVert, cent, axis, zeroVertNormal))
 
-        elif isinstance(e.Curve, Part.BSplineCurve) : 
+        elif isinstance(e.Curve, Part.BSplineCurve) :
             Edges.append(WrapBSpline(e.Curve, Radius, zeroVert, cent, axis, zeroVertNormal))
 
         elif isinstance(e.Curve, Part.Line) :
@@ -98,7 +98,7 @@ def WrapFace(Face, Radius, axis, normal, zeroVert, cent, zeroVertNormal):
                 bspline=Part.BSplineCurve()
                 bspline.interpolate(poles, PeriodicFlag=False)
                 #bs = bspline.toShape()
-                #Part.show(bs,"bspline")    
+                #Part.show(bs,"bspline")
                 #bspline = disgg.toBSpline()
                 Edges.append(WrapBSpline(bspline, Radius, zeroVert, cent, axis, zeroVertNormal))
     return Edges
@@ -109,14 +109,14 @@ def BendSolid(SelFace, SelEdge, BendR, thk, neturalRadius, Axis, flipped):
     if not(flipped) :
         cent = zeroVert + normal * BendR
         zeroVertNormal = normal.cross(Axis) * -1
-        shp = Part.makeCylinder(BendR, 100, cent, Axis, 360)        
+        shp = Part.makeCylinder(BendR, 100, cent, Axis, 360)
     else:
          cent = zeroVert - normal * (BendR + thk)
          zeroVertNormal = normal.cross(Axis)
-         shp = Part.makeCylinder(BendR+thk, 100, cent, Axis, 360) 
+         shp = Part.makeCylinder(BendR+thk, 100, cent, Axis, 360)
     elt = shp.Face1
     #Part.show(elt)
-    #Part.show(SelFace)        
+    #Part.show(SelFace)
     #print([cent,zeroVertNormal])
 
     Wirelist = []
@@ -134,7 +134,7 @@ def BendSolid(SelFace, SelEdge, BendR, thk, neturalRadius, Axis, flipped):
         bendsolid = nextFace.makeOffsetShape(thk, 0.0, fill = True)
     else:
         bendsolid = nextFace.makeOffsetShape(-thk, 0.0, fill = True)
-    #Part.show(bendsolid, "bendsolid")  
+    #Part.show(bendsolid, "bendsolid")
     return bendsolid
 
 

@@ -2,25 +2,25 @@
 ###################################################################################
 #
 #  SheetMetalCmd.py
-#  
+#
 #  Copyright 2015 Shai Seger <shaise at gmail dot com>
-#  
+#
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation; either version 2 of the License, or
 #  (at your option) any later version.
-#  
+#
 #  This program is distributed in the hope that it will be useful,
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #  GNU General Public License for more details.
-#  
+#
 #  You should have received a copy of the GNU General Public License
 #  along with this program; if not, write to the Free Software
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
-#  
-#  
+#
+#
 ###################################################################################
 
 from FreeCAD import Gui
@@ -39,7 +39,7 @@ def smWarnDialog(msg):
     diag = QtGui.QMessageBox(QtGui.QMessageBox.Warning, 'Error in macro MessageBox', msg)
     diag.setWindowModality(QtCore.Qt.ApplicationModal)
     diag.exec_()
- 
+
 def smBelongToBody(item, body):
     if (body is None):
         return False
@@ -47,17 +47,17 @@ def smBelongToBody(item, body):
         if obj.Name == item.Name:
             return True
     return False
-    
+
 def smIsPartDesign(obj):
     return str(obj).find("<PartDesign::") == 0
-        
+
 def smIsOperationLegal(body, selobj):
     #FreeCAD.Console.PrintLog(str(selobj) + " " + str(body) + " " + str(smBelongToBody(selobj, body)) + "\n")
     if smIsPartDesign(selobj) and not smBelongToBody(selobj, body):
         smWarnDialog("The selected geometry does not belong to the active Body.\nPlease make the container of this item active by\ndouble clicking on it.")
         return False
-    return True    
- 
+    return True
+
 def smStrEdge(e):
     return "[" + str(e.valueAt(e.FirstParameter)) + " , " + str(e.valueAt(e.LastParameter)) + "]"
 
@@ -85,7 +85,7 @@ def smMakeReliefFace(edge, dir, gap, reliefW, reliefD, reliefType, op=''):
     if hasattr(face, 'mapShapes'):
         face.mapShapes([(edge,face)],[],op)
     return face
- 
+
 def smMakeFace(edge, dir, extLen, gap1 = 0.0,
                gap2 = 0.0, angle1 = 0.0, angle2 = 0.0, op = ''):
     len1 = extLen * math.tan(math.radians(angle1))
@@ -109,7 +109,7 @@ def smMakeFace(edge, dir, extLen, gap1 = 0.0,
     if hasattr(face, 'mapShapes'):
         face.mapShapes([(edge,face)],None,op)
     return face
-    
+
 def smRestrict(var, fromVal, toVal):
     if var < fromVal:
       return fromVal
@@ -204,7 +204,7 @@ def smMiter(bendR = 1.0, bendA = 90.0, miterA1 = 0.0, miterA2 = 0.0, flipped = F
         if (p2 - p0).Length < smEpsilon:
           revAxisV = p1 - p2
           break
-  
+
       # find the large face connected with selected face
       list2 = MainObject.ancestorsOfType(lenEdge, Part.Face)
       for Cface in list2 :
@@ -291,7 +291,7 @@ def smMiter(bendR = 1.0, bendA = 90.0, miterA1 = 0.0, miterA2 = 0.0, flipped = F
             dist1 = (p1-vp1).Length
             dist2 = (p2-vp1).Length
             if abs(dist1) < abs(dist2) :
-              miterA1List[j] = Angle  * sign / 2.0 
+              miterA1List[j] = Angle  * sign / 2.0
               gap1List[j] = max(0.0, gaps + 0.1)
               reliefDList[j] = 0.0
             elif abs(dist2) < abs(dist1) :
@@ -343,12 +343,12 @@ def smMiter(bendR = 1.0, bendA = 90.0, miterA1 = 0.0, miterA2 = 0.0, flipped = F
   #print(miterA1List, miterA2List, gap1List, gap2List, reliefDList, wallsolid_common_list)
   return miterA1List, miterA2List, gap1List, gap2List, reliefDList, wallsolid_common_list
 
-def smBend(bendR = 1.0, bendA = 90.0, miterA1 = 0.0,miterA2 = 0.0, BendType = "Material Outside", flipped = False, unfold = False, 
-            offset = 0.0, extLen = 10.0, gap1 = 0.0, gap2 = 0.0,  reliefType = "Rectangle", reliefW = 0.8, reliefD = 1.0, extend1 = 0.0, 
-            extend2 = 0.0, kfactor = 0.45, ReliefFactor = 0.7, UseReliefFactor = False, selFaceNames = '', MainObject = None, 
+def smBend(bendR = 1.0, bendA = 90.0, miterA1 = 0.0,miterA2 = 0.0, BendType = "Material Outside", flipped = False, unfold = False,
+            offset = 0.0, extLen = 10.0, gap1 = 0.0, gap2 = 0.0,  reliefType = "Rectangle", reliefW = 0.8, reliefD = 1.0, extend1 = 0.0,
+            extend2 = 0.0, kfactor = 0.45, ReliefFactor = 0.7, UseReliefFactor = False, selFaceNames = '', MainObject = None,
             automiter = True, sketch = None ):
 
-  # if sketch is as wall 
+  # if sketch is as wall
   sketches = False
   if sketch :
     if sketch.Shape.Wires[0].isClosed() :
@@ -357,10 +357,10 @@ def smBend(bendR = 1.0, bendA = 90.0, miterA1 = 0.0,miterA2 = 0.0, BendType = "M
       pass
 
   if not(sketches) :
-    miterA1List1, miterA2List1, gap1List1, gap2List1, reliefDList1, wallsolid_common_list1 = smMiter(bendR = bendR, bendA = bendA, miterA1 = miterA1, miterA2 = miterA2, flipped = flipped, extLen = extLen, gap1 = gap1, 
+    miterA1List1, miterA2List1, gap1List1, gap2List1, reliefDList1, wallsolid_common_list1 = smMiter(bendR = bendR, bendA = bendA, miterA1 = miterA1, miterA2 = miterA2, flipped = flipped, extLen = extLen, gap1 = gap1,
                                       sign = 1.0, offset = offset, gap2 = gap2, reliefD = reliefD, selFaceNames = selFaceNames, automiter = automiter, MainObject = MainObject)
     bendAflip = (bendA - 180)
-    miterA1List2, miterA2List2, gap1List2, gap2List2, reliefDList2, wallsolid_common_list2 = smMiter(bendR = bendR, bendA = bendAflip, miterA1 = miterA1, miterA2 = miterA2, flipped = flipped, extLen = extLen, gap1 = gap1, 
+    miterA1List2, miterA2List2, gap1List2, gap2List2, reliefDList2, wallsolid_common_list2 = smMiter(bendR = bendR, bendA = bendAflip, miterA1 = miterA1, miterA2 = miterA2, flipped = flipped, extLen = extLen, gap1 = gap1,
                                       sign = -1.0, offset = offset, gap2 = gap2, reliefD = reliefD, selFaceNames = selFaceNames, automiter = automiter, MainObject = MainObject)
 
     miterA1List = [x if a > b else y for x, y, a, b in zip(miterA1List1, miterA1List2, wallsolid_common_list1, wallsolid_common_list2)]
@@ -449,7 +449,7 @@ def smBend(bendR = 1.0, bendA = 90.0, miterA1 = 0.0,miterA2 = 0.0, BendType = "M
       Noffset1 = abs((MlenEdge.valueAt(MlenEdge.FirstParameter)-lenEdge.valueAt(lenEdge.FirstParameter)).Length)
       Noffset2 = abs((MlenEdge.valueAt(MlenEdge.LastParameter)-lenEdge.valueAt(lenEdge.LastParameter)).Length)
 
-    # if sketch is as wall 
+    # if sketch is as wall
     sketches = False
     if sketch :
       if sketch.Shape.Wires[0].isClosed() :
@@ -475,7 +475,7 @@ def smBend(bendR = 1.0, bendA = 90.0, miterA1 = 0.0,miterA2 = 0.0, BendType = "M
       if MlenEdge.Vertexes[0].Orientation == "Reversed" :
         vertex1 = MlenEdge.Vertexes[0]
         vertex0 = MlenEdge.Vertexes[1]
-      else : 
+      else :
         vertex0 = MlenEdge.Vertexes[0]
         vertex1 = MlenEdge.Vertexes[1]
       Edgelist = Cface.ancestorsOfType(vertex0, Part.Edge)
@@ -514,12 +514,12 @@ def smBend(bendR = 1.0, bendA = 90.0, miterA1 = 0.0,miterA2 = 0.0, BendType = "M
             angle = math.degrees(angle1)
             #print("2",angle)
             AngleList.append(angle)
-      if AngleList : 
+      if AngleList :
         if AngleList[0] > 90.01 and gap1 == 0.0 :
           Agap1 = reliefW
         if AngleList[1] > 90.01 and gap2 == 0.0 :
           Agap2 = reliefW
-    
+
     #make sure the direction verctor is correct in respect to the normal
     if (thkDir.cross(revAxisV).normalize() - FaceDir).Length < smEpsilon:
      revAxisV = revAxisV * -1
@@ -797,10 +797,10 @@ class SMBendWall:
     face = fp.baseObject[1]
 
     for i in range(len(LengthList)) :
-      s, f = smBend(bendR = fp.radius.Value, bendA = bendAList[i], miterA1 = fp.miterangle1.Value, miterA2 = fp.miterangle2.Value, BendType = fp.BendType,  
-                    flipped = fp.invert, unfold = fp.unfold, extLen = LengthList[i], gap1 = fp.gap1.Value, gap2 = fp.gap2.Value, reliefType = fp.reliefType,  
+      s, f = smBend(bendR = fp.radius.Value, bendA = bendAList[i], miterA1 = fp.miterangle1.Value, miterA2 = fp.miterangle2.Value, BendType = fp.BendType,
+                    flipped = fp.invert, unfold = fp.unfold, extLen = LengthList[i], gap1 = fp.gap1.Value, gap2 = fp.gap2.Value, reliefType = fp.reliefType,
                     reliefW = fp.reliefw.Value, reliefD = fp.reliefd.Value, extend1 = fp.extend1.Value, extend2 = fp.extend2.Value, kfactor = fp.kfactor,
-                    offset = fp.offset.Value, ReliefFactor = fp.ReliefFactor, UseReliefFactor = fp.UseReliefFactor, automiter = fp.AutoMiter, 
+                    offset = fp.offset.Value, ReliefFactor = fp.ReliefFactor, UseReliefFactor = fp.UseReliefFactor, automiter = fp.AutoMiter,
                     selFaceNames = face, MainObject = Main_Object, sketch = fp.Sketch)
       faces = smGetFace(f, s)
       face = faces
@@ -814,11 +814,11 @@ class SMBendWall:
 
 class SMViewProviderTree:
   "A View provider that nests children objects under the created one"
-      
+
   def __init__(self, obj):
     obj.Proxy = self
     self.Object = obj.Object
-      
+
   def attach(self, obj):
     self.Object = obj.Object
     return
@@ -853,7 +853,7 @@ class SMViewProviderTree:
     if hasattr(self.Object,"Sketch"):
       objs.append(self.Object.Sketch)
     return objs
- 
+
   def getIcon(self):
     return os.path.join( iconPath , 'AddWall.svg')
 
@@ -871,15 +871,15 @@ class SMViewProviderTree:
     self.Object.baseObject[0].ViewObject.Visibility=False
     self.Object.ViewObject.Visibility=True
     return False
-	  
+
 
 class SMViewProviderFlat:
   "A View provider that places objects flat under base object"
-      
+
   def __init__(self, obj):
     obj.Proxy = self
     self.Object = obj.Object
-      
+
   def attach(self, obj):
     self.Object = obj.Object
     return
@@ -912,7 +912,7 @@ class SMViewProviderFlat:
     if hasattr(self.Object,"Sketch"):
       objs.append(self.Object.Sketch)
     return objs
- 
+
   def getIcon(self):
     return os.path.join( iconPath , 'AddWall.svg')
 
@@ -934,7 +934,7 @@ class SMViewProviderFlat:
 class SMBendWallTaskPanel:
     '''A TaskPanel for the Sheetmetal'''
     def __init__(self):
-      
+
       self.obj = None
       self.form = QtGui.QWidget()
       self.form.setObjectName("SMBendWallTaskPanel")
@@ -980,7 +980,7 @@ class SMBendWallTaskPanel:
             item = QtGui.QTreeWidgetItem(self.tree)
             item.setText(0,f[0].Name)
             item.setIcon(0,QtGui.QIcon(":/icons/Tree_Part.svg"))
-            item.setText(1,subf)  
+            item.setText(1,subf)
         else:
           item = QtGui.QTreeWidgetItem(self.tree)
           item.setText(0,f[0].Name)
@@ -1027,7 +1027,7 @@ class AddWallCommandClass():
     return {'Pixmap'  : os.path.join( iconPath , 'AddWall.svg'), # the name of a svg file available in the resources
             'MenuText': QtCore.QT_TRANSLATE_NOOP('SheetMetal','Make Wall'),
             'ToolTip' : QtCore.QT_TRANSLATE_NOOP('SheetMetal','Extends a wall from a side face of metal sheet')}
- 
+
   def Activated(self):
     doc = FreeCAD.ActiveDocument
     view = Gui.ActiveDocument.ActiveView
@@ -1052,7 +1052,7 @@ class AddWallCommandClass():
     doc.recompute()
     doc.commitTransaction()
     return
-   
+
   def IsActive(self):
     if len(Gui.Selection.getSelection()) < 1 or len(Gui.Selection.getSelectionEx()[0].SubElementNames) < 1:
       return False
