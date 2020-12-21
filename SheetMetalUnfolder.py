@@ -185,10 +185,10 @@ def SMErrorBox(* args):
     message = ""
     for x in args:
         message += str(x)
-    # Error boxes mostly use HTML tags to format. Strip the HTML tags for 
-    # better console readability. 
+    # Error boxes mostly use HTML tags to format. Strip the HTML tags for
+    # better console readability.
     stripped_message = re.sub('<[^<]+?>', '', message)
-    SMError(stripped_message) 
+    SMError(stripped_message)
     mw = FreeCADGui.getMainWindow()
     msg_box = QtGui.QMessageBox(mw)
     msg_box.setTextFormat(QtCore.Qt.TextFormat.RichText)
@@ -2127,7 +2127,7 @@ def makeSolidExpSTEP():
             ImportGui.insert(tempfilepath,doc.Name)
             FreeCADGui.SendMsgToActiveView("ViewFit")
         else:
-            FreeCAD.Console.PrintError('Select only one object')      
+            FreeCAD.Console.PrintError('Select only one object')
     else:
         FreeCAD.Console.PrintError('Select only one object')
 ##
@@ -2610,7 +2610,7 @@ class SMUnfoldTaskPanel:
               # do nothing, user should explicitly select the K-Factor
               # see https://github.com/shaise/FreeCAD_SheetMetal/pull/79#issuecomment-487774249
               # ------------------------------------
-              # Neither MDS nor virtual material is defined. Uncheck the MKF checkbox: 
+              # Neither MDS nor virtual material is defined. Uncheck the MKF checkbox:
               self.checkKfact.setChecked(False)
             else:
               self.checkKfact.setChecked(True)
@@ -2640,8 +2640,8 @@ class SMUnfoldTaskPanel:
         self.mdsApply.setEnabled(False)
 
     def setMds(self, mds_name):
-        # in engineering_mode, user should not loose any data, so 
-        # manual k-factor is also saved upon "unfold" operation. 
+        # in engineering_mode, user should not loose any data, so
+        # manual k-factor is also saved upon "unfold" operation.
         using_manual_kFactor = not self.checkUseMds.isChecked()
         advanced_mode = engineering_mode_enabled() or not using_manual_kFactor
 
@@ -2764,13 +2764,13 @@ class SMUnfoldTaskPanel:
                 content = lookup_sheet.get(cell)
                 if content == 'Radius / Thickness':
                     key_cell = cell
-                try: 
+                try:
                     m = re.search('(K-[fF]actor)\s?\(?([a-zA-Z]*)\)?', content)
                     if m:
                         value_cell = cell
                         kFactorStandard = m.group(2).lower() or None
                 except:
-                    pass 
+                    pass
 
                 if lookup_sheet.get(cell) == 'Options':
                     options_cell = cell
@@ -2837,11 +2837,11 @@ class SMUnfoldTaskPanel:
 
                     #print "Found option: ", option, ":", value
                     if option == 'K-factor standard':
-                        if kFactorStandard is not None: 
+                        if kFactorStandard is not None:
                             SMErrorBox("Multiple K-factor definitions in %s", self.material_sheet_name)
-                            return 
+                            return
                         kFactorStandard = value.lower()
-                    
+
             if kFactorStandard not in ["ansi", "din"]:
                 SMErrorBox('Invalid K-factor standard: %s \nin %s' % (kFactorStandard, self.material_sheet_name))
                 return

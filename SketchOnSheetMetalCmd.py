@@ -1,27 +1,27 @@
 # -*- coding: utf-8 -*-
-###################################################################################
+##############################################################################
 #
 #  SketchOnSheetMetalCmd.py
-#  
+#
 #  Copyright 2015 Shai Seger <shaise at gmail dot com>
-#  
+#
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation; either version 2 of the License, or
 #  (at your option) any later version.
-#  
+#
 #  This program is distributed in the hope that it will be useful,
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #  GNU General Public License for more details.
-#  
+#
 #  You should have received a copy of the GNU General Public License
 #  along with this program; if not, write to the Free Software
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
-#  
-#  
-###################################################################################
+#
+#
+##############################################################################
 
 from FreeCAD import Gui
 from PySide import QtCore, QtGui
@@ -37,7 +37,7 @@ def smWarnDialog(msg):
     diag = QtGui.QMessageBox(QtGui.QMessageBox.Warning, 'Error in macro MessageBox', msg)
     diag.setWindowModality(QtCore.Qt.ApplicationModal)
     diag.exec_()
- 
+
 def smBelongToBody(item, body):
     if (body is None):
         return False
@@ -116,7 +116,7 @@ def equal_angle(ang1, ang2, p=5):
 
 def bendAngle(theFace, edge_vec) :
   #Start to investigate the angles at self.__Shape.Faces[face_idx].ParameterRange[0]
-  #Part.show(theFace,"theFace") 
+  #Part.show(theFace,"theFace")
   #valuelist =  theFace.ParameterRange
   #print(valuelist)
   angle_0 = theFace.ParameterRange[0]
@@ -232,7 +232,7 @@ def smSketchOnSheetMetal(kfactor = 0.5, sketch = '', flipped = False, selFaceNam
         #Part.show(FaceArea,"FaceArea")
         #Part.show(BendSolidFace,"BendSolidFace")
         #print([bendR, bendA, revAxisV, revAxisP, normal, flipped, BendSolidFace.Faces[0].normalAt(0,0)])
-    
+
         bendsolid = SheetMetalBendSolid.BendSolid(BendSolidFace.Faces[0], BendEdge, bendR, thk, neturalRadius, revAxisV, flipped)
         #Part.show(bendsolid,"bendsolid")
         solidlist.append(bendsolid)
@@ -247,7 +247,7 @@ def smSketchOnSheetMetal(kfactor = 0.5, sketch = '', flipped = False, selFaceNam
         sketch_face.rotate(revAxisP, -revAxisV, bendA)
         #Part.show(sketch_face,"Rsketch_face")
         TopFace = smCutFace(sketch_face, resultSolid)
-        #Part.show(TopFace,"TopFace") 
+        #Part.show(TopFace,"TopFace")
 
         #To get top face normal, flatsolid
         normal = TopFace.normalAt(0,0)
@@ -261,7 +261,7 @@ def smSketchOnSheetMetal(kfactor = 0.5, sketch = '', flipped = False, selFaceNam
   #To get relief Solid fused
   if len(solidlist) > 1 :
     SMSolid = solidlist[0].multiFuse(solidlist[1:])
-    #Part.show(SMSolid,"SMSolid") 
+    #Part.show(SMSolid,"SMSolid")
     SMSolid = SMSolid.removeSplitter()
   else :
    SMSolid = solidlist[0]
@@ -328,7 +328,7 @@ class SMSketchOnSheetVP:
       objs.append(self.Object.baseObject[0])
       objs.append(self.Object.Sketch)
     return objs
- 
+
   def getIcon(self):
     return os.path.join( iconPath , 'SketchOnSheet.svg')
 

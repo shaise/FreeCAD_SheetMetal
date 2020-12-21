@@ -1,27 +1,27 @@
 # -*- coding: utf-8 -*-
-###################################################################################
+##############################################################################
 #
 #  SheetMetalBaseCmd.py
-#  
+#
 #  Copyright 2015 Shai Seger <shaise at gmail dot com>
-#  
+#
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation; either version 2 of the License, or
 #  (at your option) any later version.
-#  
+#
 #  This program is distributed in the hope that it will be useful,
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #  GNU General Public License for more details.
-#  
+#
 #  You should have received a copy of the GNU General Public License
 #  along with this program; if not, write to the Free Software
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
-#  
-#  
-###################################################################################
+#
+#
+##############################################################################
 
 from FreeCAD import Gui
 from PySide import QtCore, QtGui
@@ -111,7 +111,7 @@ class SMBaseBend:
       fp.addProperty("App::PropertyBool","MidPlane","Parameters","Extrude Symmetric to Plane").MidPlane = False
       fp.addProperty("App::PropertyBool","Reverse","Parameters","Reverse Extrusion Direction").Reverse = False
 
-    s = smBase(thk = fp.thickness.Value, length = fp.length.Value, radius = fp.radius.Value, Side = fp.BendSide, 
+    s = smBase(thk = fp.thickness.Value, length = fp.length.Value, radius = fp.radius.Value, Side = fp.BendSide,
                   midplane = fp.MidPlane, reverse = fp.Reverse, MainObject = fp.BendSketch)
     fp.Shape = s
 

@@ -2,25 +2,25 @@
 ###################################################################################
 #
 #  SheetMetalCornerReliefCmd.py
-#  
+#
 #  Copyright 2020 Jaise James <jaisekjames at gmail dot com>
-#  
+#
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation; either version 2 of the License, or
 #  (at your option) any later version.
-#  
+#
 #  This program is distributed in the hope that it will be useful,
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #  GNU General Public License for more details.
-#  
+#
 #  You should have received a copy of the GNU General Public License
 #  along with this program; if not, write to the Free Software
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
-#  
-#  
+#
+#
 ###################################################################################
 
 from FreeCAD import Gui
@@ -132,7 +132,7 @@ def equal_angle(ang1, ang2, p=5):
 
 def bendAngle(theFace, edge_vec) :
   #Start to investigate the angles at self.__Shape.Faces[face_idx].ParameterRange[0]
-  #Part.show(theFace,"theFace") 
+  #Part.show(theFace,"theFace")
   #valuelist =  theFace.ParameterRange
   #print(valuelist)
   angle_0 = theFace.ParameterRange[0]
@@ -186,7 +186,7 @@ def LineExtend(edge, distance):
   return ExtLine
 
 def getBendDetail(obj, edge1, edge2, kfactor) :
-  #To get adjcent face list from edges
+  #To get adjacent face list from edges
   facelist1 = obj.ancestorsOfType(edge1, Part.Face)
   facelist2 = obj.ancestorsOfType(edge2, Part.Face)
   cornerPoint = getCornerPoint(edge1,edge2)
@@ -217,7 +217,7 @@ def getBendDetail(obj, edge1, edge2, kfactor) :
 
   #To check bend direction
   offsetface = cylface.makeOffsetShape(-thk, 0.0, fill = False)
-  #Part.show(offsetface,"offsetface") 
+  #Part.show(offsetface,"offsetface")
   if offsetface.Area < cylface.Area :
     bendR = cylface.Surface.Radius - thk
 #    size = size + thk
@@ -231,7 +231,7 @@ def getBendDetail(obj, edge1, edge2, kfactor) :
   #To get centre of sketch
   neturalEdges = Edgewire.makeOffset2D(unfoldLength/2.0,fill = False, openResult = True, join = 2, intersection = False)
   neturalFaces = Edgewire.makeOffset2D(unfoldLength, fill = True, openResult = True, join = 2, intersection = False)
-  First_Check_face = largeface.common(neturalFaces) 
+  First_Check_face = largeface.common(neturalFaces)
   if First_Check_face.Faces :
     neturalEdges = Edgewire.makeOffset2D(-unfoldLength/2.0, fill = False, openResult = True, join = 2, intersection = False)
   #Part.show(neturalEdges,"neturalEdges")
@@ -250,7 +250,7 @@ def getBendDetail(obj, edge1, edge2, kfactor) :
   #print(centerPoint)
   return [cornerPoint, centerPoint, largeface, thk, unfoldLength, neturalRadius]
 
-def smCornerR(reliefsketch = "Circle", size = 3.0, ratio = 1.0, xoffset = 0.0, yoffset = 0.0, kfactor = 0.5, sketch = '', 
+def smCornerR(reliefsketch = "Circle", size = 3.0, ratio = 1.0, xoffset = 0.0, yoffset = 0.0, kfactor = 0.5, sketch = '',
                             flipped = False, selEdgeNames = '', MainObject = None):
 
   resultSolid = MainObject.Shape.copy()
@@ -278,15 +278,15 @@ def smCornerR(reliefsketch = "Circle", size = 3.0, ratio = 1.0, xoffset = 0.0, y
     reliefFace = Part.Face(sketch.Shape.Wires[0])
   #Part.show(reliefFace,'reliefFace')
 
-  #To check face direction 
+  #To check face direction
   coeff = normal.dot(reliefFace.Faces[0].normalAt(0,0))
   if coeff < 0 :
     reliefFace.reverse()
 
   # to get top face cut
-  First_face = LargeFace.common(reliefFace) 
+  First_face = LargeFace.common(reliefFace)
   #Part.show(First_face,'First_face')
-  Balance_Face = reliefFace.cut(First_face) 
+  Balance_Face = reliefFace.cut(First_face)
   #Part.show(Balance_Face,'Balance_Face')
 
   #To get bend solid face
@@ -302,13 +302,13 @@ def smCornerR(reliefsketch = "Circle", size = 3.0, ratio = 1.0, xoffset = 0.0, y
 
   if SplitFaces.Faces :
     for BalanceFace in SplitFaces.Faces :
-      #Part.show(BalanceFace,"BalanceFace") 
+      #Part.show(BalanceFace,"BalanceFace")
       TopFace = LargeFace
-      #Part.show(TopFace,"TopFace") 
+      #Part.show(TopFace,"TopFace")
       while BalanceFace.Faces :
         BendEdgelist = smGetEdgelist(BalanceFace, TopFace)
         for BendEdge in BendEdgelist :
-          #Part.show(BendEdge,"BendEdge") 
+          #Part.show(BendEdge,"BendEdge")
           edge_facelist = resultSolid.ancestorsOfType(BendEdge, Part.Face)
           for cyl_face in edge_facelist :
             print(type(cyl_face.Surface))
@@ -316,29 +316,29 @@ def smCornerR(reliefsketch = "Circle", size = 3.0, ratio = 1.0, xoffset = 0.0, y
               break
           if issubclass(type(cyl_face.Surface),Part.Cylinder) :
             break
-        #Part.show(BendEdge,"BendEdge") 
+        #Part.show(BendEdge,"BendEdge")
         facelist = resultSolid.ancestorsOfType(BendEdge, Part.Face)
-  
+
         #To get bend radius, bend angle
         for cylface in facelist :
           if issubclass(type(cylface.Surface),Part.Cylinder) :
             break
         if not(issubclass(type(cylface.Surface),Part.Cylinder)) :
           break
-        #Part.show(cylface,"cylface") 
+        #Part.show(cylface,"cylface")
         for planeface in facelist :
           if issubclass(type(planeface.Surface),Part.Plane) :
             break
-        #Part.show(planeface,"planeface")       
+        #Part.show(planeface,"planeface")
         normal = planeface.normalAt(0,0)
         revAxisV = cylface.Surface.Axis
         revAxisP = cylface.Surface.Center
         bendA = bendAngle(cylface, revAxisP)
-        #print([bendA, revAxisV, revAxisP, cylface.Orientation]) 
+        #print([bendA, revAxisV, revAxisP, cylface.Orientation])
 
         #To check bend direction
         offsetface = cylface.makeOffsetShape(-thk, 0.0, fill = False)
-        #Part.show(offsetface,"offsetface") 
+        #Part.show(offsetface,"offsetface")
         if offsetface.Area < cylface.Area :
           bendR = cylface.Surface.Radius - thk
           flipped = True
@@ -350,7 +350,7 @@ def smCornerR(reliefsketch = "Circle", size = 3.0, ratio = 1.0, xoffset = 0.0, y
         unfoldLength = ( bendR + kfactor * thk ) * abs(bendA) * math.pi / 180.0
         neturalRadius =  ( bendR + kfactor * thk )
         #print([unfoldLength,neturalRadius])
-  
+
         #To get faceNormal, bend face
         faceNormal = normal.cross(revAxisV).normalize()
         #print(faceNormal)
@@ -358,11 +358,11 @@ def smCornerR(reliefsketch = "Circle", size = 3.0, ratio = 1.0, xoffset = 0.0, y
           offsetSolid = cylface.makeOffsetShape(bendR/2.0, 0.0, fill = True)
         else:
           offsetSolid = cylface.makeOffsetShape(-bendR/2.0, 0.0, fill = True)
-        #Part.show(offsetSolid,"offsetSolid") 
+        #Part.show(offsetSolid,"offsetSolid")
         tool = BendEdge.copy()
         FaceArea = tool.extrude(faceNormal * -unfoldLength )
-        #Part.show(FaceArea,"FaceArea") 
-        #Part.show(BalanceFace,"BalanceFace") 
+        #Part.show(FaceArea,"FaceArea")
+        #Part.show(BalanceFace,"BalanceFace")
         SolidFace = offsetSolid.common(FaceArea)
         if not(SolidFace.Faces):
           faceNormal = faceNormal * -1
@@ -370,8 +370,8 @@ def smCornerR(reliefsketch = "Circle", size = 3.0, ratio = 1.0, xoffset = 0.0, y
         BendSolidFace = BalanceFace.common(FaceArea)
         #Part.show(FaceArea,"FaceArea")
         #Part.show(BendSolidFace,"BendSolidFace")
-        #print([bendR, bendA, revAxisV, revAxisP, normal, flipped, BendSolidFace.Faces[0].normalAt(0,0)]) 
-    
+        #print([bendR, bendA, revAxisV, revAxisP, normal, flipped, BendSolidFace.Faces[0].normalAt(0,0)])
+
         bendsolid = SheetMetalBendSolid.BendSolid(BendSolidFace.Faces[0], BendEdge, bendR, thk, neturalRadius, revAxisV, flipped)
         #Part.show(bendsolid,"bendsolid")
         solidlist.append(bendsolid)
@@ -384,15 +384,15 @@ def smCornerR(reliefsketch = "Circle", size = 3.0, ratio = 1.0, xoffset = 0.0, y
         sketch_face.translate(faceNormal * unfoldLength)
         #Part.show(sketch_face,"sketch_face")
         sketch_face.rotate(revAxisP, -revAxisV, bendA)
-        #Part.show(sketch_face,"Rsketch_face") 
+        #Part.show(sketch_face,"Rsketch_face")
         CylEdge = smGetEdge(sketch_face, cylface)
-        #Part.show(CylEdge,"CylEdge") 
+        #Part.show(CylEdge,"CylEdge")
         edgefacelist = resultSolid.ancestorsOfType(CylEdge, Part.Face)
         for TopFace in edgefacelist :
           if not(issubclass(type(TopFace.Surface),Part.Cylinder)) :
             break
-        #Part.show(TopFace,"TopFace") 
-  
+        #Part.show(TopFace,"TopFace")
+
         #To get top face normal, flatsolid
         normal = TopFace.normalAt(0,0)
         Flatface = sketch_face.common(TopFace)
@@ -410,7 +410,7 @@ def smCornerR(reliefsketch = "Circle", size = 3.0, ratio = 1.0, xoffset = 0.0, y
   #To get relief Solid fused
   if len(solidlist) > 1 :
     SMSolid = solidlist[0].multiFuse(solidlist[1:])
-    #Part.show(SMSolid,"SMSolid") 
+    #Part.show(SMSolid,"SMSolid")
     SMSolid = SMSolid.removeSplitter()
   else :
    SMSolid = solidlist[0]
@@ -436,8 +436,8 @@ class SMCornerRelief:
   def execute(self, fp):
     '''"Print a short message when doing a recomputation, this method is mandatory" '''
 
-    s = smCornerR(reliefsketch = fp.ReliefSketch, ratio = fp.SizeRatio, size = fp.Size.Value, kfactor = fp.kfactor,  
-                    xoffset = fp.XOffset.Value, yoffset = fp.YOffset.Value, sketch = fp.Sketch, selEdgeNames = fp.baseObject[1], 
+    s = smCornerR(reliefsketch = fp.ReliefSketch, ratio = fp.SizeRatio, size = fp.Size.Value, kfactor = fp.kfactor,
+                    xoffset = fp.XOffset.Value, yoffset = fp.YOffset.Value, sketch = fp.Sketch, selEdgeNames = fp.baseObject[1],
                     MainObject = fp.baseObject[0])
     fp.Shape = s
 
@@ -491,11 +491,11 @@ class SMCornerReliefVP:
 
 class SMCornerReliefPDVP:
   "A View provider that nests children objects under the created one"
-      
+
   def __init__(self, obj):
     obj.Proxy = self
     self.Object = obj.Object
-      
+
   def attach(self, obj):
     self.Object = obj.Object
     return
@@ -528,7 +528,7 @@ class SMCornerReliefPDVP:
     if hasattr(self.Object,"Sketch"):
       objs.append(self.Object.Sketch)
     return objs
- 
+
   def getIcon(self):
     return os.path.join( iconPath , 'AddCornerRelief.svg')
 

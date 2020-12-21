@@ -1,27 +1,27 @@
 # -*- coding: utf-8 -*-
-###################################################################################
+###############################################################################
 #
 #  SheetMetalRelief.py
-#  
+#
 #  Copyright 2015 Shai Seger <shaise at gmail dot com>
-#  
+#
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation; either version 2 of the License, or
 #  (at your option) any later version.
-#  
+#
 #  This program is distributed in the hope that it will be useful,
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #  GNU General Public License for more details.
-#  
+#
 #  You should have received a copy of the GNU General Public License
 #  along with this program; if not, write to the Free Software
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
-#  
-#  
-###################################################################################
+#
+#
+###############################################################################
 
 from FreeCAD import Gui
 from PySide import QtCore, QtGui
@@ -39,7 +39,7 @@ def smWarnDialog(msg):
     diag = QtGui.QMessageBox(QtGui.QMessageBox.Warning, 'Error in macro MessageBox', msg)
     diag.setWindowModality(QtCore.Qt.ApplicationModal)
     diag.exec_()
- 
+
 def smBelongToBody(item, body):
     if (body is None):
         return False
@@ -47,17 +47,17 @@ def smBelongToBody(item, body):
         if obj.Name == item.Name:
             return True
     return False
-    
+
 def smIsPartDesign(obj):
     return str(obj).find("<PartDesign::") == 0
-        
+
 def smIsOperationLegal(body, selobj):
     #FreeCAD.Console.PrintLog(str(selobj) + " " + str(body) + " " + str(smBelongToBody(selobj, body)) + "\n")
     if smIsPartDesign(selobj) and not smBelongToBody(selobj, body):
         smWarnDialog("The selected geometry does not belong to the active Body.\nPlease make the container of this item active by\ndouble clicking on it.")
         return False
-    return True    
- 
+    return True
+
 def smMakeFace(vertex, face, edges, relief):
 
   if  edges[0].Vertexes[0].isSame(vertex) :
@@ -92,7 +92,7 @@ def smMakeFace(vertex, face, edges, relief):
   #Part.show(e2,'e2')
   section = e1.section(e2)
   #Part.show(section1,'section1')
-  
+
   if section.Vertexes :
     wire = Part.makePolygon([p1,p2,p3,p6,p1])
   else :
@@ -116,7 +116,7 @@ def smRelief(relief = 2.0, selVertexNames = ' ', MainObject = None):
   for selVertexName in selVertexNames:
     vertex = MainObject.getElement(selVertexName)
     facelist = MainObject.ancestorsOfType(vertex, Part.Face)
-    
+
     extsolidlist = []
     for face in facelist :
       #Part.show(face,'face')
@@ -160,11 +160,11 @@ class SMRelief:
 
 class SMReliefViewProviderTree:
   "A View provider that nests children objects under the created one"
-      
+
   def __init__(self, obj):
     obj.Proxy = self
     self.Object = obj.Object
-      
+
   def attach(self, obj):
     self.Object = obj.Object
     return
@@ -197,10 +197,10 @@ class SMReliefViewProviderTree:
     if hasattr(self.Object,"baseObject"):
       objs.append(self.Object.baseObject[0])
     return objs
- 
+
   def getIcon(self):
     return os.path.join( iconPath , 'AddRelief.svg')
-      
+
   def setEdit(self,vobj,mode):
     taskd = SMReliefTaskPanel()
     taskd.obj = vobj.Object
@@ -218,11 +218,11 @@ class SMReliefViewProviderTree:
 
 class SMReliefViewProviderFlat:
   "A View provider that nests children objects under the created one"
-      
+
   def __init__(self, obj):
     obj.Proxy = self
     self.Object = obj.Object
-      
+
   def attach(self, obj):
     self.Object = obj.Object
     return
@@ -253,10 +253,10 @@ class SMReliefViewProviderFlat:
   def claimChildren(self):
 
     return []
- 
+
   def getIcon(self):
     return os.path.join( iconPath , 'AddRelief.svg')
-      
+
   def setEdit(self,vobj,mode):
     taskd = SMReliefTaskPanel()
     taskd.obj = vobj.Object
@@ -270,12 +270,12 @@ class SMReliefViewProviderFlat:
     FreeCADGui.Control.closeDialog()
     self.Object.baseObject[0].ViewObject.Visibility=False
     self.Object.ViewObject.Visibility=True
-    return False 
+    return False
 
 class SMReliefTaskPanel:
     '''A TaskPanel for the Sheetmetal'''
     def __init__(self):
-      
+
       self.obj = None
       self.form = QtGui.QWidget()
       self.form.setObjectName("SMReliefTaskPanel")
@@ -321,7 +321,7 @@ class SMReliefTaskPanel:
             item = QtGui.QTreeWidgetItem(self.tree)
             item.setText(0,f[0].Name)
             item.setIcon(0,QtGui.QIcon(":/icons/Tree_Part.svg"))
-            item.setText(1,subf)  
+            item.setText(1,subf)
         else:
           item = QtGui.QTreeWidgetItem(self.tree)
           item.setText(0,f[0].Name)
@@ -368,7 +368,7 @@ class AddReliefCommandClass():
     return {'Pixmap'  : os.path.join( iconPath , 'AddRelief.svg'), # the name of a svg file available in the resources
             'MenuText': QtCore.QT_TRANSLATE_NOOP('SheetMetal','Make Relief'),
             'ToolTip' : QtCore.QT_TRANSLATE_NOOP('SheetMetal','Create Relief on solids')}
- 
+
   def Activated(self):
     doc = FreeCAD.ActiveDocument
     view = Gui.ActiveDocument.ActiveView
@@ -393,7 +393,7 @@ class AddReliefCommandClass():
     doc.recompute()
     doc.commitTransaction()
     return
-   
+
   def IsActive(self):
     if len(Gui.Selection.getSelection()) < 1 or len(Gui.Selection.getSelectionEx()[0].SubElementNames) < 1:
       return False
