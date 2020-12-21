@@ -1722,7 +1722,7 @@ class SheetTree(object):
         #Part.show(Part.Face(myWire))
       try:
           #theFace = Part.Face(wires)
-          #print 'make cutted face\n'
+          #print 'make cut face\n'
           theFace = faces[0].copy()
           for f in faces[1:]:
             f.translate(-normVec)
@@ -1863,7 +1863,7 @@ class SheetTree(object):
   def unbendVertDict(self, bend_node, cent, axis, nullVec):
     '''
     calculate the unbend points in the vertexDict.
-    This is called with the vertexes of the top and the opposite face only.
+    This is called with the vertices of the top and the opposite face only.
     '''
     def unbendDictPoint(poi, compRadialVec):
       radVec = radial_vector(poi, cent, axis)
