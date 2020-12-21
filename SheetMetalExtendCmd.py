@@ -97,19 +97,25 @@ def smFace(selItem, obj) :
   return selFace
 
 def smTouchFace(Face, obj, thk) :
-  # find face Modified During loop & if it is not a thickness side face
+  # find face Modified During loop
+  #Part.show(Face,'Face')
+  facelist =[]
   for face in obj.Faces :
+    #Part.show(face,'face')
     face_common = face.common(Face)
     if face_common.Faces :
-      edge = face.Vertexes[0].extrude(face.normalAt(0,0) * -thk*2)
-      edge_common = obj.common(edge)
-      #print(edge_common.Length)
-      if edge_common.Length == thk :
-        break
-  return face
+      continue
+    edge = face.Vertexes[0].extrude(face.normalAt(0,0) * -thk * 2)
+    #Part.show(edge,'edge')
+    edge_common = obj.common(edge)
+    #Part.show(edge_common,'edge_common')  
+    if (edge_common.Edges[0].Length - thk) < smEpsilon :
+      facelist.append( face)
+      break
+  return facelist[0]
 
 def smgetSubface(face, obj, edge, thk):
-  # Project thickness side edge to get one side of rectangle
+  # Project thickness side edge to get one side rectangle
   normal = face.normalAt(0,0)
   faceVert = face.Vertexes[0].Point
   pt1 = edge.Vertexes[0].Point.projectToPlane(faceVert, normal)
