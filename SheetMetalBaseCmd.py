@@ -56,8 +56,8 @@ def smIsOperationLegal(body, selobj):
 def smBase(thk = 2.0, length = 10.0, radius = 1.0, Side = "Inside", midplane = False, reverse = False, MainObject = None):
   WireList = MainObject.Shape.Wires[0]
   mat = MainObject.getGlobalPlacement()
-  normal = mat.multVec(FreeCAD.Vector(0,0,1))
-  #print(sketch_normal)
+  normal = (mat.multVec(FreeCAD.Vector(0,0,1))).normalize()
+  #print(normal)
   if WireList.isClosed() :
     sketch_face = Part.makeFace(MainObject.Shape.Wires,"Part::FaceMakerBullseye")
     wallSolid = sketch_face.extrude(sketch_face.normalAt(0,0) * thk)
@@ -108,8 +108,8 @@ class SMBaseBend:
   def execute(self, fp):
     '''"Print a short message when doing a recomputation, this method is mandatory" '''
     if (not hasattr(fp,"MidPlane")):
-      obj.addProperty("App::PropertyBool","MidPlane","Parameters","Extrude Symmetric to Plane").MidPlane = False
-      obj.addProperty("App::PropertyBool","Reverse","Parameters","Reverse Extrusion Direction").Reverse = False
+      fp.addProperty("App::PropertyBool","MidPlane","Parameters","Extrude Symmetric to Plane").MidPlane = False
+      fp.addProperty("App::PropertyBool","Reverse","Parameters","Reverse Extrusion Direction").Reverse = False
 
     s = smBase(thk = fp.thickness.Value, length = fp.length.Value, radius = fp.radius.Value, Side = fp.BendSide, 
                   midplane = fp.MidPlane, reverse = fp.Reverse, MainObject = fp.BendSketch)
