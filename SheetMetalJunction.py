@@ -2,25 +2,25 @@
 ###################################################################################
 #
 #  SheetMetalJunction.py
-#  
+#
 #  Copyright 2015 Shai Seger <shaise at gmail dot com>
-#  
+#
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation; either version 2 of the License, or
 #  (at your option) any later version.
-#  
+#
 #  This program is distributed in the hope that it will be useful,
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #  GNU General Public License for more details.
-#  
+#
 #  You should have received a copy of the GNU General Public License
 #  along with this program; if not, write to the Free Software
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
-#  
-#  
+#
+#
 ###################################################################################
 
 from FreeCAD import Gui
@@ -39,7 +39,7 @@ def smWarnDialog(msg):
     diag = QtGui.QMessageBox(QtGui.QMessageBox.Warning, 'Error in macro MessageBox', msg)
     diag.setWindowModality(QtCore.Qt.ApplicationModal)
     diag.exec_()
- 
+
 def smBelongToBody(item, body):
     if (body is None):
         return False
@@ -47,38 +47,38 @@ def smBelongToBody(item, body):
         if obj.Name == item.Name:
             return True
     return False
-    
+
 def smIsPartDesign(obj):
     return str(obj).find("<PartDesign::") == 0
-        
+
 def smIsOperationLegal(body, selobj):
     #FreeCAD.Console.PrintLog(str(selobj) + " " + str(body) + " " + str(smBelongToBody(selobj, body)) + "\n")
     if smIsPartDesign(selobj) and not smBelongToBody(selobj, body):
         smWarnDialog("The selected geometry does not belong to the active Body.\nPlease make the container of this item active by\ndouble clicking on it.")
         return False
-    return True    
- 
+    return True
+
 def smJunction(gap = 2.0, selEdgeNames = '', MainObject = None):
   import BOPTools.SplitFeatures, BOPTools.JoinFeatures
 
   resultSolid = MainObject
   for selEdgeName in selEdgeNames:
     edge = MainObject.getElement(selEdgeName)
-    
+
     facelist = MainObject.ancestorsOfType(edge, Part.Face)
     #for face in facelist :
     #  Part.show(face,'face')
-    
+
     joinface = facelist[0].fuse(facelist[1])
     #Part.show(joinface,'joinface')
     filletedface = joinface.makeFillet(gap, joinface.Edges)
     #Part.show(filletedface,'filletedface')
-    
+
     cutface1= facelist[0].cut(filletedface)
     #Part.show(cutface1,'cutface1')
     offsetsolid1 = cutface1.makeOffsetShape(-gap, 0.0, fill = True)
     #Part.show(offsetsolid1,'offsetsolid1')
-    
+
     cutface2 = facelist[1].cut(filletedface)
     #Part.show(cutface2,'cutface2')
     offsetsolid2 = cutface2.makeOffsetShape(-gap, 0.0, fill = True)
@@ -114,11 +114,11 @@ class SMJunction:
 
 class SMJViewProviderTree:
   "A View provider that nests children objects under the created one"
-      
+
   def __init__(self, obj):
     obj.Proxy = self
     self.Object = obj.Object
-      
+
   def attach(self, obj):
     self.Object = obj.Object
     return
@@ -151,10 +151,10 @@ class SMJViewProviderTree:
     if hasattr(self.Object,"baseObject"):
       objs.append(self.Object.baseObject[0])
     return objs
- 
+
   def getIcon(self):
     return os.path.join( iconPath , 'AddJunction.svg')
-      
+
   def setEdit(self,vobj,mode):
     taskd = SMJunctionTaskPanel()
     taskd.obj = vobj.Object
@@ -172,11 +172,11 @@ class SMJViewProviderTree:
 
 class SMJViewProviderFlat:
   "A View provider that nests children objects under the created one"
-      
+
   def __init__(self, obj):
     obj.Proxy = self
     self.Object = obj.Object
-      
+
   def attach(self, obj):
     self.Object = obj.Object
     return
@@ -207,10 +207,10 @@ class SMJViewProviderFlat:
   def claimChildren(self):
 
     return []
- 
+
   def getIcon(self):
     return os.path.join( iconPath , 'AddJunction.svg')
-      
+
   def setEdit(self,vobj,mode):
     taskd = SMJunctionTaskPanel()
     taskd.obj = vobj.Object
@@ -224,12 +224,12 @@ class SMJViewProviderFlat:
     FreeCADGui.Control.closeDialog()
     self.Object.baseObject[0].ViewObject.Visibility=False
     self.Object.ViewObject.Visibility=True
-    return False 
+    return False
 
 class SMJunctionTaskPanel:
     '''A TaskPanel for the Sheetmetal'''
     def __init__(self):
-      
+
       self.obj = None
       self.form = QtGui.QWidget()
       self.form.setObjectName("SMJunctionTaskPanel")
@@ -275,7 +275,7 @@ class SMJunctionTaskPanel:
             item = QtGui.QTreeWidgetItem(self.tree)
             item.setText(0,f[0].Name)
             item.setIcon(0,QtGui.QIcon(":/icons/Tree_Part.svg"))
-            item.setText(1,subf)  
+            item.setText(1,subf)
         else:
           item = QtGui.QTreeWidgetItem(self.tree)
           item.setText(0,f[0].Name)
@@ -322,7 +322,7 @@ class AddJunctionCommandClass():
     return {'Pixmap'  : os.path.join( iconPath , 'AddJunction.svg'), # the name of a svg file available in the resources
             'MenuText': QtCore.QT_TRANSLATE_NOOP('SheetMetal','Make Junction'),
             'ToolTip' : QtCore.QT_TRANSLATE_NOOP('SheetMetal','Create Gap on solids')}
- 
+
   def Activated(self):
     doc = FreeCAD.ActiveDocument
     view = Gui.ActiveDocument.ActiveView
@@ -347,7 +347,7 @@ class AddJunctionCommandClass():
     doc.recompute()
     doc.commitTransaction()
     return
-   
+
   def IsActive(self):
     if len(Gui.Selection.getSelection()) < 1 or len(Gui.Selection.getSelectionEx()[0].SubElementNames) < 1:
       return False

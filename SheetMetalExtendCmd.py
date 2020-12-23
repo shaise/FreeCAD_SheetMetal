@@ -2,25 +2,25 @@
 ###################################################################################
 #
 #  SheetMetalJunction.py
-#  
+#
 #  Copyright 2015 Shai Seger <shaise at gmail dot com>
-#  
+#
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation; either version 2 of the License, or
 #  (at your option) any later version.
-#  
+#
 #  This program is distributed in the hope that it will be useful,
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #  GNU General Public License for more details.
-#  
+#
 #  You should have received a copy of the GNU General Public License
 #  along with this program; if not, write to the Free Software
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
-#  
-#  
+#
+#
 ###################################################################################
 
 from FreeCAD import Gui
@@ -97,19 +97,25 @@ def smFace(selItem, obj) :
   return selFace
 
 def smTouchFace(Face, obj, thk) :
-  # find face Modified During loop & if it is not a thickness side face
+  # find face Modified During loop
+  #Part.show(Face,'Face')
+  facelist =[]
   for face in obj.Faces :
+    #Part.show(face,'face')
     face_common = face.common(Face)
     if face_common.Faces :
-      edge = face.Vertexes[0].extrude(face.normalAt(0,0) * -thk*2)
-      edge_common = obj.common(edge)
-      #print(edge_common.Length)
-      if edge_common.Length == thk :
-        break
-  return face
+      continue
+    edge = face.Vertexes[0].extrude(face.normalAt(0,0) * -thk * 2)
+    #Part.show(edge,'edge')
+    edge_common = obj.common(edge)
+    #Part.show(edge_common,'edge_common')
+    if (edge_common.Edges[0].Length - thk) < smEpsilon :
+      facelist.append( face)
+      break
+  return facelist[0]
 
 def smgetSubface(face, obj, edge, thk):
-  # Project thickness side edge to get one side of rectangle
+  # Project thickness side edge to get one side rectangle
   normal = face.normalAt(0,0)
   faceVert = face.Vertexes[0].Point
   pt1 = edge.Vertexes[0].Point.projectToPlane(faceVert, normal)
@@ -145,16 +151,16 @@ def smgetSubface(face, obj, edge, thk):
 
     # Create Cut Rectangle Face from min/max points & angle
     e = Part.Line(p1, p2).toShape()
-    e1 = e.copy() 
+    e1 = e.copy()
     e1.rotate(p1, normal, -angle)
-    e2 = e.copy() 
+    e2 = e.copy()
     e2.rotate(p2, normal, 90-angle)
     section1 = e1.section(e2)
     #Part.show(section1,'section1')
     p3 = section1.Vertexes[0].Point
-    e3 = e.copy() 
+    e3 = e.copy()
     e3.rotate(p1, normal, 90-angle)
-    e4 = e.copy() 
+    e4 = e.copy()
     e4.rotate(p2, normal, -angle)
     section2 = e3.section(e4)
     #Part.show(section2,'section2')
@@ -166,7 +172,7 @@ def smgetSubface(face, obj, edge, thk):
     wallsolidlist.append(wallSolid)
   return wallsolidlist
 
-def smExtrude(extLength = 10.0, gap1 = 0.0, gap2 = 0.0, substraction = False, offset = 0.02, refine = True, 
+def smExtrude(extLength = 10.0, gap1 = 0.0, gap2 = 0.0, substraction = False, offset = 0.02, refine = True,
                             sketch = '', selFaceNames = '', selObject = ''):
 
   finalShape = selObject
@@ -209,7 +215,7 @@ def smExtrude(extLength = 10.0, gap1 = 0.0, gap2 = 0.0, substraction = False, of
     thkDir = Cface.normalAt(0,0) * -1
     FaceDir = selFace.normalAt(0,0)
 
-    # if sketch is as wall 
+    # if sketch is as wall
     sketches = False
     if sketch :
       if sketch.Shape.Wires[0].isClosed() :
@@ -245,7 +251,7 @@ def smExtrude(extLength = 10.0, gap1 = 0.0, gap2 = 0.0, substraction = False, of
       #Part.show(wallSolid, "wallSolid")
       solidlist.append(wallSolid)
 
-      # To find Overlapping Solid, non thickness side Face that touch Overlapping Solid 
+      # To find Overlapping Solid, non thickness side Face that touch Overlapping Solid
       overlap_solid = wallSolid.common(SplitSolid2)
       #Part.show(overlap_solid, "overlap_solid")
       substract_face = smTouchFace(wallSolid, SplitSolid2, thk)
@@ -269,7 +275,7 @@ def smExtrude(extLength = 10.0, gap1 = 0.0, gap2 = 0.0, substraction = False, of
       #Part.show(wallSolid,"wallSolid")
       solidlist.append(wallSolid)
 
-    # Fuse All solid created to Split solid 
+    # Fuse All solid created to Split solid
     if len(solidlist) > 0 :
       resultSolid = SplitSolid1.fuse(solidlist[0])
       if refine :
@@ -288,7 +294,7 @@ class SMExtrudeWall:
   def __init__(self, obj):
     '''"Add Wall with radius bend" '''
     selobj = Gui.Selection.getSelectionEx()[0]
-    
+
     obj.addProperty("App::PropertyLength","length","Parameters","Length of wall").length = 10.0
     obj.addProperty("App::PropertyDistance","gap1","Parameters","Gap from left side").gap1 = 0.0
     obj.addProperty("App::PropertyDistance","gap2","Parameters","Gap from right side").gap2 = 0.0
@@ -313,7 +319,7 @@ class SMExtrudeWall:
     Main_Object = fp.baseObject[0].Shape.copy()
     face = fp.baseObject[1]
 
-    s = smExtrude(extLength = fp.length.Value,  gap1 = fp.gap1.Value, gap2 = fp.gap2.Value, substraction = fp.UseSubstraction, 
+    s = smExtrude(extLength = fp.length.Value,  gap1 = fp.gap1.Value, gap2 = fp.gap2.Value, substraction = fp.UseSubstraction,
                     offset = fp.Offset.Value, refine = fp.Refine, sketch = fp.Sketch, selFaceNames = face, selObject = Main_Object)
     fp.baseObject[0].ViewObject.Visibility = False
     if fp.Sketch :
@@ -487,7 +493,7 @@ class SMBendWallTaskPanel:
             item = QtGui.QTreeWidgetItem(self.tree)
             item.setText(0,f[0].Name)
             item.setIcon(0,QtGui.QIcon(":/icons/Tree_Part.svg"))
-            item.setText(1,subf)  
+            item.setText(1,subf)
         else:
           item = QtGui.QTreeWidgetItem(self.tree)
           item.setText(0,f[0].Name)

@@ -1,27 +1,27 @@
 # -*- coding: utf-8 -*-
-###################################################################################
+##############################################################################
 #
 #  SheetMetalFoldCmd.py
-#  
+#
 #  Copyright 2015 Shai Seger <shaise at gmail dot com>
-#  
+#
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation; either version 2 of the License, or
 #  (at your option) any later version.
-#  
+#
 #  This program is distributed in the hope that it will be useful,
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #  GNU General Public License for more details.
-#  
+#
 #  You should have received a copy of the GNU General Public License
 #  along with this program; if not, write to the Free Software
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
-#  
-#  
-###################################################################################
+#
+#
+##############################################################################
 
 from FreeCAD import Gui
 from PySide import QtCore, QtGui
@@ -37,7 +37,7 @@ def smWarnDialog(msg):
     diag = QtGui.QMessageBox(QtGui.QMessageBox.Warning, 'Error in macro MessageBox', msg)
     diag.setWindowModality(QtCore.Qt.ApplicationModal)
     diag.exec_()
- 
+
 def smBelongToBody(item, body):
     if (body is None):
         return False
@@ -45,17 +45,17 @@ def smBelongToBody(item, body):
         if obj.Name == item.Name:
             return True
     return False
-    
+
 def smIsPartDesign(obj):
     return str(obj).find("<PartDesign::") == 0
-        
+
 def smIsOperationLegal(body, selobj):
     #FreeCAD.Console.PrintLog(str(selobj) + " " + str(body) + " " + str(smBelongToBody(selobj, body)) + "\n")
     if smIsPartDesign(selobj) and not smBelongToBody(selobj, body):
         smWarnDialog("The selected geometry does not belong to the active Body.\nPlease make the container of this item active by\ndouble clicking on it.")
         return False
-    return True    
- 
+    return True
+
 def smthk(obj, foldface) :
   normal = foldface.normalAt(0,0)
   theVol = obj.Volume
@@ -85,7 +85,7 @@ def smFold(bendR = 1.0, bendA = 90.0, kfactor = 0.5, invertbend = False, flipped
 
   import BOPTools.SplitFeatures, BOPTools.JoinFeatures
   FoldShape = MainObject.Shape
-  
+
   # restrict angle
   if (bendA < 0):
     bendA = -bendA
@@ -100,7 +100,7 @@ def smFold(bendR = 1.0, bendA = 90.0, kfactor = 0.5, invertbend = False, flipped
       print(thk)
 
      # if not(flipped) :
-        #offset =  thk * kfactor 
+        #offset =  thk * kfactor
       #else :
         #offset = thk * (1 - kfactor )
 
@@ -180,7 +180,7 @@ def smFold(bendR = 1.0, bendA = 90.0, kfactor = 0.5, invertbend = False, flipped
         revAxisV = revAxisV * -1
         #print(revAxisV)
 
-      # To get bend surface 
+      # To get bend surface
       revLine = Part.LineSegment(tool.Vertexes[0].Point, tool.Vertexes[-1].Point ).toShape()
       bendSurf = revLine.revolve(revAxisP, revAxisV, bendA)
       #Part.show(bendSurf,"bendSurf")
@@ -193,7 +193,7 @@ def smFold(bendR = 1.0, bendA = 90.0, kfactor = 0.5, invertbend = False, flipped
       elif bendSurfTest.Area > bendSurf.Area and flipped :
         offset =  -1
       #print(offset)
-     
+
       # To get bend solid
       flatsolid = FoldShape.cut(solid0)
       flatsolid = flatsolid.cut( solid1)
@@ -228,7 +228,7 @@ class SMFoldWall:
   def __init__(self, obj):
     '''"Add Wall with radius bend" '''
     selobj = Gui.Selection.getSelectionEx()
-    
+
     obj.addProperty("App::PropertyLength","radius","Parameters","Bend Radius").radius = 1.0
     obj.addProperty("App::PropertyAngle","angle","Parameters","Bend angle").angle = 90.0
     obj.addProperty("App::PropertyLinkSub", "baseObject", "Parameters", "Base object").baseObject = (selobj[0].Object, selobj[0].SubElementNames)
@@ -252,11 +252,11 @@ class SMFoldWall:
 
 class SMFoldViewProvider:
   "A View provider that nests children objects under the created one"
-      
+
   def __init__(self, obj):
     obj.Proxy = self
     self.Object = obj.Object
-      
+
   def attach(self, obj):
     self.Object = obj.Object
     return
@@ -290,17 +290,17 @@ class SMFoldViewProvider:
       objs.append(self.Object.baseObject[0])
       objs.append(self.Object.BendLine)
     return objs
- 
+
   def getIcon(self):
     return os.path.join( iconPath , 'AddFoldWall.svg')
 
 class SMFoldPDViewProvider:
   "A View provider that nests children objects under the created one"
-      
+
   def __init__(self, obj):
     obj.Proxy = self
     self.Object = obj.Object
-      
+
   def attach(self, obj):
     self.Object = obj.Object
     return
@@ -333,7 +333,7 @@ class SMFoldPDViewProvider:
     if hasattr(self.Object,"BendLine"):
       objs.append(self.Object.BendLine)
     return objs
- 
+
   def getIcon(self):
     return os.path.join( iconPath , 'AddFoldWall.svg')
 
@@ -344,7 +344,7 @@ class AddFoldWallCommandClass():
     return {'Pixmap'  : os.path.join( iconPath , 'AddFoldWall.svg'), # the name of a svg file available in the resources
             'MenuText': QtCore.QT_TRANSLATE_NOOP('SheetMetal','Fold a Wall'),
             'ToolTip' : QtCore.QT_TRANSLATE_NOOP('SheetMetal','Fold a wall of metal sheet')}
- 
+
   def Activated(self):
     doc = FreeCAD.ActiveDocument
     view = Gui.ActiveDocument.ActiveView
@@ -368,7 +368,7 @@ class AddFoldWallCommandClass():
     doc.recompute()
     doc.commitTransaction()
     return
-   
+
   def IsActive(self):
     if len(Gui.Selection.getSelection()) < 2 :
       return False
