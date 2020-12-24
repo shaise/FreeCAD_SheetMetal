@@ -128,7 +128,7 @@ class SMBendWall:
     selobj = Gui.Selection.getSelectionEx()
 
     obj.addProperty("App::PropertyVectorDistance","offset","Parameters","offset from center of face")
-    obj.addProperty("App::PropertyBool","SupressFeature","Parameters","Supress Forming Feature").SupressFeature = False
+    obj.addProperty("App::PropertyBool","SuppressFeature","Parameters","Suppress Forming Feature").SuppressFeature = False
     obj.addProperty("App::PropertyAngle","angle","Parameters","Tool Position angle").angle = 0.0
     obj.addProperty("App::PropertyDistance","thickness","Parameters","thickness of sheetmetal")
     obj.addProperty("App::PropertyLinkSub", "baseObject", "Parameters", "Base object").baseObject = (selobj[0].Object, selobj[0].SubElementNames)
@@ -160,7 +160,7 @@ class SMBendWall:
     else:
       offsetlist.append(fp.offset)
 
-    if not(fp.SupressFeature) :
+    if not(fp.SuppressFeature) :
       for i in range(len(offsetlist)):
         a = makeforming(tool, base, base_face, thk, tool_faces, offsetlist[i], fp.angle.Value)
         base = a
