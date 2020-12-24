@@ -249,7 +249,7 @@ class SMJunctionTaskPanel:
       # buttons
       self.addButton = QtGui.QPushButton(self.form)
       self.addButton.setObjectName("addButton")
-      self.addButton.setIcon(QtGui.QIcon(os.path.join( iconPath , 'SMUpdate.svg')))
+      self.addButton.setIcon(QtGui.QIcon(os.path.join( iconPath , 'SheetMetal_Update.svg')))
       self.grid.addWidget(self.addButton, 3, 0, 1, 2)
 
       QtCore.QObject.connect(self.addButton, QtCore.SIGNAL("clicked()"), self.updateElement)
