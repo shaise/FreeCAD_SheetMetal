@@ -64,7 +64,7 @@ def smBase(thk = 2.0, length = 10.0, radius = 1.0, Side = "Inside", midplane = F
     sketch_face = Part.makeFace(MainObject.Shape.Wires,"Part::FaceMakerBullseye")
     wallSolid = sketch_face.extrude(sketch_face.normalAt(0,0) * thk)
   else :
-    # If sketch is oen type, make a face by extruding & offset it to correct position
+    # If sketch is one type, make a face by extruding & offset it to correct position
     if midplane :
       WireList.translate(normal * length/2.0)
       wire_extr = WireList.extrude(normal * -length)
