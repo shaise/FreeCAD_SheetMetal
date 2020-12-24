@@ -85,11 +85,10 @@ def face_direction(face):
   #print([direction, yL])
   return direction, yL
 
-def transform_tool(tool, base_face, tool_face, plane, point = FreeCAD.Vector(0, 0, 0), angle = 0.0):
+def transform_tool(tool, base_face, tool_face, point = FreeCAD.Vector(0, 0, 0), angle = 0.0):
   # Find normal of faces & center to align faces
   direction1,yL1 = face_direction(base_face)
   direction2,yL2 = face_direction(tool_face)
-  direction3,yL3 = face_direction(plane)
 
   # Find angle between faces, axis of rotation & center of axis
   rot_angle = angleBetween(direction1, direction2)
@@ -100,35 +99,28 @@ def transform_tool(tool, base_face, tool_face, plane, point = FreeCAD.Vector(0, 
   #print([rot_center, rot_axis, rot_angle])
   tool.rotate(rot_center, rot_axis, -rot_angle)
   tool.translate(-yL2 + yL1)
+  #Part.show(tool, "tool")
 
-  # Find angle between faces, axis of rotation & center of axis
-  rot_center = yL2
-  rot_axis = direction1.cross(direction3)
-  rot_angle = angleBetween(direction1, direction3)
-  if rot_axis == FreeCAD.Vector (0.0, 0.0, 0.0):
-      rot_axis = FreeCAD.Vector(0, 1, 0).cross(direction3)
-  #print([rot_center, rot_axis, rot_angle])
-  tool.rotate(rot_center, rot_axis, -rot_angle)
   tool.rotate(yL1, direction1, angle)
   tool.translate(point)
-  #Part.show(tool)
+  #Part.show(tool,"tool")
   return tool
 
-def makeforming(tool, base, base_face, thk, plane, tool_faces = None, point = FreeCAD.Vector(0, 0, 0), angle = 0.0) :
-#  faces = [ face for face in tool.Shape.Faces for tool_face in tool_faces if not(face.isSame(tool_face)) ]
+def makeforming(tool, base, base_face, thk, tool_faces = None, point = FreeCAD.Vector(0, 0, 0), angle = 0.0) :
+##  faces = [ face for face in tool.Shape.Faces for tool_face in tool_faces if not(face.isSame(tool_face)) ]
 #  faces = [ face for face in tool.Shape.Faces if not face in tool_faces ]
 #  tool_shell = Part.makeShell(faces)
 #  offsetshell = tool_shell.makeOffsetShape(thk, 0.0, inter = False, self_inter = False, offsetMode = 0, join = 2, fill = True)
   offsetshell = tool.makeThickness(tool_faces, thk, 0.0001, False, False, 0, 0)
   cutSolid = tool.fuse(offsetshell)
-  offsetshell1 = transform_tool(offsetshell, base_face, tool_faces[0], plane, point, angle)
-  #Part.show(offsetshell2)
-  cutSolid_trans = transform_tool(cutSolid, base_face, tool_faces[0], plane, point, angle)
-  base1 = base.cut(cutSolid_trans)
-  base1 = base1.fuse(offsetshell1)
-  base1.removeSplitter()
-  #Part.show(base1)
-  return base1
+  offsetshell_tran = transform_tool(offsetshell, base_face, tool_faces[0], point, angle)
+  #Part.show(offsetshell1, "offsetshell1")
+  cutSolid_trans = transform_tool(cutSolid, base_face, tool_faces[0], point, angle)
+  base = base.cut(cutSolid_trans)
+  base = base.fuse(offsetshell_tran)
+  #base.removeSplitter()
+  #Part.show(base, "base")
+  return base
 
 class SMBendWall:
   def __init__(self, obj):
@@ -157,7 +149,6 @@ class SMBendWall:
     offsetlist = []
     if fp.Sketch:
       sketch = fp.Sketch.Shape
-      plane = base_face
       for e in sketch.Edges:
           #print(type(e.Curve))
           if isinstance(e.Curve, (Part.Circle, Part.ArcOfCircle)):
@@ -167,12 +158,11 @@ class SMBendWall:
             #print(offsetPoint)
             offsetlist.append(offsetPoint)
     else:
-      plane = Part.makePlane(100,100)
       offsetlist.append(fp.offset)
 
     if not(fp.SupressFeature) :
       for i in range(len(offsetlist)):
-        a = makeforming(tool, base, base_face, thk, plane, tool_faces, offsetlist[i], fp.angle.Value)
+        a = makeforming(tool, base, base_face, thk, tool_faces, offsetlist[i], fp.angle.Value)
         base = a
     else :
       a = base
@@ -235,12 +225,14 @@ class SMFormingVP:
     taskd.update()
     self.Object.ViewObject.Visibility=False
     self.Object.baseObject[0].ViewObject.Visibility=True
+    self.Object.toolObject[0].ViewObject.Visibility=True
     FreeCADGui.Control.showDialog(taskd)
     return True
 
   def unsetEdit(self,vobj,mode):
     FreeCADGui.Control.closeDialog()
     self.Object.baseObject[0].ViewObject.Visibility=False
+    self.Object.toolObject[0].ViewObject.Visibility=False
     self.Object.ViewObject.Visibility=True
     return False
 
@@ -295,12 +287,14 @@ class SMFormingPDVP:
     taskd.update()
     self.Object.ViewObject.Visibility=False
     self.Object.baseObject[0].ViewObject.Visibility=True
+    self.Object.toolObject[0].ViewObject.Visibility=False
     FreeCADGui.Control.showDialog(taskd)
     return True
 
   def unsetEdit(self,vobj,mode):
     FreeCADGui.Control.closeDialog()
     self.Object.baseObject[0].ViewObject.Visibility=False
+    self.Object.toolObject[0].ViewObject.Visibility=False
     self.Object.ViewObject.Visibility=True
     return False
 
