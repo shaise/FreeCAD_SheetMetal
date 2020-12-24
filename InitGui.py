@@ -61,8 +61,10 @@ class SMWorkbench (Workbench):
         import SheetMetalBend
         import SketchOnSheetMetalCmd
         import SheetMetalCornerReliefCmd
+        import SheetMetalFormingCmd
         import os.path
-        self.list = ["SMBase", "SMMakeWall", "SMExtrudeFace", "SMFoldWall", "SMUnfold", "SMCornerRelief", "SMMakeRelief", "SMMakeJunction", "SMMakeBend", "SMSketchOnSheet"] # A list of command names created in the line above
+        self.list = ["SMBase", "SMMakeWall", "SMExtrudeFace", "SMFoldWall", "SMUnfold", "SMCornerRelief", "SMMakeRelief", "SMMakeJunction", 
+                     "SMMakeBend", "SMSketchOnSheet", "SMFormingWall"] # A list of command names created in the line above
         if engineering_mode_enabled():
             self.list.insert(self.list.index("SMUnfold") + 1,"SMUnfoldUnattended")
         self.appendToolbar("Sheet Metal",self.list) # creates a new toolbar with your commands
