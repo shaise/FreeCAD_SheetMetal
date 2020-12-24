@@ -165,7 +165,7 @@ class SMBendViewProviderTree:
     return objs
 
   def getIcon(self):
-    return os.path.join( iconPath , 'AddBend.svg')
+    return os.path.join( iconPath , 'SheetMetal_AddBend.svg')
 
   def setEdit(self,vobj,mode):
     taskd = SMBendTaskPanel()
@@ -221,7 +221,7 @@ class SMBendViewProviderFlat:
     return []
 
   def getIcon(self):
-    return os.path.join( iconPath , 'AddBend.svg')
+    return os.path.join( iconPath , 'SheetMetal_AddBend.svg')
 
   def setEdit(self,vobj,mode):
     taskd = SMBendTaskPanel()
@@ -331,7 +331,7 @@ class AddBendCommandClass():
   """Add Bend command"""
 
   def GetResources(self):
-    return {'Pixmap'  : os.path.join( iconPath , 'AddBend.svg'), # the name of a svg file available in the resources
+    return {'Pixmap'  : os.path.join( iconPath , 'SheetMetal_AddBend.svg'), # the name of a svg file available in the resources
             'MenuText': QtCore.QT_TRANSLATE_NOOP('SheetMetal','Make Bend'),
             'ToolTip' : QtCore.QT_TRANSLATE_NOOP('SheetMetal','Create Bend on solids')}
 

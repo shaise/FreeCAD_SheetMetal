@@ -487,7 +487,7 @@ class SMCornerReliefVP:
     return objs
 
   def getIcon(self):
-    return os.path.join( iconPath , 'AddCornerRelief.svg')
+    return os.path.join( iconPath , 'SheetMetal_AddCornerRelief.svg')
 
 class SMCornerReliefPDVP:
   "A View provider that nests children objects under the created one"
@@ -530,13 +530,13 @@ class SMCornerReliefPDVP:
     return objs
 
   def getIcon(self):
-    return os.path.join( iconPath , 'AddCornerRelief.svg')
+    return os.path.join( iconPath , 'SheetMetal_AddCornerRelief.svg')
 
 class AddCornerReliefCommandClass():
   """Add Corner Relief command"""
 
   def GetResources(self):
-    return {'Pixmap'  : os.path.join( iconPath , 'AddCornerRelief.svg'), # the name of a svg file available in the resources
+    return {'Pixmap'  : os.path.join( iconPath , 'SheetMetal_AddCornerRelief.svg'), # the name of a svg file available in the resources
             'MenuText': QtCore.QT_TRANSLATE_NOOP('SheetMetal','Add Corner Relief'),
             'ToolTip' : QtCore.QT_TRANSLATE_NOOP('SheetMetal','Corner Relief to metal sheet corner')}
 

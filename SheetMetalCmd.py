@@ -855,7 +855,7 @@ class SMViewProviderTree:
     return objs
 
   def getIcon(self):
-    return os.path.join( iconPath , 'AddWall.svg')
+    return os.path.join( iconPath , 'SheetMetal_AddWall.svg')
 
   def setEdit(self,vobj,mode):
     taskd = SMBendWallTaskPanel()
@@ -914,7 +914,7 @@ class SMViewProviderFlat:
     return objs
 
   def getIcon(self):
-    return os.path.join( iconPath , 'AddWall.svg')
+    return os.path.join( iconPath , 'SheetMetal_AddWall.svg')
 
   def setEdit(self,vobj,mode):
     taskd = SMBendWallTaskPanel()
@@ -1024,7 +1024,7 @@ class AddWallCommandClass():
   """Add Wall command"""
 
   def GetResources(self):
-    return {'Pixmap'  : os.path.join( iconPath , 'AddWall.svg'), # the name of a svg file available in the resources
+    return {'Pixmap'  : os.path.join( iconPath , 'SheetMetal_AddWall.svg'), # the name of a svg file available in the resources
             'MenuText': QtCore.QT_TRANSLATE_NOOP('SheetMetal','Make Wall'),
             'ToolTip' : QtCore.QT_TRANSLATE_NOOP('SheetMetal','Extends a wall from a side face of metal sheet')}
 

@@ -158,13 +158,13 @@ class SMBaseViewProvider:
     return objs
 
   def getIcon(self):
-    return os.path.join( iconPath , 'AddBase.svg')
+    return os.path.join( iconPath , 'SheetMetal_AddBase.svg')
 
 class AddBaseCommandClass():
   """Add Base command"""
 
   def GetResources(self):
-    return {'Pixmap'  : os.path.join( iconPath , 'AddBase.svg'), # the name of a svg file available in the resources
+    return {'Pixmap'  : os.path.join( iconPath , 'SheetMetal_AddBase.svg'), # the name of a svg file available in the resources
             'MenuText': QtCore.QT_TRANSLATE_NOOP('SheetMetal','Make Base Wall'),
             'ToolTip' : QtCore.QT_TRANSLATE_NOOP('SheetMetal','Create a sheetmetal wall from a sketch')}
 
