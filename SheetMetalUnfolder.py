@@ -3036,7 +3036,7 @@ class SMUnfoldCommandClass():
   def GetResources(self):
     __dir__ = os.path.dirname(__file__)
     iconPath = os.path.join( __dir__, 'Resources', 'icons' )
-    return {'Pixmap'  : os.path.join( iconPath , 'SMUnfold.svg'), # the name of a svg file available in the resources
+    return {'Pixmap'  : os.path.join( iconPath , 'SheetMetal_Unfold.svg'), # the name of a svg file available in the resources
             'MenuText': QtCore.QT_TRANSLATE_NOOP('SheetMetal','Unfold'),
             'ToolTip' : QtCore.QT_TRANSLATE_NOOP('SheetMetal','Flatten folded sheet metal object')}
 
@@ -3079,7 +3079,7 @@ class SMUnfoldUnattendedCommandClass():
   def GetResources(self):
     __dir__ = os.path.dirname(__file__)
     iconPath = os.path.join( __dir__, 'Resources', 'icons' )
-    return {'Pixmap'  : os.path.join( iconPath , 'SMUnfoldUnattended.svg'), # the name of a svg file available in the resources
+    return {'Pixmap'  : os.path.join( iconPath , 'SheetMetal_UnfoldUnattended.svg'), # the name of a svg file available in the resources
             'MenuText': QtCore.QT_TRANSLATE_NOOP('SheetMetal','Unattended Unfold'),
             'ToolTip' : QtCore.QT_TRANSLATE_NOOP('SheetMetal','Flatten folded sheet metal object with default options')}
 

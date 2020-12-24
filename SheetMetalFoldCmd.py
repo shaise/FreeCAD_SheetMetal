@@ -292,7 +292,7 @@ class SMFoldViewProvider:
     return objs
 
   def getIcon(self):
-    return os.path.join( iconPath , 'AddFoldWall.svg')
+    return os.path.join( iconPath , 'SheetMetal_AddFoldWall.svg')
 
 class SMFoldPDViewProvider:
   "A View provider that nests children objects under the created one"
@@ -335,13 +335,13 @@ class SMFoldPDViewProvider:
     return objs
 
   def getIcon(self):
-    return os.path.join( iconPath , 'AddFoldWall.svg')
+    return os.path.join( iconPath , 'SheetMetal_AddFoldWall.svg')
 
 class AddFoldWallCommandClass():
   """Add Wall command"""
 
   def GetResources(self):
-    return {'Pixmap'  : os.path.join( iconPath , 'AddFoldWall.svg'), # the name of a svg file available in the resources
+    return {'Pixmap'  : os.path.join( iconPath , 'SheetMetal_AddFoldWall.svg'), # the name of a svg file available in the resources
             'MenuText': QtCore.QT_TRANSLATE_NOOP('SheetMetal','Fold a Wall'),
             'ToolTip' : QtCore.QT_TRANSLATE_NOOP('SheetMetal','Fold a wall of metal sheet')}
 
