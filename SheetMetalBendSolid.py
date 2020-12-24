@@ -103,7 +103,7 @@ def WrapFace(Face, Radius, axis, normal, zeroVert, cent, zeroVertNormal):
                 Edges.append(WrapBSpline(bspline, Radius, zeroVert, cent, axis, zeroVertNormal))
     return Edges
 
-def BendSolid(SelFace, SelEdge, BendR, thk, neturalRadius, Axis, flipped):
+def BendSolid(SelFace, SelEdge, BendR, thk, neutralRadius, Axis, flipped):
     normal = SelFace.normalAt(0,0)
     zeroVert = SelEdge.Vertexes[0].Point
     if not(flipped) :
@@ -120,7 +120,7 @@ def BendSolid(SelFace, SelEdge, BendR, thk, neturalRadius, Axis, flipped):
     #print([cent,zeroVertNormal])
 
     Wirelist = []
-    w = WrapFace(SelFace, neturalRadius, Axis, normal, zeroVert, cent, zeroVertNormal)
+    w = WrapFace(SelFace, neutralRadius, Axis, normal, zeroVert, cent, zeroVertNormal)
     eList = Part.__sortEdges__(w)
     myWire = Part.Wire(eList)
     #Part.show(myWire, "myWire")

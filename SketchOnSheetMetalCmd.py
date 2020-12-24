@@ -206,10 +206,10 @@ def smSketchOnSheetMetal(kfactor = 0.5, sketch = '', flipped = False, selFaceNam
           bendR = cylface.Surface.Radius
           flipped = False
 
-        #To arrive unfold Length, neturalRadius
+        #To arrive unfold Length, neutralRadius
         unfoldLength = ( bendR + kfactor * thk ) * abs(bendA) * math.pi / 180.0
-        neturalRadius =  ( bendR + kfactor * thk )
-        #print([unfoldLength,neturalRadius])
+        neutralRadius =  ( bendR + kfactor * thk )
+        #print([unfoldLength,neutralRadius])
 
         #To get faceNormal, bend face
         faceNormal = normal.cross(revAxisV).normalize()
@@ -233,7 +233,7 @@ def smSketchOnSheetMetal(kfactor = 0.5, sketch = '', flipped = False, selFaceNam
         #Part.show(BendSolidFace,"BendSolidFace")
         #print([bendR, bendA, revAxisV, revAxisP, normal, flipped, BendSolidFace.Faces[0].normalAt(0,0)])
 
-        bendsolid = SheetMetalBendSolid.BendSolid(BendSolidFace.Faces[0], BendEdge, bendR, thk, neturalRadius, revAxisV, flipped)
+        bendsolid = SheetMetalBendSolid.BendSolid(BendSolidFace.Faces[0], BendEdge, bendR, thk, neutralRadius, revAxisV, flipped)
         #Part.show(bendsolid,"bendsolid")
         solidlist.append(bendsolid)
 
