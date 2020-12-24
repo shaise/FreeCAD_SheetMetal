@@ -1,27 +1,27 @@
 # -*- coding: utf-8 -*-
-##############################################################################
+###################################################################################
 #
 #  SheetMetalBaseCmd.py
-#
+#  
 #  Copyright 2015 Shai Seger <shaise at gmail dot com>
-#
+#  
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation; either version 2 of the License, or
 #  (at your option) any later version.
-#
+#  
 #  This program is distributed in the hope that it will be useful,
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #  GNU General Public License for more details.
-#
+#  
 #  You should have received a copy of the GNU General Public License
 #  along with this program; if not, write to the Free Software
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
-#
-#
-##############################################################################
+#  
+#  
+###################################################################################
 
 from FreeCAD import Gui
 from PySide import QtCore, QtGui
@@ -54,41 +54,42 @@ def smIsOperationLegal(body, selobj):
     return True
 
 def smBase(thk = 2.0, length = 10.0, radius = 1.0, Side = "Inside", midplane = False, reverse = False, MainObject = None):
+  # To Get sketch normal
   WireList = MainObject.Shape.Wires[0]
-  mat = MainObject.getGlobalPlacement()
+  mat = MainObject.getGlobalPlacement().Rotation
   normal = (mat.multVec(FreeCAD.Vector(0,0,1))).normalize()
-  #print(normal)
+  #print([mat, normal])
   if WireList.isClosed() :
+    # If Cosed sketch is there, make a face & extrude it 
     sketch_face = Part.makeFace(MainObject.Shape.Wires,"Part::FaceMakerBullseye")
     wallSolid = sketch_face.extrude(sketch_face.normalAt(0,0) * thk)
   else :
+    # If sketch is oen type, make a face by extruding & offset it to correct position
+    if midplane :
+      WireList.translate(normal * length/2.0)
+      wire_extr = WireList.extrude(normal * -length)
+    elif reverse:
+      wire_extr = WireList.extrude(normal * length)
+    else :
+      wire_extr = WireList.extrude(normal * -length)
+    #Part.show(wire_extr,"wire_extr")
+    if Side == "Inside" :
+      wire_extr = wire_extr.makeOffsetShape(-thk/2.0, 0.0, fill = False, join = 2)
+    elif Side == "Outside" :
+      wire_extr = wire_extr.makeOffsetShape(thk/2.0, 0.0, fill = False, join = 2)
+    #Part.show(wire_extr,"wire_extr")
     if len(WireList.Edges) > 1 :
-      if midplane :
-        WireList.translate(normal * length/2.0)
-        wire_extr = WireList.extrude(normal * -length)
-      elif reverse:
-        wire_extr = WireList.extrude(normal * length)
-      else :
-        wire_extr = WireList.extrude(normal * -length)
-      #Part.show(wire_extr,"wire_extr")
-      if Side == "Middle" :
-        wire_extr = wire_extr.makeOffsetShape(-thk/2.0, 0.0, fill = False, join = 2)
-      elif Side == "Outside" :
-        wire_extr = wire_extr.makeOffsetShape(-thk, 0.0, fill = False, join = 2)
-      #Part.show(wire_extr,"wire_extr")
       filleted_extr = wire_extr.makeFillet((radius + thk / 2.0), wire_extr.Edges)
       #Part.show(filleted_extr,"filleted_extr")
-      offset_extr = filleted_extr.makeOffsetShape(-thk/2.0, 0.0, fill = False)
-      #Part.show(offset_extr,"offset_extr")
-      wallSolid = filleted_extr.makeOffsetShape(thk, 0.0, fill = True)
-      #Part.show(wallSolid,"wallSolid")
     else :
-      if MainObject.TypeId == 'Sketcher::SketchObject' :
-         sketch_face = MainObject.Shape.Wires[0].extrude(normal * -length)
-         #Part.show(sketch_face)
-         wallSolid = sketch_face.extrude(sketch_face.Faces[0].normalAt(0,0) * -thk)
+      filleted_extr = wire_extr
+      #Part.show(filleted_extr,"filleted_extr")
+    offset_extr = filleted_extr.makeOffsetShape(-thk/2.0, 0.0, fill = False)
+    #Part.show(offset_extr,"offset_extr")
+    wallSolid = offset_extr.makeOffsetShape(thk, 0.0, fill = True)
+    #Part.show(wallSolid,"wallSolid")
 
-  Gui.ActiveDocument.getObject(MainObject.Name).Visibility = False
+  #Part.show(wallSolid,"wallSolid")
   return wallSolid
 
 class SMBaseBend:
@@ -111,9 +112,10 @@ class SMBaseBend:
       fp.addProperty("App::PropertyBool","MidPlane","Parameters","Extrude Symmetric to Plane").MidPlane = False
       fp.addProperty("App::PropertyBool","Reverse","Parameters","Reverse Extrusion Direction").Reverse = False
 
-    s = smBase(thk = fp.thickness.Value, length = fp.length.Value, radius = fp.radius.Value, Side = fp.BendSide,
+    s = smBase(thk = fp.thickness.Value, length = fp.length.Value, radius = fp.radius.Value, Side = fp.BendSide, 
                   midplane = fp.MidPlane, reverse = fp.Reverse, MainObject = fp.BendSketch)
     fp.Shape = s
+    Gui.ActiveDocument.getObject(fp.BendSketch.Name).Visibility = False
 
 class SMBaseViewProvider:
   "A View provider that nests children objects under the created one"
