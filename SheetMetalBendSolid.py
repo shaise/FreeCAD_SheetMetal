@@ -22,8 +22,7 @@
 #
 #
 ##############################################################################
-import FreeCAD, Part, math
-
+import Part, math
 
 def getPointOnCylinder(zeroVert, poi, Radius, circent, axis, zeroVertNormal):
     dist = zeroVert.distanceToPlane(poi, zeroVertNormal)
@@ -49,7 +48,7 @@ def WrapBSpline(bspline, Radius, zeroVert, cent, axis, zeroVertNormal):
     return newbspline.toShape()
 
 def WrapFace(Face, Radius, axis, normal, zeroVert, cent, zeroVertNormal):
-    circent = cent
+#    circent = cent
     Edges = []
     for e in Face.Edges:
         #print(type(e.Curve))
@@ -119,7 +118,7 @@ def BendSolid(SelFace, SelEdge, BendR, thk, neutralRadius, Axis, flipped):
     #Part.show(SelFace)
     #print([cent,zeroVertNormal])
 
-    Wirelist = []
+#    Wirelist = []
     w = WrapFace(SelFace, neutralRadius, Axis, normal, zeroVert, cent, zeroVertNormal)
     eList = Part.__sortEdges__(w)
     myWire = Part.Wire(eList)
