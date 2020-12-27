@@ -224,21 +224,21 @@ def getBendDetail(obj, edge1, edge2, kfactor) :
   else :
     bendR = cylface.Surface.Radius
 
-  #To arrive unfold Length, neturalRadius
+  #To arrive unfold Length, neutralRadius
   unfoldLength = ( bendR + kfactor * thk ) * bendA * math.pi / 180.0
-  neturalRadius =  ( bendR + kfactor * thk )
+  neutralRadius =  ( bendR + kfactor * thk )
 
   #To get centre of sketch
-  neturalEdges = Edgewire.makeOffset2D(unfoldLength/2.0,fill = False, openResult = True, join = 2, intersection = False)
-  neturalFaces = Edgewire.makeOffset2D(unfoldLength, fill = True, openResult = True, join = 2, intersection = False)
-  First_Check_face = largeface.common(neturalFaces)
+  neutralEdges = Edgewire.makeOffset2D(unfoldLength/2.0,fill = False, openResult = True, join = 2, intersection = False)
+  neutralFaces = Edgewire.makeOffset2D(unfoldLength, fill = True, openResult = True, join = 2, intersection = False)
+  First_Check_face = largeface.common(neutralFaces)
   if First_Check_face.Faces :
-    neturalEdges = Edgewire.makeOffset2D(-unfoldLength/2.0, fill = False, openResult = True, join = 2, intersection = False)
-  #Part.show(neturalEdges,"neturalEdges")
+    neutralEdges = Edgewire.makeOffset2D(-unfoldLength/2.0, fill = False, openResult = True, join = 2, intersection = False)
+  #Part.show(neutralEdges,"neutralEdges")
 
   # To work around offset2d issue [2 line offset produce 3 lines]
-  for offsetvertex in neturalEdges.Vertexes :
-    Edgelist = neturalEdges.ancestorsOfType(offsetvertex, Part.Edge)
+  for offsetvertex in neutralEdges.Vertexes :
+    Edgelist = neutralEdges.ancestorsOfType(offsetvertex, Part.Edge)
     #print(len(Edgelist))
     if len(Edgelist) > 1 :
       e1 = Edgelist[0].valueAt(Edgelist[0].LastParameter) - Edgelist[0].valueAt(Edgelist[0].FirstParameter)
@@ -248,7 +248,7 @@ def getBendDetail(obj, edge1, edge2, kfactor) :
         break
   centerPoint = offsetvertex.Point
   #print(centerPoint)
-  return [cornerPoint, centerPoint, largeface, thk, unfoldLength, neturalRadius]
+  return [cornerPoint, centerPoint, largeface, thk, unfoldLength, neutralRadius]
 
 def smCornerR(reliefsketch = "Circle", size = 3.0, ratio = 1.0, xoffset = 0.0, yoffset = 0.0, kfactor = 0.5, sketch = '',
                             flipped = False, selEdgeNames = '', MainObject = None):
@@ -260,7 +260,7 @@ def smCornerR(reliefsketch = "Circle", size = 3.0, ratio = 1.0, xoffset = 0.0, y
     REdgelist.append(REdge)
 
   DetailList = getBendDetail(resultSolid, REdgelist[0], REdgelist[1], kfactor)
-  cornerPoint, centerPoint, LargeFace, thk, unfoldLength, neturalRadius = DetailList
+  cornerPoint, centerPoint, LargeFace, thk, unfoldLength, neutralRadius = DetailList
   normal = LargeFace.normalAt(0,0)
 
   SplitLineVector = centerPoint - cornerPoint
@@ -346,10 +346,10 @@ def smCornerR(reliefsketch = "Circle", size = 3.0, ratio = 1.0, xoffset = 0.0, y
           bendR = cylface.Surface.Radius
           flipped = False
 
-        #To arrive unfold Length, neturalRadius
+        #To arrive unfold Length, neutralRadius
         unfoldLength = ( bendR + kfactor * thk ) * abs(bendA) * math.pi / 180.0
-        neturalRadius =  ( bendR + kfactor * thk )
-        #print([unfoldLength,neturalRadius])
+        neutralRadius =  ( bendR + kfactor * thk )
+        #print([unfoldLength,neutralRadius])
 
         #To get faceNormal, bend face
         faceNormal = normal.cross(revAxisV).normalize()
@@ -372,7 +372,7 @@ def smCornerR(reliefsketch = "Circle", size = 3.0, ratio = 1.0, xoffset = 0.0, y
         #Part.show(BendSolidFace,"BendSolidFace")
         #print([bendR, bendA, revAxisV, revAxisP, normal, flipped, BendSolidFace.Faces[0].normalAt(0,0)])
 
-        bendsolid = SheetMetalBendSolid.BendSolid(BendSolidFace.Faces[0], BendEdge, bendR, thk, neturalRadius, revAxisV, flipped)
+        bendsolid = SheetMetalBendSolid.BendSolid(BendSolidFace.Faces[0], BendEdge, bendR, thk, neutralRadius, revAxisV, flipped)
         #Part.show(bendsolid,"bendsolid")
         solidlist.append(bendsolid)
 
@@ -427,7 +427,7 @@ class SMCornerRelief:
     obj.addProperty("App::PropertyLinkSub", "baseObject", "Parameters", "Base object").baseObject = (selobj[0].Object, selobj[0].SubElementNames)
     obj.addProperty("App::PropertyLength","Size","Parameters","Size of Shape").Size = 3.0
     obj.addProperty("App::PropertyFloat","SizeRatio","Parameters","Size Ratio of Shape").SizeRatio = 1.5
-    obj.addProperty("App::PropertyFloatConstraint","kfactor","Parameters","Netural Axis Position").kfactor = (0.5,0.0,1.0,0.01)
+    obj.addProperty("App::PropertyFloatConstraint","kfactor","Parameters","Neutral Axis Position").kfactor = (0.5,0.0,1.0,0.01)
     obj.addProperty("App::PropertyLink","Sketch","Parameters1","Corner Relief Sketch")
     obj.addProperty("App::PropertyDistance","XOffset","Parameters1","Gap from side one").XOffset = 0.0
     obj.addProperty("App::PropertyDistance","YOffset","Parameters1","Gap from side two").YOffset = 0.0
@@ -487,7 +487,7 @@ class SMCornerReliefVP:
     return objs
 
   def getIcon(self):
-    return os.path.join( iconPath , 'AddCornerRelief.svg')
+    return os.path.join( iconPath , 'SheetMetal_AddCornerRelief.svg')
 
 class SMCornerReliefPDVP:
   "A View provider that nests children objects under the created one"
@@ -530,13 +530,13 @@ class SMCornerReliefPDVP:
     return objs
 
   def getIcon(self):
-    return os.path.join( iconPath , 'AddCornerRelief.svg')
+    return os.path.join( iconPath , 'SheetMetal_AddCornerRelief.svg')
 
 class AddCornerReliefCommandClass():
   """Add Corner Relief command"""
 
   def GetResources(self):
-    return {'Pixmap'  : os.path.join( iconPath , 'AddCornerRelief.svg'), # the name of a svg file available in the resources
+    return {'Pixmap'  : os.path.join( iconPath , 'SheetMetal_AddCornerRelief.svg'), # the name of a svg file available in the resources
             'MenuText': QtCore.QT_TRANSLATE_NOOP('SheetMetal','Add Corner Relief'),
             'ToolTip' : QtCore.QT_TRANSLATE_NOOP('SheetMetal','Corner Relief to metal sheet corner')}
 

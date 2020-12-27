@@ -153,7 +153,7 @@ class SMJViewProviderTree:
     return objs
 
   def getIcon(self):
-    return os.path.join( iconPath , 'AddJunction.svg')
+    return os.path.join( iconPath , 'SheetMetal_AddJunction.svg')
 
   def setEdit(self,vobj,mode):
     taskd = SMJunctionTaskPanel()
@@ -209,7 +209,7 @@ class SMJViewProviderFlat:
     return []
 
   def getIcon(self):
-    return os.path.join( iconPath , 'AddJunction.svg')
+    return os.path.join( iconPath , 'SheetMetal_AddJunction.svg')
 
   def setEdit(self,vobj,mode):
     taskd = SMJunctionTaskPanel()
@@ -249,7 +249,7 @@ class SMJunctionTaskPanel:
       # buttons
       self.addButton = QtGui.QPushButton(self.form)
       self.addButton.setObjectName("addButton")
-      self.addButton.setIcon(QtGui.QIcon(os.path.join( iconPath , 'SMUpdate.svg')))
+      self.addButton.setIcon(QtGui.QIcon(os.path.join( iconPath , 'SheetMetal_Update.svg')))
       self.grid.addWidget(self.addButton, 3, 0, 1, 2)
 
       QtCore.QObject.connect(self.addButton, QtCore.SIGNAL("clicked()"), self.updateElement)
@@ -319,7 +319,7 @@ class AddJunctionCommandClass():
   """Add Junction command"""
 
   def GetResources(self):
-    return {'Pixmap'  : os.path.join( iconPath , 'AddJunction.svg'), # the name of a svg file available in the resources
+    return {'Pixmap'  : os.path.join( iconPath , 'SheetMetal_AddJunction.svg'), # the name of a svg file available in the resources
             'MenuText': QtCore.QT_TRANSLATE_NOOP('SheetMetal','Make Junction'),
             'ToolTip' : QtCore.QT_TRANSLATE_NOOP('SheetMetal','Create Gap on solids')}
 

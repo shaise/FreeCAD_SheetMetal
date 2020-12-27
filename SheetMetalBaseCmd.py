@@ -64,7 +64,7 @@ def smBase(thk = 2.0, length = 10.0, radius = 1.0, Side = "Inside", midplane = F
     sketch_face = Part.makeFace(MainObject.Shape.Wires,"Part::FaceMakerBullseye")
     wallSolid = sketch_face.extrude(sketch_face.normalAt(0,0) * thk)
   else :
-    # If sketch is oen type, make a face by extruding & offset it to correct position
+    # If sketch is one type, make a face by extruding & offset it to correct position
     if midplane :
       WireList.translate(normal * length/2.0)
       wire_extr = WireList.extrude(normal * -length)
@@ -158,13 +158,13 @@ class SMBaseViewProvider:
     return objs
 
   def getIcon(self):
-    return os.path.join( iconPath , 'AddBase.svg')
+    return os.path.join( iconPath , 'SheetMetal_AddBase.svg')
 
 class AddBaseCommandClass():
   """Add Base command"""
 
   def GetResources(self):
-    return {'Pixmap'  : os.path.join( iconPath , 'AddBase.svg'), # the name of a svg file available in the resources
+    return {'Pixmap'  : os.path.join( iconPath , 'SheetMetal_AddBase.svg'), # the name of a svg file available in the resources
             'MenuText': QtCore.QT_TRANSLATE_NOOP('SheetMetal','Make Base Wall'),
             'ToolTip' : QtCore.QT_TRANSLATE_NOOP('SheetMetal','Create a sheetmetal wall from a sketch')}
 

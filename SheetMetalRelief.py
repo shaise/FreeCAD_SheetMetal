@@ -199,7 +199,7 @@ class SMReliefViewProviderTree:
     return objs
 
   def getIcon(self):
-    return os.path.join( iconPath , 'AddRelief.svg')
+    return os.path.join( iconPath , 'SheetMetal_AddRelief.svg')
 
   def setEdit(self,vobj,mode):
     taskd = SMReliefTaskPanel()
@@ -255,7 +255,7 @@ class SMReliefViewProviderFlat:
     return []
 
   def getIcon(self):
-    return os.path.join( iconPath , 'AddRelief.svg')
+    return os.path.join( iconPath , 'SheetMetal_AddRelief.svg')
 
   def setEdit(self,vobj,mode):
     taskd = SMReliefTaskPanel()
@@ -295,7 +295,7 @@ class SMReliefTaskPanel:
       # buttons
       self.addButton = QtGui.QPushButton(self.form)
       self.addButton.setObjectName("addButton")
-      self.addButton.setIcon(QtGui.QIcon(os.path.join( iconPath , 'SMUpdate.svg')))
+      self.addButton.setIcon(QtGui.QIcon(os.path.join( iconPath , 'SheetMetal_Update.svg')))
       self.grid.addWidget(self.addButton, 3, 0, 1, 2)
 
       QtCore.QObject.connect(self.addButton, QtCore.SIGNAL("clicked()"), self.updateElement)
@@ -365,7 +365,7 @@ class AddReliefCommandClass():
   """Add Relief command"""
 
   def GetResources(self):
-    return {'Pixmap'  : os.path.join( iconPath , 'AddRelief.svg'), # the name of a svg file available in the resources
+    return {'Pixmap'  : os.path.join( iconPath , 'SheetMetal_AddRelief.svg'), # the name of a svg file available in the resources
             'MenuText': QtCore.QT_TRANSLATE_NOOP('SheetMetal','Make Relief'),
             'ToolTip' : QtCore.QT_TRANSLATE_NOOP('SheetMetal','Create Relief on solids')}
 

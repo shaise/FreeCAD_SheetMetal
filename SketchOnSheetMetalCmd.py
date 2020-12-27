@@ -206,10 +206,10 @@ def smSketchOnSheetMetal(kfactor = 0.5, sketch = '', flipped = False, selFaceNam
           bendR = cylface.Surface.Radius
           flipped = False
 
-        #To arrive unfold Length, neturalRadius
+        #To arrive unfold Length, neutralRadius
         unfoldLength = ( bendR + kfactor * thk ) * abs(bendA) * math.pi / 180.0
-        neturalRadius =  ( bendR + kfactor * thk )
-        #print([unfoldLength,neturalRadius])
+        neutralRadius =  ( bendR + kfactor * thk )
+        #print([unfoldLength,neutralRadius])
 
         #To get faceNormal, bend face
         faceNormal = normal.cross(revAxisV).normalize()
@@ -233,7 +233,7 @@ def smSketchOnSheetMetal(kfactor = 0.5, sketch = '', flipped = False, selFaceNam
         #Part.show(BendSolidFace,"BendSolidFace")
         #print([bendR, bendA, revAxisV, revAxisP, normal, flipped, BendSolidFace.Faces[0].normalAt(0,0)])
 
-        bendsolid = SheetMetalBendSolid.BendSolid(BendSolidFace.Faces[0], BendEdge, bendR, thk, neturalRadius, revAxisV, flipped)
+        bendsolid = SheetMetalBendSolid.BendSolid(BendSolidFace.Faces[0], BendEdge, bendR, thk, neutralRadius, revAxisV, flipped)
         #Part.show(bendsolid,"bendsolid")
         solidlist.append(bendsolid)
 
@@ -330,7 +330,7 @@ class SMSketchOnSheetVP:
     return objs
 
   def getIcon(self):
-    return os.path.join( iconPath , 'SketchOnSheet.svg')
+    return os.path.join( iconPath , 'SheetMetal_SketchOnSheet.svg')
 
 class SMSketchOnSheetPDVP:
   "A View provider that nests children objects under the created one"
@@ -373,13 +373,13 @@ class SMSketchOnSheetPDVP:
     return objs
 
   def getIcon(self):
-    return os.path.join( iconPath , 'SketchOnSheet.svg')
+    return os.path.join( iconPath , 'SheetMetal_SketchOnSheet.svg')
 
 class AddSketchOnSheetCommandClass():
   """Add Sketch On Sheet metal command"""
 
   def GetResources(self):
-    return {'Pixmap'  : os.path.join( iconPath , 'SketchOnSheet.svg'), # the name of a svg file available in the resources
+    return {'Pixmap'  : os.path.join( iconPath , 'SheetMetal_SketchOnSheet.svg'), # the name of a svg file available in the resources
             'MenuText': QtCore.QT_TRANSLATE_NOOP('SheetMetal','Sketch On Sheet metal'),
             'ToolTip' : QtCore.QT_TRANSLATE_NOOP('SheetMetal','Sketch On Sheet metal')}
 

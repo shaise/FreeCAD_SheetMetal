@@ -105,11 +105,11 @@ def smFold(bendR = 1.0, bendA = 90.0, kfactor = 0.5, invertbend = False, flipped
         #offset = thk * (1 - kfactor )
 
       unfoldLength = ( bendR + kfactor * thk ) * bendA * math.pi / 180.0
-      neturalRadius =  ( bendR + kfactor * thk )
-      #neturalLength =  ( bendR + kfactor * thk ) * math.tan(math.radians(bendA / 2.0)) * 2.0
-      #offsetdistance = neturalLength - unfoldLength
-      #scalefactor = neturalLength / unfoldLength
-      #print([neturalRadius, neturalLength, unfoldLength, offsetdistance, scalefactor])
+      neutralRadius =  ( bendR + kfactor * thk )
+      #neutralLength =  ( bendR + kfactor * thk ) * math.tan(math.radians(bendA / 2.0)) * 2.0
+      #offsetdistance = neutralLength - unfoldLength
+      #scalefactor = neutralLength / unfoldLength
+      #print([neutralRadius, neutralLength, unfoldLength, offsetdistance, scalefactor])
 
       #To get facedir
       toolFaces = tool.extrude(normal * -thk)
@@ -206,7 +206,7 @@ def smFold(bendR = 1.0, bendA = 90.0, kfactor = 0.5, invertbend = False, flipped
       #Part.show(solid1,"rotatedsolid1")
       bendSolidlist =[]
       for flatface in flatfaces.Faces :
-        bendsolid = SheetMetalBendSolid.BendSolid(flatface, bendEdge, bendR, thk, neturalRadius, revAxisV, flipped)
+        bendsolid = SheetMetalBendSolid.BendSolid(flatface, bendEdge, bendR, thk, neutralRadius, revAxisV, flipped)
         #Part.show(bendsolid,"bendsolid")
         solidlist.append(bendsolid)
 
@@ -234,7 +234,7 @@ class SMFoldWall:
     obj.addProperty("App::PropertyLinkSub", "baseObject", "Parameters", "Base object").baseObject = (selobj[0].Object, selobj[0].SubElementNames)
     obj.addProperty("App::PropertyLink","BendLine","Parameters","Bend Reference Line List").BendLine = selobj[1].Object
     obj.addProperty("App::PropertyBool","invertbend","Parameters","Invert Solid bend direction").invertbend = False
-    obj.addProperty("App::PropertyFloatConstraint","kfactor","Parameters","Netural Axis Position").kfactor = (0.5,0.0,1.0,0.01)
+    obj.addProperty("App::PropertyFloatConstraint","kfactor","Parameters","Neutral Axis Position").kfactor = (0.5,0.0,1.0,0.01)
     obj.addProperty("App::PropertyBool","invert","Parameters","Invert bend direction").invert = False
     obj.addProperty("App::PropertyBool","unfold","Parameters","Unfold Bend").unfold = False
     obj.addProperty("App::PropertyEnumeration", "Position", "Parameters","Bend Line Position").Position = ["forward", "middle", "backward"]
@@ -292,7 +292,7 @@ class SMFoldViewProvider:
     return objs
 
   def getIcon(self):
-    return os.path.join( iconPath , 'AddFoldWall.svg')
+    return os.path.join( iconPath , 'SheetMetal_AddFoldWall.svg')
 
 class SMFoldPDViewProvider:
   "A View provider that nests children objects under the created one"
@@ -335,13 +335,13 @@ class SMFoldPDViewProvider:
     return objs
 
   def getIcon(self):
-    return os.path.join( iconPath , 'AddFoldWall.svg')
+    return os.path.join( iconPath , 'SheetMetal_AddFoldWall.svg')
 
 class AddFoldWallCommandClass():
   """Add Wall command"""
 
   def GetResources(self):
-    return {'Pixmap'  : os.path.join( iconPath , 'AddFoldWall.svg'), # the name of a svg file available in the resources
+    return {'Pixmap'  : os.path.join( iconPath , 'SheetMetal_AddFoldWall.svg'), # the name of a svg file available in the resources
             'MenuText': QtCore.QT_TRANSLATE_NOOP('SheetMetal','Fold a Wall'),
             'ToolTip' : QtCore.QT_TRANSLATE_NOOP('SheetMetal','Fold a wall of metal sheet')}
 

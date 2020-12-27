@@ -34,7 +34,7 @@ smWB_icons_path =  os.path.join( smWBpath, 'Resources', 'icons')
 global main_smWB_Icon
 main_smWB_Icon = os.path.join( smWB_icons_path , 'SMLogo.svg')
 
-SHEETMETALWB_VERSION = 'V0.2.44'
+SHEETMETALWB_VERSION = 'V0.2.45'
 
 class SMWorkbench (Workbench):
 
@@ -61,8 +61,10 @@ class SMWorkbench (Workbench):
         import SheetMetalBend
         import SketchOnSheetMetalCmd
         import SheetMetalCornerReliefCmd
+        import SheetMetalFormingCmd
         import os.path
-        self.list = ["SMBase", "SMMakeWall", "SMExtrudeFace", "SMFoldWall", "SMUnfold", "SMCornerRelief", "SMMakeRelief", "SMMakeJunction", "SMMakeBend", "SMSketchOnSheet"] # A list of command names created in the line above
+        self.list = ["SMBase", "SMMakeWall", "SMExtrudeFace", "SMFoldWall", "SMUnfold", "SMCornerRelief", "SMMakeRelief", "SMMakeJunction", 
+                     "SMMakeBend", "SMSketchOnSheet", "SMFormingWall"] # A list of command names created in the line above
         if engineering_mode_enabled():
             self.list.insert(self.list.index("SMUnfold") + 1,"SMUnfoldUnattended")
         self.appendToolbar("Sheet Metal",self.list) # creates a new toolbar with your commands
