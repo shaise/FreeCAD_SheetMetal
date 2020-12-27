@@ -26,7 +26,7 @@
 from FreeCAD import Gui
 from PySide import QtCore, QtGui
 
-import FreeCAD, FreeCADGui, Part, os, math
+import FreeCAD, Part, os, math
 __dir__ = os.path.dirname(__file__)
 iconPath = os.path.join( __dir__, 'Resources', 'icons' )
 smEpsilon = 0.0000001
@@ -136,7 +136,7 @@ def bendAngle(theFace, edge_vec) :
     angle_end = angle_0
 
   bend_angle = angle_end - angle_start
-  angle_tan = angle_start + bend_angle/6.0 # need to have the angle_tan before correcting the sign
+#  angle_tan = angle_start + bend_angle/6.0 # need to have the angle_tan before correcting the sign
 
   if bend_angle < 0.0:
     bend_angle = -bend_angle
