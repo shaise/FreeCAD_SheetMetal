@@ -101,12 +101,12 @@ def get_related_views(doc, labels):
 originals = [App.ActiveDocument, Gui.ActiveDocument]
 try:
     for doc_name, doc in App.listDocuments().items():
-        unfold_objects = map(lambda x: x.Label, filter(
-            lambda x: re.match('Unfold.*$', x.Label), doc.Objects))
+        unfold_objects = list(map(lambda x: x.Label, filter(
+            lambda x: re.match('Unfold.*$', x.Label), doc.Objects)))
         if unfold_objects:
-            error("%s contains objects with Unfold* prefix, please rename them: %s\n" %
+            error("Document '%s' contains objects with Unfold* prefix, please rename them: %s\n" %
                   (doc_name, ', '.join(unfold_objects)))
-            raise Exception("Stopping before a possible conflict.")
+            raise Exception("INFO: Stopping before a possible conflict.")
 
     for doc_name, doc in App.listDocuments().items():
         Gui.ActiveDocument = Gui.getDocument(doc_name)
@@ -176,8 +176,8 @@ try:
 
                     try:
                         # Check if unfold operation is successful
-                        unfold_objects = map(lambda x: x.Label, filter(
-                            lambda x: re.match('Unfold.*$', x.Label), doc.Objects))
+                        unfold_objects = list(map(lambda x: x.Label, filter(
+                            lambda x: re.match('Unfold.*$', x.Label), doc.Objects)))
                         if not unfold_objects:
                             raise Exception(
                                 "Can't unfold the sheetmetal object. Can you unfold manually?")
@@ -185,13 +185,13 @@ try:
                             Gui.Selection.clearSelection()
 
                         # Get the newest object's names
-                        new_solid_name = map(lambda x: x.Label, filter(
-                            lambda x: re.match('Unfold[0-9]*$', x.Label), doc.Objects))
+                        new_solid_name = list(map(lambda x: x.Label, filter(
+                            lambda x: re.match('Unfold[0-9]*$', x.Label), doc.Objects)))
                         new_solid_name.sort(reverse=True)
                         new_solid_name = new_solid_name[0]
 
-                        new_sketch_name = map(lambda x: x.Label, filter(
-                            lambda x: re.match('Unfold_Sketch[0-9]*$', x.Label), doc.Objects))
+                        new_sketch_name = list(map(lambda x: x.Label, filter(
+                            lambda x: re.match('Unfold_Sketch[0-9]*$', x.Label), doc.Objects)))
                         new_sketch_name.sort(reverse=True)
                         new_sketch_name = new_sketch_name[0]
 
