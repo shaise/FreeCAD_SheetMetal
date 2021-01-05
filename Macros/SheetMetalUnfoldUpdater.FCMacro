@@ -1,43 +1,50 @@
 __author__ = "ceremcem"
 """
+URL   : https://github.com/shaise/FreeCAD_SheetMetal/blob/master/Macros/SheetMetalUnfoldUpdater.FCMacro
+URL2 : https://github.com/ceremcem/FreeCAD_SheetMetal/blob/master/Macros/SheetMetalUnfoldUpdater.FCMacro
+
 Description:
 -----------------------------------------------------------------------------------
 This macro automatically updates all unfold operations as well as their related 
-TechDraw views. It depends on LinkStage3 features, see 
-https://github.com/realthunder/FreeCAD_assembly3 for more info.
+TechDraw views. 
+
+Dependencies: 
+-----------------------------------------------------------------------------------
+It depends on LinkStage3 toponaming feature.
 
 Usage: 
 -----------------------------------------------------------------------------------
-
-> KNOWN ISSUE: 
-> --------------------
-> Please double click the documents that contains the bent parts at least once 
-> or the following error is received:
-> 
->     No graphical interface
->     discretizing Sketch
->     Running the Python command 'SMUnfoldUnattended' failed:
->     Traceback (most recent call last):
->       File "/home/aea/.FreeCAD/Mod/sheetmetal/SheetMetalUnfolder.py", line 3102, in Activated
->         taskd.accept()
->       File "/home/aea/.FreeCAD/Mod/sheetmetal/SheetMetalUnfolder.py", line 2968, in accept
->        docG.getObject(a.Name).Transparency = genObjTransparency
->
 
 1. Put your processed (final) object into an assembly container. 
 2. Create an "Element" for the unfold face
 3. Rename the element to "foo_unfold_face"
 4. Run this macro 
 5. See "foo_unfold" and "foo_unfold_solid" is created properly. 
-6. Create a TechDraw view by those two objects 
-7. Re-run this script. If sources are being updated successfully, then those two 
-    objects should be marked as invisible. 
-8. Re-run this script if any changes has been made to the original sketch and 
-    see any TechDraw ProjGroup source is updated properly
+6. Create TechDraw views by using those two objects 
+7. (Re-)run this script. If everything (unfold, TechDraw source updates) went successfully, 
+    then those two objects should be marked as invisible. 
 
-Unfold Verification: 
+Verification: 
 ------------------------
-If everything went successful, you shouldn't see any visible or `_TMP` postfixed objects 
+If everything went successful, you SHOULD NOT see any visible objects in the drawing area 
+or any `_TMP` postfixed objects in the treeview. 
+
+KNOWN ISSUE: 
+--------------------
+Problem: Following error might be received:
+
+      No graphical interface
+      discretizing Sketch
+      Running the Python command 'SMUnfoldUnattended' failed:
+      Traceback (most recent call last):
+        File "/home/aea/.FreeCAD/Mod/sheetmetal/SheetMetalUnfolder.py", line 3102, in Activated
+          taskd.accept()
+        File "/home/aea/.FreeCAD/Mod/sheetmetal/SheetMetalUnfolder.py", line 2968, in accept
+         docG.getObject(a.Name).Transparency = genObjTransparency
+
+Workaround: Please double click the documents that contains the bent parts at least one time.
+
+
 
 """
 
