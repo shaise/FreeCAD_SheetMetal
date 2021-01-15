@@ -10,18 +10,20 @@ TechDraw views.
 
 Dependencies: 
 -----------------------------------------------------------------------------------
-It depends on LinkStage3 toponaming feature.
+It depends on LinkStage3 toponaming feature for storing "unfold face" information 
+within the project file.
 
 Usage: 
 -----------------------------------------------------------------------------------
 
-1. Put your processed (final) object into an assembly container. 
-2. Create an "Element" for the unfold face
-3. Rename the element to "foo_unfold_face"
-4. Run this macro 
-5. See "foo_unfold" and "foo_unfold_solid" is created properly. 
-6. Create TechDraw views by using those two objects 
-7. (Re-)run this script. If everything (unfold, TechDraw source updates) went successfully, 
+1. Store the "unfold face" information within the project:
+    1. Put your processed (final) object into an assembly container. 
+    2. Create an "Element" for the unfold face
+    3. Rename the element to "foo_unfold_face"
+2. Run this macro. 
+3. See "foo_unfold" and "foo_unfold_solid" is created properly. 
+4. Create TechDraw views by using those two objects 
+5. (Re-)run this script. If everything (unfold, TechDraw source updates) went successfully, 
     then those two objects should be marked as invisible. 
 
 Verification: 
