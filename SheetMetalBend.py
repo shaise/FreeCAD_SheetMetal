@@ -26,7 +26,7 @@
 from FreeCAD import Gui
 from PySide import QtCore, QtGui
 
-import FreeCAD, FreeCADGui, Part, os, math
+import FreeCAD, FreeCADGui, Part, os
 __dir__ = os.path.dirname(__file__)
 iconPath = os.path.join( __dir__, 'Resources', 'icons' )
 smEpsilon = 0.0000001
@@ -363,7 +363,7 @@ class AddBendCommandClass():
   def IsActive(self):
     if len(Gui.Selection.getSelection()) < 1 or len(Gui.Selection.getSelectionEx()[0].SubElementNames) < 1:
       return False
-    selobj = Gui.Selection.getSelection()[0]
+#    selobj = Gui.Selection.getSelection()[0]
     for selFace in Gui.Selection.getSelectionEx()[0].SubObjects:
       if type(selFace) != Part.Edge :
         return False

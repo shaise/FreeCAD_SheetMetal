@@ -26,7 +26,7 @@
 from FreeCAD import Gui
 from PySide import QtCore, QtGui
 
-import FreeCAD, FreeCADGui, Part, os, math
+import FreeCAD, Part, os, math
 __dir__ = os.path.dirname(__file__)
 iconPath = os.path.join( __dir__, 'Resources', 'icons' )
 smEpsilon = 0.0000001
@@ -152,7 +152,7 @@ def bendAngle(theFace, edge_vec) :
     angle_end = angle_0
 
   bend_angle = angle_end - angle_start
-  angle_tan = angle_start + bend_angle/6.0 # need to have the angle_tan before correcting the sign
+#  angle_tan = angle_start + bend_angle/6.0 # need to have the angle_tan before correcting the sign
 
   if bend_angle < 0.0:
     bend_angle = -bend_angle
@@ -188,7 +188,7 @@ def LineExtend(edge, distance):
 def getBendDetail(obj, edge1, edge2, kfactor) :
   #To get adjacent face list from edges
   facelist1 = obj.ancestorsOfType(edge1, Part.Face)
-  facelist2 = obj.ancestorsOfType(edge2, Part.Face)
+#  facelist2 = obj.ancestorsOfType(edge2, Part.Face)
   cornerPoint = getCornerPoint(edge1,edge2)
 
   #To get top face edges
@@ -206,11 +206,11 @@ def getBendDetail(obj, edge1, edge2, kfactor) :
   #To get bend radius
   for cylface in facelist1 :
     if issubclass(type(cylface.Surface),Part.Cylinder) :
-      bendR = cylface.Surface.Radius
+#      bendR = cylface.Surface.Radius
       break
 
   #To get thk of sheet, top face normal, bend angle
-  normal = largeface.normalAt(0,0)
+#  normal = largeface.normalAt(0,0)
   thk = smthk(obj, largeface)
   bendA = bendAngle(cylface, cornerPoint)
   #print([thk, bendA])
@@ -567,7 +567,7 @@ class AddCornerReliefCommandClass():
   def IsActive(self):
     if len(Gui.Selection.getSelection()) < 1 or len(Gui.Selection.getSelectionEx()[0].SubElementNames) < 2:
       return False
-    selobj = Gui.Selection.getSelection()[0]
+#    selobj = Gui.Selection.getSelection()[0]
     for selVertex in Gui.Selection.getSelectionEx()[0].SubObjects:
       if type(selVertex) != Part.Edge :
         return False

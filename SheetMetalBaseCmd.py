@@ -26,7 +26,7 @@
 from FreeCAD import Gui
 from PySide import QtCore, QtGui
 
-import FreeCAD, FreeCADGui, Part, os
+import FreeCAD, Part, os
 __dir__ = os.path.dirname(__file__)
 iconPath = os.path.join( __dir__, 'Resources', 'icons' )
 
@@ -172,7 +172,7 @@ class AddBaseCommandClass():
     doc = FreeCAD.ActiveDocument
     view = Gui.ActiveDocument.ActiveView
     activeBody = None
-    selobj = Gui.Selection.getSelectionEx()[0].Object
+#    selobj = Gui.Selection.getSelectionEx()[0].Object
     if hasattr(view,'getActiveObject'):
       activeBody = view.getActiveObject('pdbody')
 #    if not smIsOperationLegal(activeBody, selobj):

@@ -26,7 +26,7 @@
 from FreeCAD import Gui
 from PySide import QtCore, QtGui
 
-import FreeCAD, FreeCADGui, Part, os, math
+import FreeCAD, Part, os, math
 __dir__ = os.path.dirname(__file__)
 iconPath = os.path.join( __dir__, 'Resources', 'icons' )
 smEpsilon = 0.0000001
@@ -185,14 +185,14 @@ def smFold(bendR = 1.0, bendA = 90.0, kfactor = 0.5, invertbend = False, flipped
       bendSurf = revLine.revolve(revAxisP, revAxisV, bendA)
       #Part.show(bendSurf,"bendSurf")
 
-      bendSurfTest = bendSurf.makeOffsetShape(bendR/2.0, 0.0, fill = False)
-      #Part.show(bendSurfTest,"bendSurfTest")
-      offset =  1
-      if bendSurfTest.Area < bendSurf.Area and not(flipped) :
-        offset =  -1
-      elif bendSurfTest.Area > bendSurf.Area and flipped :
-        offset =  -1
-      #print(offset)
+#      bendSurfTest = bendSurf.makeOffsetShape(bendR/2.0, 0.0, fill = False)
+#      #Part.show(bendSurfTest,"bendSurfTest")
+#      offset =  1
+#      if bendSurfTest.Area < bendSurf.Area and not(flipped) :
+#        offset =  -1
+#      elif bendSurfTest.Area > bendSurf.Area and flipped :
+#        offset =  -1
+#      #print(offset)
 
       # To get bend solid
       flatsolid = FoldShape.cut(solid0)
@@ -204,7 +204,7 @@ def smFold(bendR = 1.0, bendA = 90.0, kfactor = 0.5, invertbend = False, flipped
       #Part.show(solid1,"solid1")
       solid1.rotate(revAxisP, revAxisV, bendA)
       #Part.show(solid1,"rotatedsolid1")
-      bendSolidlist =[]
+#      bendSolidlist =[]
       for flatface in flatfaces.Faces :
         bendsolid = SheetMetalBendSolid.BendSolid(flatface, bendEdge, bendR, thk, neutralRadius, revAxisV, flipped)
         #Part.show(bendsolid,"bendsolid")
