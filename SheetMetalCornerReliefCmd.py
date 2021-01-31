@@ -311,7 +311,7 @@ def smCornerR(reliefsketch = "Circle", size = 3.0, ratio = 1.0, xoffset = 0.0, y
           #Part.show(BendEdge,"BendEdge")
           edge_facelist = resultSolid.ancestorsOfType(BendEdge, Part.Face)
           for cyl_face in edge_facelist :
-            print(type(cyl_face.Surface))
+            #print(type(cyl_face.Surface))
             if issubclass(type(cyl_face.Surface),Part.Cylinder) :
               break
           if issubclass(type(cyl_face.Surface),Part.Cylinder) :
