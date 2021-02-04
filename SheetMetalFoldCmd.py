@@ -372,9 +372,12 @@ class AddFoldWallCommandClass():
   def IsActive(self):
     if len(Gui.Selection.getSelection()) < 2 :
       return False
-#    selobj = Gui.Selection.getSelection()[1]
-#    if str(type(selobj)) != "<type 'Sketcher.SketchObject'>" :
-#      return False
+    selFace = Gui.Selection.getSelectionEx()[0].SubObjects[0]
+    if type(selFace) != Part.Face:
+      return False
+    selobj = Gui.Selection.getSelection()[1]
+    if not(selobj.isDerivedFrom('Sketcher::SketchObject')) :
+      return False
     return True
 
 Gui.addCommand('SMFoldWall',AddFoldWallCommandClass())
