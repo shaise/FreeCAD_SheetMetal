@@ -384,8 +384,6 @@ def smMiter(mainlist, bendR = 1.0, miterA1 = 0.0, miterA2 = 0.0, extLen = 10.0, 
     extgap1List = [extend1 for n in range(len(mainlist))]
     extgap2List = [extend2 for n in range(len(mainlist))]
     reliefDList = [reliefD for n in range(len(mainlist))]
-    wallsolidA1_list =[0.0 for n in range(len(mainlist))]
-    wallsolidA2_list =[0.0 for n in range(len(mainlist))]
   else :
     miterA1List = [0.0 for n in range(len(mainlist))]
     miterA2List = [0.0 for n in range(len(mainlist))]
@@ -394,8 +392,7 @@ def smMiter(mainlist, bendR = 1.0, miterA1 = 0.0, miterA2 = 0.0, extLen = 10.0, 
     extgap1List = [extend1 for n in range(len(mainlist))]
     extgap2List = [extend2 for n in range(len(mainlist))]
     reliefDList = [reliefD for n in range(len(mainlist))]
-    wallsolidA1_list =[0.0 for n in range(len(mainlist))]
-    wallsolidA2_list =[0.0 for n in range(len(mainlist))]
+
     facelist, tranfacelist = ([], [])
     extfacelist, exttranfacelist = ([], [])
     lenedgelist, tranedgelist = ([], [])
@@ -476,18 +473,25 @@ def smMiter(mainlist, bendR = 1.0, miterA1 = 0.0, miterA2 = 0.0, extLen = 10.0, 
               else:
                 gap2List[j] = 0.0
             reliefDList[j] = 0.0
-          elif gaps <  extgap and maxExtendGap > extgap:
+          elif gaps <  extgap :
+            wallface_common = facelist[j].common(facelist[i])
             dist1 = (p1-cornerPoint1).Length
             dist2 = (p2-cornerPoint1).Length
-            if abs(dist1) < abs(dist2) :
-              miterA1List[j] = -Angle / 2.0 
-              if extgap > 0.0  and extgap <= maxExtendGap:
+            if abs(dist1) < abs(dist2) and extgap <= maxExtendGap:
+              if wallface_common.Faces :
+                miterA1List[j] = Angle / 2.0 
+              else:
+                miterA1List[j] = -Angle / 2.0 
+              if extgap > 0.0  :
                 extgap1List[j] = extgap
               else:
                 extgap1List[j] = 0.0
-            elif abs(dist2) < abs(dist1) :
-              miterA2List[j] = -Angle / 2.0
-              if extgap > 0.0  and extgap <= maxExtendGap:
+            elif abs(dist2) < abs(dist1)  and extgap <= maxExtendGap:
+              if wallface_common.Faces :
+                miterA2List[j] = Angle / 2.0
+              else :
+                miterA2List[j] = -Angle / 2.0
+              if extgap > 0.0 :
                 extgap2List[j] = extgap
               else:
                 extgap2List[j] = 0.0
@@ -549,7 +553,7 @@ def smMiter(mainlist, bendR = 1.0, miterA1 = 0.0, miterA2 = 0.0, extLen = 10.0, 
               else:
                 gap2List[j] = 0.0
             reliefDList[j] = 0.0
-          elif gaps <  extgap and maxExtendGap > extgap:
+          elif gaps <  extgap :
             wallface_common = extfacelist[j].section(extfacelist[i])
             wallface_common1 = exttranfacelist[j].section(exttranfacelist[i])
             #Part.show(wallface_common,'wallface_common')
@@ -676,7 +680,7 @@ def smBend(bendR = 1.0, bendA = 90.0, miterA1 = 0.0,miterA2 = 0.0, BendType = "M
       EdgeShape = e1.common(Cface)
       lenEdge = EdgeShape.Edges[0]
       Noffset1 = abs((MlenEdge.valueAt(MlenEdge.FirstParameter)-lenEdge.valueAt(lenEdge.FirstParameter)).Length)
-      Noffset2 = abs((MlenEdge.valueAt(MlenEdge.LastParameter)-lenEdge.valueAt(lenEdge.LastParameter)).Length)
+#      Noffset2 = abs((MlenEdge.valueAt(MlenEdge.LastParameter)-lenEdge.valueAt(lenEdge.LastParameter)).Length)
     #Part.show(lenEdge,'lenEdge')
 
     # if sketch is as wall
