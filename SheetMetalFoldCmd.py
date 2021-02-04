@@ -182,7 +182,7 @@ def smFold(bendR = 1.0, bendA = 90.0, kfactor = 0.5, invertbend = False, flipped
 
       # To get bend surface
       revLine = Part.LineSegment(tool.Vertexes[0].Point, tool.Vertexes[-1].Point ).toShape()
-      bendSurf = revLine.revolve(revAxisP, revAxisV, bendA)
+#      bendSurf = revLine.revolve(revAxisP, revAxisV, bendA)
       #Part.show(bendSurf,"bendSurf")
 
 #      bendSurfTest = bendSurf.makeOffsetShape(bendR/2.0, 0.0, fill = False)
@@ -372,9 +372,12 @@ class AddFoldWallCommandClass():
   def IsActive(self):
     if len(Gui.Selection.getSelection()) < 2 :
       return False
-#    selobj = Gui.Selection.getSelection()[1]
-#    if str(type(selobj)) != "<type 'Sketcher.SketchObject'>" :
-#      return False
+    selFace = Gui.Selection.getSelectionEx()[0].SubObjects[0]
+    if type(selFace) != Part.Face:
+      return False
+    selobj = Gui.Selection.getSelection()[1]
+    if not(selobj.isDerivedFrom('Sketcher::SketchObject')) :
+      return False
     return True
 
 Gui.addCommand('SMFoldWall',AddFoldWallCommandClass())
