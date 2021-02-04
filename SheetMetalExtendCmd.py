@@ -209,7 +209,7 @@ def smExtrude(extLength = 10.0, gap1 = 0.0, gap2 = 0.0, substraction = False, of
     #Part.show(Cface, "Cface")
 
     # Main Length Edge, Extrusion direction
-    MlenEdge = lenEdge
+#    MlenEdge = lenEdge
 #    leng = MlenEdge.Length
     revAxisV.normalize()
     thkDir = Cface.normalAt(0,0) * -1
