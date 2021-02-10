@@ -456,8 +456,8 @@ def smMiter(mainlist, bendR = 1.0, miterA1 = 0.0, miterA2 = 0.0, extLen = 10.0, 
           Angle = LineAngle(lenedgelist[i], lenedgelist[j])
           #print(Angle)
           if gaps >=  extgap :
-            wallface_common = facelist[j].section(facelist[i])
-            vp1 = wallface_common.Vertexes[0].Point
+            walledge_common = lenedgelist[j].section(lenedgelist[i])
+            vp1 = walledge_common.Vertexes[0].Point
             dist1 = (p1-vp1).Length
             dist2 = (p2-vp1).Length
             if abs(dist1) < abs(dist2) :
