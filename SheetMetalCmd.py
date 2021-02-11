@@ -147,7 +147,7 @@ def smGetEdge(Face, obj) :
   return edge
 
 def LineAngle(edge1, edge2) :
-  # find angle between two ines
+  # find angle between two lines
   if edge1.Orientation == edge2.Orientation:
     lineDir = edge1.valueAt(edge1.FirstParameter) - edge1.valueAt(edge1.LastParameter)
     edgeDir = edge2.valueAt(edge2.FirstParameter) - edge2.valueAt(edge2.LastParameter)
@@ -250,7 +250,7 @@ def getGap(edge1, edge2, dist1, dist2, dist3, dist4, mingap) :
   return gaps, extgap, cornerPoint
 
 def getSketchDetails(Sketch, sketchflip, sketchinvert, radius, thk) :
-  # Covert Sketch lines to length. Angles between line
+  # Convert Sketch lines to length. Angles between line
   LengthList, bendAList = ([],[])
   sketch_normal = Sketch.Placement.Rotation.multVec(FreeCAD.Vector(0, 0, 1))
   e0 = Sketch.Placement.Rotation.multVec(FreeCAD.Vector(1, 0, 0))
