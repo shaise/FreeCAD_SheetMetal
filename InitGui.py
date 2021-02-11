@@ -23,7 +23,7 @@
 #
 ##############################################################################
 
-from PySide import QtCore, QtGui
+from PySide import QtCore
 import smwb_locator
 import os
 from engineering_mode import engineering_mode_enabled

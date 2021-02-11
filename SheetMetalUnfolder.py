@@ -101,10 +101,9 @@ import Part, FreeCAD, FreeCADGui, os, sys
 from PySide import QtGui, QtCore
 from FreeCAD import Base
 from FreeCAD import Gui
-import DraftVecUtils, DraftGeomUtils, math, time
+import DraftVecUtils, math, time
 import Draft
 import Drawing
-from SheetMetalCmd import iconPath
 from lookup import get_val_from_range
 from engineering_mode import engineering_mode_enabled
 
