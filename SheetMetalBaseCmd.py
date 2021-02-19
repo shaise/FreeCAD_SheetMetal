@@ -53,7 +53,65 @@ def smIsOperationLegal(body, selobj):
         return False
     return True
 
-def smBase(thk = 2.0, length = 10.0, radius = 1.0, Side = "Inside", midplane = False, reverse = False, MainObject = None):
+#def smBase(thk = 2.0, length = 10.0, radius = 1.0, Side = "Inside", midplane = False, reverse = False, MainObject = None):
+#  # To Get sketch normal
+#  WireList = MainObject.Shape.Wires[0]
+#  mat = MainObject.getGlobalPlacement().Rotation
+#  normal = (mat.multVec(FreeCAD.Vector(0,0,1))).normalize()
+#  #print([mat, normal])
+#  if WireList.isClosed() :
+#    # If Cosed sketch is there, make a face & extrude it 
+#    sketch_face = Part.makeFace(MainObject.Shape.Wires,"Part::FaceMakerBullseye")
+#    wallSolid = sketch_face.extrude(sketch_face.normalAt(0,0) * thk)
+#  else :
+#    # If sketch is one type, make a face by extruding & offset it to correct position
+#    if midplane :
+#      WireList.translate(normal * length/2.0)
+#      wire_extr = WireList.extrude(normal * -length)
+#    elif reverse:
+#      wire_extr = WireList.extrude(normal * length)
+#    else :
+#      wire_extr = WireList.extrude(normal * -length)
+#    #Part.show(wire_extr,"wire_extr")
+#    if Side == "Inside" :
+#      wire_extr = wire_extr.makeOffsetShape(-thk/2.0, 0.0, fill = False, join = 2)
+#    elif Side == "Outside" :
+#      wire_extr = wire_extr.makeOffsetShape(thk/2.0, 0.0, fill = False, join = 2)
+#    #Part.show(wire_extr,"wire_extr")
+#    if len(WireList.Edges) > 1 :
+#      filleted_extr = wire_extr.makeFillet((radius + thk / 2.0), wire_extr.Edges)
+#      #Part.show(filleted_extr,"filleted_extr")
+#    else :
+#      filleted_extr = wire_extr
+#      #Part.show(filleted_extr,"filleted_extr")
+#    offset_extr = filleted_extr.makeOffsetShape(-thk/2.0, 0.0, fill = False)
+#    #Part.show(offset_extr,"offset_extr")
+#    wallSolid = offset_extr.makeOffsetShape(thk, 0.0, fill = True)
+#    #Part.show(wallSolid,"wallSolid")
+
+#  #Part.show(wallSolid,"wallSolid")
+#  return wallSolid
+
+def modifiedWire(WireList, radius, thk, length, normal, Side, sign) :
+  # If sketch is one type, make a face by extruding & offset it to correct position
+  wire_extr = WireList.extrude(normal * sign * length)
+  #Part.show(wire_extr,"wire_extr")
+
+  if Side == "Inside" :
+    wire_extr = wire_extr.makeOffsetShape(thk/2.0 * sign, 0.0, fill = False, join = 2)
+  elif Side == "Outside" :
+    wire_extr = wire_extr.makeOffsetShape(-thk/2.0 * sign, 0.0, fill = False, join = 2)
+  #Part.show(wire_extr,"wire_extr")
+  if len(WireList.Edges) > 1 :
+    filleted_extr = wire_extr.makeFillet((radius + thk / 2.0), wire_extr.Edges)
+  else :
+    filleted_extr = wire_extr
+  #Part.show(filleted_extr,"filleted_extr")
+  filleted_extr = filleted_extr.makeOffsetShape(-thk/2.0 * sign, 0.0, fill = False, join = 2)
+  #Part.show(filleted_extr,"filleted_extr")
+  return filleted_extr
+
+def smBaseSweep(thk = 2.0, length = 10.0, radius = 1.0, Side = "Inside", midplane = False, reverse = False, MainObject = None):
   # To Get sketch normal
   WireList = MainObject.Shape.Wires[0]
   mat = MainObject.getGlobalPlacement().Rotation
@@ -64,29 +122,26 @@ def smBase(thk = 2.0, length = 10.0, radius = 1.0, Side = "Inside", midplane = F
     sketch_face = Part.makeFace(MainObject.Shape.Wires,"Part::FaceMakerBullseye")
     wallSolid = sketch_face.extrude(sketch_face.normalAt(0,0) * thk)
   else :
-    # If sketch is one type, make a face by extruding & offset it to correct position
     if midplane :
       WireList.translate(normal * length/2.0)
-      wire_extr = WireList.extrude(normal * -length)
     elif reverse:
-      wire_extr = WireList.extrude(normal * length)
-    else :
-      wire_extr = WireList.extrude(normal * -length)
-    #Part.show(wire_extr,"wire_extr")
-    if Side == "Inside" :
-      wire_extr = wire_extr.makeOffsetShape(-thk/2.0, 0.0, fill = False, join = 2)
-    elif Side == "Outside" :
-      wire_extr = wire_extr.makeOffsetShape(thk/2.0, 0.0, fill = False, join = 2)
-    #Part.show(wire_extr,"wire_extr")
-    if len(WireList.Edges) > 1 :
-      filleted_extr = wire_extr.makeFillet((radius + thk / 2.0), wire_extr.Edges)
-      #Part.show(filleted_extr,"filleted_extr")
-    else :
-      filleted_extr = wire_extr
-      #Part.show(filleted_extr,"filleted_extr")
-    offset_extr = filleted_extr.makeOffsetShape(-thk/2.0, 0.0, fill = False)
-    #Part.show(offset_extr,"offset_extr")
-    wallSolid = offset_extr.makeOffsetShape(thk, 0.0, fill = True)
+      length = length * -1
+    filleted_extr = modifiedWire(WireList, radius, thk, length, normal, Side, 1.0)
+    filleted_extr_rev = modifiedWire(WireList, radius, thk, length, normal, Side, -1.0)
+    sec_wirelist = filleted_extr.section(filleted_extr_rev)
+    #Part.show(sec_wirelist,"sec_wirelist")
+
+    edge_extr =  sec_wirelist.Edges[0].extrude(normal * -length)
+    #Part.show(edge_extr,"edge_extr")
+    vertex_extr = sec_wirelist.Vertexes[0].extrude(normal * -length)
+    #Part.show(vertex_extr,"vertex_extr")
+    face_extr = vertex_extr.extrude(edge_extr.normalAt(0,0) * -thk)
+    #Part.show(face_extr,"face_extr")
+    traj = Part.Wire(sec_wirelist.Edges)
+    #Part.show(traj,"traj")
+
+    wallSolid = traj.makePipe(face_extr.Faces[0])
+#    wallSolid = offset_extr.makeOffsetShape(thk, 0.0, fill = True)
     #Part.show(wallSolid,"wallSolid")
 
   #Part.show(wallSolid,"wallSolid")
@@ -104,6 +159,7 @@ class SMBaseBend:
     obj.addProperty("App::PropertyLink", "BendSketch", "Parameters", "Wall Sketch object").BendSketch = selobj.Object
     obj.addProperty("App::PropertyBool","MidPlane","Parameters","Extrude Symmetric to Plane").MidPlane = False
     obj.addProperty("App::PropertyBool","Reverse","Parameters","Reverse Extrusion Direction").Reverse = False
+#    obj.addProperty("App::PropertyBool","SweepBased","Parameters","Switch between sweep based & Offset based method").SweepBased = False
     obj.Proxy = self
 
   def execute(self, fp):
@@ -112,8 +168,16 @@ class SMBaseBend:
       fp.addProperty("App::PropertyBool","MidPlane","Parameters","Extrude Symmetric to Plane").MidPlane = False
       fp.addProperty("App::PropertyBool","Reverse","Parameters","Reverse Extrusion Direction").Reverse = False
 
-    s = smBase(thk = fp.thickness.Value, length = fp.length.Value, radius = fp.radius.Value, Side = fp.BendSide, 
+#    if (not hasattr(fp,"SweepBased")):
+#      fp.addProperty("App::PropertyBool","SweepBased","Parameters","Extrude Symmetric to Plane").SweepBased = False
+
+#    if fp.SweepBased :
+    s = smBaseSweep(thk = fp.thickness.Value, length = fp.length.Value, radius = fp.radius.Value, Side = fp.BendSide, 
                   midplane = fp.MidPlane, reverse = fp.Reverse, MainObject = fp.BendSketch)
+#    else:
+#      s = smBase(thk = fp.thickness.Value, length = fp.length.Value, radius = fp.radius.Value, Side = fp.BendSide, 
+#                  midplane = fp.MidPlane, reverse = fp.Reverse, MainObject = fp.BendSketch)
+
     fp.Shape = s
     Gui.ActiveDocument.getObject(fp.BendSketch.Name).Visibility = False
 
