@@ -315,22 +315,20 @@ def sheet_thk(MainObject, selFaceName) :
       thk = abs(edge.Length)
   return thk
 
-def getBendetail(selFaceNames, MainObject, bendR, bendA, flipped):
-  mainlist =[]
-  for selFaceName in selFaceNames :
-    selItem = MainObject.getElement(selFaceName)
-    selFace = smFace(selItem, MainObject)
-
+def smEdge(selFaceName, obj) :
+  # find Edge, if Face Selected
+  selItem = obj.getElement(selFaceName)
+  if type(selItem) == Part.Face :
     # find the narrow edge
     thk = 999999.0
-    for edge in selFace.Edges:
+    for edge in selItem.Edges:
       if abs( edge.Length ) < thk:
         thk = abs(edge.Length)
         thkEdge = edge
 
     # find a length edge  =  revolve axis direction
     p0 = thkEdge.valueAt(thkEdge.FirstParameter)
-    for lenEdge in selFace.Edges:
+    for lenEdge in selItem.Edges:
       p1 = lenEdge.valueAt(lenEdge.FirstParameter)
       p2 = lenEdge.valueAt(lenEdge.LastParameter)
       if lenEdge.isSame(thkEdge):
@@ -341,6 +339,20 @@ def getBendetail(selFaceNames, MainObject, bendR, bendA, flipped):
       if (p2 - p0).Length < smEpsilon:
         revAxisV = p1 - p2
         break
+    seledge = lenEdge
+  elif type(selItem) == Part.Edge :
+    thk = sheet_thk(obj, selFaceName)
+    seledge = selItem
+    p1 = seledge.valueAt(seledge.FirstParameter)
+    p2 = seledge.valueAt(seledge.LastParameter)
+    revAxisV = p2 - p1
+  return seledge, thk, revAxisV
+
+def getBendetail(selFaceNames, MainObject, bendR, bendA, flipped):
+  mainlist =[]
+  for selFaceName in selFaceNames :
+    lenEdge, thk, revAxisV = smEdge(selFaceName, MainObject)
+    selFace = smFace(lenEdge, MainObject)
 
     # find the large face connected with selected face
     list2 = MainObject.ancestorsOfType(lenEdge, Part.Face)
@@ -628,7 +640,7 @@ def smBend(bendR = 1.0, bendA = 90.0, miterA1 = 0.0,miterA2 = 0.0, BendType = "M
   else :
     miterA1List, miterA2List, gap1List, gap2List, extend1List, extend2List, reliefDList = ( [0.0], [0.0], [gap1], [gap2], [extend1], [extend2],[reliefD])
 
-  mainlist = getBendetail(selFaceNames, MainObject, bendR, bendA, flipped)
+#  mainlist = getBendetail(selFaceNames, MainObject, bendR, bendA, flipped)
   thk_faceList = []
   resultSolid = MainObject
   for i, sublist in enumerate(mainlist):
