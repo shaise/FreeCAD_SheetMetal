@@ -547,7 +547,7 @@ class AddCornerReliefCommandClass():
     return {'Pixmap'  : os.path.join( iconPath , 'SheetMetal_AddCornerRelief.svg'), # the name of a svg file available in the resources
             'MenuText': QtCore.QT_TRANSLATE_NOOP('SheetMetal','Add Corner Relief'),
             'Accel': "C, R",
-            'ToolTip' : QtCore.QT_TRANSLATE_NOOP('SheetMetal','Corner Relief to metal sheet corner'
+            'ToolTip' : QtCore.QT_TRANSLATE_NOOP('SheetMetal','Corner Relief to metal sheet corner.\n'
             '1. Select 2 Edges (on flat face that shared with bend faces) to create Relief on sheetmetal.\n'
             '2. Use Property editor to modify default parameters')}
 
