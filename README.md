@@ -94,6 +94,7 @@ Starting from FreeCAD 0.17 it can be installed via the [Addon Manager](https://g
 * FreeCAD Forum announcement/discussion [thread](https://forum.freecadweb.org/viewtopic.php?f=10&t=11303) 
 
 #### Release notes:
+* V0.2.47 24 Feb 2021:  Add translation support by [@jaisejames][jaisejames]. Thank you!
 * V0.2.46 31 Jan 2021:  Small bug fixes and code clean by [@jaisejames][jaisejames]. Thank you!
 * V0.2.45 24 Dec 2020:  Added punch tool feature by [@jaisejames][jaisejames]. Thank you!
 * V0.2.44 19 Dec 2020:  Added extend feature by [@jaisejames][jaisejames]. Thank you!
