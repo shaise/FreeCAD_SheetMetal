@@ -916,34 +916,62 @@ class SMBendWall:
     '''"Add Wall with radius bend" '''
     selobj = Gui.Selection.getSelectionEx()[0]
 
-    obj.addProperty("App::PropertyLength","radius","Parameters","Bend Radius").radius = 1.0
-    obj.addProperty("App::PropertyLength","length","Parameters","Length of wall").length = 10.0
-    obj.addProperty("App::PropertyDistance","gap1","Parameters","Gap from left side").gap1 = 0.0
-    obj.addProperty("App::PropertyDistance","gap2","Parameters","Gap from right side").gap2 = 0.0
-    obj.addProperty("App::PropertyBool","invert","Parameters","Invert bend direction").invert = False
-    obj.addProperty("App::PropertyEnumeration", "BendType", "Parameters","Relief Type").BendType = ["Material Outside", "Material Inside", "Thickness Outside", "Offset"]
-    obj.addProperty("App::PropertyAngle","angle","Parameters","Bend angle").angle = 90.0
-    obj.addProperty("App::PropertyEnumeration", "reliefType", "ParametersRelief","Relief Type").reliefType = ["Rectangle", "Round"]
-    obj.addProperty("App::PropertyBool","UseReliefFactor","ParametersRelief","Use Relief Factor").UseReliefFactor = False
-    obj.addProperty("App::PropertyFloat","ReliefFactor","ParametersRelief","Relief Factor").ReliefFactor = 0.7
-    obj.addProperty("App::PropertyLength","reliefw","ParametersRelief","Relief width").reliefw = 0.8
-    obj.addProperty("App::PropertyLength","reliefd","ParametersRelief","Relief depth").reliefd = 1.0
-    obj.addProperty("App::PropertyLinkSub", "baseObject", "Parameters", "Base object").baseObject = (selobj.Object, selobj.SubElementNames)
-    obj.addProperty("App::PropertyDistance","extend1","ParametersEx","extend from left side").extend1 = 0.0
-    obj.addProperty("App::PropertyDistance","extend2","ParametersEx","extend from right side").extend2 = 0.0
-    obj.addProperty("App::PropertyBool","AutoMiter","ParametersEx","Auto Miter").AutoMiter = True
-    obj.addProperty("App::PropertyLength","minGap","ParametersEx","Auto Miter minimum Gap").minGap = 0.1
-    obj.addProperty("App::PropertyLength","maxExtendDist","ParametersEx","Auto Miter maximum Extend Distance").maxExtendDist = 5.0
-    obj.addProperty("App::PropertyAngle","miterangle1","ParametersEx","Bend miter angle").miterangle1 = 0.0
-    obj.addProperty("App::PropertyAngle","miterangle2","ParametersEx","Bend miter angle").miterangle2 = 0.0
-    obj.addProperty("App::PropertyDistance","offset","ParametersEx","offset Bend").offset = 0.0
-    obj.addProperty("App::PropertyBool","unfold","ParametersEx","Invert bend direction").unfold = False
-    obj.addProperty("App::PropertyFloatConstraint","kfactor","ParametersEx","Location of neutral line. Caution: Using ANSI standards, not DIN.").kfactor = (0.5,0.0,1.0,0.01)
-    obj.addProperty("App::PropertyLink", "Sketch", "ParametersEx2", "Sketch object")
-    obj.addProperty("App::PropertyBool","sketchflip","ParametersEx2","flip sketch direction").sketchflip = False
-    obj.addProperty("App::PropertyBool","sketchinvert","ParametersEx2","invert sketch start").sketchinvert = False
-    obj.addProperty("App::PropertyFloatList", "LengthList", "ParametersEx3", "Length of Wall List")
-    obj.addProperty("App::PropertyFloatList", "bendAList", "ParametersEx3", "Bend angle List")
+    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Bend Radius")
+    obj.addProperty("App::PropertyLength","radius","Parameters",_tip_).radius = 1.0
+    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Length of Wall")
+    obj.addProperty("App::PropertyLength","length","Parameters",_tip_).length = 10.0
+    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Gap from Left Side")
+    obj.addProperty("App::PropertyDistance","gap1","Parameters",_tip_).gap1 = 0.0
+    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Gap from Right Side")
+    obj.addProperty("App::PropertyDistance","gap2","Parameters",_tip_).gap2 = 0.0
+    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Invert Bend Direction")
+    obj.addProperty("App::PropertyBool","invert","Parameters",_tip_).invert = False
+    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Bend Type")
+    obj.addProperty("App::PropertyEnumeration", "BendType", "Parameters",_tip_).BendType = ["Material Outside", "Material Inside", "Thickness Outside", "Offset"]
+    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Bend Angle")
+    obj.addProperty("App::PropertyAngle","angle","Parameters",_tip_).angle = 90.0
+    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Relief Type")
+    obj.addProperty("App::PropertyEnumeration", "reliefType", "ParametersRelief",_tip_).reliefType = ["Rectangle", "Round"]
+    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Use Relief Factor")
+    obj.addProperty("App::PropertyBool","UseReliefFactor","ParametersRelief",_tip_).UseReliefFactor = False
+    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Relief Factor")
+    obj.addProperty("App::PropertyFloat","ReliefFactor","ParametersRelief",_tip_).ReliefFactor = 0.7
+    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Relief Width")
+    obj.addProperty("App::PropertyLength","reliefw","ParametersRelief",_tip_).reliefw = 0.8
+    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Relief Depth")
+    obj.addProperty("App::PropertyLength","reliefd","ParametersRelief",_tip_).reliefd = 1.0
+    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Base Object")
+    obj.addProperty("App::PropertyLinkSub", "baseObject", "Parameters",_tip_).baseObject = (selobj.Object, selobj.SubElementNames)
+    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Extend from Left Side")
+    obj.addProperty("App::PropertyDistance","extend1","ParametersEx",_tip_).extend1 = 0.0
+    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Extend from Right Side")
+    obj.addProperty("App::PropertyDistance","extend2","ParametersEx",_tip_).extend2 = 0.0
+    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Enable Auto Miter")
+    obj.addProperty("App::PropertyBool","AutoMiter","ParametersEx",_tip_).AutoMiter = True
+    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Auto Miter Minimum Gap")
+    obj.addProperty("App::PropertyLength","minGap","ParametersEx",_tip_).minGap = 0.1
+    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Auto Miter maximum Extend Distance")
+    obj.addProperty("App::PropertyLength","maxExtendDist","ParametersEx",_tip_).maxExtendDist = 5.0
+    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Bend Miter Angle from Left Side")
+    obj.addProperty("App::PropertyAngle","miterangle1","ParametersEx",_tip_).miterangle1 = 0.0
+    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Bend Miter Angle from Right Side")
+    obj.addProperty("App::PropertyAngle","miterangle2","ParametersEx",_tip_).miterangle2 = 0.0
+    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Offset Bend")
+    obj.addProperty("App::PropertyDistance","offset","ParametersEx",_tip_).offset = 0.0
+    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Shows Unfold View of Current Bend")
+    obj.addProperty("App::PropertyBool","unfold","ParametersEx",_tip_).unfold = False
+    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Location of Neutral Line. Caution: Using ANSI standards, not DIN.")
+    obj.addProperty("App::PropertyFloatConstraint","kfactor","ParametersEx",_tip_).kfactor = (0.5,0.0,1.0,0.01)
+    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Sketch Object")
+    obj.addProperty("App::PropertyLink", "Sketch", "ParametersEx2",_tip_)
+    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Flip Sketch Direction")
+    obj.addProperty("App::PropertyBool","sketchflip","ParametersEx2",_tip_).sketchflip = False
+    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Invert Sketch Start")
+    obj.addProperty("App::PropertyBool","sketchinvert","ParametersEx2",_tip_).sketchinvert = False
+    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Length of Wall List")
+    obj.addProperty("App::PropertyFloatList", "LengthList", "ParametersEx3",_tip_)
+    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Bend Angle List")
+    obj.addProperty("App::PropertyFloatList", "bendAList", "ParametersEx3",_tip_)
     obj.Proxy = self
 
   def getElementMapVersion(self, _fp, ver, _prop, restored):
@@ -953,43 +981,62 @@ class SMBendWall:
   def execute(self, fp):
     '''"Print a short message when doing a recomputation, this method is mandatory" '''
     if (not hasattr(fp,"miterangle1")):
-      fp.addProperty("App::PropertyAngle","miterangle1","ParametersMiterangle","Bend miter angle").miterangle1 = 0.0
-      fp.addProperty("App::PropertyAngle","miterangle2","ParametersMiterangle","Bend miter angle").miterangle2 = 0.0
+      _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Bend Miter Angle from Left Side")
+      fp.addProperty("App::PropertyAngle","miterangle1","ParametersMiterangle",_tip_).miterangle1 = 0.0
+      _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Bend Miter Angle from Right Side")
+      fp.addProperty("App::PropertyAngle","miterangle2","ParametersMiterangle",_tip_).miterangle2 = 0.0
 
     if (not hasattr(fp,"AutoMiter")):
-      fp.addProperty("App::PropertyBool","AutoMiter","ParametersEx","Auto Miter").AutoMiter = True
+      _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Enable Auto Miter")
+      fp.addProperty("App::PropertyBool","AutoMiter","ParametersEx",_tip_).AutoMiter = True
 
     if (not hasattr(fp,"reliefType")):
-      fp.addProperty("App::PropertyEnumeration", "reliefType", "ParametersRelief","Relief Type").reliefType = ["Rectangle", "Round"]
+      _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Relief Type")
+      fp.addProperty("App::PropertyEnumeration", "reliefType", "ParametersRelief",_tip_).reliefType = ["Rectangle", "Round"]
 
     if (not hasattr(fp,"extend1")):
-      fp.addProperty("App::PropertyDistance","extend1","Parameters","extend from left side").extend1 = 0.0
-      fp.addProperty("App::PropertyDistance","extend2","Parameters","extend from right side").extend2 = 0.0
+      _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Extend from Left Side")
+      fp.addProperty("App::PropertyDistance","extend1","Parameters",_tip_).extend1 = 0.0
+      _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Extend from Right Side")
+      fp.addProperty("App::PropertyDistance","extend2","Parameters",_tip_).extend2 = 0.0
 
     if (not hasattr(fp,"unfold")):
-      fp.addProperty("App::PropertyBool","unfold","ParametersEx","Invert bend direction").unfold = False
+      _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Shows Unfold View of Current Bend")
+      fp.addProperty("App::PropertyBool","unfold","ParametersEx",_tip_).unfold = False
 
     if (not hasattr(fp,"kfactor")):
-      fp.addProperty("App::PropertyFloatConstraint","kfactor","ParametersEx","Location of neutral line. Caution: Using ANSI standards, not DIN.").kfactor = (0.5,0.0,1.0,0.01)
+      _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Location of Neutral Line. Caution: Using ANSI standards, not DIN.")
+      fp.addProperty("App::PropertyFloatConstraint","kfactor","ParametersEx",_tip_).kfactor = (0.5,0.0,1.0,0.01)
 
     if (not hasattr(fp,"BendType")):
-      fp.addProperty("App::PropertyEnumeration", "BendType", "Parameters","Bend Type").BendType = ["Material Outside", "Material Inside", "Thickness Outside", "Offset"]
-      fp.addProperty("App::PropertyDistance","offset","ParametersEx","offset Bend").offset = 0.0
+      _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Bend Type")
+      fp.addProperty("App::PropertyEnumeration", "BendType", "Parameters",_tip_).BendType = ["Material Outside", "Material Inside", "Thickness Outside", "Offset"]
+      _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Offset Bend")
+      fp.addProperty("App::PropertyDistance","offset","ParametersEx",_tip_).offset = 0.0
 
     if (not hasattr(fp,"ReliefFactor")):
-      fp.addProperty("App::PropertyBool","UseReliefFactor","ParametersRelief","Use Relief Factor").UseReliefFactor = False
-      fp.addProperty("App::PropertyFloat","ReliefFactor","ParametersRelief","Relief Factor").ReliefFactor = 0.7
+      _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Use Relief Factor")
+      fp.addProperty("App::PropertyBool","UseReliefFactor","ParametersRelief",_tip_).UseReliefFactor = False
+      _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Relief Factor")
+      fp.addProperty("App::PropertyFloat","ReliefFactor","ParametersRelief",_tip_).ReliefFactor = 0.7
 
     if (not hasattr(fp,"Sketch")):
-      fp.addProperty("App::PropertyLink", "Sketch", "ParametersEx2", "Sketch object")
-      fp.addProperty("App::PropertyBool","sketchflip","ParametersEx2","flip sketch direction").sketchflip = False
-      fp.addProperty("App::PropertyBool","sketchinvert","ParametersEx2","invert sketch start").sketchinvert = False
-      fp.addProperty("App::PropertyFloatList", "LengthList", "ParametersEx3", "Length of Wall List")
-      fp.addProperty("App::PropertyFloatList", "bendAList", "ParametersEx3", "Bend angle List")
+      _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Sketch Object")
+      fp.addProperty("App::PropertyLink", "Sketch", "ParametersEx2",_tip_)
+      _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Flip Sketch Direction")
+      fp.addProperty("App::PropertyBool","sketchflip","ParametersEx2",_tip_).sketchflip = False
+      _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Invert Sketch Start")
+      fp.addProperty("App::PropertyBool","sketchinvert","ParametersEx2",_tip_).sketchinvert = False
+      _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Length of Wall List")
+      fp.addProperty("App::PropertyFloatList", "LengthList", "ParametersEx3",_tip_)
+      _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Bend Angle List")
+      fp.addProperty("App::PropertyFloatList", "bendAList", "ParametersEx3",_tip_)
 
     if (not hasattr(fp,"minGap")):
-      fp.addProperty("App::PropertyLength","minGap","ParametersEx","Auto Miter minimum Gap").minGap = 0.1
-      fp.addProperty("App::PropertyLength","maxExtendDist","ParametersEx","Auto Miter maximum Extend Distance").maxExtendDist = 5.0
+      _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Auto Miter Minimum Gap")
+      fp.addProperty("App::PropertyLength","minGap","ParametersEx",_tip_).minGap = 0.1
+      _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Auto Miter maximum Extend Distance")
+      fp.addProperty("App::PropertyLength","maxExtendDist","ParametersEx",_tip_).maxExtendDist = 5.0
     # restrict some params
     fp.miterangle1.Value = smRestrict(fp.miterangle1.Value, -80.0, 80.0)
     fp.miterangle2.Value = smRestrict(fp.miterangle2.Value, -80.0, 80.0)
@@ -1260,7 +1307,10 @@ class AddWallCommandClass():
   def GetResources(self):
     return {'Pixmap'  : os.path.join( iconPath , 'SheetMetal_AddWall.svg'), # the name of a svg file available in the resources
             'MenuText': QtCore.QT_TRANSLATE_NOOP('SheetMetal','Make Wall'),
-            'ToolTip' : QtCore.QT_TRANSLATE_NOOP('SheetMetal','Extends a wall from a side face of metal sheet')}
+            'Accel': "W",
+            'ToolTip' : QtCore.QT_TRANSLATE_NOOP('SheetMetal','Extends one or more face, connected by a bend on existing sheet metal.\n'
+            '1. Select edges or thickness side faces to create bends with walls.\n'
+            '2. Use Property editor to modify other parameters')}
 
   def Activated(self):
     doc = FreeCAD.ActiveDocument

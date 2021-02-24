@@ -292,17 +292,25 @@ def smExtrude(extLength = 10.0, gap1 = 0.0, gap2 = 0.0, substraction = False, of
 
 class SMExtrudeWall:
   def __init__(self, obj):
-    '''"Add Wall with radius bend" '''
+    '''"Add Sheetmetal Wall by Extending" '''
     selobj = Gui.Selection.getSelectionEx()[0]
 
-    obj.addProperty("App::PropertyLength","length","Parameters","Length of wall").length = 10.0
-    obj.addProperty("App::PropertyDistance","gap1","Parameters","Gap from left side").gap1 = 0.0
-    obj.addProperty("App::PropertyDistance","gap2","Parameters","Gap from right side").gap2 = 0.0
-    obj.addProperty("App::PropertyLinkSub", "baseObject", "Parameters", "Base object").baseObject = (selobj.Object, selobj.SubElementNames)
-    obj.addProperty("App::PropertyLink","Sketch","ParametersExt","Wall Sketch")
-    obj.addProperty("App::PropertyBool","UseSubstraction","ParametersExt","Use Parameters").UseSubstraction = False
-    obj.addProperty("App::PropertyDistance","Offset","ParametersExt","Offset for substraction").Offset = 0.02
-    obj.addProperty("App::PropertyBool","Refine","ParametersExt","Use Parameters").Refine = True
+    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Length of Wall")
+    obj.addProperty("App::PropertyLength","length","Parameters",_tip_).length = 10.0
+    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Gap from left side")
+    obj.addProperty("App::PropertyDistance","gap1","Parameters",_tip_).gap1 = 0.0
+    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Gap from right side")
+    obj.addProperty("App::PropertyDistance","gap2","Parameters",_tip_).gap2 = 0.0
+    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Base object")
+    obj.addProperty("App::PropertyLinkSub", "baseObject", "Parameters",_tip_).baseObject = (selobj.Object, selobj.SubElementNames)
+    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Wall Sketch")
+    obj.addProperty("App::PropertyLink","Sketch","ParametersExt",_tip_)
+    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Use Substraction")
+    obj.addProperty("App::PropertyBool","UseSubstraction","ParametersExt",_tip_).UseSubstraction = False
+    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Offset for substraction")
+    obj.addProperty("App::PropertyDistance","Offset","ParametersExt",_tip_).Offset = 0.02
+    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Use Refine")
+    obj.addProperty("App::PropertyBool","Refine","ParametersExt",_tip_).Refine = True
     obj.Proxy = self
 
   def getElementMapVersion(self, _fp, ver, _prop, restored):
@@ -311,10 +319,14 @@ class SMExtrudeWall:
 
   def execute(self, fp):
     if (not hasattr(fp,"Sketch")):
-      fp.addProperty("App::PropertyLink","Sketch","ParametersExt","Wall Sketch")
-      fp.addProperty("App::PropertyBool","UseSubstraction","ParametersExt","Use Parameters").UseSubstraction = False
-      fp.addProperty("App::PropertyDistance","Offset","ParametersExt","Offset for substraction").Offset = 0.02
-      fp.addProperty("App::PropertyBool","Refine","ParametersExt","Use Parameters").Refine = False
+      _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Wall Sketch")
+      fp.addProperty("App::PropertyLink","Sketch","ParametersExt",_tip_)
+      _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Use Substraction")
+      fp.addProperty("App::PropertyBool","UseSubstraction","ParametersExt",_tip_).UseSubstraction = False
+      _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Offset for substraction")
+      fp.addProperty("App::PropertyDistance","Offset","ParametersExt",_tip_).Offset = 0.02
+      _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Use Refine")
+      fp.addProperty("App::PropertyBool","Refine","ParametersExt",_tip_).Refine = False
     # pass selected object shape
     Main_Object = fp.baseObject[0].Shape.copy()
     face = fp.baseObject[1]
@@ -538,7 +550,11 @@ class SMExtrudeCommandClass():
   def GetResources(self):
     return {'Pixmap'  : os.path.join( iconPath , 'SheetMetal_Extrude.svg'), # the name of a svg file available in the resources
             'MenuText': QtCore.QT_TRANSLATE_NOOP('SheetMetal','Extend Face'),
-            'ToolTip' : QtCore.QT_TRANSLATE_NOOP('SheetMetal','Extend a face along normal')}
+            'Accel': "E",
+            'ToolTip' : QtCore.QT_TRANSLATE_NOOP('SheetMetal','Extends one or more face, on existing sheet metal.\n'
+            '1. Select edges or thickness side faces to create walls.\n'
+            '2. Select a sketch in property editor to create tabs. \n'
+            '3. Use Property editor to modify other parameters')}
 
   def Activated(self):
     doc = FreeCAD.ActiveDocument

@@ -181,7 +181,7 @@ def smFold(bendR = 1.0, bendA = 90.0, kfactor = 0.5, invertbend = False, flipped
         #print(revAxisV)
 
       # To get bend surface
-      revLine = Part.LineSegment(tool.Vertexes[0].Point, tool.Vertexes[-1].Point ).toShape()
+#      revLine = Part.LineSegment(tool.Vertexes[0].Point, tool.Vertexes[-1].Point ).toShape()
 #      bendSurf = revLine.revolve(revAxisP, revAxisV, bendA)
       #Part.show(bendSurf,"bendSurf")
 
@@ -226,25 +226,35 @@ def smFold(bendR = 1.0, bendA = 90.0, kfactor = 0.5, invertbend = False, flipped
 
 class SMFoldWall:
   def __init__(self, obj):
-    '''"Add Wall with radius bend" '''
+    '''"Fold / Bend a Sheetmetal with given Bend Radius" '''
     selobj = Gui.Selection.getSelectionEx()
 
-    obj.addProperty("App::PropertyLength","radius","Parameters","Bend Radius").radius = 1.0
-    obj.addProperty("App::PropertyAngle","angle","Parameters","Bend angle").angle = 90.0
-    obj.addProperty("App::PropertyLinkSub", "baseObject", "Parameters", "Base object").baseObject = (selobj[0].Object, selobj[0].SubElementNames)
-    obj.addProperty("App::PropertyLink","BendLine","Parameters","Bend Reference Line List").BendLine = selobj[1].Object
-    obj.addProperty("App::PropertyBool","invertbend","Parameters","Invert Solid bend direction").invertbend = False
-    obj.addProperty("App::PropertyFloatConstraint","kfactor","Parameters","Neutral Axis Position").kfactor = (0.5,0.0,1.0,0.01)
-    obj.addProperty("App::PropertyBool","invert","Parameters","Invert bend direction").invert = False
-    obj.addProperty("App::PropertyBool","unfold","Parameters","Unfold Bend").unfold = False
-    obj.addProperty("App::PropertyEnumeration", "Position", "Parameters","Bend Line Position").Position = ["forward", "middle", "backward"]
+    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Bend Radius")
+    obj.addProperty("App::PropertyLength","radius","Parameters",_tip_).radius = 1.0
+    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Bend Angle")
+    obj.addProperty("App::PropertyAngle","angle","Parameters",_tip_).angle = 90.0
+    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Base Object")
+    obj.addProperty("App::PropertyLinkSub", "baseObject", "Parameters",_tip_).baseObject = (selobj[0].Object, selobj[0].SubElementNames)
+    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Bend Reference Line List")
+    obj.addProperty("App::PropertyLink","BendLine","Parameters",_tip_).BendLine = selobj[1].Object
+    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Invert Solid Bend Direction")
+    obj.addProperty("App::PropertyBool","invertbend","Parameters",_tip_).invertbend = False
+    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Neutral Axis Position")
+    obj.addProperty("App::PropertyFloatConstraint","kfactor","Parameters",_tip_).kfactor = (0.5,0.0,1.0,0.01)
+    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Invert Bend Direction")
+    obj.addProperty("App::PropertyBool","invert","Parameters",_tip_).invert = False
+    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Unfold Bend")
+    obj.addProperty("App::PropertyBool","unfold","Parameters",_tip_).unfold = False
+    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Bend Line Position")
+    obj.addProperty("App::PropertyEnumeration", "Position", "Parameters",_tip_).Position = ["forward", "middle", "backward"]
     obj.Proxy = self
 
   def execute(self, fp):
     '''"Print a short message when doing a recomputation, this method is mandatory" '''
 
     if (not hasattr(fp,"Position")):
-      fp.addProperty("App::PropertyEnumeration", "Position", "Parameters","Bend Line Position").Position = ["forward", "middle", "backward"]
+      _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Bend Line Position")
+      fp.addProperty("App::PropertyEnumeration", "Position", "Parameters",_tip_).Position = ["forward", "middle", "backward"]
 
     s = smFold(bendR = fp.radius.Value, bendA = fp.angle.Value, flipped = fp.invert, unfold = fp.unfold, kfactor = fp.kfactor, bendlinesketch = fp.BendLine,
                 position = fp.Position, invertbend = fp.invertbend, selFaceNames = fp.baseObject[1], MainObject = fp.baseObject[0])
@@ -338,12 +348,16 @@ class SMFoldPDViewProvider:
     return os.path.join( iconPath , 'SheetMetal_AddFoldWall.svg')
 
 class AddFoldWallCommandClass():
-  """Add Wall command"""
+  """Add Fold Wall command"""
 
   def GetResources(self):
     return {'Pixmap'  : os.path.join( iconPath , 'SheetMetal_AddFoldWall.svg'), # the name of a svg file available in the resources
             'MenuText': QtCore.QT_TRANSLATE_NOOP('SheetMetal','Fold a Wall'),
-            'ToolTip' : QtCore.QT_TRANSLATE_NOOP('SheetMetal','Fold a wall of metal sheet')}
+            'Accel': "C, F",
+            'ToolTip' : QtCore.QT_TRANSLATE_NOOP('SheetMetal','Fold a wall of metal sheet\n'
+            '1. Select a flat face on sheet metal and\n'
+            '2. Select a bend line(sketch) on same face(size more than face) to create sheetmetal fold.\n'
+            '3. Use Property editor to modify other parameters')}
 
   def Activated(self):
     doc = FreeCAD.ActiveDocument
