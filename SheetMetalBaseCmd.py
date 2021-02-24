@@ -152,21 +152,30 @@ class SMBaseBend:
     '''"Add wall or Wall with radius bend" '''
     selobj = Gui.Selection.getSelectionEx()[0]
 
-    obj.addProperty("App::PropertyLength","radius","Parameters","Bend Radius").radius = 1.0
-    obj.addProperty("App::PropertyLength","thickness","Parameters","thickness of sheetmetal").thickness = 1.0
-    obj.addProperty("App::PropertyEnumeration", "BendSide", "Parameters","Relief Type").BendSide = ["Outside", "Inside", "Middle"]
-    obj.addProperty("App::PropertyLength","length","Parameters","Length of wall").length = 100.0
-    obj.addProperty("App::PropertyLink", "BendSketch", "Parameters", "Wall Sketch object").BendSketch = selobj.Object
-    obj.addProperty("App::PropertyBool","MidPlane","Parameters","Extrude Symmetric to Plane").MidPlane = False
-    obj.addProperty("App::PropertyBool","Reverse","Parameters","Reverse Extrusion Direction").Reverse = False
+    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Bend Radius")
+    obj.addProperty("App::PropertyLength","radius","Parameters",_tip_).radius = 1.0
+    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Thickness of sheetmetal")
+    obj.addProperty("App::PropertyLength","thickness","Parameters",_tip_).thickness = 1.0
+    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Relief Type")
+    obj.addProperty("App::PropertyEnumeration", "BendSide", "Parameters",_tip_).BendSide = ["Outside", "Inside", "Middle"]
+    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Length of wall")
+    obj.addProperty("App::PropertyLength","length","Parameters",_tip_).length = 100.0
+    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Wall Sketch object")
+    obj.addProperty("App::PropertyLink", "BendSketch", "Parameters",_tip_).BendSketch = selobj.Object
+    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Extrude Symmetric to Plane")
+    obj.addProperty("App::PropertyBool","MidPlane","Parameters",_tip_).MidPlane = False
+    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Reverse Extrusion Direction")
+    obj.addProperty("App::PropertyBool","Reverse","Parameters",_tip_).Reverse = False
 #    obj.addProperty("App::PropertyBool","SweepBased","Parameters","Switch between sweep based & Offset based method").SweepBased = False
     obj.Proxy = self
 
   def execute(self, fp):
     '''"Print a short message when doing a recomputation, this method is mandatory" '''
     if (not hasattr(fp,"MidPlane")):
-      fp.addProperty("App::PropertyBool","MidPlane","Parameters","Extrude Symmetric to Plane").MidPlane = False
-      fp.addProperty("App::PropertyBool","Reverse","Parameters","Reverse Extrusion Direction").Reverse = False
+      _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Extrude Symmetric to Plane")
+      fp.addProperty("App::PropertyBool","MidPlane","Parameters",_tip_).MidPlane = False
+      _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Reverse Extrusion Direction")
+      fp.addProperty("App::PropertyBool","Reverse","Parameters",_tip_).Reverse = False
 
 #    if (not hasattr(fp,"SweepBased")):
 #      fp.addProperty("App::PropertyBool","SweepBased","Parameters","Extrude Symmetric to Plane").SweepBased = False
@@ -225,12 +234,15 @@ class SMBaseViewProvider:
     return os.path.join( iconPath , 'SheetMetal_AddBase.svg')
 
 class AddBaseCommandClass():
-  """Add Base command"""
+  """Add Base Wall command"""
 
   def GetResources(self):
     return {'Pixmap'  : os.path.join( iconPath , 'SheetMetal_AddBase.svg'), # the name of a svg file available in the resources
             'MenuText': QtCore.QT_TRANSLATE_NOOP('SheetMetal','Make Base Wall'),
-            'ToolTip' : QtCore.QT_TRANSLATE_NOOP('SheetMetal','Create a sheetmetal wall from a sketch')}
+            'Accel': "C, B",
+            'ToolTip' : QtCore.QT_TRANSLATE_NOOP('SheetMetal','Create a sheetmetal wall from a sketch\n'
+            '1. Select a Skech to create bends with walls.\n'
+            '2. Use Property editor to modify other parameters')}
 
   def Activated(self):
     doc = FreeCAD.ActiveDocument

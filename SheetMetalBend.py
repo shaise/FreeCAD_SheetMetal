@@ -105,9 +105,12 @@ class SMSolidBend:
     '''"Add Bend to Solid" '''
     selobj = Gui.Selection.getSelectionEx()[0]
 
-    obj.addProperty("App::PropertyLength","radius","Parameters","Bend Radius").radius = 1.0
-    obj.addProperty("App::PropertyLength","thickness","Parameters","thickness of sheetmetal").thickness = 1.0
-    obj.addProperty("App::PropertyLinkSub", "baseObject", "Parameters", "Base object").baseObject = (selobj.Object, selobj.SubElementNames)
+    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Bend Radius")
+    obj.addProperty("App::PropertyLength","radius","Parameters", _tip_).radius = 1.0
+    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Thickness of sheetmetal")
+    obj.addProperty("App::PropertyLength","thickness","Parameters", _tip_).thickness = 1.0
+    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Base object")
+    obj.addProperty("App::PropertyLinkSub", "baseObject", "Parameters", _tip_).baseObject = (selobj.Object, selobj.SubElementNames)
     obj.Proxy = self
 
   def getElementMapVersion(self, _fp, ver, _prop, restored):
@@ -328,12 +331,15 @@ class SMBendTaskPanel:
 
 
 class AddBendCommandClass():
-  """Add Bend command"""
+  """Add Solid Bend command"""
 
   def GetResources(self):
     return {'Pixmap'  : os.path.join( iconPath , 'SheetMetal_AddBend.svg'), # the name of a svg file available in the resources
             'MenuText': QtCore.QT_TRANSLATE_NOOP('SheetMetal','Make Bend'),
-            'ToolTip' : QtCore.QT_TRANSLATE_NOOP('SheetMetal','Create Bend on solids')}
+            'Accel': "S, B",
+            'ToolTip' : QtCore.QT_TRANSLATE_NOOP('SheetMetal','Create Bend where two walls come together on solids\n'
+            '1. Select edge(s) to create bend on coner edge(s).\n'
+            '2. Use Property editor to modify parameters')}
 
   def Activated(self):
     doc = FreeCAD.ActiveDocument

@@ -127,13 +127,20 @@ class SMBendWall:
     '''"Add Forming Wall" '''
     selobj = Gui.Selection.getSelectionEx()
 
-    obj.addProperty("App::PropertyVectorDistance","offset","Parameters","offset from center of face")
-    obj.addProperty("App::PropertyBool","SuppressFeature","Parameters","Suppress Forming Feature").SuppressFeature = False
-    obj.addProperty("App::PropertyAngle","angle","Parameters","Tool Position angle").angle = 0.0
-    obj.addProperty("App::PropertyDistance","thickness","Parameters","thickness of sheetmetal")
-    obj.addProperty("App::PropertyLinkSub", "baseObject", "Parameters", "Base object").baseObject = (selobj[0].Object, selobj[0].SubElementNames)
-    obj.addProperty("App::PropertyLinkSub", "toolObject", "Parameters", "Forming Tool object").toolObject = (selobj[1].Object, selobj[1].SubElementNames)
-    obj.addProperty("App::PropertyLink","Sketch","Parameters1","Point Sketch on Sheetmetal")
+    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Offset from Center of Face")
+    obj.addProperty("App::PropertyVectorDistance","offset","Parameters",_tip_)
+    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Suppress Forming Feature")
+    obj.addProperty("App::PropertyBool","SuppressFeature","Parameters",_tip_).SuppressFeature = False
+    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Tool Position Angle")
+    obj.addProperty("App::PropertyAngle","angle","Parameters",_tip_).angle = 0.0
+    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Thickness of Sheetmetal")
+    obj.addProperty("App::PropertyDistance","thickness","Parameters",_tip_)
+    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Base Object")
+    obj.addProperty("App::PropertyLinkSub", "baseObject", "Parameters",_tip_).baseObject = (selobj[0].Object, selobj[0].SubElementNames)
+    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Forming Tool Object")
+    obj.addProperty("App::PropertyLinkSub", "toolObject", "Parameters",_tip_).toolObject = (selobj[1].Object, selobj[1].SubElementNames)
+    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Point Sketch on Sheetmetal")
+    obj.addProperty("App::PropertyLink","Sketch","Parameters1",_tip_)
     obj.Proxy = self
 
   def execute(self, fp):
@@ -424,8 +431,13 @@ class AddFormingWallCommand():
 
   def GetResources(self):
     return {'Pixmap'  : os.path.join( iconPath , 'SheetMetal_Forming.svg') , # the name of a svg file available in the resources
-            'MenuText': "Make Forming in Wall" ,
-            'ToolTip' : "Make a forming using tool in metal sheet"}
+            'MenuText': QtCore.QT_TRANSLATE_NOOP('SheetMetal','Make Forming in Wall') ,
+            'Accel': "M, F",
+            'ToolTip' : QtCore.QT_TRANSLATE_NOOP('SheetMetal','Make a forming using tool in metal sheet\n'
+            '1. Select a flat face on sheet metal and\n'
+            '2. Select face(s) on forming tool Shape to create Formed sheetmetal.\n'
+            '3. Use Suppress in propert editor to disable during unfolding\n'
+            '4. Use Property editor to modify other parameters')}
 
   def Activated(self):
     doc = FreeCAD.ActiveDocument
