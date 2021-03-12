@@ -85,7 +85,9 @@ def smBase(thk = 2.0, length = 10.0, radius = 1.0, Side = "Inside", midplane = F
   else :
     filleted_extr = modifiedWire(WireList, radius, thk, length, normal, Side, 1.0)
     #Part.show(filleted_extr,"filleted_extr")
-    slice_wire = filleted_extr.slice(normal, 0.0)
+    dist =WireList.Vertexes[0].Point.distanceToPlane(FreeCAD.Vector(0,0,0), normal)
+    #print(dist)
+    slice_wire= filleted_extr.slice(normal, dist)
     #print(slice_wire)
     #Part.show(slice_wire[0],"slice_wire")
     traj = slice_wire[0]
