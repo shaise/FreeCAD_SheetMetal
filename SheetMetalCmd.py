@@ -559,8 +559,8 @@ def smMiter(mainlist, trimedgelist, bendR = 1.0, miterA1 = 0.0, miterA2 = 0.0, e
             dist2 = (p2 - vp1).Length
             if abs(dist1) < abs(dist2) :
               edgedir = (p1 - p2).normalize()
-              dist3 = (p1 - vp1).Length
-              dist4 = (p1 - vp2).Length
+              dist3 = (cornerPoint1 - vp1).Length
+              dist4 = (cornerPoint1 - vp2).Length
               if dist4 < dist3 :
                 lineDir = (vp2 - vp1).normalize()
               else :
@@ -576,8 +576,8 @@ def smMiter(mainlist, trimedgelist, bendR = 1.0, miterA1 = 0.0, miterA2 = 0.0, e
                 gap1List[j] = 0.0
             elif abs(dist2) < abs(dist1) :
               edgedir = (p2 - p1).normalize()
-              dist3 = (p2 - vp1).Length
-              dist4 = (p2 - vp2).Length
+              dist3 = (cornerPoint1 - vp1).Length
+              dist4 = (cornerPoint1 - vp2).Length
               if dist4 < dist3 :
                 lineDir = (vp2 - vp1).normalize()
               else :
@@ -609,8 +609,8 @@ def smMiter(mainlist, trimedgelist, bendR = 1.0, miterA1 = 0.0, miterA2 = 0.0, e
             dist2 = (p2 - vp1).Length
             if abs(dist1) < abs(dist2) :
               edgedir = (p1 - p2).normalize()
-              dist3 = (p1 - vp1).Length
-              dist4 = (p1 - vp2).Length
+              dist3 = (cornerPoint1 - vp1).Length
+              dist4 = (cornerPoint1 - vp2).Length
               if dist4 < dist3 :
                 lineDir = (vp2 - vp1).normalize()
               else :
@@ -626,8 +626,8 @@ def smMiter(mainlist, trimedgelist, bendR = 1.0, miterA1 = 0.0, miterA2 = 0.0, e
                 extgap1List[j] = 0.0
             elif abs(dist2) < abs(dist1) :
               edgedir = (p2 - p1).normalize()
-              dist3 = (p2 - vp1).Length
-              dist4 = (p2 - vp2).Length
+              dist3 = (cornerPoint1 - vp1).Length
+              dist4 = (cornerPoint1 - vp2).Length
               if dist4 < dist3 :
                 lineDir = (vp2 - vp1).normalize()
               else :
