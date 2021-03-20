@@ -171,25 +171,13 @@ def smGetFace(Faces, obj) :
 
 def LineExtend(edge, distance1, distance2):
   # Extend a ine by given distances
-  pt1 = edge.valueAt(edge.FirstParameter)
-  pt2 = edge.valueAt(edge.LastParameter)
-  EdgeVector = pt1 - pt2
-  EdgeVector.normalize()
-  #print([pt1, pt2, EdgeVector] )
-  ExtLine = Part.makeLine(pt1 + EdgeVector * distance1, pt2 + EdgeVector * -distance2)
-  #Part.show(ExtLine,"ExtLine")
-  return ExtLine
+  return edge.Curve.toShape(edge.FirstParameter - distance1, edge.LastParameter + distance2)
 
 def getParallel(edge1, edge2):
   # Get intersection between two lines
-  pt1 = edge1.valueAt(edge1.FirstParameter)
-  pt2 = edge1.valueAt(edge1.LastParameter)
-  pt3 = edge2.valueAt(edge2.FirstParameter)
-  pt4 = edge2.valueAt(edge2.LastParameter)
-
-  e1 = Part.Line(pt1, pt2).toShape()
+  e1 = edge1.Curve.toShape()
   #Part.show(e1,'e1')
-  e2 = Part.Line(pt3, pt4).toShape()
+  e2 = edge2.Curve.toShape()
   #Part.show(e2,'e2')
   section = e1.section(e2)
   if section.Vertexes :
@@ -202,14 +190,9 @@ def getCornerPoint(edge1, edge2):
   # Get intersection between two lines
   #Part.show(edge1,'edge1')
   #Part.show(edge2,'edge21')
-  pt1 = edge1.valueAt(edge1.FirstParameter)
-  pt2 = edge1.valueAt(edge1.LastParameter)
-  pt3 = edge2.valueAt(edge2.FirstParameter)
-  pt4 = edge2.valueAt(edge2.LastParameter)
-
-  e1 = Part.Line(pt1, pt2).toShape()
+  e1 = edge1.Curve.toShape()
   #Part.show(e1,'e1')
-  e2 = Part.Line(pt3, pt4).toShape()
+  e2 = edge2.Curve.toShape()
   #Part.show(e2,'e2')
   section = e1.section(e2)
   if section.Vertexes :
@@ -217,19 +200,15 @@ def getCornerPoint(edge1, edge2):
     cornerPoint = section.Vertexes[0].Point
   return cornerPoint
 
-def getGap(edge1, edge2, dist1, dist2, dist3, dist4, mingap) :
+def getGap(line1, line2, maxExtendGap, mingap) :
   # To find gap between two edges
   gaps = 0.0
   extgap = 0.0
-  line1 = LineExtend(edge1, dist1, dist2)
-  #Part.show(line1,'line1')
-  line2 = LineExtend(edge2, dist3, dist4)
-  #Part.show(line2,'line2')
   section =line1.section(line2)
   if section.Vertexes:
     cornerPoint = section.Vertexes[0].Point
-    size1 = abs((cornerPoint - line1.Vertexes[0].Point).Length)
-    size2 = abs((cornerPoint - line1.Vertexes[1].Point).Length)
+    size1 = abs((cornerPoint - line2.Vertexes[0].Point).Length)
+    size2 = abs((cornerPoint - line2.Vertexes[1].Point).Length)
     if size1 < size2:
       gaps = size1
     else:
@@ -237,16 +216,32 @@ def getGap(edge1, edge2, dist1, dist2, dist3, dist4, mingap) :
     gaps = gaps + mingap
     #print(gaps)
   else :
-    cornerPoint = getCornerPoint(edge1, edge2)
-#    if cornerPoint != 0 :
-    size1 = abs((cornerPoint - line1.Vertexes[0].Point).Length)
-    size2 = abs((cornerPoint - line1.Vertexes[1].Point).Length)
-    if size1 < size2:
-      extgap = size1
-    else:
-      extgap = size2
-    extgap = extgap - mingap
-    #print(extgap)
+    cornerPoint = getCornerPoint(line1, line2)
+    line3 = LineExtend(line1, maxExtendGap, maxExtendGap)
+    #Part.show(line1,'line1')
+    line4 = LineExtend(line2, maxExtendGap, maxExtendGap)
+    #Part.show(line2,'line2')
+    section = line3.section(line4)
+    if section.Vertexes:
+      #cornerPoint = section.Vertexes[0].Point
+      #p1 = Part.Vertex(cornerPoint)
+      section1 = line1.section(line4)
+      size1 = abs((cornerPoint - line2.Vertexes[0].Point).Length)
+      size2 = abs((cornerPoint - line2.Vertexes[1].Point).Length)
+#      dist = cornerPoint.distanceToLine(line2.Curve.Location, line2.Curve.Direction)
+      #print(["gap",size1, size2, dist])
+#      if section1.Vertexes :
+#        extgap = 0.0
+      if size1 < size2:
+        extgap = size1
+      else:
+        extgap = size2
+#      if dist < smEpsilon :
+#        gaps = extgap
+#        extgap = 0.0
+      if extgap > mingap :
+        extgap = extgap - mingap
+      #print(extgap)
   return gaps, extgap, cornerPoint
 
 def getSketchDetails(Sketch, sketchflip, sketchinvert, radius, thk) :
@@ -348,8 +343,9 @@ def smEdge(selFaceName, obj) :
     revAxisV = p2 - p1
   return seledge, thk, revAxisV
 
-def getBendetail(selFaceNames, MainObject, bendR, bendA, flipped):
-  mainlist =[]
+def getBendetail(selFaceNames, MainObject, bendR, bendA, flipped, offset, gap1, gap2):
+  mainlist = []
+  edgelist = []
   for selFaceName in selFaceNames :
     lenEdge, thk, revAxisV = smEdge(selFaceName, MainObject)
     selFace = smFace(lenEdge, MainObject)
@@ -379,13 +375,39 @@ def getBendetail(selFaceNames, MainObject, bendR, bendA, flipped):
       revAxisV = revAxisV * -1
     else:
       revAxisP = lenEdge.valueAt(lenEdge.FirstParameter) + thkDir * -bendR
-
     #Part.show(lenEdge,'lenEdge')
     mainlist.append([Cface, selFace, thk, lenEdge, revAxisP, revAxisV, thkDir, FaceDir, bendA, flipped])
+    if offset < 0.0 :
+      dist = lenEdge.valueAt(lenEdge.FirstParameter).distanceToPlane(FreeCAD.Vector(0,0,0), FaceDir)
+      #print(dist)
+      slice_wire = Cface.slice(FaceDir, dist + offset)
+      #print(slice_wire)
+      trimLenEdge = slice_wire[0].Edges[0]
+    else:
+      # Produce Offset Edge
+      trimLenEdge = lenEdge.copy()
+      trimLenEdge.translate(selFace.normalAt(0,0) * offset)
+    trimLenEdge =  LineExtend(trimLenEdge, -gap1, -gap2)
+    edgelist.append(trimLenEdge)
   #print(mainlist)
-  return mainlist
+  trimedgelist = InsideEdge(edgelist)
+  return mainlist, trimedgelist
 
-def smMiter(mainlist, bendR = 1.0, miterA1 = 0.0, miterA2 = 0.0, extLen = 10.0, gap1 = 0.0, gap2 = 0.0,offset = 0.0, 
+def InsideEdge(edgelist):
+  import BOPTools.JoinFeatures
+  newedgelist =[]
+  for i, e in enumerate(edgelist) :
+    for j, ed in enumerate(edgelist) :
+      if i!=j :
+        section = e.section(ed)
+        if section.Vertexes :
+          edgeShape = BOPTools.JoinAPI.cutout_legacy(e, ed, tolerance = 0.0)
+          e = edgeShape
+    #Part.show(e,"newedge")
+    newedgelist.append(e)
+  return newedgelist
+
+def smMiter(mainlist, trimedgelist, bendR = 1.0, miterA1 = 0.0, miterA2 = 0.0, extLen = 10.0, gap1 = 0.0, gap2 = 0.0,offset = 0.0, 
               reliefD = 1.0, automiter = True, extend1 = 0.0, extend2 = 0.0, mingap = 0.1, maxExtendGap = 5.0):
 
   if not(automiter) :
@@ -395,7 +417,6 @@ def smMiter(mainlist, bendR = 1.0, miterA1 = 0.0, miterA2 = 0.0, extLen = 10.0, 
     gap2List = [gap2 for n in range(len(mainlist))]
     extgap1List = [extend1 for n in range(len(mainlist))]
     extgap2List = [extend2 for n in range(len(mainlist))]
-    reliefDList = [reliefD for n in range(len(mainlist))]
   else :
     miterA1List = [0.0 for n in range(len(mainlist))]
     miterA2List = [0.0 for n in range(len(mainlist))]
@@ -403,18 +424,17 @@ def smMiter(mainlist, bendR = 1.0, miterA1 = 0.0, miterA2 = 0.0, extLen = 10.0, 
     gap2List = [gap2 for n in range(len(mainlist))]
     extgap1List = [extend1 for n in range(len(mainlist))]
     extgap2List = [extend2 for n in range(len(mainlist))]
-    reliefDList = [reliefD for n in range(len(mainlist))]
 
     facelist, tranfacelist = ([], [])
     extfacelist, exttranfacelist = ([], [])
     lenedgelist, tranedgelist = ([], [])
     for i, sublist in enumerate(mainlist):
       # find the narrow edge
-      Cface, selFace, thk, lenEdge, revAxisP, revAxisV, thkDir, FaceDir, bendA, flipped = sublist
+      Cface, selFace, thk, MlenEdge, revAxisP, revAxisV, thkDir, FaceDir, bendA, flipped = sublist
 
       # Produce Offset Edge
-      if offset > 0.0 :
-        lenEdge.translate(FaceDir * offset)
+      lenEdge = trimedgelist[i].copy()
+      revAxisP = revAxisP + FaceDir * offset
 
       # narrow the wall, if we have gaps
       BendFace = smMakeFace(lenEdge, FaceDir, extLen, 
@@ -442,11 +462,14 @@ def smMiter(mainlist, bendR = 1.0, miterA1 = 0.0, miterA2 = 0.0, extLen = 10.0, 
       transBendFace.rotate(revAxisP, revAxisV, bendA)
       exttranfacelist.append(transBendFace)
 
-      edge_len = lenEdge.copy()
+#      edge_len = lenEdge.copy()
+      edge_len = LineExtend(lenEdge, (-gap1 + extend1), (-gap2 + extend2))
       edge_len.rotate(revAxisP, revAxisV, bendA)
       lenedgelist.append(edge_len)
       #Part.show(edge_len,'edge_len')
-      edge_len = lenEdge.copy()
+
+#      edge_len = lenEdge.copy()
+      edge_len = LineExtend(lenEdge, (-gap1 + extend1), (-gap2 + extend2))
       edge_len.translate(thkDir * thk)
       edge_len.rotate(revAxisP, revAxisV, bendA)
       tranedgelist.append(edge_len)
@@ -458,8 +481,8 @@ def smMiter(mainlist, bendR = 1.0, miterA1 = 0.0, miterA2 = 0.0, extLen = 10.0, 
         if i != j and facelist[i].isCoplanar(facelist[j]) and not(getParallel(lenedgelist[i], lenedgelist[j])) :
           #Part.show(lenedgelist[i],'edge_len1')
           #Part.show(lenedgelist[j],'edge_len2')
-          gaps1, extgap1, cornerPoint1 = getGap(lenedgelist[i], lenedgelist[j], extend1, extend2, extend1, extend2, mingap)
-          gaps2, extgap2, cornerPoint2 = getGap(tranedgelist[i], tranedgelist[j], extend1, extend2, extend1, extend2, mingap)
+          gaps1, extgap1, cornerPoint1 = getGap(lenedgelist[i], lenedgelist[j], maxExtendGap, mingap)
+          gaps2, extgap2, cornerPoint2 = getGap(tranedgelist[i], tranedgelist[j], maxExtendGap, mingap)
           #print([gaps1,gaps2, extgap1, extgap2])
           gaps = max(gaps1, gaps2)
           extgap = min(extgap1, extgap2)
@@ -467,11 +490,11 @@ def smMiter(mainlist, bendR = 1.0, miterA1 = 0.0, miterA2 = 0.0, extLen = 10.0, 
           p2 = lenedgelist[j].valueAt(lenedgelist[j].LastParameter)
           Angle = LineAngle(lenedgelist[i], lenedgelist[j])
           #print(Angle)
-          if gaps >=  extgap :
-            walledge_common = lenedgelist[j].section(lenedgelist[i])
-            vp1 = walledge_common.Vertexes[0].Point
-            dist1 = (p1-vp1).Length
-            dist2 = (p2-vp1).Length
+          if gaps > 0.0 :
+#            walledge_common = lenedgelist[j].section(lenedgelist[i])
+#            vp1 = walledge_common.Vertexes[0].Point
+            dist1 = (p1 - cornerPoint1).Length
+            dist2 = (p2 - cornerPoint1).Length
             if abs(dist1) < abs(dist2) :
               miterA1List[j] = Angle / 2.0 
               if gaps > 0.0 :
@@ -484,12 +507,11 @@ def smMiter(mainlist, bendR = 1.0, miterA1 = 0.0, miterA2 = 0.0, extLen = 10.0, 
                 gap2List[j] = gaps
               else:
                 gap2List[j] = 0.0
-            reliefDList[j] = 0.0
-          elif gaps <  extgap :
+          elif extgap != 0.0 and (extgap + mingap) < maxExtendGap :
             wallface_common = facelist[j].common(facelist[i])
             dist1 = (p1-cornerPoint1).Length
             dist2 = (p2-cornerPoint1).Length
-            if abs(dist1) < abs(dist2) and extgap <= maxExtendGap:
+            if abs(dist1) < abs(dist2) :
               if wallface_common.Faces :
                 miterA1List[j] = Angle / 2.0 
               else:
@@ -498,7 +520,7 @@ def smMiter(mainlist, bendR = 1.0, miterA1 = 0.0, miterA2 = 0.0, extLen = 10.0, 
                 extgap1List[j] = extgap
               else:
                 extgap1List[j] = 0.0
-            elif abs(dist2) < abs(dist1)  and extgap <= maxExtendGap:
+            elif abs(dist2) < abs(dist1) :
               if wallface_common.Faces :
                 miterA2List[j] = Angle / 2.0
               else :
@@ -507,20 +529,25 @@ def smMiter(mainlist, bendR = 1.0, miterA1 = 0.0, miterA2 = 0.0, extLen = 10.0, 
                 extgap2List[j] = extgap
               else:
                 extgap2List[j] = 0.0
-            reliefDList[j] = 0.0
         elif i != j and not(getParallel(lenedgelist[i], lenedgelist[j])) :
           #Part.show(lenedgelist[i],'edge_len1')
           #Part.show(lenedgelist[j],'edge_len2')
-          gaps1, extgap1, cornerPoint1 = getGap(lenedgelist[i], lenedgelist[j], extend1, extend2, extend1, extend2, mingap)
-          gaps2, extgap2, cornerPoint2 = getGap(tranedgelist[i], tranedgelist[j], extend1, extend2, extend1, extend2, mingap)
-          #print([gaps1,gaps2, extgap1, extgap2])
+          #Part.show(tranedgelist[i],'edge_len1')
+          #Part.show(tranedgelist[j],'edge_len2')
+          gaps1, extgap1, cornerPoint1 = getGap(lenedgelist[i], lenedgelist[j], maxExtendGap, mingap)
+          gaps2, extgap2, cornerPoint2 = getGap(tranedgelist[i], tranedgelist[j], maxExtendGap, mingap)
+          #print([gaps1, gaps2, extgap1, extgap2])
           gaps = max(gaps1, gaps2)
           extgap = min(extgap1, extgap2)
           p1 = lenedgelist[j].valueAt(lenedgelist[j].FirstParameter)
           p2 = lenedgelist[j].valueAt(lenedgelist[j].LastParameter)
-          if gaps >=  extgap :
+          if gaps > 0.0 :
             wallface_common = facelist[j].section(facelist[i])
+            #Part.show(facelist[j],'facelist')
+            #Part.show(facelist[i],'facelist')
             wallface_common1 = tranfacelist[j].section(tranfacelist[i])
+            #Part.show(tranfacelist[j],'tranfacelist')
+            #Part.show(tranfacelist[i],'tranfacelist')
             #Part.show(wallface_common,'wallface_common')
             if wallface_common.Edges :
               vp1 = wallface_common.Vertexes[0].Point
@@ -564,10 +591,13 @@ def smMiter(mainlist, bendR = 1.0, miterA1 = 0.0, miterA2 = 0.0, extLen = 10.0, 
                 gap2List[j] = gaps
               else:
                 gap2List[j] = 0.0
-            reliefDList[j] = 0.0
-          elif gaps <  extgap :
+          elif extgap != 0.0 and (extgap + mingap) < maxExtendGap :
             wallface_common = extfacelist[j].section(extfacelist[i])
+            #Part.show(extfacelist[j],'extfacelist')
+            #Part.show(extfacelist[i],'extfacelist')
             wallface_common1 = exttranfacelist[j].section(exttranfacelist[i])
+            #Part.show(exttranfacelist[j],'exttranfacelist')
+            #Part.show(exttranfacelist[i],'exttranfacelist')
             #Part.show(wallface_common,'wallface_common')
             if wallface_common.Edges :
               vp1 = wallface_common.Vertexes[0].Point
@@ -590,7 +620,7 @@ def smMiter(mainlist, bendR = 1.0, miterA1 = 0.0, miterA2 = 0.0, extLen = 10.0, 
               Angle = 90 - Angle2
               #print([Angle, Angle2, 'ext'])
               miterA1List[j] = Angle
-              if extgap > 0.0 and extgap <= maxExtendGap:
+              if extgap > 0.0 :
                 extgap1List[j] = extgap
               else:
                 extgap1List[j] = 0.0
@@ -607,18 +637,17 @@ def smMiter(mainlist, bendR = 1.0, miterA1 = 0.0, miterA2 = 0.0, extLen = 10.0, 
               Angle = 90 - Angle2
               #print([Angle, Angle2, 'ext'])
               miterA2List[j] = Angle
-              if extgap > 0.0  and extgap <= maxExtendGap:
+              if extgap > 0.0 :
                 extgap2List[j] = extgap
               else:
                 extgap2List[j] = 0.0
-            reliefDList[j] = 0.0
 
-  #print(miterA1List, miterA2List, gap1List, gap2List, extgap1List, extgap2List, reliefDList)
-  return miterA1List, miterA2List, gap1List, gap2List, extgap1List, extgap2List, reliefDList
+  #print(miterA1List, miterA2List, gap1List, gap2List, extgap1List, extgap2List)
+  return miterA1List, miterA2List, gap1List, gap2List, extgap1List, extgap2List
 
-def smBend(bendR = 1.0, bendA = 90.0, miterA1 = 0.0,miterA2 = 0.0, BendType = "Material Outside", flipped = False, unfold = False, 
-            offset = 0.0, extLen = 10.0, gap1 = 0.0, gap2 = 0.0, reliefType = "Rectangle", reliefW = 0.8, reliefD = 1.0, extend1 = 0.0, 
-            extend2 = 0.0, kfactor = 0.45, ReliefFactor = 0.7, UseReliefFactor = False, selFaceNames = '', MainObject = None, 
+def smBend(thk, bendR = 1.0, bendA = 90.0, miterA1 = 0.0,miterA2 = 0.0, BendType = "Material Outside", flipped = False, unfold = False, 
+            offset = 0.0, extLen = 10.0, gap1 = 0.0, gap2 = 0.0, reliefType = "Rectangle", reliefW = 0.8, reliefD = 1.0, minReliefgap = 1.0, 
+            extend1 = 0.0, extend2 = 0.0, kfactor = 0.45, ReliefFactor = 0.7, UseReliefFactor = False, selFaceNames = '', MainObject = None, 
             maxExtendGap = 5.0, mingap = 0.1, automiter = True, sketch = None, extendType ="Simple"):
 
   # if sketch is as wall 
@@ -629,71 +658,60 @@ def smBend(bendR = 1.0, bendA = 90.0, miterA1 = 0.0,miterA2 = 0.0, BendType = "M
     else :
       pass
 
+  # Add Bend Type details
+  if BendType == "Material Outside" :
+    offset = 0.0
+    inside = False
+  elif BendType == "Material Inside" :
+    offset = -(thk + bendR)
+    inside = True
+  elif BendType == "Thickness Outside" :
+    offset = -bendR
+    inside = True
+  elif BendType == "Offset" :
+    if offset < 0.0 :
+      inside = True
+    else :
+      inside = False
+
   if not(sketches) :
-    mainlist = getBendetail(selFaceNames, MainObject, bendR, bendA, flipped)
-    miterA1List, miterA2List, gap1List, gap2List, extend1List, extend2List, reliefDList = smMiter(mainlist, 
-                  bendR = bendR, miterA1 = miterA1, miterA2 = miterA2, extLen = extLen, gap1 = gap1,  gap2 = gap2,
-                  offset = offset, reliefD = reliefD, automiter = automiter, extend1 = extend1, extend2 = extend2, 
+    mainlist, trimedgelist = getBendetail(selFaceNames, MainObject, bendR, bendA, flipped, offset, gap1, gap2)
+    miterA1List, miterA2List, gap1List, gap2List, extend1List, extend2List = smMiter(mainlist, trimedgelist,
+                  bendR = bendR, miterA1 = miterA1, miterA2 = miterA2, extLen = extLen, #gap1 = gap1, gap2 = gap2,
+                  offset = offset, automiter = automiter, extend1 = extend1, extend2 = extend2,
                   mingap = mingap, maxExtendGap = maxExtendGap)
 
-    #print(miterA1List, miterA2List, gap1List, gap2List, extend1List, extend2List,reliefDList,)
+    #print(miterA1List, miterA2List, gap1List, gap2List, extend1List, extend2List)
   else :
-    miterA1List, miterA2List, gap1List, gap2List, extend1List, extend2List, reliefDList = ( [0.0], [0.0], [gap1], [gap2], [extend1], [extend2],[reliefD])
+    miterA1List, miterA2List, gap1List, gap2List, extend1List, extend2List, reliefDList = ([0.0], [0.0], [gap1], [gap2], [extend1], [extend2], [reliefD])
+  agap1, agap2 = gap1, gap2
+  #print([agap1,agap1])
 
 #  mainlist = getBendetail(selFaceNames, MainObject, bendR, bendA, flipped)
   thk_faceList = []
   resultSolid = MainObject
   for i, sublist in enumerate(mainlist):
     # find the narrow edge
-    Cface, selFace, thk, lenEdge, revAxisP, revAxisV, thkDir, FaceDir, bendA, flipped = sublist
+    Cface, selFace, thk, AlenEdge, revAxisP, revAxisV, thkDir, FaceDir, bendA, flipped = sublist
     gap1, gap2 = (gap1List[i], gap2List[i])
-    reliefD = reliefDList[i]
+    #print([gap1,gap2])
     extend1, extend2 = (extend1List[i], extend2List[i])
     #Part.show(lenEdge,'lenEdge1')
     selFace = smModifiedFace(selFace, resultSolid)
+    #Part.show(selFace,'selFace')
     Cface = smModifiedFace(Cface, resultSolid)
-    lenEdge = smGetEdge(lenEdge, resultSolid)
+    #Part.show(Cface,'Cface')
+    # main Length Edge
+    MlenEdge = smGetEdge(AlenEdge, resultSolid)
+    #Part.show(MlenEdge,'MlenEdge')
+    lenEdge = trimedgelist[i]
+    leng = lenEdge.Length
     #Part.show(lenEdge,'lenEdge')
 
     # Add as offset to set any distance
     if UseReliefFactor :
       reliefW = thk * ReliefFactor
       reliefD = thk * ReliefFactor
-
-    # Add Bend Type details
-    if BendType == "Material Outside" :
-      offset = 0.0
-      inside = False
-    elif BendType == "Material Inside" :
-      offset = -(thk + bendR)
-      inside = True
-    elif BendType == "Thickness Outside" :
-      offset = -bendR
-      inside = True
-    elif BendType == "Offset" :
-      if offset < 0.0 :
-        inside = True
-      else :
-        inside = False
-
-    # Produce Offset Edge
-    if offset > 0.0 :
-      lenEdge.translate(selFace.normalAt(0,0) * offset)
-
-    # main Length Edge
-    MlenEdge = lenEdge
-    leng = MlenEdge.Length
-    #Part.show(MlenEdge,'MlenEdge')
-
-    # Get correct size inside face
-    if inside :
-      e1 = MlenEdge.copy()
-      e1.translate(FaceDir * offset)
-      EdgeShape = e1.common(Cface)
-      lenEdge = EdgeShape.Edges[0]
-      Noffset1 = abs((MlenEdge.valueAt(MlenEdge.FirstParameter)-lenEdge.valueAt(lenEdge.FirstParameter)).Length)
-#      Noffset2 = abs((MlenEdge.valueAt(MlenEdge.LastParameter)-lenEdge.valueAt(lenEdge.LastParameter)).Length)
-    #Part.show(lenEdge,'lenEdge')
 
     # if sketch is as wall
     sketches = False
@@ -713,84 +731,51 @@ def smBend(bendR = 1.0, bendA = 90.0, miterA1 = 0.0,miterA2 = 0.0, BendType = "M
       gap1 = (lenEdge.valueAt(lenEdge.FirstParameter) - sketch_Edge.valueAt(sketch_Edge.FirstParameter)).Length
       gap2 = (lenEdge.valueAt(lenEdge.LastParameter) - sketch_Edge.valueAt(sketch_Edge.LastParameter)).Length
 
-    # Get angles of adjacent face
-    Agap1 = 0.0
-    Agap2 = 0.0
-    if inside :
-      AngleList =[]
-      if MlenEdge.Vertexes[0].Orientation == "Reversed" :
-        vertex1 = MlenEdge.Vertexes[0]
-        vertex0 = MlenEdge.Vertexes[1]
-      else :
-        vertex0 = MlenEdge.Vertexes[0]
-        vertex1 = MlenEdge.Vertexes[1]
-      Edgelist = Cface.ancestorsOfType(vertex0, Part.Edge)
-      for ed in Edgelist :
-        if not(MlenEdge.isSame(ed)):
-          #Part.show(ed)
-          if abs((MlenEdge.valueAt(MlenEdge.FirstParameter)- ed.valueAt(ed.LastParameter)).Length) < smEpsilon:
-            lineDir = ed.valueAt(ed.LastParameter)- ed.valueAt(ed.FirstParameter)
-            edgeDir = MlenEdge.valueAt(MlenEdge.FirstParameter) - MlenEdge.valueAt(MlenEdge.LastParameter)
-            angle1 = edgeDir.getAngle(lineDir)
-            angle = math.degrees(angle1)
-            #print("1",angle)
-            AngleList.append(angle)
-          elif abs((MlenEdge.valueAt(MlenEdge.FirstParameter) - ed.valueAt(ed.FirstParameter)).Length) < smEpsilon:
-            lineDir = ed.valueAt(ed.FirstParameter)- ed.valueAt(ed.LastParameter)
-            edgeDir = MlenEdge.valueAt(MlenEdge.FirstParameter) - MlenEdge.valueAt(MlenEdge.LastParameter)
-            angle1 = edgeDir.getAngle(lineDir)
-            angle = math.degrees(angle1)
-            #print("2",angle)
-            AngleList.append(angle)
-
-      Edgelist = Cface.ancestorsOfType(vertex1, Part.Edge)
-      for ed in Edgelist :
-        if not(MlenEdge.isSame(ed)):
-          if abs((MlenEdge.valueAt(MlenEdge.LastParameter)- ed.valueAt(ed.FirstParameter)).Length) < smEpsilon:
-            lineDir = ed.valueAt(ed.FirstParameter)- ed.valueAt(ed.LastParameter)
-            edgeDir = MlenEdge.valueAt(MlenEdge.LastParameter) - MlenEdge.valueAt(MlenEdge.FirstParameter)
-            angle1 = edgeDir.getAngle(lineDir)
-            angle = math.degrees(angle1)
-            #print("1",angle)
-            AngleList.append(angle)
-          elif abs((MlenEdge.valueAt(MlenEdge.LastParameter) - ed.valueAt(ed.LastParameter)).Length) < smEpsilon:
-            lineDir = ed.valueAt(ed.LastParameter)- ed.valueAt(ed.FirstParameter)
-            edgeDir = MlenEdge.valueAt(MlenEdge.LastParameter) - MlenEdge.valueAt(MlenEdge.FirstParameter)
-            angle1 = edgeDir.getAngle(lineDir)
-            angle = math.degrees(angle1)
-            #print("2",angle)
-            AngleList.append(angle)
-      if AngleList :
-        if AngleList[0] > 90.01 and gap1 == 0.0 :
-          Agap1 = reliefW
-        if AngleList[1] > 90.01 and gap2 == 0.0 :
-          Agap2 = reliefW
-
-    reliefDn = reliefD
-    if inside :
-      reliefDn = reliefD + abs(offset)
-
     # CutSolids list for collecting Solids
     CutSolids = []
-
     # remove relief if needed
-    if reliefD > 0.0 :
-      if reliefW > 0.0 and ( gap1 > 0.0 or Agap1 > 0.0 ):
-        reliefFace1 = smMakeReliefFace(MlenEdge, FaceDir* -1, gap1-reliefW,
-                reliefW, reliefDn, reliefType, op='SMF')
+    if reliefD > 0.0 and reliefW > 0.0:
+      if agap1 > minReliefgap :
+        reliefFace1 = smMakeReliefFace(lenEdge, FaceDir* -1, gap1-reliefW,
+                reliefW, reliefD, reliefType, op='SMF')
         reliefSolid1 = reliefFace1.extrude(thkDir * thk)
-        #Part.show(reliefSolid1)
+        #Part.show(reliefSolid1, "reliefSolid1")
         CutSolids.append(reliefSolid1)
-      if reliefW > 0.0 and ( gap2 > 0.0 or Agap2 > 0.0 ):
-        reliefFace2 = smMakeReliefFace(MlenEdge, FaceDir* -1, leng-gap2,
-                reliefW, reliefDn, reliefType, op='SMFF')
+        if inside :
+          reliefFace1 = smMakeReliefFace(lenEdge, FaceDir* -1, gap1-reliefW,
+                  reliefW, offset, reliefType, op='SMF')
+          reliefSolid1 = reliefFace1.extrude(thkDir * thk)
+          #Part.show(reliefSolid1, "reliefSolid1")
+          CutSolids.append(reliefSolid1)
+      if agap2 > minReliefgap :
+        reliefFace2 = smMakeReliefFace(lenEdge, FaceDir* -1, lenEdge.Length-gap2,
+                reliefW, reliefD, reliefType, op='SMFF')
         reliefSolid2 = reliefFace2.extrude(thkDir * thk)
-        #Part.show(reliefSolid2)
+        #Part.show(reliefSolid2, "reliefSolid2")
         CutSolids.append(reliefSolid2)
+        if inside :
+          reliefFace2 = smMakeReliefFace(lenEdge, FaceDir* -1, lenEdge.Length-gap2,
+                  reliefW, offset, reliefType, op='SMFF')
+          reliefSolid2 = reliefFace2.extrude(thkDir * thk)
+          #Part.show(reliefSolid2,"reliefSolid2")
+          CutSolids.append(reliefSolid2)
 
     # remove bend face if present
     if inside :
-      if gap1 == 0.0 or (reliefD == 0.0 and gap1 == 0.1) :
+      if (MlenEdge.Vertexes[0].Point - MlenEdge.valueAt(MlenEdge.FirstParameter)).Length < smEpsilon :
+        vertex0 = MlenEdge.Vertexes[0]
+        vertex1 = MlenEdge.Vertexes[1]
+      else :
+        vertex1 = MlenEdge.Vertexes[0]
+        vertex0 = MlenEdge.Vertexes[1]
+      Noffset_1 = abs((MlenEdge.valueAt(MlenEdge.FirstParameter) -  lenEdge.valueAt(lenEdge.FirstParameter)).Length)
+      Noffset_2 = abs((MlenEdge.valueAt(MlenEdge.FirstParameter) -  lenEdge.valueAt(lenEdge.LastParameter)).Length)
+      Noffset1 = min(Noffset_1, Noffset_2)
+      Noffset_1 = abs((MlenEdge.valueAt(MlenEdge.LastParameter) -  lenEdge.valueAt(lenEdge.FirstParameter)).Length)
+      Noffset_2 = abs((MlenEdge.valueAt(MlenEdge.LastParameter) -  lenEdge.valueAt(lenEdge.LastParameter)).Length)
+      Noffset2 = min(Noffset_1, Noffset_2)
+      #print([Noffset1, Noffset1])
+      if agap1 <= minReliefgap :
         Edgelist = selFace.ancestorsOfType(vertex0, Part.Edge)
         for ed in Edgelist :
           if not(MlenEdge.isSame(ed)):
@@ -805,8 +790,7 @@ def smBend(bendR = 1.0, bendA = 90.0, miterA1 = 0.0,miterA2 = 0.0, BendType = "M
                     #Part.show(RfaceE,"RfaceSolid1")
                     CutSolids.append(RfaceE)
                     break
-
-      if gap2 == 0.0 or (reliefD == 0.0 and gap2 == 0.1) :
+      if agap2 <= minReliefgap :
         Edgelist = selFace.ancestorsOfType(vertex1, Part.Edge)
         for ed in Edgelist :
           if not(MlenEdge.isSame(ed)):
@@ -817,16 +801,32 @@ def smBend(bendR = 1.0, bendA = 90.0, miterA1 = 0.0,miterA2 = 0.0, BendType = "M
                 for edge in Rface.Edges:
                   #print(type(edge.Curve))
                   if issubclass(type(edge.Curve),(Part.Circle or Part.BSplineSurface)):
-                    RfaceE = Rface.makeOffsetShape(-Noffset1, 0.0, fill = True)
+                    RfaceE = Rface.makeOffsetShape(-Noffset2, 0.0, fill = True)
                     #Part.show(RfaceE,"RfaceSolid2")
                     CutSolids.append(RfaceE)
                     break
 
-      if reliefD == 0.0 and ( gap1 == 0.1 or gap2 == 0.1 ) :
-        CutFace = smMakeFace(MlenEdge, thkDir, thk, 0, 0, op='SMC')
-      else :
-        CutFace = smMakeFace(MlenEdge, thkDir, thk, gap1, gap2, op='SMC')
-      CutSolid = CutFace.extrude(FaceDir * offset )
+      # remove offset solid from sheetmetal, if inside offset
+      Ref_lenEdge = lenEdge.copy().translate(FaceDir * -offset)
+      cutgap_1 = (AlenEdge.valueAt(AlenEdge.FirstParameter) - Ref_lenEdge.valueAt(Ref_lenEdge.FirstParameter)).Length
+      cutgap_2 = (AlenEdge.valueAt(AlenEdge.FirstParameter) - Ref_lenEdge.valueAt(Ref_lenEdge.LastParameter)).Length
+      cutgap1 = min(cutgap_1, cutgap_2)
+      dist = AlenEdge.valueAt(AlenEdge.FirstParameter).distanceToLine(Ref_lenEdge.Curve.Location, Ref_lenEdge.Curve.Direction)
+      #print(dist)
+      if dist < smEpsilon :
+        cutgap1 = cutgap1 * -1.0
+      cutgap_1 = (AlenEdge.valueAt(AlenEdge.LastParameter) - Ref_lenEdge.valueAt(Ref_lenEdge.FirstParameter)).Length
+      cutgap_2 = (AlenEdge.valueAt(AlenEdge.LastParameter) - Ref_lenEdge.valueAt(Ref_lenEdge.LastParameter)).Length
+      cutgap2 = min(cutgap_1, cutgap_2)
+      dist = AlenEdge.valueAt(AlenEdge.LastParameter).distanceToLine(Ref_lenEdge.Curve.Location, Ref_lenEdge.Curve.Direction)
+      #print(dist)
+      if dist < smEpsilon :
+        cutgap2 = cutgap2 * -1.0
+      #print([cutgap1, cutgap2])
+      CutFace = smMakeFace(AlenEdge, thkDir, thk, cutgap1, cutgap2, op='SMC')
+      #Part.show(CutFace2,"CutFace2")
+      CutSolid = CutFace.extrude(FaceDir * offset)
+      #Part.show(CutSolid,"CutSolid")
       CfaceSolid = Cface.extrude(thkDir * thk)
       CutSolid = CutSolid.common(CfaceSolid)
       CutSolids.append(CutSolid)
@@ -889,6 +889,7 @@ def smBend(bendR = 1.0, bendA = 90.0, miterA1 = 0.0,miterA2 = 0.0, BendType = "M
         resultSolid = resultSolid.fuse(bendSolid)
       if wallSolid :
         resultSolid = resultSolid.fuse(wallSolid)
+        #Part.show(resultSolid,"resultSolid")
 
     # Produce unfold Solid
     else :
@@ -940,6 +941,8 @@ class SMBendWall:
     obj.addProperty("App::PropertyLength","reliefw","ParametersRelief",_tip_).reliefw = 0.8
     _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Relief Depth")
     obj.addProperty("App::PropertyLength","reliefd","ParametersRelief",_tip_).reliefd = 1.0
+    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Minimum Gap to Relief Cut")
+    obj.addProperty("App::PropertyLength","minReliefGap","ParametersRelief",_tip_).minReliefGap = 1.0
     _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Base Object")
     obj.addProperty("App::PropertyLinkSub", "baseObject", "Parameters",_tip_).baseObject = (selobj.Object, selobj.SubElementNames)
     _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Extend from Left Side")
@@ -1034,9 +1037,14 @@ class SMBendWall:
 
     if (not hasattr(fp,"minGap")):
       _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Auto Miter Minimum Gap")
-      fp.addProperty("App::PropertyLength","minGap","ParametersEx",_tip_).minGap = 0.1
+      fp.addProperty("App::PropertyLength","minGap","ParametersEx",_tip_).minGap = 0.2
       _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Auto Miter maximum Extend Distance")
       fp.addProperty("App::PropertyLength","maxExtendDist","ParametersEx",_tip_).maxExtendDist = 5.0
+
+    if (not hasattr(fp,"minReliefGap")):
+      _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Minimum Gap to Relief Cut")
+      fp.addProperty("App::PropertyLength","minReliefGap","ParametersEx",_tip_).minReliefGap = 1.0
+
     # restrict some params
     fp.miterangle1.Value = smRestrict(fp.miterangle1.Value, -80.0, 80.0)
     fp.miterangle2.Value = smRestrict(fp.miterangle2.Value, -80.0, 80.0)
@@ -1078,11 +1086,11 @@ class SMBendWall:
     #print(gap1_list, gap2_list)
 
     for i in range(len(LengthList)) :
-      s, f = smBend(bendR = fp.radius.Value, bendA = bendAList[i], miterA1 = fp.miterangle1.Value, miterA2 = fp.miterangle2.Value,  
+      s, f = smBend(thk, bendR = fp.radius.Value, bendA = bendAList[i], miterA1 = fp.miterangle1.Value, miterA2 = fp.miterangle2.Value,  
                     BendType = fp.BendType, flipped = fp.invert, unfold = fp.unfold, extLen = LengthList[i], 
                     reliefType = fp.reliefType, gap1 = gap1_list[i], gap2 = gap2_list[i], reliefW = fp.reliefw.Value, 
-                    reliefD = fp.reliefd.Value, extend1 = extend1_list[i], extend2 = extend2_list[i], kfactor = fp.kfactor,
-                    offset = fp.offset.Value, ReliefFactor = fp.ReliefFactor, UseReliefFactor = fp.UseReliefFactor, 
+                    reliefD = fp.reliefd.Value, minReliefgap = fp.minReliefGap.Value, extend1 = extend1_list[i], extend2 = extend2_list[i], 
+                    kfactor = fp.kfactor, offset = fp.offset.Value, ReliefFactor = fp.ReliefFactor, UseReliefFactor = fp.UseReliefFactor, 
                     automiter = fp.AutoMiter, selFaceNames = face, MainObject = Main_Object, sketch = fp.Sketch, 
                     mingap = fp.minGap.Value, maxExtendGap = fp.maxExtendDist.Value)
       faces = smGetFace(f, s)
