@@ -338,7 +338,7 @@ class AddBendCommandClass():
             'MenuText': QtCore.QT_TRANSLATE_NOOP('SheetMetal','Make Bend'),
             'Accel': "S, B",
             'ToolTip' : QtCore.QT_TRANSLATE_NOOP('SheetMetal','Create Bend where two walls come together on solids\n'
-            '1. Select edge(s) to create bend on coner edge(s).\n'
+            '1. Select edge(s) to create bend on corner edge(s).\n'
             '2. Use Property editor to modify parameters')}
 
   def Activated(self):

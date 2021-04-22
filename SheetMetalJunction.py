@@ -325,7 +325,7 @@ class AddJunctionCommandClass():
             'MenuText': QtCore.QT_TRANSLATE_NOOP('SheetMetal','Make Junction'),
             'Accel': "S, J",
             'ToolTip' : QtCore.QT_TRANSLATE_NOOP('SheetMetal','Create a rip where two walls come together on solids.\n'
-            '1. Select edge(s) to create rip on coner edge(s).\n'
+            '1. Select edge(s) to create rip on corner edge(s).\n'
             '2. Use Property editor to modify parameters')}
 
   def Activated(self):

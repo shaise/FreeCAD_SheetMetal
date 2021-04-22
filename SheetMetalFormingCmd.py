@@ -436,7 +436,7 @@ class AddFormingWallCommand():
             'ToolTip' : QtCore.QT_TRANSLATE_NOOP('SheetMetal','Make a forming using tool in metal sheet\n'
             '1. Select a flat face on sheet metal and\n'
             '2. Select face(s) on forming tool Shape to create Formed sheetmetal.\n'
-            '3. Use Suppress in propert editor to disable during unfolding\n'
+            '3. Use Suppress in Property editor to disable during unfolding\n'
             '4. Use Property editor to modify other parameters')}
 
   def Activated(self):
