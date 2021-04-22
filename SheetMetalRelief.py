@@ -371,7 +371,7 @@ class AddReliefCommandClass():
             'MenuText': QtCore.QT_TRANSLATE_NOOP('SheetMetal','Make Relief'),
             'Accel': "S, R",
             'ToolTip' : QtCore.QT_TRANSLATE_NOOP('SheetMetal','Modify an Individual solid corner to create Relief.\n'
-            '1. Select Vertex(es) to create Relief on Solid coner Vertex(es).\n'
+            '1. Select Vertex(es) to create Relief on Solid corner Vertex(es).\n'
             '2. Use Property editor to modify default parameters')}
 
   def Activated(self):
