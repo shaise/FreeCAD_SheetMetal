@@ -349,6 +349,18 @@ class SMViewProviderTree:
     self.Object = obj.Object
     return
 
+  def setupContextMenu(self, viewObject, menu):
+    action = menu.addAction(FreeCAD.Qt.translate("QObject", "Edit %1").replace("%1", viewObject.Object.Label))
+    action.triggered.connect(lambda: self.startDefaultEditMode(viewObject))
+    return False
+
+  def startDefaultEditMode(self, viewObject):
+    document = viewObject.Document.Document
+    if not document.HasPendingTransaction:
+      text = FreeCAD.Qt.translate("QObject", "Edit %1").replace("%1", viewObject.Object.Label)
+      document.openTransaction(text)
+    viewObject.Document.setEdit(viewObject.Object, 0)
+
   def updateData(self, fp, prop):
     return
 
