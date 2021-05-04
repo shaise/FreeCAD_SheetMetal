@@ -335,20 +335,21 @@ def smEdge(selFaceName, obj) :
         revAxisV = p1 - p2
         break
     seledge = lenEdge
+    selFace = selItem
   elif type(selItem) == Part.Edge :
     thk = sheet_thk(obj, selFaceName)
     seledge = selItem
+    selFace = smFace(selItem, MainObject)
     p1 = seledge.valueAt(seledge.FirstParameter)
     p2 = seledge.valueAt(seledge.LastParameter)
     revAxisV = p2 - p1
-  return seledge, thk, revAxisV
+  return seledge, selFace, thk, revAxisV
 
 def getBendetail(selFaceNames, MainObject, bendR, bendA, flipped, offset, gap1, gap2):
   mainlist = []
   edgelist = []
   for selFaceName in selFaceNames :
-    lenEdge, thk, revAxisV = smEdge(selFaceName, MainObject)
-    selFace = smFace(lenEdge, MainObject)
+    lenEdge, selFace, thk, revAxisV = smEdge(selFaceName, MainObject)
 
     # find the large face connected with selected face
     list2 = MainObject.ancestorsOfType(lenEdge, Part.Face)
