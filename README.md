@@ -19,9 +19,12 @@ A simple sheet metal workbench for FreeCAD
   > Copyright 2014 by Ulrich Brammer <ulrich1a[at]users.sourceforge.net> AKA [@ulrich1a](https://github.com/ulrich1a)
 
 # Terminology 
-
-![Terminology](tools/terminology.png)
-
+## Sheetmetal Workbench definitions
+![Sheetmetal WB Terminology](Resources/sheetmetal_terms.png)  
+  
+## Physical material definitions
+![Physical Terminology](tools/terminology.png)  
+  
 # Test case 
 
 As a simple test case, consider the following example: 
