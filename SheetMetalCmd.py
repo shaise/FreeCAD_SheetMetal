@@ -310,9 +310,9 @@ def sheet_thk(MainObject, selFaceName) :
       thk = abs(edge.Length)
   return thk
 
-def smEdge(selFaceName, obj) :
+def smEdge(selFaceName, MainObject) :
   # find Edge, if Face Selected
-  selItem = obj.getElement(selFaceName)
+  selItem = MainObject.getElement(selFaceName)
   if type(selItem) == Part.Face :
     # find the narrow edge
     thk = 999999.0
@@ -337,7 +337,7 @@ def smEdge(selFaceName, obj) :
     seledge = lenEdge
     selFace = selItem
   elif type(selItem) == Part.Edge :
-    thk = sheet_thk(obj, selFaceName)
+    thk = sheet_thk(MainObject, selFaceName)
     seledge = selItem
     selFace = smFace(selItem, MainObject)
     p1 = seledge.valueAt(seledge.FirstParameter)
