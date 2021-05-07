@@ -348,6 +348,7 @@ def smEdge(selFaceName, MainObject) :
 def getBendetail(selFaceNames, MainObject, bendR, bendA, flipped, offset, gap1, gap2):
   mainlist = []
   edgelist = []
+  nogap_edgelist = []
   for selFaceName in selFaceNames :
     lenEdge, selFace, thk, revAxisV = smEdge(selFaceName, MainObject)
 
@@ -388,11 +389,15 @@ def getBendetail(selFaceNames, MainObject, bendR, bendA, flipped, offset, gap1, 
       # Produce Offset Edge
       trimLenEdge = lenEdge.copy()
       trimLenEdge.translate(selFace.normalAt(0,0) * offset)
+    #Part.show(trimLenEdge,'trimLenEdge1')
+    nogap_edgelist.append(trimLenEdge)
     trimLenEdge =  LineExtend(trimLenEdge, -gap1, -gap2)
+    #Part.show(trimLenEdge,'trimLenEdge2')
     edgelist.append(trimLenEdge)
   #print(mainlist)
   trimedgelist = InsideEdge(edgelist)
-  return mainlist, trimedgelist
+  nogaptrimedgelist = InsideEdge(nogap_edgelist)
+  return mainlist, trimedgelist, nogaptrimedgelist
 
 def InsideEdge(edgelist):
   import BOPTools.JoinFeatures
@@ -676,7 +681,7 @@ def smBend(thk, bendR = 1.0, bendA = 90.0, miterA1 = 0.0,miterA2 = 0.0, BendType
       inside = False
 
   if not(sketches) :
-    mainlist, trimedgelist = getBendetail(selFaceNames, MainObject, bendR, bendA, flipped, offset, gap1, gap2)
+    mainlist, trimedgelist, nogaptrimedgelist = getBendetail(selFaceNames, MainObject, bendR, bendA, flipped, offset, gap1, gap2)
     miterA1List, miterA2List, gap1List, gap2List, extend1List, extend2List = smMiter(mainlist, trimedgelist,
                   bendR = bendR, miterA1 = miterA1, miterA2 = miterA2, extLen = extLen, #gap1 = gap1, gap2 = gap2,
                   offset = offset, automiter = automiter, extend1 = extend1, extend2 = extend2,
@@ -706,6 +711,7 @@ def smBend(thk, bendR = 1.0, bendA = 90.0, miterA1 = 0.0,miterA2 = 0.0, BendType
     MlenEdge = smGetEdge(AlenEdge, resultSolid)
     #Part.show(MlenEdge,'MlenEdge')
     lenEdge = trimedgelist[i]
+    noGap_lenEdge = nogaptrimedgelist[i]
     leng = lenEdge.Length
     #Part.show(lenEdge,'lenEdge')
 
@@ -769,11 +775,11 @@ def smBend(thk, bendR = 1.0, bendA = 90.0, miterA1 = 0.0,miterA2 = 0.0, BendType
       else :
         vertex1 = MlenEdge.Vertexes[0]
         vertex0 = MlenEdge.Vertexes[1]
-      Noffset_1 = abs((MlenEdge.valueAt(MlenEdge.FirstParameter) -  lenEdge.valueAt(lenEdge.FirstParameter)).Length)
-      Noffset_2 = abs((MlenEdge.valueAt(MlenEdge.FirstParameter) -  lenEdge.valueAt(lenEdge.LastParameter)).Length)
+      Noffset_1 = abs((MlenEdge.valueAt(MlenEdge.FirstParameter) -  noGap_lenEdge.valueAt(noGap_lenEdge.FirstParameter)).Length)
+      Noffset_2 = abs((MlenEdge.valueAt(MlenEdge.FirstParameter) -  noGap_lenEdge.valueAt(noGap_lenEdge.LastParameter)).Length)
       Noffset1 = min(Noffset_1, Noffset_2)
-      Noffset_1 = abs((MlenEdge.valueAt(MlenEdge.LastParameter) -  lenEdge.valueAt(lenEdge.FirstParameter)).Length)
-      Noffset_2 = abs((MlenEdge.valueAt(MlenEdge.LastParameter) -  lenEdge.valueAt(lenEdge.LastParameter)).Length)
+      Noffset_1 = abs((MlenEdge.valueAt(MlenEdge.LastParameter) -  noGap_lenEdge.valueAt(noGap_lenEdge.FirstParameter)).Length)
+      Noffset_2 = abs((MlenEdge.valueAt(MlenEdge.LastParameter) -  noGap_lenEdge.valueAt(noGap_lenEdge.LastParameter)).Length)
       Noffset2 = min(Noffset_1, Noffset_2)
       #print([Noffset1, Noffset1])
       if agap1 <= minReliefgap :
