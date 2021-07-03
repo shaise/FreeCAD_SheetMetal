@@ -97,6 +97,7 @@ Starting from FreeCAD 0.17 it can be installed via the [Addon Manager](https://g
 * FreeCAD Forum announcement/discussion [thread](https://forum.freecadweb.org/viewtopic.php?f=10&t=11303) 
 
 #### Release notes:
+* V0.2.49 03 Jul 2020:  Add SubShapeBinder as source by [@s-light][s-light]. Thank you!
 * V0.2.48 02 May 2021:  Add context menu [@jaisejames][jaisejames]. Thank you!
 * V0.2.47 24 Feb 2021:  Add translation support by [@jaisejames][jaisejames]. Thank you!
 * V0.2.46 31 Jan 2021:  Small bug fixes and code clean by [@jaisejames][jaisejames]. Thank you!
@@ -157,7 +158,7 @@ Starting from FreeCAD 0.17 it can be installed via the [Addon Manager](https://g
 [ceremcem]: https://github.com/ceremcem
 [jaisejames]: https://github.com/jaisekjames
 [easyw]: https://github.com/easyw
-[23]: https://github.com/shaise/FreeCAD_SheetMetal/issues/23
+[s-light]: https://github.com/s-light
 [30]: https://github.com/shaise/FreeCAD_SheetMetal/issues/30
 [33]: https://github.com/shaise/FreeCAD_SheetMetal/issues/33
 [41]: https://github.com/shaise/FreeCAD_SheetMetal/issues/41
