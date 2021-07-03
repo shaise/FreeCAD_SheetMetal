@@ -2,25 +2,25 @@
 ###################################################################################
 #
 #  SheetMetalBaseCmd.py
-#  
+#
 #  Copyright 2015 Shai Seger <shaise at gmail dot com>
-#  
+#
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation; either version 2 of the License, or
 #  (at your option) any later version.
-#  
+#
 #  This program is distributed in the hope that it will be useful,
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #  GNU General Public License for more details.
-#  
+#
 #  You should have received a copy of the GNU General Public License
 #  along with this program; if not, write to the Free Software
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
-#  
-#  
+#
+#
 ###################################################################################
 
 from FreeCAD import Gui
@@ -79,7 +79,7 @@ def smBase(thk = 2.0, length = 10.0, radius = 1.0, Side = "Inside", midplane = F
   normal = (mat.multVec(FreeCAD.Vector(0,0,1))).normalize()
   #print([mat, normal])
   if WireList.isClosed() :
-    # If Cosed sketch is there, make a face & extrude it 
+    # If Cosed sketch is there, make a face & extrude it
     sketch_face = Part.makeFace(MainObject.Shape.Wires,"Part::FaceMakerBullseye")
     wallSolid = sketch_face.extrude(sketch_face.normalAt(0,0) * thk)
   else :
@@ -141,7 +141,7 @@ class SMBaseBend:
       _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Reverse Extrusion Direction")
       fp.addProperty("App::PropertyBool","Reverse","Parameters",_tip_).Reverse = False
 
-    s = smBase(thk = fp.thickness.Value, length = fp.length.Value, radius = fp.radius.Value, Side = fp.BendSide, 
+    s = smBase(thk = fp.thickness.Value, length = fp.length.Value, radius = fp.radius.Value, Side = fp.BendSide,
                   midplane = fp.MidPlane, reverse = fp.Reverse, MainObject = fp.BendSketch)
 
     fp.Shape = s
@@ -229,7 +229,11 @@ class AddBaseCommandClass():
     if len(Gui.Selection.getSelection()) != 1 :
       return False
     selobj = Gui.Selection.getSelection()[0]
-    if not(selobj.isDerivedFrom("Sketcher::SketchObject")):
+    if not(
+        selobj.isDerivedFrom("Sketcher::SketchObject")
+        or selobj.isDerivedFrom("PartDesign::ShapeBinder")
+        or selobj.isDerivedFrom("PartDesign::SubShapeBinder")
+    ):
        return False
     return True
 
