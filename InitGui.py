@@ -34,7 +34,7 @@ smWB_icons_path =  os.path.join( smWBpath, 'Resources', 'icons')
 global main_smWB_Icon
 main_smWB_Icon = os.path.join( smWB_icons_path , 'SMLogo.svg')
 
-SHEETMETALWB_VERSION = 'V0.2.48'
+SHEETMETALWB_VERSION = 'V0.2.49'
 
 class SMWorkbench (Workbench):
 
