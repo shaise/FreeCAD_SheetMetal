@@ -134,13 +134,13 @@ def smgetSubface(face, obj, edge, thk):
     p2 = Base.Vector(max([pts.x for pts in pt_list]), max([pts.y for pts in pt_list]), max([pts.z for pts in pt_list]))
     #print([p1, p2])
 
-    # Find angle between diagnoal & thickness side edge
+    # Find angle between diagonal & thickness side edge
     vec2 = (p2 - p1)
     angle1 = vec2.getAngle(vec1)
     angle = math.degrees(angle1)
     #print(angle)
 
-    # Check & correct orientation of diagnoal edge rotation
+    # Check & correct orientation of diagonal edge rotation
     e = Part.makeLine(p1, p2)
     e.rotate(p1, normal, -angle)
     vec2 = (e.valueAt(e.LastParameter) - e.valueAt(e.FirstParameter)).normalize()
