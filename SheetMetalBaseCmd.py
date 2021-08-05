@@ -145,7 +145,9 @@ class SMBaseBend:
                   midplane = fp.MidPlane, reverse = fp.Reverse, MainObject = fp.BendSketch)
 
     fp.Shape = s
-    Gui.ActiveDocument.getObject(fp.BendSketch.Name).Visibility = False
+    obj = Gui.ActiveDocument.getObject(fp.BendSketch.Name)
+    if obj:
+        obj.Visibility = False
 
 class SMBaseViewProvider:
   "A View provider that nests children objects under the created one"
