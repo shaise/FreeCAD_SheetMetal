@@ -103,7 +103,7 @@ def smTouchFace(Face, obj, thk) :
   for face in obj.Faces :
     #Part.show(face,'face')
     face_common = face.common(Face)
-    if face_common.Faces :
+    if not(face_common.Faces) :
       continue
     edge = face.Vertexes[0].extrude(face.normalAt(0,0) * -thk * 2)
     #Part.show(edge,'edge')
@@ -172,7 +172,7 @@ def smgetSubface(face, obj, edge, thk):
     wallsolidlist.append(wallSolid)
   return wallsolidlist
 
-def smExtrude(extLength = 10.0, gap1 = 0.0, gap2 = 0.0, substraction = False, offset = 0.02, refine = True,
+def smExtrude(extLength = 10.0, gap1 = 0.0, gap2 = 0.0, subtraction = False, offset = 0.02, refine = True,
                             sketch = '', selFaceNames = '', selObject = ''):
 
   finalShape = selObject
@@ -261,7 +261,7 @@ def smExtrude(extLength = 10.0, gap1 = 0.0, gap2 = 0.0, substraction = False, of
       overlap_solidlist = smgetSubface(substract_face, overlap_solid, lenEdge, thk)
 
       # Substract solid from Initial Solid
-      if substraction :
+      if subtraction :
         for solid in overlap_solidlist:
           CutSolid = solid.makeOffsetShape(offset, 0.0, fill = False, join = 2)
           #Part.show(CutSolid, "CutSolid")
@@ -305,9 +305,9 @@ class SMExtrudeWall:
     obj.addProperty("App::PropertyLinkSub", "baseObject", "Parameters",_tip_).baseObject = (selobj.Object, selobj.SubElementNames)
     _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Wall Sketch")
     obj.addProperty("App::PropertyLink","Sketch","ParametersExt",_tip_)
-    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Use Substraction")
-    obj.addProperty("App::PropertyBool","UseSubstraction","ParametersExt",_tip_).UseSubstraction = False
-    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Offset for substraction")
+    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Use Subtraction")
+    obj.addProperty("App::PropertyBool","UseSubtraction","ParametersExt",_tip_).UseSubtraction = False
+    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Offset for subtraction")
     obj.addProperty("App::PropertyDistance","Offset","ParametersExt",_tip_).Offset = 0.02
     _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Use Refine")
     obj.addProperty("App::PropertyBool","Refine","ParametersExt",_tip_).Refine = True
@@ -321,9 +321,9 @@ class SMExtrudeWall:
     if (not hasattr(fp,"Sketch")):
       _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Wall Sketch")
       fp.addProperty("App::PropertyLink","Sketch","ParametersExt",_tip_)
-      _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Use Substraction")
-      fp.addProperty("App::PropertyBool","UseSubstraction","ParametersExt",_tip_).UseSubstraction = False
-      _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Offset for substraction")
+      _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Use Subtraction")
+      fp.addProperty("App::PropertyBool","UseSubtraction","ParametersExt",_tip_).UseSubtraction = False
+      _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Offset for subtraction")
       fp.addProperty("App::PropertyDistance","Offset","ParametersExt",_tip_).Offset = 0.02
       _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Use Refine")
       fp.addProperty("App::PropertyBool","Refine","ParametersExt",_tip_).Refine = False
@@ -331,7 +331,7 @@ class SMExtrudeWall:
     Main_Object = fp.baseObject[0].Shape.copy()
     face = fp.baseObject[1]
 
-    s = smExtrude(extLength = fp.length.Value,  gap1 = fp.gap1.Value, gap2 = fp.gap2.Value, substraction = fp.UseSubstraction,
+    s = smExtrude(extLength = fp.length.Value,  gap1 = fp.gap1.Value, gap2 = fp.gap2.Value, subtraction = fp.UseSubtraction,
                     offset = fp.Offset.Value, refine = fp.Refine, sketch = fp.Sketch, selFaceNames = face, selObject = Main_Object)
     fp.baseObject[0].ViewObject.Visibility = False
     if fp.Sketch :
