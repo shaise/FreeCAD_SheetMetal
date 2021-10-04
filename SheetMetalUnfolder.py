@@ -2352,53 +2352,43 @@ class QColorButton(QtGui.QPushButton):
 
 import re
 
-
-def get_linked_objs_recursive(links):
-  Parts_index = 2
-  objects = []
-  for o in [l.LinkedObject for l in links]:
-    if o.TypeId == 'App::Link':
-      # recursive
-      objects += get_linked_objs_recursive([o])
-    elif o.TypeId == 'Part::FeaturePython':
-      # this is an assembly container
-      objects += o.Group[Parts_index].Group
+def _find_objects(objs, _filter):
+  res = []
+  queue = list(objs)
+  visited = set(objs)
+  while queue:
+    obj = queue.pop(0)
+    r = _filter(obj)
+    if r:
+      res.append(obj)
+      if r > 1:
+        break
+    elif r < 0:
+      break
     else:
-      objects.append(o)
-  # print "Examined objects: ", ', '.join([o.Label for o in objects])
-  return objects
-
-
-def getObjectsByLabelRecursive(doc, label):
-  objects = doc.getObjectsByLabel(label)
-  res = None
-  if len(objects) == 0:
-    # Maybe the document is a link
+      linked = obj.getLinkedObject()
+      if linked not in visited:
+        visited.add(linked)
+        queue.append(linked)
     try:
-      links = doc.findObjects('App::Link')
-      objects = get_linked_objs_recursive(links)
-      for obj in objects:
-        if obj.Label == label:
-          res = obj
-          break
-    except:
-      # In FreeCAD Main branch, "App:Link" is not a valid type
-      # thus causing FreeCADError. Simply ignore it.
-      pass
-  else:
-    res = objects[0]
+      names = obj.getSubObjects()
+    except Exception:
+      names = []
+    for name in names:
+      sobj = obj.getSubObject(name, retType=1)
+      if sobj not in visited:
+        visited.add(sobj)
+        queue.append(sobj)
   return res
 
-def findObjectsByTypeRecursive(doc, type):
-  objects = []
-  for obj in doc.findObjects():
-    if obj.TypeId == type:
-      objects.append(obj)
-    elif obj.TypeId == 'App::Link':
-      for _o in get_linked_objs_recursive([obj]):
-        if _o.TypeId == type:
-          objects.append(_o)
-  return objects
+def getObjectsByLabelRecursive(doc, label):
+  res = _find_objects(doc.Objects,
+    lambda obj : 2 if obj and obj.Label == label else 0)
+  return res[0] if res else None
+
+def findObjectsByTypeRecursive(doc, tp):
+  return _find_objects(doc.Objects,
+    lambda obj : obj and obj.isDerivedFrom(tp))
 
 # Start of spreadsheet functions
 cell_regex = re.compile('^([A-Z]+)([0-9]+)$')
