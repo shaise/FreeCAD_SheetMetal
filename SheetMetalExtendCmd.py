@@ -254,11 +254,12 @@ def smExtrude(extLength = 10.0, gap1 = 0.0, gap2 = 0.0, subtraction = False, off
       # To find Overlapping Solid, non thickness side Face that touch Overlapping Solid
       overlap_solid = wallSolid.common(SplitSolid2)
       #Part.show(overlap_solid, "overlap_solid")
-      substract_face = smTouchFace(wallSolid, SplitSolid2, thk)
-      #Part.show(substract_face, "substract_face")
 
-      # To get solids that aligned/normal to touching face
-      overlap_solidlist = smgetSubface(substract_face, overlap_solid, lenEdge, thk)
+      if overlap_solid.Faces :
+        substract_face = smTouchFace(wallSolid, SplitSolid2, thk)
+        #Part.show(substract_face, "substract_face")
+        # To get solids that aligned/normal to touching face
+        overlap_solidlist = smgetSubface(substract_face, overlap_solid, lenEdge, thk)
 
       # Substract solid from Initial Solid
       if subtraction :
