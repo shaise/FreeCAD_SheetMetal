@@ -94,7 +94,7 @@ Starting from FreeCAD 0.17 it can be installed via the [Addon Manager](https://g
 * Development repo: https://github.com/shaise/FreeCAD_SheetMetal  
 * FreeCAD wiki page: https://www.freecadweb.org/wiki/SheetMetal_Workbench  
 * Authors webpage: http://theseger.com/projects/2015/06/sheet-metal-addon-for-freecad/  
-* FreeCAD Forum announcement/discussion [thread](https://forum.freecadweb.org/viewtopic.php?f=10&t=11303) 
+* FreeCAD Forum announcement/discussion [thread](https://forum.freecadweb.org/viewtopic.php?f=3&t=60818) 
 
 #### Release notes:
 * V0.2.49 03 Jul 2021:  Add SubShapeBinder as source by [@s-light][s-light]. Thank you!
