@@ -1,26 +1,52 @@
-import collections 
+# -*- coding: utf-8 -*-
+###################################################################################
+#
+#  lookup.py
+#
+#  Copyright 2019 Cerem Cem Aslan
+#
+#  This program is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation; either version 2 of the License, or
+#  (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software
+#  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+#  MA 02110-1301, USA.
+#
+#
+###################################################################################
+
+import collections
+
 
 def get_val_from_range(lookup, input, interpolate=False):
     '''
-    lookup: dictionary 
-    input: float 
-    
-    For working principle, see below tests    
+    lookup: dictionary
+    input: float
+
+    For working principle, see below tests
     '''
     lookup_sorted = collections.OrderedDict(sorted(lookup.items(), key=lambda t: float(t[0])))
     val = None
     prev_val = None
-    prev_key = None 
+    prev_key = None
     input = float(input)
     for _range in lookup_sorted:
         val = float(lookup_sorted[_range])
         if input > float(_range):
             prev_val = val
-            prev_key = float(_range) 
-            continue 
-        
+            prev_key = float(_range)
+            continue
+
         if interpolate:
-            # Do the interpolation here 
+            # Do the interpolation here
             if prev_key is not None:
                 key = float(_range)
                 #print "interpolate for input: ", input, ": ", prev_key, "to ", key, "->", prev_val, val
@@ -31,8 +57,8 @@ def get_val_from_range(lookup, input, interpolate=False):
                 round_2 = lambda a: int((a * 100) + 0.5) / 100.0
                 val = round_2(interpolated_val)
                 #print "...interpolated to: ", val, interpolated_val
-        break 
-    return val 
+        break
+    return val
 
 mytable = {
     1: 0.25,
@@ -42,7 +68,7 @@ mytable = {
     7: 0.5
 }
 
-# Interpolation disabled        
+# Interpolation disabled
 assert get_val_from_range(mytable, 0.1) == 0.25
 assert get_val_from_range(mytable, 0.99) == 0.25
 assert get_val_from_range(mytable, 1) == 0.25
