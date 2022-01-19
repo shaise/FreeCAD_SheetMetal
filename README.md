@@ -1,7 +1,7 @@
 # FreeCAD SheetMetal Workbench
 [![Total alerts](https://img.shields.io/lgtm/alerts/g/shaise/FreeCAD_SheetMetal.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/shaise/FreeCAD_SheetMetal/alerts/) [![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/shaise/FreeCAD_SheetMetal.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/shaise/FreeCAD_SheetMetal/context:python)  
 
-A simple sheet metal workbench for FreeCAD
+A simple sheet metal tools workbench for FreeCAD
 
 ![Demo Workflow](Resources/SheetMetal4.gif)
 
