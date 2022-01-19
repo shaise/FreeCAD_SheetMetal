@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<package format="1" xmlns="https://wiki.freecad.org/Package_Metadata">
+  <name>SheetMetal Workbench</name>
+  <description>A simple sheet metal tools workbench for FreeCAD.</description>
+  <version>0.2.49</version>
+  <date>2021-07-03</date>
+  <maintainer email="shaise@gmail.com">Shai Seger</maintainer>
+  <license file="LICENSE">GPLv3</license>
+  <url type="repository" branch="main">https://github.com/shaise/FreeCAD_SheetMetal</url>
+  <icon>Resources/icons/SMLogo.svg</icon>
+
+  <content>
+    <workbench>
+      <classname>SheetMetalWorkbench</classname>
+      <subdirectory>./</subdirectory>
+    </workbench>
+  </content>
+
+</package>
