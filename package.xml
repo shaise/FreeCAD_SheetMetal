@@ -13,6 +13,7 @@
     <workbench>
       <classname>SheetMetalWorkbench</classname>
       <subdirectory>./</subdirectory>
+      <tag>sheetmetal</tag>
     </workbench>
   </content>
 
