@@ -6,7 +6,8 @@
   <date>2021-07-03</date>
   <maintainer email="shaise@gmail.com">Shai Seger</maintainer>
   <license file="LICENSE">GPLv3</license>
-  <url type="repository" branch="main">https://github.com/shaise/FreeCAD_SheetMetal</url>
+  <url type="repository" branch="master">https://github.com/shaise/FreeCAD_SheetMetal</url>
+  <url type="readme">https://github.com/shaise/FreeCAD_SheetMetal/blob/master/README.md</url>
   <icon>Resources/icons/SMLogo.svg</icon>
 
   <content>
