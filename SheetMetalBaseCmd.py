@@ -174,7 +174,7 @@ class SMBaseViewProvider:
     return
 
   def __getstate__(self):
-    #        return {'ObjectName' : self.Object.Name}
+    #    return {'ObjectName' : self.Object.Name}
     return None
 
   def __setstate__(self,state):
