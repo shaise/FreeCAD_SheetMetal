@@ -34,8 +34,6 @@ smWB_icons_path =  os.path.join( smWBpath, 'Resources', 'icons')
 global main_smWB_Icon
 main_smWB_Icon = os.path.join( smWB_icons_path , 'SMLogo.svg')
 
-SHEETMETALWB_VERSION = 'V0.2.49'
-
 class SMWorkbench (Workbench):
 
     global main_smWB_Icon
@@ -45,7 +43,7 @@ class SMWorkbench (Workbench):
     global smWBpath
     global smWB_icons_path
 
-    MenuText = 'Sheet Metal '+SHEETMETALWB_VERSION
+    MenuText = 'Sheet Metal'
     ToolTip = QtCore.QT_TRANSLATE_NOOP('SheetMetal','Sheet Metal workbench allows for designing and unfolding sheet metal parts')
     Icon = main_smWB_Icon
 
