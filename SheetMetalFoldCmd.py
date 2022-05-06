@@ -63,7 +63,7 @@ def smthk(obj, foldface) :
       SMError("Shape is not a real 3D-object or to small for a metal-sheet!")
   else:
       # Make a first estimate of the thickness
-      estimated_thk = theVol/(obj.Area / 2.0)
+      estimated_thk = theVol/(foldface.Area)
 #  p1 = foldface.CenterOfMass
   p1 = foldface.Vertexes[0].Point
   p2 = p1 + estimated_thk * -1.5 * normal
