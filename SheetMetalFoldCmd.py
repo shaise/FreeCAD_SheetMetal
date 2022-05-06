@@ -66,7 +66,7 @@ def smthk(obj, foldface) :
       estimated_thk = theVol/(obj.Area / 2.0)
 #  p1 = foldface.CenterOfMass
   p1 = foldface.Vertexes[0].Point
-  p2 = p1 + estimated_thk * -1.5 * normal
+  p2 = p1 + estimated_thk * 5 * normal
   e1 = Part.makeLine(p1, p2)
   thkedge = obj.common(e1)
   thk = thkedge.Length
@@ -112,7 +112,7 @@ def smFold(bendR = 1.0, bendA = 90.0, kfactor = 0.5, invertbend = False, flipped
       #print([neutralRadius, neutralLength, unfoldLength, offsetdistance, scalefactor])
 
       #To get facedir
-      toolFaces = tool.extrude(normal * -thk)
+      toolFaces = tool.extrude(normal * -thk * 3)
       #Part.show(toolFaces, "toolFaces")
       cutSolid = BOPTools.SplitAPI.slice(FoldShape, toolFaces.Faces, "Standard", 0.0)
       #Part.show(cutSolid,"cutSolid_check")
@@ -129,10 +129,10 @@ def smFold(bendR = 1.0, bendA = 90.0, kfactor = 0.5, invertbend = False, flipped
 
       if position == "middle" :
         tool.translate(facenormal * -unfoldLength / 2.0 )
-        toolFaces = tool.extrude(normal * -thk)
+        toolFaces = tool.extrude(normal * -thk * 3)
       elif position == "backward" :
         tool.translate(facenormal * -unfoldLength )
-        toolFaces = tool.extrude(normal * -thk)
+        toolFaces = tool.extrude(normal * -thk * 3)
 
       #To get split solid
       solidlist = []
