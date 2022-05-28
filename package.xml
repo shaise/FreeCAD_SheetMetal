@@ -12,7 +12,7 @@
 
   <content>
     <workbench>
-      <classname>SheetMetalWorkbench</classname>
+      <classname>SMWorkbench</classname>
       <subdirectory>./</subdirectory>
       <tag>sheetmetal</tag>
     </workbench>
