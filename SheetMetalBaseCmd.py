@@ -79,9 +79,12 @@ def smBase(thk = 2.0, length = 10.0, radius = 1.0, Side = "Inside", midplane = F
   normal = (mat.multVec(FreeCAD.Vector(0,0,1))).normalize()
   #print([mat, normal])
   if WireList.isClosed() :
-    # If Cosed sketch is there, make a face & extrude it
+    # If Closed sketch is there, make a face & extrude it
     sketch_face = Part.makeFace(MainObject.Shape.Wires,"Part::FaceMakerBullseye")
+    thk = -1.0 * thk if reverse else thk
     wallSolid = sketch_face.extrude(sketch_face.normalAt(0,0) * thk)
+    if midplane:
+      wallSolid = Part.Solid(wallSolid.translated(sketch_face.normalAt(0,0) * thk * -0.5))
   else :
     filleted_extr = modifiedWire(WireList, radius, thk, length, normal, Side, 1.0)
     #Part.show(filleted_extr,"filleted_extr")
