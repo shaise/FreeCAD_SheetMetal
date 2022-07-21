@@ -671,9 +671,11 @@ def smBend(thk, bendR = 1.0, bendA = 90.0, miterA1 = 0.0,miterA2 = 0.0, BendType
   elif BendType == "Material Inside" :
     offset = -(thk + bendR)
     inside = True
+    extLen = extLen + offset
   elif BendType == "Thickness Outside" :
     offset = -bendR
     inside = True
+    extLen = extLen + offset
   elif BendType == "Offset" :
     if offset < 0.0 :
       inside = True
