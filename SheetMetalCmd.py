@@ -651,12 +651,12 @@ def smMiter(mainlist, trimedgelist, bendR = 1.0, miterA1 = 0.0, miterA2 = 0.0, e
   #print(miterA1List, miterA2List, gap1List, gap2List, extgap1List, extgap2List)
   return miterA1List, miterA2List, gap1List, gap2List, extgap1List, extgap2List
 
-def smBend(thk, bendR = 1.0, bendA = 90.0, miterA1 = 0.0,miterA2 = 0.0, BendType = "Material Outside", flipped = False, unfold = False, 
-            offset = 0.0, extLen = 10.0, gap1 = 0.0, gap2 = 0.0, reliefType = "Rectangle", reliefW = 0.8, reliefD = 1.0, minReliefgap = 1.0, 
-            extend1 = 0.0, extend2 = 0.0, kfactor = 0.45, ReliefFactor = 0.7, UseReliefFactor = False, selFaceNames = '', MainObject = None, 
-            maxExtendGap = 5.0, mingap = 0.1, automiter = True, sketch = None, extendType ="Simple"):
+def smBend(thk, bendR = 1.0, bendA = 90.0, miterA1 = 0.0,miterA2 = 0.0, BendType = "Material Outside", flipped = False, unfold = False,
+            offset = 0.0, extLen = 10.0, gap1 = 0.0, gap2 = 0.0, reliefType = "Rectangle", reliefW = 0.8, reliefD = 1.0, minReliefgap = 1.0,
+            extend1 = 0.0, extend2 = 0.0, kfactor = 0.45, ReliefFactor = 0.7, UseReliefFactor = False, selFaceNames = '', MainObject = None,
+            maxExtendGap = 5.0, mingap = 0.1, automiter = True, sketch = None, extendType ="Simple", LengthSpec="Leg"):
 
-  # if sketch is as wall 
+  # if sketch is as wall
   sketches = False
   if sketch :
     if sketch.Shape.Wires[0].isClosed() :
@@ -671,16 +671,26 @@ def smBend(thk, bendR = 1.0, bendA = 90.0, miterA1 = 0.0,miterA2 = 0.0, BendType
   elif BendType == "Material Inside" :
     offset = -(thk + bendR)
     inside = True
-    extLen = extLen + offset
   elif BendType == "Thickness Outside" :
     offset = -bendR
     inside = True
-    extLen = extLen + offset
   elif BendType == "Offset" :
     if offset < 0.0 :
       inside = True
     else :
       inside = False
+
+  if LengthSpec == "Leg":
+      pass
+  elif LengthSpec == "Tangential":
+      if bendA >= 90.0:
+          extLen -= thk + bendR
+      else:
+          extLen -= (bendR + thk) / math.tan(math.radians(90.0 - bendA/2))
+  elif LengthSpec == "Inner Sharp":
+      extLen -= (bendR) / math.tan(math.radians(90.0 - bendA/2))
+  elif LengthSpec == "Outer Sharp":
+      extLen -= (bendR + thk) / math.tan(math.radians(90.0 - bendA/2))
 
   if not(sketches) :
     mainlist, trimedgelist, nogaptrimedgelist = getBendetail(selFaceNames, MainObject, bendR, bendA, flipped, offset, gap1, gap2)
@@ -930,6 +940,8 @@ class SMBendWall:
     obj.addProperty("App::PropertyLength","radius","Parameters",_tip_).radius = 1.0
     _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Length of Wall")
     obj.addProperty("App::PropertyLength","length","Parameters",_tip_).length = 10.0
+    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Type of Length Specification")
+    obj.addProperty("App::PropertyEnumeration", "LengthSpec", "Parameters", _tip_).LengthSpec = ["Leg", "Outer Sharp", "Inner Sharp", "Tangential"]
     _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Gap from Left Side")
     obj.addProperty("App::PropertyDistance","gap1","Parameters",_tip_).gap1 = 0.0
     _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Gap from Right Side")
@@ -1026,6 +1038,10 @@ class SMBendWall:
       _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Offset Bend")
       fp.addProperty("App::PropertyDistance","offset","ParametersEx",_tip_).offset = 0.0
 
+    if (not hasattr(fp,"LengthSpec")):
+        _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Type of Length Specification")
+        fp.addProperty("App::PropertyEnumeration", "LengthSpec", "Parameters", _tip_).LengthSpec = ["Leg", "Outer Sharp", "Inner Sharp", "Tangential"]
+
     if (not hasattr(fp,"ReliefFactor")):
       _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Use Relief Factor")
       fp.addProperty("App::PropertyBool","UseReliefFactor","ParametersRelief",_tip_).UseReliefFactor = False
@@ -1095,13 +1111,13 @@ class SMBendWall:
     #print(gap1_list, gap2_list)
 
     for i in range(len(LengthList)) :
-      s, f = smBend(thk, bendR = fp.radius.Value, bendA = bendAList[i], miterA1 = fp.miterangle1.Value, miterA2 = fp.miterangle2.Value,  
-                    BendType = fp.BendType, flipped = fp.invert, unfold = fp.unfold, extLen = LengthList[i], 
-                    reliefType = fp.reliefType, gap1 = gap1_list[i], gap2 = gap2_list[i], reliefW = fp.reliefw.Value, 
-                    reliefD = fp.reliefd.Value, minReliefgap = fp.minReliefGap.Value, extend1 = extend1_list[i], extend2 = extend2_list[i], 
-                    kfactor = fp.kfactor, offset = fp.offset.Value, ReliefFactor = fp.ReliefFactor, UseReliefFactor = fp.UseReliefFactor, 
-                    automiter = fp.AutoMiter, selFaceNames = face, MainObject = Main_Object, sketch = fp.Sketch, 
-                    mingap = fp.minGap.Value, maxExtendGap = fp.maxExtendDist.Value)
+      s, f = smBend(thk, bendR = fp.radius.Value, bendA = bendAList[i], miterA1 = fp.miterangle1.Value, miterA2 = fp.miterangle2.Value,
+                    BendType = fp.BendType, flipped = fp.invert, unfold = fp.unfold, extLen = LengthList[i],
+                    reliefType = fp.reliefType, gap1 = gap1_list[i], gap2 = gap2_list[i], reliefW = fp.reliefw.Value,
+                    reliefD = fp.reliefd.Value, minReliefgap = fp.minReliefGap.Value, extend1 = extend1_list[i], extend2 = extend2_list[i],
+                    kfactor = fp.kfactor, offset = fp.offset.Value, ReliefFactor = fp.ReliefFactor, UseReliefFactor = fp.UseReliefFactor,
+                    automiter = fp.AutoMiter, selFaceNames = face, MainObject = Main_Object, sketch = fp.Sketch,
+                    mingap = fp.minGap.Value, maxExtendGap = fp.maxExtendDist.Value, LengthSpec = fp.LengthSpec)
       faces = smGetFace(f, s)
       face = faces
       Main_Object = s
