@@ -332,7 +332,7 @@ class SMExtrudeWall:
     Main_Object = fp.baseObject[0].Shape.copy()
     face = fp.baseObject[1]
 
-    s = smExtrude(extLength = fp.length.Value,  gap1 = fp.gap1.Value, gap2 = fp.gap2.Value, subtraction = fp.UseSubtraction,
+    s = smExtrude(extLength = fp.length.Value,  gap1 = fp.gap1.Value, gap2 = fp.gap2.Value, subtraction = fp.UseSubstraction,
                     offset = fp.Offset.Value, refine = fp.Refine, sketch = fp.Sketch, selFaceNames = face, selObject = Main_Object)
     fp.baseObject[0].ViewObject.Visibility = False
     if fp.Sketch :
