@@ -100,8 +100,8 @@ Starting from FreeCAD 0.17 it can be installed via the [Addon Manager](https://g
 
 * V0.2.51 23 Jul 2022:  Several fixes and new features: Thank you all!
   * Add Length Spec feature to set adaptive flange lengths by [@rmu75][rmu75].
-	* Fix smExtrude for cylindrical connecting faces by [@Roy-043][Roy-043].
-	* Fix Face.UseSubstraction typo by [@mangelozzi][mangelozzi].
+  * Fix smExtrude for cylindrical connecting faces by [@Roy-043][Roy-043].
+  * Fix Face.UseSubstraction typo by [@mangelozzi][mangelozzi].
 * V0.2.50 09 Jul 2022:  Moved 'Drawing' to 'TechDraw' for FC0.21 compatibility. Thank you!
 * V0.2.49 03 Jul 2021:  Add SubShapeBinder as source by [@s-light][s-light]. Thank you!
 * V0.2.48 02 May 2021:  Add context menu [@jaisejames][jaisejames]. Thank you!
