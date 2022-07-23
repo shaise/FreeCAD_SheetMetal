@@ -212,7 +212,9 @@ def smExtrude(extLength = 10.0, gap1 = 0.0, gap2 = 0.0, subtraction = False, off
 #    MlenEdge = lenEdge
 #    leng = MlenEdge.Length
     revAxisV.normalize()
-    thkDir = Cface.normalAt(0,0) * -1
+    # Get normal of Cface at p1 to correctly handle cylindrical connecting faces
+    params = Cface.Surface.projectPoint(p1, "LowerDistanceParameters")
+    thkDir = Cface.normalAt(params[0], params[1]) * -1
     FaceDir = selFace.normalAt(0,0)
 
     # if sketch is as wall
