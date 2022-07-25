@@ -98,6 +98,7 @@ Starting from FreeCAD 0.17 it can be installed via the [Addon Manager](https://g
 
 #### Release notes:
 
+* V0.2.52 25 Jul 2022:  Better fix for the UseSubtraction issue. Thank you [@akshimassar][akshimassar]
 * V0.2.51 23 Jul 2022:  Several fixes and new features: Thank you all!
   * Add Length Spec feature to set adaptive flange lengths by [@rmu75][rmu75].
 	* Fix smExtrude for cylindrical connecting faces by [@Roy-043][Roy-043].
@@ -169,6 +170,7 @@ Starting from FreeCAD 0.17 it can be installed via the [Addon Manager](https://g
 [rmu75]: https://github.com/s-light
 [Roy-043]: https://github.com/Roy-043
 [mangelozzi]: https://github.com/mangelozzi
+[akshimassar]: https://github.com/akshimassar
 [30]: https://github.com/shaise/FreeCAD_SheetMetal/issues/30
 [33]: https://github.com/shaise/FreeCAD_SheetMetal/issues/33
 [41]: https://github.com/shaise/FreeCAD_SheetMetal/issues/41

@@ -325,16 +325,20 @@ class SMExtrudeWall:
       _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Wall Sketch")
       fp.addProperty("App::PropertyLink","Sketch","ParametersExt",_tip_)
       _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Use Subtraction")
-      fp.addProperty("App::PropertyBool","UseSubtraction","ParametersExt",_tip_).UseSubtraction = False
-      _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Offset for subtraction")
       fp.addProperty("App::PropertyDistance","Offset","ParametersExt",_tip_).Offset = 0.02
       _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Use Refine")
       fp.addProperty("App::PropertyBool","Refine","ParametersExt",_tip_).Refine = False
+    if (not hasattr(fp, "UseSubtraction")):
+      useSub = False
+      if (hasattr(fp,"UseSubstraction")):
+        useSub = fp.UseSubstraction # compatability with old files
+      _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Use Subtraction")
+      fp.addProperty("App::PropertyBool","UseSubtraction","ParametersExt",_tip_).UseSubtraction = fp.UseSubstraction
     # pass selected object shape
     Main_Object = fp.baseObject[0].Shape.copy()
     face = fp.baseObject[1]
 
-    s = smExtrude(extLength = fp.length.Value,  gap1 = fp.gap1.Value, gap2 = fp.gap2.Value, subtraction = fp.UseSubstraction,
+    s = smExtrude(extLength = fp.length.Value,  gap1 = fp.gap1.Value, gap2 = fp.gap2.Value, subtraction = fp.UseSubtraction,
                     offset = fp.Offset.Value, refine = fp.Refine, sketch = fp.Sketch, selFaceNames = face, selObject = Main_Object)
     fp.baseObject[0].ViewObject.Visibility = False
     if fp.Sketch :
