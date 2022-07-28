@@ -97,7 +97,7 @@ Starting from FreeCAD 0.17 it can be installed via the [Addon Manager](https://g
 * FreeCAD Forum announcement/discussion [thread](https://forum.freecadweb.org/viewtopic.php?f=3&t=60818) 
 
 #### Release notes:
-
+* V0.2.53 28 Jul 2022:  Fix getBendetail and smExtrude for non-planar connecting faces by [@Roy-043][Roy-043].
 * V0.2.52 25 Jul 2022:  Better fix for the UseSubtraction issue. Thank you [@akshimassar][akshimassar]
 * V0.2.51 23 Jul 2022:  Several fixes and new features: Thank you all!
   * Add Length Spec feature to set adaptive flange lengths by [@rmu75][rmu75].
