@@ -360,10 +360,12 @@ def getBendetail(selFaceNames, MainObject, bendR, bendA, flipped, offset, gap1, 
 
     # main Length Edge
     revAxisV.normalize()
-    thkDir = Cface.normalAt(0,0) * -1
+    pThkDir1 = selFace.CenterOfGravity
+    pThkDir2 = lenEdge.Curve.projectPoint(pThkDir1, "NearestPoint")
+    thkDir = pThkDir1.sub(pThkDir2).normalize()
     FaceDir = selFace.normalAt(0,0)
 
-    #make sure the direction verctor is correct in respect to the normal
+    # make sure the direction vector is correct in respect to the normal
     if (thkDir.cross(revAxisV).normalize() - FaceDir).Length < smEpsilon:
      revAxisV = revAxisV * -1
 
@@ -1394,4 +1396,3 @@ class AddWallCommandClass():
     return True
 
 Gui.addCommand('SMMakeWall',AddWallCommandClass())
-

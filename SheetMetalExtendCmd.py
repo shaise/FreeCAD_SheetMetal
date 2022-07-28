@@ -187,7 +187,7 @@ def smExtrude(extLength = 10.0, gap1 = 0.0, gap2 = 0.0, subtraction = False, off
         thk = abs( edge.Length )
         thkEdge = edge
 
-    # find a length edge  =  revolve axis direction
+    # find a length edge
     p0 = thkEdge.valueAt(thkEdge.FirstParameter)
     for lenEdge in selFace.Edges:
       p1 = lenEdge.valueAt(lenEdge.FirstParameter)
@@ -195,10 +195,8 @@ def smExtrude(extLength = 10.0, gap1 = 0.0, gap2 = 0.0, subtraction = False, off
       if lenEdge.isSame(thkEdge):
         continue
       if (p1 - p0).Length < smEpsilon:
-        revAxisV = p2 - p1
         break
       if (p2 - p0).Length < smEpsilon:
-        revAxisV = p1 - p2
         break
 
     # find the large face connected with selected face
@@ -211,10 +209,9 @@ def smExtrude(extLength = 10.0, gap1 = 0.0, gap2 = 0.0, subtraction = False, off
     # Main Length Edge, Extrusion direction
 #    MlenEdge = lenEdge
 #    leng = MlenEdge.Length
-    revAxisV.normalize()
-    # Get normal of Cface at p1 to correctly handle cylindrical connecting faces
-    params = Cface.Surface.projectPoint(p1, "LowerDistanceParameters")
-    thkDir = Cface.normalAt(params[0], params[1]) * -1
+    pThkDir1 = selFace.CenterOfGravity
+    pThkDir2 = lenEdge.Curve.projectPoint(pThkDir1, "NearestPoint")
+    thkDir = pThkDir1.sub(pThkDir2).normalize()
     FaceDir = selFace.normalAt(0,0)
 
     # if sketch is as wall
@@ -611,4 +608,3 @@ class SMExtrudeCommandClass():
     return True
 
 Gui.addCommand('SMExtrudeFace',SMExtrudeCommandClass())
-
