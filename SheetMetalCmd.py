@@ -360,9 +360,13 @@ def getBendetail(selFaceNames, MainObject, bendR, bendA, flipped, offset, gap1, 
 
     # main Length Edge
     revAxisV.normalize()
-    pThkDir1 = selFace.CenterOfGravity
-    pThkDir2 = lenEdge.Curve.projectPoint(pThkDir1, "NearestPoint")
-    thkDir = pThkDir1.sub(pThkDir2).normalize()
+    if hasattr(lenEdge.Curve, "projectPoint") :
+      pThkDir1 = selFace.CenterOfGravity
+      pThkDir2 = lenEdge.Curve.projectPoint(pThkDir1, "NearestPoint")
+      thkDir = pThkDir1.sub(pThkDir2).normalize()
+    else:
+      thkDir = Cface.normalAt(0,0) * -1
+      
     FaceDir = selFace.normalAt(0,0)
 
     # make sure the direction vector is correct in respect to the normal
