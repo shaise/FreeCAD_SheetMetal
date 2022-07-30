@@ -209,15 +209,9 @@ def smExtrude(extLength = 10.0, gap1 = 0.0, gap2 = 0.0, subtraction = False, off
     # Main Length Edge, Extrusion direction
 #    MlenEdge = lenEdge
 #    leng = MlenEdge.Length
-    if hasattr(lenEdge.Curve, "projectPoint"):
-      pThkDir1 = selFace.CenterOfGravity
-      pThkDir2 = lenEdge.Curve.projectPoint(pThkDir1, "NearestPoint")
-      thkDir = pThkDir1.sub(pThkDir2).normalize()
-    else:
-      # Get normal of Cface at p1 to correctly handle cylindrical connecting faces
-      params = Cface.Surface.projectPoint(p1, "LowerDistanceParameters")
-      thkDir = Cface.normalAt(params[0], params[1]) * -1
-      
+    pThkDir1 = selFace.CenterOfGravity
+    pThkDir2 = lenEdge.Curve.value(lenEdge.Curve.parameter(pThkDir1))
+    thkDir = pThkDir1.sub(pThkDir2).normalize()
     FaceDir = selFace.normalAt(0,0)
 
     # if sketch is as wall
