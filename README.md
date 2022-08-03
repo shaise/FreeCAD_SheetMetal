@@ -97,6 +97,7 @@ Starting from FreeCAD 0.17 it can be installed via the [Addon Manager](https://g
 * FreeCAD Forum announcement/discussion [thread](https://forum.freecadweb.org/viewtopic.php?f=3&t=60818) 
 
 #### Release notes:
+* V0.2.55 03 Aug 2022:  Add more backward compatability to pr #242 by [@Syres916][Syres916].
 * V0.2.54 30 Jul 2022:  Fix version 20 compatability with pr #242 by [@Roy-043][Roy-043].
 * V0.2.53 28 Jul 2022:  Fix getBendetail and smExtrude for non-planar connecting faces by [@Roy-043][Roy-043].
 * V0.2.52 25 Jul 2022:  Better fix for the UseSubtraction issue. Thank you [@akshimassar][akshimassar]
@@ -172,6 +173,7 @@ Starting from FreeCAD 0.17 it can be installed via the [Addon Manager](https://g
 [Roy-043]: https://github.com/Roy-043
 [mangelozzi]: https://github.com/mangelozzi
 [akshimassar]: https://github.com/akshimassar
+[Syres916]: https://github.com/Syres916
 [30]: https://github.com/shaise/FreeCAD_SheetMetal/issues/30
 [33]: https://github.com/shaise/FreeCAD_SheetMetal/issues/33
 [41]: https://github.com/shaise/FreeCAD_SheetMetal/issues/41
