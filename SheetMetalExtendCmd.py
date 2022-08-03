@@ -209,7 +209,7 @@ def smExtrude(extLength = 10.0, gap1 = 0.0, gap2 = 0.0, subtraction = False, off
     # Main Length Edge, Extrusion direction
 #    MlenEdge = lenEdge
 #    leng = MlenEdge.Length
-    pThkDir1 = selFace.CenterOfGravity
+    pThkDir1 = selFace.CenterOfMass
     pThkDir2 = lenEdge.Curve.value(lenEdge.Curve.parameter(pThkDir1))
     thkDir = pThkDir1.sub(pThkDir2).normalize()
     FaceDir = selFace.normalAt(0,0)
