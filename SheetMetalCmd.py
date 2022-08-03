@@ -360,7 +360,7 @@ def getBendetail(selFaceNames, MainObject, bendR, bendA, flipped, offset, gap1, 
 
     # main Length Edge
     revAxisV.normalize()
-    pThkDir1 = selFace.CenterOfGravity
+    pThkDir1 = selFace.CenterOfMass
     pThkDir2 = lenEdge.Curve.value(lenEdge.Curve.parameter(pThkDir1))
     thkDir = pThkDir1.sub(pThkDir2).normalize()
     FaceDir = selFace.normalAt(0,0)
