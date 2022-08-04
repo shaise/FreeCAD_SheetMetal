@@ -33,6 +33,7 @@ smEpsilon = 0.0000001
 
 import BOPTools.SplitFeatures, BOPTools.JoinFeatures
 import SheetMetalBendSolid
+import SheetMetalBaseCmd
 
 def smWarnDialog(msg):
     diag = QtGui.QMessageBox(QtGui.QMessageBox.Warning, 'Error in macro MessageBox', msg)
@@ -556,11 +557,7 @@ class AddCornerReliefCommandClass():
     view = Gui.ActiveDocument.ActiveView
     activeBody = None
     selobj = Gui.Selection.getSelectionEx()[0].Object
-    selObjShapeCol = selobj.ViewObject.ShapeColor
-    selObjShapeTsp = selobj.ViewObject.Transparency
-    selObjDiffuseCol = selobj.ViewObject.DiffuseColor
-    # TODO Make the individual face colors be retained
-    # needDiffuseColorExtension = ( len(selobj.ViewObject.DiffuseColor) < len(selobj.Shape.Faces) )
+    viewConf = SheetMetalBaseCmd.GetViewConfig(selobj)
     if hasattr(view,'getActiveObject'):
       activeBody = view.getActiveObject('pdbody')
     if not smIsOperationLegal(activeBody, selobj):
@@ -570,18 +567,13 @@ class AddCornerReliefCommandClass():
       a = doc.addObject("Part::FeaturePython","CornerRelief")
       SMCornerRelief(a)
       SMCornerReliefVP(a.ViewObject)
-      a.ViewObject.ShapeColor = selObjShapeCol
-      a.ViewObject.Transparency = selObjShapeTsp
-      a.ViewObject.DiffuseColor = selObjDiffuseCol
     else:
       #FreeCAD.Console.PrintLog("found active body: " + activeBody.Name)
       a = doc.addObject("PartDesign::FeaturePython","CornerRelief")
       SMCornerRelief(a)
       SMCornerReliefPDVP(a.ViewObject)
       activeBody.addObject(a)
-      a.ViewObject.ShapeColor = selObjShapeCol
-      a.ViewObject.Transparency = selObjShapeTsp
-      a.ViewObject.DiffuseColor = selObjDiffuseCol
+    SheetMetalBaseCmd.SetViewConfig(a, viewConf)
     doc.recompute()
     doc.commitTransaction()
     return

@@ -27,6 +27,7 @@ from FreeCAD import Gui
 from PySide import QtCore, QtGui
 
 import FreeCAD, FreeCADGui, Part, os
+import SheetMetalBaseCmd
 __dir__ = os.path.dirname(__file__)
 iconPath = os.path.join( __dir__, 'Resources', 'icons' )
 smEpsilon = 0.0000001
@@ -345,11 +346,7 @@ class AddJunctionCommandClass():
     view = Gui.ActiveDocument.ActiveView
     activeBody = None
     selobj = Gui.Selection.getSelectionEx()[0].Object
-    selObjShapeCol = selobj.ViewObject.ShapeColor
-    selObjShapeTsp = selobj.ViewObject.Transparency
-    selObjDiffuseCol = selobj.ViewObject.DiffuseColor
-    # TODO Make the individual face colors be retained
-    # needDiffuseColorExtension = ( len(selobj.ViewObject.DiffuseColor) < len(selobj.Shape.Faces) )
+    viewConf = SheetMetalBaseCmd.GetViewConfig(selobj)
     if hasattr(view,'getActiveObject'):
       activeBody = view.getActiveObject('pdbody')
     if not smIsOperationLegal(activeBody, selobj):
@@ -359,18 +356,13 @@ class AddJunctionCommandClass():
       a = doc.addObject("Part::FeaturePython","Junction")
       SMJunction(a)
       SMJViewProviderTree(a.ViewObject)
-      a.ViewObject.ShapeColor = selObjShapeCol
-      a.ViewObject.Transparency = selObjShapeTsp
-      a.ViewObject.DiffuseColor = selObjDiffuseCol
     else:
       #FreeCAD.Console.PrintLog("found active body: " + activeBody.Name)
       a = doc.addObject("PartDesign::FeaturePython","Junction")
       SMJunction(a)
       SMJViewProviderFlat(a.ViewObject)
       activeBody.addObject(a)
-      a.ViewObject.ShapeColor = selObjShapeCol
-      a.ViewObject.Transparency = selObjShapeTsp
-      a.ViewObject.DiffuseColor = selObjDiffuseCol
+    SheetMetalBaseCmd.SetViewConfig(a, viewConf)
     FreeCADGui.Selection.clearSelection()
     doc.recompute()
     doc.commitTransaction()

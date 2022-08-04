@@ -53,6 +53,20 @@ def smIsOperationLegal(body, selobj):
         return False
     return True
 
+def GetViewConfig(obj):
+  viewconf = {}
+  viewconf['objShapeCol'] = obj.ViewObject.ShapeColor
+  viewconf['objShapeTsp'] = obj.ViewObject.Transparency
+  viewconf['objDiffuseCol'] = obj.ViewObject.DiffuseColor
+  # TODO Make the individual face colors be retained
+  # needDiffuseColorExtension = ( len(selobj.ViewObject.DiffuseColor) < len(selobj.Shape.Faces) )
+  return viewconf
+
+def SetViewConfig(obj, viewconf):
+  obj.ViewObject.ShapeColor = viewconf['objShapeCol']
+  obj.ViewObject.Transparency = viewconf['objShapeTsp']
+  obj.ViewObject.DiffuseColor = viewconf['objDiffuseCol']
+
 def modifiedWire(WireList, radius, thk, length, normal, Side, sign) :
   # If sketch is one type, make a face by extruding & offset it to correct position
   wire_extr = WireList.extrude(normal * sign * length)
