@@ -554,14 +554,11 @@ class SheetTree(object):
     for theWire in wires_e_lists:
       for theEdge in theWire:
         analyVert = theEdge.Vertexes[0]
-        search_list = []
-        for x in self.index_list:
-          search_list.append(x)
-        for i in search_list:
+        for i in self.index_list:
           for lookVert in self.f_list[i].Vertexes:
             if equal_vertex(lookVert, analyVert):
               if len(theEdge.Vertexes) == 1: # Edge is a circle
-                if not self.is_sheet_edge_face(theEdge, theNode):
+                if not self.is_sheet_edge_face(theEdge, theNode, i):
                   found_indices.append(i) # found a node face
                   theNode.child_idx_lists.append([i,theEdge])
                   #self.index_list.remove(i) # remove this face from the index_list
@@ -570,7 +567,7 @@ class SheetTree(object):
                 nextVert = theEdge.Vertexes[1]
                 for looknextVert in self.f_list[i].Vertexes:
                   if equal_vertex(looknextVert, nextVert):
-                    if not self.is_sheet_edge_face(theEdge, theNode):
+                    if not self.is_sheet_edge_face(theEdge, theNode, i):
                       found_indices.append(i) # found a node face
                       theNode.child_idx_lists.append([i,theEdge])
                       #self.index_list.remove(i) # remove this face from the index_list
@@ -578,7 +575,7 @@ class SheetTree(object):
     FreeCAD.Console.PrintLog("found_indices: " + str(found_indices) + "\n")
 
 
-  def is_sheet_edge_face(self, ise_edge, tree_node): # ise_edge: IsSheetEdge_edge
+  def is_sheet_edge_face(self, ise_edge, tree_node, index): # ise_edge: IsSheetEdge_edge
     # Idea: look at properties of neighbor face
     # Look at edges with distance of sheet-thickness.
     #    if found and surface == cylinder, check if it could be a bend-node.
@@ -587,28 +584,15 @@ class SheetTree(object):
     # need to look also at surface!
     # A sheet edge face with more as 4 edges, is common to more than 1 node.
 
-    # get the face which has a common edge with ise_edge
-    the_index = None
     has_sheet_distance_vertex = False
-    for i in self.index_list:
-      for sf_edge in self.f_list[i].Edges:
-        if sf_edge.isSame(ise_edge):
-          the_index = i
-          #print 'got edge face: Face', str(i+1)
-          break
-      if the_index is not None:
-        break
 
     # Simple strategy applied: look if the connecting face has vertexes
     # with sheet-thickness distance to the top face.
     # FIXME: this will fail with sharpened sheet edges with two faces
     # between top and bottom.
-    if the_index is not None:
-      distVerts = 0
-      vertList = []
-      F_type = str(self.f_list[tree_node.idx].Surface)
+    if index is not None:
       # now we need to search for vertexes with sheet_thickness_distance
-      for F_vert in self.f_list[i].Vertexes:
+      for F_vert in self.f_list[index].Vertexes:
         #vDist = self.getDistanceToFace(F_vert, tree_node)
         #if vDist > maxDist: maxDist = vDist
         #if vDist < minDist: minDist = vDist
@@ -617,13 +601,13 @@ class SheetTree(object):
 
         if self.isVertOpposite(F_vert, tree_node):
           has_sheet_distance_vertex = True
-          if len(self.f_list[i].Edges)<5:
-            tree_node.nfIndexes.append(i)
-            self.index_list.remove(i)
+          if len(self.f_list[index].Edges)<5:
+            tree_node.nfIndexes.append(index)
+            self.index_list.remove(index)
             #Part.show(self.f_list[i])
           else:
             # need to cut the face at the ends of ise_edge
-            self.divideEdgeFace(i, ise_edge, F_vert, tree_node)
+            self.divideEdgeFace(index, ise_edge, F_vert, tree_node)
           break
 
     else:
@@ -1288,7 +1272,11 @@ class SheetTree(object):
       P_node.child_list.append(newNode)
     return newNode
 
-
+  # Method to check if two edges are the same, i.e. they have the same vertices.
+  # This is needed because sometimes an edge may be defined twice but with vertices in a different order, thus edge1.isSame(edge2) may fail even though it is the same edge.
+  # TODO: Right now this works only if the edge has two vertices, to be improved later if needed.
+  def same_edges(self, edge1, edge2):
+    return edge1.isSame(edge2) or (len(edge1.Vertexes) == 2 and len(edge2.Vertexes) == 2 and edge1.firstVertex().isSame(edge2.lastVertex()) and edge2.firstVertex().isSame(edge1.lastVertex()))
 
   def Bend_analysis(self, face_idx, parent_node = None, parent_edge = None):
     # This functions traverses the shape in order to build the bend-tree
@@ -1306,7 +1294,7 @@ class SheetTree(object):
         #for n_edge in self.__Shape.Faces[face_idx].Edges:
         for n_edge in n_wire.Edges:
           if parent_edge:
-            if not parent_edge.isSame(n_edge):
+            if not self.same_edges(parent_edge, n_edge):
               #edge_list.append(n_edge)
               wires_edge_lists[wire_idx].append(n_edge)
             #
