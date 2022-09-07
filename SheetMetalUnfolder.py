@@ -554,10 +554,7 @@ class SheetTree(object):
     for theWire in wires_e_lists:
       for theEdge in theWire:
         analyVert = theEdge.Vertexes[0]
-        search_list = []
-        for x in self.index_list:
-          search_list.append(x)
-        for i in search_list:
+        for i in self.index_list:
           for lookVert in self.f_list[i].Vertexes:
             if equal_vertex(lookVert, analyVert):
               if len(theEdge.Vertexes) == 1: # Edge is a circle
@@ -592,7 +589,7 @@ class SheetTree(object):
     has_sheet_distance_vertex = False
     for i in self.index_list:
       for sf_edge in self.f_list[i].Edges:
-        if sf_edge.isSame(ise_edge):
+        if self.same_edges(sf_edge, ise_edge):
           the_index = i
           #print 'got edge face: Face', str(i+1)
           break
@@ -604,9 +601,6 @@ class SheetTree(object):
     # FIXME: this will fail with sharpened sheet edges with two faces
     # between top and bottom.
     if the_index is not None:
-      distVerts = 0
-      vertList = []
-      F_type = str(self.f_list[tree_node.idx].Surface)
       # now we need to search for vertexes with sheet_thickness_distance
       for F_vert in self.f_list[i].Vertexes:
         #vDist = self.getDistanceToFace(F_vert, tree_node)
@@ -635,6 +629,11 @@ class SheetTree(object):
 
     return has_sheet_distance_vertex
 
+  # Method to check if two edges are the same, i.e. they have the same vertices.
+  # This is needed because sometimes an edge may be defined twice but with vertices in a different order, thus edge1.isSame(edge2) may fail even though it is the same edge
+  # Right now this works only if the edge has two vertices, to be improved later if needed.
+  def same_edges(self, edge1, edge2):
+    return edge1.isSame(edge2) or (len(edge1.Vertexes) == 2 and len(edge2.Vertexes) == 2 and edge1.firstVertex().isSame(edge2.lastVertex()) and edge2.firstVertex().isSame(edge1.lastVertex()))
 
   def isVertOpposite(self, theVert, theNode):
     F_type = str(get_surface(self.f_list[theNode.idx]))
@@ -1306,7 +1305,7 @@ class SheetTree(object):
         #for n_edge in self.__Shape.Faces[face_idx].Edges:
         for n_edge in n_wire.Edges:
           if parent_edge:
-            if not parent_edge.isSame(n_edge):
+            if not self.same_edges(parent_edge, n_edge):
               #edge_list.append(n_edge)
               wires_edge_lists[wire_idx].append(n_edge)
             #
