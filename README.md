@@ -101,7 +101,7 @@ Starting from FreeCAD 0.17 it can be installed via the [Addon Manager](https://g
 * V0.2.57 07 Sep 2022:  Fix unfold issue with compound holes by [@chappatted][chappatted]. 
 * V0.2.56 04 Aug 2022:  Fix issue #206 (object color changes by every sheetmetal command) by [@Syres916][Syres916]. 
 * V0.2.55 03 Aug 2022:  Add more backward compatibility to pr #242 by [@Syres916][Syres916]. 
-* V0.2.54 30 Jul 2022:  Fix version 20 compatability with pr #242 by [@Roy-043][Roy-043].
+* V0.2.54 30 Jul 2022:  Fix version 20 compatibility with pr #242 by [@Roy-043][Roy-043].
 * V0.2.53 28 Jul 2022:  Fix getBendetail and smExtrude for non-planar connecting faces by [@Roy-043][Roy-043].
 * V0.2.52 25 Jul 2022:  Better fix for the UseSubtraction issue. Thank you [@akshimassar][akshimassar]
 * V0.2.51 23 Jul 2022:  Several fixes and new features: Thank you all!
