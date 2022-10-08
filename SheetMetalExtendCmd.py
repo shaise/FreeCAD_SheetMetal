@@ -329,7 +329,7 @@ class SMExtrudeWall:
     if (not hasattr(fp, "UseSubtraction")):
       useSub = False
       if (hasattr(fp,"UseSubstraction")):
-        useSub = fp.UseSubstraction # compatability with old files
+        useSub = fp.UseSubstraction # compatibility with old files
       _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Use Subtraction")
       fp.addProperty("App::PropertyBool","UseSubtraction","ParametersExt",_tip_).UseSubtraction = fp.UseSubstraction
     # pass selected object shape
