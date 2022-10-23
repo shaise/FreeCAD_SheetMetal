@@ -103,7 +103,10 @@ from FreeCAD import Base
 from FreeCAD import Gui
 import DraftVecUtils, math, time
 import Draft
-import TechDraw
+try:
+    from TechDraw import projectEx
+except:
+    from Drawing import projectEx
 from lookup import get_val_from_range
 from engineering_mode import engineering_mode_enabled
 
@@ -2895,11 +2898,11 @@ class SMUnfoldTaskPanel:
           a.Shape = s
           if genSketchChecked:
             edges = []
-            grp1 = TechDraw.projectEx(s,norm)
+            grp1 = projectEx(s,norm)
             edges.append(grp1[0])
             if len(foldLines) > 0:
               co = Part.makeCompound(foldLines)
-              grp2 = TechDraw.projectEx(co, norm)
+              grp2 = projectEx(co, norm)
               if not bendSketchChecked:
                 edges.append(grp2[0])
             self.generateSketch(edges, "Unfold_Sketch", self.genColor.colorF())
