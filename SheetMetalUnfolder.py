@@ -444,7 +444,6 @@ class SheetTree(object):
       #self.error_code = 5
       #self.failed_face_idx = f_idx
 
-
     theVol = self.__Shape.Volume
     if theVol < 0.0001:
       FreeCAD.Console.PrintLog("Shape is not a real 3D-object or to small for a metal-sheet!" + "\n")
@@ -452,86 +451,60 @@ class SheetTree(object):
       self.failed_face_idx = f_idx
 
     else:
+      face = self.__Shape.Faces[f_idx]
+
       # Make a first estimate of the thickness
       estimated_thickness = theVol/(self.__Shape.Area / 2.0)
       FreeCAD.Console.PrintLog( "approximate Thickness: " + str(estimated_thickness) + "\n")
-      # Measure the real thickness of the initial face:
-      # Use Orientation and Axis to make a measurement vector
-
 
       if hasattr(self.__Shape.Faces[f_idx],'Surface'):
         # Part.show(self.__Shape.Faces[f_idx])
         # print 'the object is a face! vertices: ', len(self.__Shape.Faces[f_idx].Vertexes)
-        F_type = self.__Shape.Faces[f_idx].Surface
-        # FIXME: through an error, if not Plane Object
-        FreeCAD.Console.PrintLog('It is a: ' + str(F_type) + '\n')
-        FreeCAD.Console.PrintLog('Orientation: ' + str(self.__Shape.Faces[f_idx].Orientation) + '\n')
+        # F_type = self.__Shape.Faces[f_idx].Surface
+        # FIXME: throw an error, if not Plane Object
 
-        # Need a point on the surface to measure the thickness.
-        # Sheet edges could be sloping, so there is a danger to measure
-        # right at the edge.
-        # Try with Arithmetic mean of plane vertices
-        m_vec = Base.Vector(0.0,0.0,0.0) # calculating a mean vector
-        for Vvec in self.__Shape.Faces[f_idx].Vertexes:
-            #m_vec = m_vec.add(Base.Vector(Vvec.X, Vvec.Y, Vvec.Z))
-            m_vec = m_vec.add(Vvec.Point)
-        mvec = m_vec.multiply(1.0/len(self.__Shape.Faces[f_idx].Vertexes))
-        FreeCAD.Console.PrintLog("mvec: " + str(mvec) + "\n")
+        self.__thickness = self.thickness(face, f_idx)
 
-        #if hasattr(self.__Shape.Faces[f_idx].Surface,'Position'):
-          #s_Posi = self.__Shape.Faces[f_idx].Surface.Position
-          #k = 0
-          # while k < len(self.__Shape.Faces[f_idx].Vertexes):
-          # FIXME: what if measurepoint is outside?
-
-        if self.__Shape.isInside(mvec, 0.00001, True):
-          measure_pos = mvec
-          gotValidMeasurePosition = True
-        else:
-          gotValidMeasurePosition = False
-          for pvert in self.__Shape.Faces[f_idx].OuterWire.Vertexes:
-            #pvert = self.__Shape.Faces[f_idx].Vertexes[k]
-            pvec = Base.Vector(pvert.X, pvert.Y, pvert.Z)
-            shiftvec =  mvec.sub(pvec)
-            shiftvec = shiftvec.normalize()*2.0*estimated_thickness
-            measure_pos = pvec.add(shiftvec)
-            if self.__Shape.isInside(measure_pos, 0.00001, True):
-              gotValidMeasurePosition = True
-              break
-
-        # Description: Checks if a point is inside a solid with a certain tolerance.
-        # If the 3rd parameter is True a point on a face is considered as inside
-        #if not self.__Shape.isInside(measure_pos, 0.00001, True):
-        if not gotValidMeasurePosition:
-          FreeCAD.Console.PrintLog("Starting measure_pos for thickness measurement is outside!\n")
-          self.error_code = 2
-          self.failed_face_idx = f_idx
-
-
-        surface = get_surface(self.__Shape.Faces[f_idx])
-        s_Axis =  surface.Axis
-        s_Posi = surface.Position
-        # print 'We have a position: ', s_Posi
-        s_Axismp = Base.Vector(s_Axis.x, s_Axis.y, s_Axis.z).multiply(2.0*estimated_thickness)
-        # Part.show(Meassure_axis)
-        Meassure_axis = Part.makeLine(measure_pos,measure_pos.sub(s_Axismp))
-        ext_Vec = Base.Vector(-s_Axis.x, -s_Axis.y, -s_Axis.z)
-
-        lostShape = self.__Shape.copy()
-        lLine = Meassure_axis.common(lostShape)
-        lLine = Meassure_axis.common(self.__Shape)
-        FreeCAD.Console.PrintLog("lLine number edges: " + str(len(lLine.Edges)) + "\n")
-        measVert = Part.Vertex(measure_pos)
-        for mEdge in lLine.Edges:
-          if equal_vertex(mEdge.Vertexes[0], measVert) or equal_vertex(mEdge.Vertexes[1], measVert):
-            self.__thickness = mEdge.Length
-
-        # self.__thickness = lLine.Length
         if (self.__thickness < estimated_thickness) or (self.__thickness > 1.9 * estimated_thickness):
           self.error_code = 3
           self.failed_face_idx = f_idx
           FreeCAD.Console.PrintLog("estimated thickness: " + str(estimated_thickness) + " measured thickness: " + str(self.__thickness) + "\n")
-          Part.show(lLine, 'Measurement_Thickness_trial')
+
+  # return the thickness of the sheet, given a face and its index
+  # thickness is computed by finding the opposite face and computing the distance between the face and the opposite face
+  def thickness(self, face, face_index):
+    normal, uv = self.face_normal(face)
+    min_distance = 0.0
+
+    # iterate on all faces to try to find the opposite face
+    for i, other_face in enumerate(self.__Shape.Faces):
+      if i != face_index:
+        # the opposite face normal must be parallel to the face normal, and pointing in the opposite direction
+        # thus the dot product of the normals must be -1
+        other_normal = self.face_normal(other_face)[0]
+        dot = normal.dot(other_normal)
+
+        if math.isclose(dot, -1.0):  # we use isclose to avoid numerical precision problems
+          # the opposite face must be in the opposite direction of the normal
+          # again we use the dot product to check this, using the normal and the vector from the face to the opposite face
+          point = face.Vertexes[0].Point
+          other_point = other_face.Vertexes[0].Point
+          dot = normal.dot(other_point - point)
+
+          if dot < 0.0:
+            # we found an opposite face, we can compute the distance, and if it's the shortest one then we assume that it's the thickness
+            distance = other_face.Surface.projectPoint(face.valueAt(uv[0], uv[1]), "Distance")[0]
+
+            if (min_distance == 0.0 or distance < min_distance) and not math.isclose(distance, 0.0, abs_tol=0.000001):  # we use isclose to avoid numerical precision problems
+              min_distance = distance
+
+    return min_distance
+
+  # return the normal of a face as well as the [u,v] coordinates used for the computation
+  def face_normal(self, face):
+    uv = face.Surface.parameter(face.CenterOfMass)
+
+    return face.normalAt(uv[0], uv[1]), uv
 
 
   def get_node_faces(self, theNode, wires_e_lists):
