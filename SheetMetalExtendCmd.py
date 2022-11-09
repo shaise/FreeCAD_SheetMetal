@@ -279,8 +279,6 @@ def smExtrude(extLength = 10.0, gap1 = 0.0, gap2 = 0.0, subtraction = False, off
     # Fuse All solid created to Split solid
     if len(solidlist) > 0 :
       resultSolid = SplitSolid1.fuse(solidlist[0])
-      if refine :
-        resultSolid = resultSolid.removeSplitter()
       #Part.show(resultSolid,"resultSolid")
 
       # Merge final list
@@ -289,6 +287,8 @@ def smExtrude(extLength = 10.0, gap1 = 0.0, gap2 = 0.0, subtraction = False, off
       finalShape = finalShape.fuse(resultSolid)
 
   #Part.show(finalShape,"finalShape")
+  if refine :
+    finalShape = finalShape.removeSplitter()
   return finalShape
 
 class SMExtrudeWall:
