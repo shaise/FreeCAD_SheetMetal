@@ -1418,7 +1418,7 @@ class SheetTree(object):
       return False
 
     # we use dot product with face normals to check if they are parallel
-    dot = self.face_normal(next_faces[0])[0].dot(self.face_normal(parent_face)[0])
+    dot = self.face_normal(next_faces[0]).dot(self.face_normal(parent_face))
 
     if math.isclose(dot, 1) or math.isclose(dot, -1):
       # since there is an intermediate face parallel to the parent face, this is a counterbore, let's skip this face
@@ -1519,6 +1519,12 @@ class SheetTree(object):
           return i
 
     return None
+
+  # Compute the normal of a face
+  def face_normal(self, face):
+    uv = face.Surface.parameter(face.CenterOfGravity)
+
+    return face.normalAt(uv[0], uv[1])
 
   def searchNode(self, theIdx, sNode):
     # search for a Node with theIdx in sNode.idx
