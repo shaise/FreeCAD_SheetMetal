@@ -97,6 +97,10 @@ Starting from FreeCAD 0.17 it can be installed via the [Addon Manager](https://g
 * FreeCAD Forum announcement/discussion [thread](https://forum.freecadweb.org/viewtopic.php?f=3&t=60818) 
 
 #### Release notes: 
+* V0.2.59 11 Nov 2022:  Make unfolder sketch work with linkstage version by [@Syres916][Syres916].  
+                      - Fix refine function when multiple edges selected  
+                      - Make unfolder work with counter bore holes by [@chappatted][chappatted]. 
+                      - Fix typos by [@luzpaz]luzpaz.  
 * V0.2.58 06 Oct 2022:  respect 'midplane' and 'reverse' options by [@alexneufeld][alexneufeld]. 
 * V0.2.57 07 Sep 2022:  Fix unfold issue with compound holes by [@chappatted][chappatted]. 
 * V0.2.56 04 Aug 2022:  Fix issue #206 (object color changes by every sheetmetal command) by [@Syres916][Syres916]. 
@@ -179,6 +183,7 @@ Starting from FreeCAD 0.17 it can be installed via the [Addon Manager](https://g
 [Syres916]: https://github.com/Syres916
 [chappatted]: https://github.com/chappatted
 [alexneufeld]: https://github.com/alexneufeld
+[luzpaz]: https://github.com/luzpaz
 [30]: https://github.com/shaise/FreeCAD_SheetMetal/issues/30
 [33]: https://github.com/shaise/FreeCAD_SheetMetal/issues/33
 [41]: https://github.com/shaise/FreeCAD_SheetMetal/issues/41
