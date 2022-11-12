@@ -407,6 +407,15 @@ def get_surface(face):
   return surface
 
 class SheetTree(object):
+
+  # Class representing a wire to replace in the unfolded shape. During tree creation, some features are detected
+  # (e.g. countersink and counterbore holes) and are replaced later when the unfolded shape is created.
+  class WireReplacement:
+    def __init__(self, face_idx, wire_idx, new_wire):
+      self.face_idx = face_idx
+      self.wire_idx = wire_idx
+      self.new_wire = new_wire
+
   def __init__(self, TheShape, f_idx, k_factor_lookup):
     self.cFaceTol = 0.002 # tolerance to detect counter-face vertices
     # this high tolerance was needed for more real parts
@@ -415,6 +424,7 @@ class SheetTree(object):
     self.error_code = None
     self.failed_face_idx = None
     self.k_factor_lookup = k_factor_lookup
+    self.wire_replacements = []  # list of wires to be replaced during unfold shape creation
 
     if not self.__Shape.isValid():
       FreeCAD.Console.PrintLog("The shape is not valid!" + "\n")
@@ -570,11 +580,24 @@ class SheetTree(object):
                 nextVert = theEdge.Vertexes[1]
                 for looknextVert in self.f_list[i].Vertexes:
                   if equal_vertex(looknextVert, nextVert):
-                    if not self.is_sheet_edge_face(theEdge, theNode):
-                      found_indices.append(i) # found a node face
-                      theNode.child_idx_lists.append([i,theEdge])
-                      #self.index_list.remove(i) # remove this face from the index_list
-                      #Part.show(self.f_list[i])
+                    # Special case to handle : sometimes, holes are defined as two semicircles, thus there are 2 edges and 2 interior faces for the hole.
+                    # Since both edges have the exact same vertices, this algorithm would bind each interior face with each edge, so we'd get something
+                    # like that : [[face1, edge1], [face2, edge2], [face1, edge2], [face2, edge1]]. Here the last two pairs are not valid, thus we remove
+                    # them by checking that the edge is part of the face before adding the pair to the list.
+                    edge_faces = self.__Shape.ancestorsOfType(theEdge, Part.Face)
+                    found = False
+
+                    for edge_face in edge_faces:
+                      if edge_face.isSame(self.f_list[i]):
+                        found = True
+                        break
+
+                    if found:
+                      if not self.is_sheet_edge_face(theEdge, theNode):
+                        found_indices.append(i) # found a node face
+                        theNode.child_idx_lists.append([i,theEdge])
+                        #self.index_list.remove(i) # remove this face from the index_list
+                        #Part.show(self.f_list[i])
     FreeCAD.Console.PrintLog("found_indices: " + str(found_indices) + "\n")
 
 
@@ -1318,35 +1341,190 @@ class SheetTree(object):
       if parent_node:
         FreeCAD.Console.PrintLog(" Parent Face" + str(parent_node.idx + 1) + "\n")
       FreeCAD.Console.PrintLog("The list: "+ str(self.index_list) + "\n")
-      t_node = self.make_new_face_node(face_idx, parent_node, parent_edge, wires_edge_lists)
+      parent_node = self.make_new_face_node(face_idx, parent_node, parent_edge, wires_edge_lists)
       # Need also the edge_list in the node!
       FreeCAD.Console.PrintLog("The list after make_new_face_node: " + str(self.index_list) + "\n")
 
       # in the new code, only the list of child faces will be analyzed.
       removalList = []
-      for child_info in t_node.child_idx_lists:
+
+      for child_index, child_info in enumerate(parent_node.child_idx_lists):
         if child_info[0] in self.index_list:
-          FreeCAD.Console.PrintLog("child in list: "+ str(child_info[0]) + "\n")
-          self.Bend_analysis(child_info[0], t_node, child_info[1])
+          child_face_idx = child_info[0]
+          child_face = self.__Shape.Faces[child_face_idx]
+          edge = child_info[1]
+
+          if not self.handle_hole(parent_node, face_idx, edge, child_face, child_index):
+            self.Bend_analysis(child_face_idx, parent_node, edge)
         else:
           FreeCAD.Console.PrintLog("remove child from List: " + str(child_info[0]) + "\n")
-          t_node.seam_edges.append(child_info[1]) # give Information to the node, that it has a seam.
-          FreeCAD.Console.PrintLog("node faces before: " + str(t_node.nfIndexes) + "\n")
+          parent_node.seam_edges.append(child_info[1]) # give Information to the node, that it has a seam.
+          FreeCAD.Console.PrintLog("node faces before: " + str(parent_node.nfIndexes) + "\n")
           # do not make Faces at a detected seam!
           # self.makeSeamFace(child_info[1], t_node)
           removalList.append(child_info)
-          FreeCAD.Console.PrintLog("node faces with seam: "+ str(t_node.nfIndexes) + "\n")
+          FreeCAD.Console.PrintLog("node faces with seam: "+ str(parent_node.nfIndexes) + "\n")
           otherSeamNode = self.searchNode(child_info[0], self.root)
           FreeCAD.Console.PrintLog("counterface on otherSeamNode: Face" + str(otherSeamNode.c_face_idx+1) + "\n")
           # do not make Faces at a detected seam!
           # self.makeSeamFace(child_info[1], otherSeamNode)
       for seams in removalList:
-        t_node.child_idx_lists.remove(seams)
+        parent_node.child_idx_lists.remove(seams)
     else:
       FreeCAD.Console.PrintError('got error code: '+ str(self.error_code) + ' at Face'+ str(self.failed_face_idx+1) + "\n")
 
+  # Check if a face is a hole, and handle countersink and counterbore cases.
+  # parent_node: The node of the top face of the hole
+  # parent_face_idx: The index of the top face of the hole
+  # edge: the edge shared by parent and child faces
+  # child_face: the supposedly lateral face of the hole
+  # child_index: the index of the child in the parent_node
+  def handle_hole(self, parent_node, parent_face_idx, edge, child_face, child_index):
+    # if child face is not cylindrical it can't be a hole
+    if not self.is_cylindrical_face(child_face):
+      return False
 
+    # if edge has more than 2 vertices it can't be a hole
+    if len(edge.Vertexes) > 2:
+      return False
 
+    parent_face = self.__Shape.Faces[parent_face_idx]
+    ignore_list = [parent_face, child_face]
+
+    if len(edge.Vertexes) == 2:
+      # two vertices means semicircle
+      # if we already processed the other semicircle before, there is no need to handle this one
+      for i in range(0, child_index):
+        if self.same_edges(parent_node.child_idx_lists[i][1], edge):
+          return True
+
+      # if not yet processed, let's find the other semicircle
+      other_child_face = None
+
+      for i in range(child_index + 1, len(parent_node.child_idx_lists)):
+        if self.same_edges(parent_node.child_idx_lists[i][1], edge):
+          other_child_face = self.__Shape.Faces[parent_node.child_idx_lists[i][0]]
+          break
+
+      if other_child_face is not None:
+        ignore_list.append(other_child_face)
+      else:
+        return False
+
+    next_faces = self.find_neighbor_faces(child_face, ignore_list)
+
+    # if no more faces, it was not a countersink or a counterbore
+    if len(next_faces) == 0:
+      return False
+
+    # we use dot product with face normals to check if they are parallel
+    dot = self.face_normal(next_faces[0]).dot(self.face_normal(parent_face))
+
+    if math.isclose(dot, 1) or math.isclose(dot, -1):
+      # since there is an intermediate face parallel to the parent face, this is a counterbore, let's skip this face
+      ignore_list = ignore_list + next_faces
+      next_faces = self.find_neighbor_faces(next_faces[0], ignore_list)
+
+    return self.compute_replacement_circle(parent_face, parent_face_idx, edge, next_faces)
+
+  # Find all neighbors of a face that are not in an ignore list
+  def find_neighbor_faces(self, face, ignore_list):
+    neighbors = []
+
+    for edge in face.Edges:
+      faces = self.__Shape.ancestorsOfType(edge, Part.Face)
+
+      for f in faces:
+        found = False
+
+        for face_to_ignore in ignore_list:
+          if face_to_ignore.isSame(f):
+            found = True
+            break
+
+        if not found:
+          neighbors.append(f)
+
+    return neighbors
+
+  # Add a new replacement circle to the list of wires to replace.
+  # top_face: The top face where the wire will be replaced
+  # top_face_idx : The index of the top face
+  # top_edge : An edge of the top face that will be replaced
+  # bottom_faces : The bottom faces used to compute the radius of the new circle
+  def compute_replacement_circle(self, top_face, top_face_idx, top_edge, bottom_faces):
+    top_radius = self.arc_edge_radius(top_edge)
+    top_center = self.arc_edge_center(top_edge)
+
+    for bottom_face in bottom_faces:
+      if self.is_cylindrical_face(bottom_face):
+        for bottom_edge in bottom_face.Edges:
+          if self.is_arc_edge(bottom_edge):
+            bottom_radius = self.arc_edge_radius(bottom_edge)
+
+            if bottom_radius is not None and bottom_radius < top_radius:  # we must only replace the large hole with the small hole
+              bottom_center = self.arc_edge_center(bottom_edge)
+
+              if bottom_center is not None:
+                distance = (top_center - bottom_center).Length
+
+                if math.isclose(distance, self.__thickness):  # check that we are indeed at the bottom of the hole
+                  wire_index = self.find_wire_index(top_face, top_edge)
+                  circle = Part.makeCircle(bottom_radius, top_center, (bottom_center - top_center).normalize())
+                  self.wire_replacements.append(SheetTree.WireReplacement(top_face_idx, wire_index, Part.Wire(circle)))
+
+                  return True
+            else:
+              return True
+
+    return False
+
+  # Check if a face is cylindrical or not.
+  def is_cylindrical_face(self, face):
+    return str(get_surface(face)) == "<Cylinder object>"
+
+  # Check if an edge is an arc or not. Sometimes B-spline is used instead of circle.
+  def is_arc_edge(self, edge):
+    return isinstance(edge.Curve, Part.Circle) or isinstance(edge.Curve, Part.BSplineCurve)
+
+  # Compute the radius of an arc edge
+  def arc_edge_radius(self, edge):
+    if isinstance(edge.Curve, Part.Circle):
+      # Circle has radius
+      return edge.Curve.Radius
+    elif len(edge.Vertexes) == 2:
+      # B-spline with 2 vertices, we can assume it's a semicircle
+      return (edge.Vertexes[0].Point - edge.Vertexes[1].Point).Length / 2.0
+    else:
+      # B-spline but not with 2 vertices, this should not happen
+      return None
+
+  # Compute the center of an arc edge
+  def arc_edge_center(self, edge):
+    if isinstance(edge.Curve, Part.Circle):
+      # Circle has location
+      return edge.Curve.Location
+    elif len(edge.Vertexes) == 2:
+      # B-spline with 2 vertices, we can assume it's a semicircle
+      return (edge.Vertexes[0].Point + edge.Vertexes[1].Point) / 2.0
+    else:
+      # B-spline but not with 2 vertices, this should not happen
+      return None
+
+  # Find the wire index inside a face that contains an edge
+  def find_wire_index(self, face, edge):
+    for i, wire in enumerate(face.Wires):
+      for wire_edge in wire.Edges:
+        if self.same_edges(wire_edge, edge):
+          return i
+
+    return None
+
+  # Compute the normal of a face
+  def face_normal(self, face):
+    uv = face.Surface.parameter(face.CenterOfGravity)
+
+    return face.normalAt(uv[0], uv[1])
 
   def searchNode(self, theIdx, sNode):
     # search for a Node with theIdx in sNode.idx
@@ -2065,12 +2243,41 @@ class SheetTree(object):
       if self.error_code is None:
         # nodeShell = self.generateShell(node)
         for idx in node.nfIndexes:
-          nodeShell.append(self.f_list[idx].copy())
+          new_face = self.build_new_face(idx)
+          nodeShell.append(new_face)
+
         #if len(node.seam_edges)>0:
         #  for seamEdge in node.seam_edges:
         #    self.makeSeamFace(seamEdge, node)
     FreeCAD.Console.PrintLog("ufo finish face" + str(node.idx +1) + "\n")
     return (theShell + nodeShell, theFoldLines + nodeFoldLines)
+
+  # Build a copy of the face, replacing any wire that must be replaced
+  def build_new_face(self, face_index):
+    new_wires = []
+    face = self.f_list[face_index]
+    face_replaced = False
+
+    for wire_idx, wire in enumerate(face.Wires):
+      new_wire, replaced = self.build_new_wire(wire, face_index, wire_idx)
+      new_wires.append(new_wire)
+
+      if replaced:
+        face_replaced = True
+
+    if face_replaced:
+      return Part.Face(new_wires)
+    else:
+      return face.copy()
+
+  # Given a wire, check if there is a replacement wire and return it, otherwise return a copy of the wire.
+  def build_new_wire(self, wire, face_idx, wire_idx):
+    for wire_replacement in self.wire_replacements:
+      if wire_replacement.face_idx == face_idx and wire_replacement.wire_idx == wire_idx:
+        return wire_replacement.new_wire, True
+
+    return wire.copy(), False
+
 
 #  from Defeaturing WB: Export to Step
 def sew_Shape():
