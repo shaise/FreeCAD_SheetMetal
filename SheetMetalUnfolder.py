@@ -1481,7 +1481,7 @@ class SheetTree(object):
 
   # Check if a face is cylindrical or not.
   def is_cylindrical_face(self, face):
-    return str(get_surface(face)) == "<Cylinder object>"
+    return str(get_surface(face)) == "<Cylinder object>" or str(get_surface(face)) == "<Cone object>"
 
   # Check if an edge is an arc or not. Sometimes B-spline is used instead of circle.
   def is_arc_edge(self, edge):
