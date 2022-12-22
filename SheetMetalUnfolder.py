@@ -1050,22 +1050,14 @@ class SheetTree(object):
               counter_found = False
 
         if counter_found:
-          # need a mean point of the face to avoid false counter faces
-          counterMiddle = Base.Vector(0.0,0.0,0.0) # calculating a mean vector
-          for Vvec in self.__Shape.Faces[i].OuterWire.Vertexes:
-              counterMiddle = counterMiddle.add(Vvec.Point)
-          counterMiddle = counterMiddle.multiply(1.0/len(self.__Shape.Faces[i].OuterWire.Vertexes))
+          distance = self.__Shape.Faces[i].distToShape(self.__Shape.Faces[face_idx])[0]
 
-          distVector = counterMiddle.sub(faceMiddle)
-          counterDistance = distVector.Length
-
-          if counterDistance < 2*self.__thickness: # FIXME: small stripes are a risk!
+          if math.isclose(distance, self.__thickness):
             FreeCAD.Console.PrintLog( "found counter-face"+ str(i + 1) + "\n")
-            counterFaceList.append([i, counterDistance])
+            counterFaceList.append([i, distance])
             gotCFace = True
           else:
             counter_found = False
-            FreeCAD.Console.PrintLog("faceMiddle: " + str(faceMiddle) + " counterMiddle: "+ str(counterMiddle) + "\n")
 
       if gotCFace:
         newNode.c_face_idx = counterFaceList[0][0]
@@ -1355,7 +1347,8 @@ class SheetTree(object):
           edge = child_info[1]
 
           if not self.handle_hole(parent_node, face_idx, edge, child_face, child_index):
-            self.Bend_analysis(child_face_idx, parent_node, edge)
+            if not self.handle_chamfer(face_idx, edge, child_face):
+              self.Bend_analysis(child_face_idx, parent_node, edge)
         else:
           FreeCAD.Console.PrintLog("remove child from List: " + str(child_info[0]) + "\n")
           parent_node.seam_edges.append(child_info[1]) # give Information to the node, that it has a seam.
@@ -1372,6 +1365,79 @@ class SheetTree(object):
         parent_node.child_idx_lists.remove(seams)
     else:
       FreeCAD.Console.PrintError('got error code: '+ str(self.error_code) + ' at Face'+ str(self.failed_face_idx+1) + "\n")
+
+  # Check if a face is a chamfer, and handle it as a special case.
+  # parent_face_idx: The index of the top face
+  # edge: the edge shared by parent and child faces
+  # child_face: the supposedly face of the chamfer
+  def handle_chamfer(self, parent_face_idx, edge, child_face):
+    # if edge doesn't have 2 vertices, it can't be a chamfer
+    if len(edge.Vertexes) != 2:
+      return False
+
+    # get the child edge the furthest away from parent face
+    next_edge = None
+    max_distance = 0.0
+
+    for child_edge in child_face.Edges:
+      min_distance = sys.float_info.max
+
+      for vertex in child_edge.Vertexes:
+        distance = vertex.distToShape(edge)[0]
+
+        if distance < min_distance:
+          min_distance = distance
+
+      if min_distance > max_distance:
+        next_edge = child_edge
+        max_distance = min_distance
+
+    parent_face = self.__Shape.Faces[parent_face_idx]
+    distance = abs(next_edge.Vertexes[0].Point.distanceToPlane(parent_face.CenterOfGravity, self.face_normal(parent_face)))
+
+    # if next_edge distance to parent_face plane is greater than thickness, it can't be a chamfer
+    if distance >= self.__thickness:
+      return False
+
+    # if next_edge doesn't have 2 vertices, it can't be a chamfer
+    if len(next_edge.Vertexes) != 2:
+      return False
+
+    ignore_list = self.find_neighbor_faces(parent_face, [])
+    ignore_list.append(parent_face)
+    next_faces = self.find_neighbor_faces(child_face, ignore_list)
+
+    # there should be at least one next face, otherwise it can't be a chamfer
+    if len(next_faces) < 1:
+      return False
+
+    if len(next_faces) == 1:
+      next_face = next_faces[0]
+    else:
+      next_face = self.find_edge_face(next_edge, next_faces)
+
+      # if no next face is found, it can't be a chamfer
+      if next_face is None:
+        return False
+
+    # we use dot product with face normals to check if they are perpendicular
+    dot = self.face_normal(child_face).dot(self.face_normal(parent_face))
+
+    # if child face is perpendicular and it is a chamfer, there is nothing to do since it is not the sloped side of the chamfer
+    if math.isclose(dot, 0):
+      return True
+
+    next_face_idx = None
+
+    for idx, face in enumerate(self.__Shape.Faces):
+      if face.isSame(next_face):
+        next_face_idx = idx
+        break
+
+    if next_face_idx is not None:
+      self.compute_chamfer_replacement_edges(parent_face, parent_face_idx, child_face, edge)
+
+    return True
 
   # Check if a face is a hole, and handle countersink and counterbore cases.
   # parent_node: The node of the top face of the hole
@@ -1399,7 +1465,7 @@ class SheetTree(object):
         if self.same_edges(parent_node.child_idx_lists[i][1], edge):
           return True
 
-      # if not yet processed, let's find the other semicircle      
+      # if not yet processed, let's find the other semicircle
       for i in range(child_index + 1, len(parent_node.child_idx_lists)):
         if self.same_edges(parent_node.child_idx_lists[i][1], edge):
           other_child_face = self.__Shape.Faces[parent_node.child_idx_lists[i][0]]
@@ -1462,6 +1528,59 @@ class SheetTree(object):
 
     return neighbors
 
+  # Add new replacement edges for a chamfer to the list of wires to replace.
+  # top_face: the face from which the chamfer starts
+  # top_face_idx: the index of top_face
+  # sloped_face: the sloped face of the chamfer
+  # edge: the edge between top_face and sloped_face
+  def compute_chamfer_replacement_edges(self, top_face, top_face_idx, sloped_face, edge):
+    v1 = self.compute_chamfer_reconstructed_vertex(top_face, sloped_face, edge, edge.Vertexes[0])
+    v2 = self.compute_chamfer_reconstructed_vertex(top_face, sloped_face, edge, edge.Vertexes[1])
+    self.add_edge_wire_replacement(top_face, top_face_idx, edge, v1, v2)
+
+  # Given a face and an edge, create a new wire replacement with two new vertices added to replace the edge in the face.
+  def add_edge_wire_replacement(self, face, face_idx, edge, v1, v2):
+    wire_index = self.find_wire_index(face, edge)
+    edges = []
+
+    for wire_edge in face.Wires[wire_index].Edges:
+      if self.is_line_edge(wire_edge) and len(wire_edge.Vertexes) == 2:
+        vertices = []
+        normal = self.face_normal(face).cross(edge.Vertexes[1].Point - edge.Vertexes[0].Point).normalize()
+
+        for index, vertex in enumerate(wire_edge.Vertexes):
+          new_vertex = None
+
+          if vertex.isSame(edge.Vertexes[0]):
+            new_vertex = v1
+          elif vertex.isSame(edge.Vertexes[1]):
+            new_vertex = v2
+
+          if new_vertex is not None:
+              if self.same_edges(wire_edge, edge):
+                vertices.append((new_vertex.x, new_vertex.y, new_vertex.z))
+              else:
+                if index == 0:
+                  vertices.append((new_vertex.x, new_vertex.y, new_vertex.z))
+
+                vector = Base.Vector(vertex.X - new_vertex.x, vertex.Y - new_vertex.y, vertex.Z - new_vertex.z).normalize()
+                dot = vector.dot(normal)
+
+                if not math.isclose(dot, 1) and not math.isclose(dot, -1):
+                  vertices.append((vertex.X, vertex.Y, vertex.Z))
+
+                if index == 1:
+                  vertices.append((new_vertex.x, new_vertex.y, new_vertex.z))
+          else:
+            vertices.append((vertex.X, vertex.Y, vertex.Z))
+
+        for i in range(0, len(vertices)-1):
+          edges.append(Part.makeLine(vertices[i], vertices[i+1]))
+      else:
+        edges.append(wire_edge)
+
+    self.wire_replacements.append(SheetTree.WireReplacement(face_idx, wire_index, Part.Wire(edges)))
+
   # Add a new replacement circle to the list of wires to replace.
   # top_face: The top face where the wire will be replaced
   # top_face_idx : The index of the top face
@@ -1518,6 +1637,10 @@ class SheetTree(object):
   def is_arc_edge(self, edge):
     return isinstance(edge.Curve, Part.Circle) or isinstance(edge.Curve, Part.BSplineCurve)
 
+  # Check if an edge is a line or not
+  def is_line_edge(self, edge):
+    return isinstance(edge.Curve, Part.Line)
+
   # Compute the radius of an arc edge
   def arc_edge_radius(self, edge):
     if isinstance(edge.Curve, Part.Circle):
@@ -1551,11 +1674,45 @@ class SheetTree(object):
 
     return None
 
+  # Find an edge's face among a list of faces
+  def find_edge_face(self, edge, faces):
+    edge_faces = self.__Shape.ancestorsOfType(edge, Part.Face)
+
+    for face in faces:
+      for edge_face in edge_faces:
+        if edge_face.isSame(face):
+          return face
+
+    return None
+
   # Compute the normal of a face
   def face_normal(self, face):
     uv = face.Surface.parameter(face.CenterOfGravity)
 
     return face.normalAt(uv[0], uv[1])
+
+  # Compute the vertex needed to reconstruct a chamfered face to its original shape
+  # top_face: the face from which the chamfer starts
+  # sloped_face: the sloped face of the chamfer
+  # edge: the edge between top_face and sloped_face
+  # vertex: the vertex of edge edge used to compute the intersection (this method must be called twice, for each vertex)
+  def compute_chamfer_reconstructed_vertex(self, top_face, sloped_face, edge, vertex):
+    vert = self.find_face_vertex(sloped_face, vertex, edge)
+    normal = self.face_normal(top_face)
+    distance = abs(vert.Point.distanceToPlane(vertex.Point, normal))
+
+    return vert.Point + (normal * distance)
+
+  # Given a face and a vertex, find the other vertex that shares an edge with the vertex but is different from the given edge
+  def find_face_vertex(self, face, vertex, edge):
+    for face_edge in face.Edges:
+      if not self.same_edges(face_edge, edge) and len(face_edge.Vertexes) == 2:
+        if face_edge.Vertexes[0].isSame(vertex):
+          return face_edge.Vertexes[1]
+        elif face_edge.Vertexes[1].isSame(vertex):
+          return face_edge.Vertexes[0]
+
+    return None
 
   def searchNode(self, theIdx, sNode):
     # search for a Node with theIdx in sNode.idx
