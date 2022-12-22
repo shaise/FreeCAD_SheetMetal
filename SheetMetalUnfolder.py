@@ -1363,6 +1363,7 @@ class SheetTree(object):
 
     parent_face = self.__Shape.Faces[parent_face_idx]
     ignore_list = [parent_face, child_face]
+    other_child_face = None
 
     if len(edge.Vertexes) == 2:
       # two vertices means semicircle
@@ -1371,9 +1372,7 @@ class SheetTree(object):
         if self.same_edges(parent_node.child_idx_lists[i][1], edge):
           return True
 
-      # if not yet processed, let's find the other semicircle
-      other_child_face = None
-
+      # if not yet processed, let's find the other semicircle      
       for i in range(child_index + 1, len(parent_node.child_idx_lists)):
         if self.same_edges(parent_node.child_idx_lists[i][1], edge):
           other_child_face = self.__Shape.Faces[parent_node.child_idx_lists[i][0]]
@@ -1395,10 +1394,26 @@ class SheetTree(object):
 
     if math.isclose(dot, 1) or math.isclose(dot, -1):
       # since there is an intermediate face parallel to the parent face, this is a counterbore, let's skip this face
-      ignore_list = ignore_list + next_faces
+      ignore_list.extend(next_faces)
       next_faces = self.find_neighbor_faces(next_faces[0], ignore_list)
 
-    return self.compute_replacement_circle(parent_face, parent_face_idx, edge, next_faces)
+      # if no more faces, it was not a countersink or a counterbore
+      if len(next_faces) == 0:
+        return False
+    else:
+      if other_child_face is not None:
+        #if there was another child face (semicircle case) there may be another face to ignore next
+        other_child_next_faces = self.find_neighbor_faces(other_child_face, ignore_list)
+        ignore_list.extend(other_child_next_faces)
+
+    ignore_list.extend(next_faces)
+    bottom_faces = self.find_neighbor_faces(next_faces[0], ignore_list)
+
+    # there should be only one bottom face
+    if len(bottom_faces) != 1:
+      return False
+
+    return self.compute_replacement_circle(parent_face, parent_face_idx, edge, bottom_faces[0], next_faces[0].Edges)
 
   # Find all neighbors of a face that are not in an ignore list
   def find_neighbor_faces(self, face, ignore_list):
@@ -1424,29 +1439,45 @@ class SheetTree(object):
   # top_face: The top face where the wire will be replaced
   # top_face_idx : The index of the top face
   # top_edge : An edge of the top face that will be replaced
-  # bottom_faces : The bottom faces used to compute the radius of the new circle
-  def compute_replacement_circle(self, top_face, top_face_idx, top_edge, bottom_faces):
+  # bottom_face : The bottom face used to compute the radius of the new circle
+  # bottom_edges : The edges of the hole face just above the bottom face
+  def compute_replacement_circle(self, top_face, top_face_idx, top_edge, bottom_face, bottom_edges):
     top_radius = self.arc_edge_radius(top_edge)
     top_center = self.arc_edge_center(top_edge)
 
-    for bottom_face in bottom_faces:
-      if self.is_cylindrical_face(bottom_face):
-        for bottom_edge in bottom_face.Edges:
-          if self.is_arc_edge(bottom_edge):
+    for bottom_edge in bottom_face.Edges:
+      if self.is_arc_edge(bottom_edge):
+        for edge in bottom_edges:
+          if self.same_edges(edge, bottom_edge):
             bottom_radius = self.arc_edge_radius(bottom_edge)
 
-            if bottom_radius is not None and bottom_radius < top_radius:  # we must only replace the large hole with the small hole
+            if bottom_radius is not None and bottom_radius != top_radius:
               bottom_center = self.arc_edge_center(bottom_edge)
 
               if bottom_center is not None:
                 distance = (top_center - bottom_center).Length
 
                 if math.isclose(distance, self.__thickness):  # check that we are indeed at the bottom of the hole
-                  wire_index = self.find_wire_index(top_face, top_edge)
-                  circle = Part.makeCircle(bottom_radius, top_center, (bottom_center - top_center).normalize())
-                  self.wire_replacements.append(SheetTree.WireReplacement(top_face_idx, wire_index, Part.Wire(circle)))
+                  if bottom_radius < top_radius:
+                    wire_index = self.find_wire_index(top_face, top_edge)
+                    circle = Part.makeCircle(bottom_radius, top_center, (bottom_center - top_center).normalize())
+                    self.wire_replacements.append(SheetTree.WireReplacement(top_face_idx, wire_index, Part.Wire(circle)))
 
-                  return True
+                    return True
+                  else:
+                    bottom_face_idx = None
+
+                    for idx, face in enumerate(self.__Shape.Faces):
+                      if face.isSame(bottom_face):
+                        bottom_face_idx = idx
+                        break
+
+                    if bottom_face_idx is not None:
+                      wire_index = self.find_wire_index(bottom_face, bottom_edge)
+                      circle = Part.makeCircle(top_radius, bottom_center, (top_center - bottom_center).normalize())
+                      self.wire_replacements.append(SheetTree.WireReplacement(bottom_face_idx, wire_index, Part.Wire(circle)))
+
+                      return True
             else:
               return True
 
@@ -1454,7 +1485,7 @@ class SheetTree(object):
 
   # Check if a face is cylindrical or not.
   def is_cylindrical_face(self, face):
-    return str(get_surface(face)) == "<Cylinder object>"
+    return str(get_surface(face)) == "<Cylinder object>" or str(get_surface(face)) == "<Cone object>"
 
   # Check if an edge is an arc or not. Sometimes B-spline is used instead of circle.
   def is_arc_edge(self, edge):
