@@ -1347,7 +1347,7 @@ class SheetTree(object):
           edge = child_info[1]
 
           if not self.handle_hole(parent_node, face_idx, edge, child_face, child_index):
-            if not self.handle_chamfer(face_idx, edge, child_face):
+            if not self.handle_chamfer(face_idx, edge, child_face, child_face_idx):
               self.Bend_analysis(child_face_idx, parent_node, edge)
         else:
           FreeCAD.Console.PrintLog("remove child from List: " + str(child_info[0]) + "\n")
@@ -1370,7 +1370,7 @@ class SheetTree(object):
   # parent_face_idx: The index of the top face
   # edge: the edge shared by parent and child faces
   # child_face: the supposedly face of the chamfer
-  def handle_chamfer(self, parent_face_idx, edge, child_face):
+  def handle_chamfer(self, parent_face_idx, edge, child_face, child_face_idx):
     # if edge doesn't have 2 vertices, it can't be a chamfer
     if len(edge.Vertexes) != 2:
       return False
@@ -1397,6 +1397,10 @@ class SheetTree(object):
 
     # if next_edge distance to parent_face plane is greater than thickness, it can't be a chamfer
     if distance >= self.__thickness:
+      return False
+
+    # if there is a counter face, it can't be a chamfer
+    if self.find_counter_face(child_face, child_face_idx) is not None:
       return False
 
     # if next_edge doesn't have 2 vertices, it can't be a chamfer
@@ -1527,6 +1531,37 @@ class SheetTree(object):
           neighbors.append(f)
 
     return neighbors
+
+  # Finds the counter (opposite) face of a given face, and return its index. Returns None if not found.
+  def find_counter_face(self, face, face_idx):
+    counter_idx = None
+    min_distance = 0.0
+    normal = self.face_normal(face)
+
+    # iterate on all faces to try to find the opposite face
+    for i, other_face in enumerate(self.__Shape.Faces):
+      if i != face_idx:
+        # the counter face normal must be parallel to the face normal, and pointing in the opposite direction
+        # thus the dot product of the normals must be -1
+        other_normal = self.face_normal(other_face)
+        dot = normal.dot(other_normal)
+
+        if math.isclose(dot, -1.0):  # we use isclose to avoid numerical precision problems
+          # the counter face must be in the opposite direction of the normal
+          # again we use the dot product to check this, using the normal and the vector from the face to the counter face
+          point = face.Vertexes[0].Point
+          other_point = other_face.Vertexes[0].Point
+          dot = normal.dot(other_point - point)
+
+          if dot < 0.0:
+            # we found a counter face, we can compute the distance and compare it with sheet thickness
+            distance = self.__Shape.Faces[i].distToShape(self.__Shape.Faces[face_idx])[0]
+
+            if math.isclose(distance, self.__thickness) and (min_distance == 0.0 or distance < min_distance):  # we use isclose to avoid numerical precision problems
+              min_distance = distance
+              counter_idx = i
+
+    return counter_idx
 
   # Add new replacement edges for a chamfer to the list of wires to replace.
   # top_face: the face from which the chamfer starts
