@@ -35,6 +35,7 @@ smEpsilon = 0.0000001
 # IMPORTANT: please remember to change the element map version in case of any
 # changes in modeling logic
 smElementMapVersion = 'sm1.'
+smDefaultRadius = 1.0
 
 def smWarnDialog(msg):
     diag = QtGui.QMessageBox(QtGui.QMessageBox.Warning, 'Error in macro MessageBox', msg)
@@ -937,10 +938,11 @@ def smBend(thk, bendR = 1.0, bendA = 90.0, miterA1 = 0.0,miterA2 = 0.0, BendType
 class SMBendWall:
   def __init__(self, obj):
     '''"Add Wall with radius bend" '''
+    global smDefaultRadius
     selobj = Gui.Selection.getSelectionEx()[0]
 
     _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Bend Radius")
-    obj.addProperty("App::PropertyLength","radius","Parameters",_tip_).radius = 1.0
+    obj.addProperty("App::PropertyLength","radius","Parameters",_tip_).radius = smDefaultRadius
     _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Length of Wall")
     obj.addProperty("App::PropertyLength","length","Parameters",_tip_).length = 10.0
     _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Type of Length Specification")
@@ -1007,6 +1009,8 @@ class SMBendWall:
 
   def execute(self, fp):
     '''"Print a short message when doing a recomputation, this method is mandatory" '''
+    global smDefaultRadius
+
     if (not hasattr(fp,"miterangle1")):
       _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Bend Miter Angle from Left Side")
       fp.addProperty("App::PropertyAngle","miterangle1","ParametersMiterangle",_tip_).miterangle1 = 0.0
@@ -1072,6 +1076,9 @@ class SMBendWall:
     if (not hasattr(fp,"minReliefGap")):
       _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Minimum Gap to Relief Cut")
       fp.addProperty("App::PropertyLength","minReliefGap","ParametersEx",_tip_).minReliefGap = 1.0
+
+    # save defaults
+    smDefaultRadius = fp.radius
 
     # restrict some params
     fp.miterangle1.Value = smRestrict(fp.miterangle1.Value, -80.0, 80.0)
