@@ -229,9 +229,10 @@ class SMFoldWall:
   def __init__(self, obj):
     '''"Fold / Bend a Sheetmetal with given Bend Radius" '''
     selobj = Gui.Selection.getSelectionEx()
+    FreeCAD.Console.PrintLog("default radius: " + str(SheetMetalBaseCmd.smDefaultRadius))
 
     _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Bend Radius")
-    obj.addProperty("App::PropertyLength","radius","Parameters",_tip_).radius = 1.0
+    obj.addProperty("App::PropertyLength","radius","Parameters",_tip_).radius = SheetMetalBaseCmd.smDefaultRadius
     _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Bend Angle")
     obj.addProperty("App::PropertyAngle","angle","Parameters",_tip_).angle = 90.0
     _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Base Object")
@@ -256,6 +257,10 @@ class SMFoldWall:
     if (not hasattr(fp,"Position")):
       _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Bend Line Position")
       fp.addProperty("App::PropertyEnumeration", "Position", "Parameters",_tip_).Position = ["forward", "middle", "backward"]
+
+    # save defaults
+    SheetMetalBaseCmd.smDefaultRadius = fp.radius
+    FreeCAD.Console.PrintLog("default radius: " + str(SheetMetalBaseCmd.smDefaultRadius))
 
     s = smFold(bendR = fp.radius.Value, bendA = fp.angle.Value, flipped = fp.invert, unfold = fp.unfold, kfactor = fp.kfactor, bendlinesketch = fp.BendLine,
                 position = fp.Position, invertbend = fp.invertbend, selFaceNames = fp.baseObject[1], MainObject = fp.baseObject[0])

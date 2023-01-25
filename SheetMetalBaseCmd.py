@@ -29,6 +29,8 @@ from PySide import QtCore, QtGui
 import FreeCAD, Part, os
 __dir__ = os.path.dirname(__file__)
 iconPath = os.path.join( __dir__, 'Resources', 'icons' )
+smDefaultRadius = 1.0
+
 
 def smWarnDialog(msg):
     diag = QtGui.QMessageBox(QtGui.QMessageBox.Warning, 'Error in macro MessageBox', msg)
