@@ -107,7 +107,7 @@ class SMSolidBend:
     selobj = Gui.Selection.getSelectionEx()[0]
 
     _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Bend Radius")
-    obj.addProperty("App::PropertyLength","radius","Parameters", _tip_).radius = SheetMetalBaseCmd.smDefaultRadius
+    obj.addProperty("App::PropertyLength","radius","Parameters", _tip_).radius = 1.0
 
     _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Thickness of sheetmetal")
     obj.addProperty("App::PropertyLength","thickness","Parameters", _tip_).thickness = 1.0
@@ -122,9 +122,6 @@ class SMSolidBend:
   def execute(self, fp):
     '''"Print a short message when doing a recomputation, this method is mandatory" '''
     # pass selected object shape
-
-    # save defaults
-    SheetMetalBaseCmd.smDefaultRadius = fp.radius
 
     Main_Object = fp.baseObject[0].Shape.copy()
     s = smSolidBend(thk = fp.thickness.Value, radius = fp.radius.Value, selEdgeNames = fp.baseObject[1],
@@ -381,6 +378,10 @@ class AddBendCommandClass():
       SMBendViewProviderFlat(a.ViewObject)
       activeBody.addObject(a)
     SheetMetalBaseCmd.SetViewConfig(a, viewConf)
+    if SheetMetalBaseCmd.autolink_enabled():
+      root = SheetMetalBaseCmd.getOriginalBendObject(a)
+      if root:
+        a.setExpression("radius", root.Label + ".radius")
     FreeCADGui.Selection.clearSelection()
     doc.recompute()
     doc.commitTransaction()

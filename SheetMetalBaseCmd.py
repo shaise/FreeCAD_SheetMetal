@@ -29,8 +29,6 @@ from PySide import QtCore, QtGui
 import FreeCAD, Part, os
 __dir__ = os.path.dirname(__file__)
 iconPath = os.path.join( __dir__, 'Resources', 'icons' )
-smDefaultRadius = 1.0
-
 
 def smWarnDialog(msg):
     diag = QtGui.QMessageBox(QtGui.QMessageBox.Warning, 'Error in macro MessageBox', msg)
@@ -68,6 +66,28 @@ def SetViewConfig(obj, viewconf):
   obj.ViewObject.ShapeColor = viewconf['objShapeCol']
   obj.ViewObject.Transparency = viewconf['objShapeTsp']
   obj.ViewObject.DiffuseColor = viewconf['objDiffuseCol']
+
+def getOriginalBendObject(obj):
+  from SheetMetalCmd import SMBendWall
+  from SheetMetalBend import SMSolidBend
+  from SheetMetalFoldCmd import SMFoldWall
+  for item in obj.OutListRecursive:
+    if (
+      hasattr(item, "Proxy") and
+      (
+        isinstance(item.Proxy, SMBaseBend) or
+        isinstance(item.Proxy, SMBendWall) or
+        isinstance(item.Proxy, SMSolidBend) or
+        isinstance(item.Proxy, SMFoldWall)      
+      )
+    ):
+      if not getOriginalBendObject(item):
+        return item
+  return None
+
+def autolink_enabled():
+    FSParam = FreeCAD.ParamGet("User parameter:BaseApp/Preferences/Mod/SheetMetal")
+    return FSParam.GetInt("AutoLinkBendRadius", 0)
 
 def modifiedWire(WireList, radius, thk, length, normal, Side, sign) :
   # If sketch is one type, make a face by extruding & offset it to correct position

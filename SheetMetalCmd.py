@@ -940,7 +940,7 @@ class SMBendWall:
     selobj = Gui.Selection.getSelectionEx()[0]
 
     _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Bend Radius")
-    obj.addProperty("App::PropertyLength","radius","Parameters",_tip_).radius = SheetMetalBaseCmd.smDefaultRadius
+    obj.addProperty("App::PropertyLength","radius","Parameters",_tip_).radius = 1.0
     _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Length of Wall")
     obj.addProperty("App::PropertyLength","length","Parameters",_tip_).length = 10.0
     _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Type of Length Specification")
@@ -1073,9 +1073,6 @@ class SMBendWall:
     if (not hasattr(fp,"minReliefGap")):
       _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Minimum Gap to Relief Cut")
       fp.addProperty("App::PropertyLength","minReliefGap","ParametersEx",_tip_).minReliefGap = 1.0
-
-    # save defaults
-    SheetMetalBaseCmd.smDefaultRadius = fp.radius
 
     # restrict some params
     fp.miterangle1.Value = smRestrict(fp.miterangle1.Value, -80.0, 80.0)
@@ -1364,26 +1361,6 @@ class AddWallCommandClass():
             '1. Select edges or thickness side faces to create bends with walls.\n'
             '2. Use Property editor to modify other parameters')}
 
-  @staticmethod
-  def getOriginalBendObject(obj):
-    from SheetMetalBaseCmd import SMBaseBend
-    for item in obj.OutListRecursive:
-      if (
-        hasattr(item, "Proxy") and
-        (
-          isinstance(item.Proxy, SMBaseBend) or
-          isinstance(item.Proxy, SMBendWall)
-        )
-      ):
-        if not AddWallCommandClass.getOriginalBendObject(item):
-          return item
-    return None
-
-  @staticmethod
-  def autolink_enabled():
-      FSParam = FreeCAD.ParamGet("User parameter:BaseApp/Preferences/Mod/SheetMetal")
-      return FSParam.GetInt("AutoLinkBendRadius", 0)
-
   def Activated(self):
     doc = FreeCAD.ActiveDocument
     view = Gui.ActiveDocument.ActiveView
@@ -1407,8 +1384,8 @@ class AddWallCommandClass():
       activeBody.addObject(a)
     SheetMetalBaseCmd.SetViewConfig(a, viewConf)
     FreeCADGui.Selection.clearSelection()
-    if AddWallCommandClass.autolink_enabled():
-      root = AddWallCommandClass.getOriginalBendObject(a)
+    if SheetMetalBaseCmd.autolink_enabled():
+      root = SheetMetalBaseCmd.getOriginalBendObject(a)
       if root:
         a.setExpression("radius", root.Label + ".radius")
     doc.recompute()
