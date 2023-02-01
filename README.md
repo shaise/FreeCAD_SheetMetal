@@ -18,6 +18,9 @@ A simple sheet metal tools workbench for FreeCAD
 * Unfolding tool:  
   > Copyright 2014 by Ulrich Brammer <ulrich1a[at]users.sourceforge.net> AKA [@ulrich1a](https://github.com/ulrich1a)
 
+# Wiki
+[SheetMetal Wiki at FreeCad](https://wiki.freecad.org/SheetMetal_Workbench)
+
 # Terminology 
 ## Sheetmetal Workbench definitions
 ![Sheetmetal WB Terminology](Resources/sheetmetal_terms.png)  
