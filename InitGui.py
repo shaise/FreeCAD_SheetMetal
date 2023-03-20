@@ -27,12 +27,15 @@ from PySide import QtCore
 import smwb_locator
 import os
 from engineering_mode import engineering_mode_enabled
+from FreeCAD import Gui
 
 smWBpath = os.path.dirname(smwb_locator.__file__)
 smWB_icons_path =  os.path.join( smWBpath, 'Resources', 'icons')
 
-translate = FreeCAD.Qt.translate
-QT_TRANSLATE_NOOP = FreeCAD.Qt.QT_TRANSLATE_NOOP
+# add translations path
+LanguagePath = os.path.join(smWBpath, 'translations')
+Gui.addLanguagePath(LanguagePath)
+Gui.updateLocale()
 
 global main_smWB_Icon
 main_smWB_Icon = os.path.join( smWB_icons_path , 'SMLogo.svg')
@@ -47,7 +50,7 @@ class SMWorkbench (Workbench):
     global smWB_icons_path
 
     MenuText = 'Sheet Metal'
-    ToolTip = QtCore.QT_TRANSLATE_NOOP('SheetMetal','Sheet Metal workbench allows for designing and unfolding sheet metal parts')
+    ToolTip = FreeCAD.Qt.translate('SheetMetal','Sheet Metal workbench allows for designing and unfolding sheet metal parts')
     Icon = main_smWB_Icon
 
     def Initialize(self):
@@ -64,15 +67,6 @@ class SMWorkbench (Workbench):
         import SheetMetalCornerReliefCmd
         import SheetMetalFormingCmd
         import os.path
-        import FreeCAD
-        import FreeCADGui
-        # add translations functions
-        translate = FreeCAD.Qt.translate
-        QT_TRANSLATE_NOOP = FreeCAD.Qt.QT_TRANSLATE_NOOP
-        # add translations path
-        LanguagePath = os.path.join(smWBpath, 'translations')
-        FreeCADGui.addLanguagePath(LanguagePath)
-        FreeCADGui.updateLocale()
         self.list = ["SMBase", "SMMakeWall", "SMExtrudeFace", "SMFoldWall", "SMUnfold", "SMCornerRelief", "SMMakeRelief", "SMMakeJunction", 
                      "SMMakeBend", "SMSketchOnSheet", "SMFormingWall"] # A list of command names created in the line above
         if engineering_mode_enabled():
