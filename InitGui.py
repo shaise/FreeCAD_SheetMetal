@@ -31,6 +31,9 @@ from engineering_mode import engineering_mode_enabled
 smWBpath = os.path.dirname(smwb_locator.__file__)
 smWB_icons_path =  os.path.join( smWBpath, 'Resources', 'icons')
 
+translate = FreeCAD.Qt.translate
+QT_TRANSLATE_NOOP = FreeCAD.Qt.QT_TRANSLATE_NOOP
+
 global main_smWB_Icon
 main_smWB_Icon = os.path.join( smWB_icons_path , 'SMLogo.svg')
 
@@ -61,6 +64,15 @@ class SMWorkbench (Workbench):
         import SheetMetalCornerReliefCmd
         import SheetMetalFormingCmd
         import os.path
+        import FreeCAD
+        import FreeCADGui
+        # add translations functions
+        translate = FreeCAD.Qt.translate
+        QT_TRANSLATE_NOOP = FreeCAD.Qt.QT_TRANSLATE_NOOP
+        # add translations path
+        LanguagePath = os.path.join(smWBpath, 'translations')
+        FreeCADGui.addLanguagePath(LanguagePath)
+        FreeCADGui.updateLocale()
         self.list = ["SMBase", "SMMakeWall", "SMExtrudeFace", "SMFoldWall", "SMUnfold", "SMCornerRelief", "SMMakeRelief", "SMMakeJunction", 
                      "SMMakeBend", "SMSketchOnSheet", "SMFormingWall"] # A list of command names created in the line above
         if engineering_mode_enabled():
