@@ -33,6 +33,11 @@ __dir__ = os.path.dirname(__file__)
 iconPath = os.path.join( __dir__, 'Resources', 'icons' )
 smEpsilon = 0.0000001
 
+# add translations path
+LanguagePath = os.path.join( __dir__, 'translations')
+Gui.addLanguagePath(LanguagePath)
+Gui.updateLocale()
+
 # IMPORTANT: please remember to change the element map version in case of any
 # changes in modeling logic
 smElementMapVersion = 'sm1.'
@@ -143,9 +148,9 @@ class SMRelief:
     '''"Add Relief to Solid" '''
     selobj = Gui.Selection.getSelectionEx()[0]
 
-    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Relief Size")
+    _tip_ = FreeCAD.Qt.translate("App::Property","Relief Size")
     obj.addProperty("App::PropertyLength","relief","Parameters",_tip_).relief = 2.0
-    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Base Object")
+    _tip_ = FreeCAD.Qt.translate("App::Property","Base Object")
     obj.addProperty("App::PropertyLinkSub", "baseObject", "Parameters",_tip_).baseObject = (selobj.Object, selobj.SubElementNames)
     obj.Proxy = self
 
@@ -382,9 +387,9 @@ class AddReliefCommandClass():
 
   def GetResources(self):
     return {'Pixmap'  : os.path.join( iconPath , 'SheetMetal_AddRelief.svg'), # the name of a svg file available in the resources
-            'MenuText': QtCore.QT_TRANSLATE_NOOP('SheetMetal','Make Relief'),
+            'MenuText': FreeCAD.Qt.translate('SheetMetal','Make Relief'),
             'Accel': "S, R",
-            'ToolTip' : QtCore.QT_TRANSLATE_NOOP('SheetMetal','Modify an Individual solid corner to create Relief.\n'
+            'ToolTip' : FreeCAD.Qt.translate('SheetMetal','Modify an Individual solid corner to create Relief.\n'
             '1. Select Vertex(es) to create Relief on Solid corner Vertex(es).\n'
             '2. Use Property editor to modify default parameters')}
 

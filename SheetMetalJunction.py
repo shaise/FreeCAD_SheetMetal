@@ -32,6 +32,11 @@ __dir__ = os.path.dirname(__file__)
 iconPath = os.path.join( __dir__, 'Resources', 'icons' )
 smEpsilon = 0.0000001
 
+# add translations path
+LanguagePath = os.path.join( __dir__, 'translations')
+Gui.addLanguagePath(LanguagePath)
+Gui.updateLocale()
+
 # IMPORTANT: please remember to change the element map version in case of any
 # changes in modeling logic
 smElementMapVersion = 'sm1.'
@@ -96,9 +101,9 @@ class SMJunction:
     '''"Add Gap to Solid" '''
     selobj = Gui.Selection.getSelectionEx()[0]
 
-    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Junction Gap")
+    _tip_ = FreeCAD.Qt.translate("App::Property","Junction Gap")
     obj.addProperty("App::PropertyLength","gap","Parameters",_tip_).gap = 2.0
-    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Base Object")
+    _tip_ = FreeCAD.Qt.translate("App::Property","Base Object")
     obj.addProperty("App::PropertyLinkSub", "baseObject", "Parameters",_tip_).baseObject = (selobj.Object, selobj.SubElementNames)
     obj.Proxy = self
 
@@ -335,9 +340,9 @@ class AddJunctionCommandClass():
 
   def GetResources(self):
     return {'Pixmap'  : os.path.join( iconPath , 'SheetMetal_AddJunction.svg'), # the name of a svg file available in the resources
-            'MenuText': QtCore.QT_TRANSLATE_NOOP('SheetMetal','Make Junction'),
+            'MenuText': FreeCAD.Qt.translate('SheetMetal','Make Junction'),
             'Accel': "S, J",
-            'ToolTip' : QtCore.QT_TRANSLATE_NOOP('SheetMetal','Create a rip where two walls come together on solids.\n'
+            'ToolTip' : FreeCAD.Qt.translate('SheetMetal','Create a rip where two walls come together on solids.\n'
             '1. Select edge(s) to create rip on corner edge(s).\n'
             '2. Use Property editor to modify parameters')}
 

@@ -33,6 +33,11 @@ __dir__ = os.path.dirname(__file__)
 iconPath = os.path.join( __dir__, 'Resources', 'icons' )
 smEpsilon = 0.0000001
 
+# add translations path
+LanguagePath = os.path.join( __dir__, 'translations')
+Gui.addLanguagePath(LanguagePath)
+Gui.updateLocale()
+
 import SheetMetalBendSolid
 
 def smWarnDialog(msg):
@@ -279,11 +284,11 @@ class SMSketchOnSheet:
     '''"Add Sketch based cut On Sheet metal" '''
     selobj = Gui.Selection.getSelectionEx()
 
-    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Base Object")
+    _tip_ = FreeCAD.Qt.translate("App::Property","Base Object")
     obj.addProperty("App::PropertyLinkSub", "baseObject", "Parameters",_tip_).baseObject = (selobj[0].Object, selobj[0].SubElementNames)
-    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Sketch on Sheetmetal")
+    _tip_ = FreeCAD.Qt.translate("App::Property","Sketch on Sheetmetal")
     obj.addProperty("App::PropertyLink","Sketch","Parameters",_tip_).Sketch = selobj[1].Object
-    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Gap from Left Side")
+    _tip_ = FreeCAD.Qt.translate("App::Property","Gap from Left Side")
     obj.addProperty("App::PropertyFloatConstraint","kfactor","Parameters",_tip_).kfactor = (0.5,0.0,1.0,0.01)
     obj.Proxy = self
 
@@ -385,9 +390,9 @@ class AddSketchOnSheetCommandClass():
 
   def GetResources(self):
     return {'Pixmap'  : os.path.join( iconPath , 'SheetMetal_SketchOnSheet.svg'), # the name of a svg file available in the resources
-            'MenuText': QtCore.QT_TRANSLATE_NOOP('SheetMetal','Sketch On Sheet metal'),
+            'MenuText': FreeCAD.Qt.translate('SheetMetal','Sketch On Sheet metal'),
             'Accel': "M, S",
-            'ToolTip' : QtCore.QT_TRANSLATE_NOOP('SheetMetal',' Extruded cut from Sketch On Sheet metal faces\n'
+            'ToolTip' : FreeCAD.Qt.translate('SheetMetal',' Extruded cut from Sketch On Sheet metal faces\n'
             '1. Select a flat face on sheet metal and\n'
             '2. Select a sketch on same face to create sheetmetal extruded cut.\n'
             '3. Use Property editor to modify other parameters')}

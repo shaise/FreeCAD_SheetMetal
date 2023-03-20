@@ -32,6 +32,11 @@ __dir__ = os.path.dirname(__file__)
 iconPath = os.path.join( __dir__, 'Resources', 'icons' )
 smEpsilon = 0.0000001
 
+# add translations path
+LanguagePath = os.path.join( __dir__, 'translations')
+Gui.addLanguagePath(LanguagePath)
+Gui.updateLocale()
+
 # IMPORTANT: please remember to change the element map version in case of any
 # changes in modeling logic
 smElementMapVersion = 'sm1.'
@@ -939,65 +944,65 @@ class SMBendWall:
     '''"Add Wall with radius bend" '''
     selobj = Gui.Selection.getSelectionEx()[0]
 
-    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Bend Radius")
+    _tip_ = FreeCAD.Qt.translate("App::Property","Bend Radius")
     obj.addProperty("App::PropertyLength","radius","Parameters",_tip_).radius = 1.0
-    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Length of Wall")
+    _tip_ = FreeCAD.Qt.translate("App::Property","Length of Wall")
     obj.addProperty("App::PropertyLength","length","Parameters",_tip_).length = 10.0
-    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Type of Length Specification")
+    _tip_ = FreeCAD.Qt.translate("App::Property","Type of Length Specification")
     obj.addProperty("App::PropertyEnumeration", "LengthSpec", "Parameters", _tip_).LengthSpec = ["Leg", "Outer Sharp", "Inner Sharp", "Tangential"]
-    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Gap from Left Side")
+    _tip_ = FreeCAD.Qt.translate("App::Property","Gap from Left Side")
     obj.addProperty("App::PropertyDistance","gap1","Parameters",_tip_).gap1 = 0.0
-    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Gap from Right Side")
+    _tip_ = FreeCAD.Qt.translate("App::Property","Gap from Right Side")
     obj.addProperty("App::PropertyDistance","gap2","Parameters",_tip_).gap2 = 0.0
-    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Invert Bend Direction")
+    _tip_ = FreeCAD.Qt.translate("App::Property","Invert Bend Direction")
     obj.addProperty("App::PropertyBool","invert","Parameters",_tip_).invert = False
-    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Bend Type")
+    _tip_ = FreeCAD.Qt.translate("App::Property","Bend Type")
     obj.addProperty("App::PropertyEnumeration", "BendType", "Parameters",_tip_).BendType = ["Material Outside", "Material Inside", "Thickness Outside", "Offset"]
-    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Bend Angle")
+    _tip_ = FreeCAD.Qt.translate("App::Property","Bend Angle")
     obj.addProperty("App::PropertyAngle","angle","Parameters",_tip_).angle = 90.0
-    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Relief Type")
+    _tip_ = FreeCAD.Qt.translate("App::Property","Relief Type")
     obj.addProperty("App::PropertyEnumeration", "reliefType", "ParametersRelief",_tip_).reliefType = ["Rectangle", "Round"]
-    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Use Relief Factor")
+    _tip_ = FreeCAD.Qt.translate("App::Property","Use Relief Factor")
     obj.addProperty("App::PropertyBool","UseReliefFactor","ParametersRelief",_tip_).UseReliefFactor = False
-    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Relief Factor")
+    _tip_ = FreeCAD.Qt.translate("App::Property","Relief Factor")
     obj.addProperty("App::PropertyFloat","ReliefFactor","ParametersRelief",_tip_).ReliefFactor = 0.7
-    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Relief Width")
+    _tip_ = FreeCAD.Qt.translate("App::Property","Relief Width")
     obj.addProperty("App::PropertyLength","reliefw","ParametersRelief",_tip_).reliefw = 0.8
-    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Relief Depth")
+    _tip_ = FreeCAD.Qt.translate("App::Property","Relief Depth")
     obj.addProperty("App::PropertyLength","reliefd","ParametersRelief",_tip_).reliefd = 1.0
-    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Minimum Gap to Relief Cut")
+    _tip_ = FreeCAD.Qt.translate("App::Property","Minimum Gap to Relief Cut")
     obj.addProperty("App::PropertyLength","minReliefGap","ParametersRelief",_tip_).minReliefGap = 1.0
-    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Base Object")
+    _tip_ = FreeCAD.Qt.translate("App::Property","Base Object")
     obj.addProperty("App::PropertyLinkSub", "baseObject", "Parameters",_tip_).baseObject = (selobj.Object, selobj.SubElementNames)
-    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Extend from Left Side")
+    _tip_ = FreeCAD.Qt.translate("App::Property","Extend from Left Side")
     obj.addProperty("App::PropertyDistance","extend1","ParametersEx",_tip_).extend1 = 0.0
-    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Extend from Right Side")
+    _tip_ = FreeCAD.Qt.translate("App::Property","Extend from Right Side")
     obj.addProperty("App::PropertyDistance","extend2","ParametersEx",_tip_).extend2 = 0.0
-    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Enable Auto Miter")
+    _tip_ = FreeCAD.Qt.translate("App::Property","Enable Auto Miter")
     obj.addProperty("App::PropertyBool","AutoMiter","ParametersEx",_tip_).AutoMiter = True
-    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Auto Miter Minimum Gap")
+    _tip_ = FreeCAD.Qt.translate("App::Property","Auto Miter Minimum Gap")
     obj.addProperty("App::PropertyLength","minGap","ParametersEx",_tip_).minGap = 0.1
-    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Auto Miter maximum Extend Distance")
+    _tip_ = FreeCAD.Qt.translate("App::Property","Auto Miter maximum Extend Distance")
     obj.addProperty("App::PropertyLength","maxExtendDist","ParametersEx",_tip_).maxExtendDist = 5.0
-    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Bend Miter Angle from Left Side")
+    _tip_ = FreeCAD.Qt.translate("App::Property","Bend Miter Angle from Left Side")
     obj.addProperty("App::PropertyAngle","miterangle1","ParametersEx",_tip_).miterangle1 = 0.0
-    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Bend Miter Angle from Right Side")
+    _tip_ = FreeCAD.Qt.translate("App::Property","Bend Miter Angle from Right Side")
     obj.addProperty("App::PropertyAngle","miterangle2","ParametersEx",_tip_).miterangle2 = 0.0
-    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Offset Bend")
+    _tip_ = FreeCAD.Qt.translate("App::Property","Offset Bend")
     obj.addProperty("App::PropertyDistance","offset","ParametersEx",_tip_).offset = 0.0
-    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Shows Unfold View of Current Bend")
+    _tip_ = FreeCAD.Qt.translate("App::Property","Shows Unfold View of Current Bend")
     obj.addProperty("App::PropertyBool","unfold","ParametersEx",_tip_).unfold = False
-    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Location of Neutral Line. Caution: Using ANSI standards, not DIN.")
+    _tip_ = FreeCAD.Qt.translate("App::Property","Location of Neutral Line. Caution: Using ANSI standards, not DIN.")
     obj.addProperty("App::PropertyFloatConstraint","kfactor","ParametersEx",_tip_).kfactor = (0.5,0.0,1.0,0.01)
-    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Sketch Object")
+    _tip_ = FreeCAD.Qt.translate("App::Property","Sketch Object")
     obj.addProperty("App::PropertyLink", "Sketch", "ParametersEx2",_tip_)
-    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Flip Sketch Direction")
+    _tip_ = FreeCAD.Qt.translate("App::Property","Flip Sketch Direction")
     obj.addProperty("App::PropertyBool","sketchflip","ParametersEx2",_tip_).sketchflip = False
-    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Invert Sketch Start")
+    _tip_ = FreeCAD.Qt.translate("App::Property","Invert Sketch Start")
     obj.addProperty("App::PropertyBool","sketchinvert","ParametersEx2",_tip_).sketchinvert = False
-    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Length of Wall List")
+    _tip_ = FreeCAD.Qt.translate("App::Property","Length of Wall List")
     obj.addProperty("App::PropertyFloatList", "LengthList", "ParametersEx3",_tip_)
-    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Bend Angle List")
+    _tip_ = FreeCAD.Qt.translate("App::Property","Bend Angle List")
     obj.addProperty("App::PropertyFloatList", "bendAList", "ParametersEx3",_tip_)
     obj.Proxy = self
 
@@ -1009,69 +1014,69 @@ class SMBendWall:
     '''"Print a short message when doing a recomputation, this method is mandatory" '''
 
     if (not hasattr(fp,"miterangle1")):
-      _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Bend Miter Angle from Left Side")
+      _tip_ = FreeCAD.Qt.translate("App::Property","Bend Miter Angle from Left Side")
       fp.addProperty("App::PropertyAngle","miterangle1","ParametersMiterangle",_tip_).miterangle1 = 0.0
-      _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Bend Miter Angle from Right Side")
+      _tip_ = FreeCAD.Qt.translate("App::Property","Bend Miter Angle from Right Side")
       fp.addProperty("App::PropertyAngle","miterangle2","ParametersMiterangle",_tip_).miterangle2 = 0.0
 
     if (not hasattr(fp,"AutoMiter")):
-      _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Enable Auto Miter")
+      _tip_ = FreeCAD.Qt.translate("App::Property","Enable Auto Miter")
       fp.addProperty("App::PropertyBool","AutoMiter","ParametersEx",_tip_).AutoMiter = True
 
     if (not hasattr(fp,"reliefType")):
-      _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Relief Type")
+      _tip_ = FreeCAD.Qt.translate("App::Property","Relief Type")
       fp.addProperty("App::PropertyEnumeration", "reliefType", "ParametersRelief",_tip_).reliefType = ["Rectangle", "Round"]
 
     if (not hasattr(fp,"extend1")):
-      _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Extend from Left Side")
+      _tip_ = FreeCAD.Qt.translate("App::Property","Extend from Left Side")
       fp.addProperty("App::PropertyDistance","extend1","Parameters",_tip_).extend1 = 0.0
-      _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Extend from Right Side")
+      _tip_ = FreeCAD.Qt.translate("App::Property","Extend from Right Side")
       fp.addProperty("App::PropertyDistance","extend2","Parameters",_tip_).extend2 = 0.0
 
     if (not hasattr(fp,"unfold")):
-      _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Shows Unfold View of Current Bend")
+      _tip_ = FreeCAD.Qt.translate("App::Property","Shows Unfold View of Current Bend")
       fp.addProperty("App::PropertyBool","unfold","ParametersEx",_tip_).unfold = False
 
     if (not hasattr(fp,"kfactor")):
-      _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Location of Neutral Line. Caution: Using ANSI standards, not DIN.")
+      _tip_ = FreeCAD.Qt.translate("App::Property","Location of Neutral Line. Caution: Using ANSI standards, not DIN.")
       fp.addProperty("App::PropertyFloatConstraint","kfactor","ParametersEx",_tip_).kfactor = (0.5,0.0,1.0,0.01)
 
     if (not hasattr(fp,"BendType")):
-      _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Bend Type")
+      _tip_ = FreeCAD.Qt.translate("App::Property","Bend Type")
       fp.addProperty("App::PropertyEnumeration", "BendType", "Parameters",_tip_).BendType = ["Material Outside", "Material Inside", "Thickness Outside", "Offset"]
-      _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Offset Bend")
+      _tip_ = FreeCAD.Qt.translate("App::Property","Offset Bend")
       fp.addProperty("App::PropertyDistance","offset","ParametersEx",_tip_).offset = 0.0
 
     if (not hasattr(fp,"LengthSpec")):
-        _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Type of Length Specification")
+        _tip_ = FreeCAD.Qt.translate("App::Property","Type of Length Specification")
         fp.addProperty("App::PropertyEnumeration", "LengthSpec", "Parameters", _tip_).LengthSpec = ["Leg", "Outer Sharp", "Inner Sharp", "Tangential"]
 
     if (not hasattr(fp,"ReliefFactor")):
-      _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Use Relief Factor")
+      _tip_ = FreeCAD.Qt.translate("App::Property","Use Relief Factor")
       fp.addProperty("App::PropertyBool","UseReliefFactor","ParametersRelief",_tip_).UseReliefFactor = False
-      _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Relief Factor")
+      _tip_ = FreeCAD.Qt.translate("App::Property","Relief Factor")
       fp.addProperty("App::PropertyFloat","ReliefFactor","ParametersRelief",_tip_).ReliefFactor = 0.7
 
     if (not hasattr(fp,"Sketch")):
-      _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Sketch Object")
+      _tip_ = FreeCAD.Qt.translate("App::Property","Sketch Object")
       fp.addProperty("App::PropertyLink", "Sketch", "ParametersEx2",_tip_)
-      _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Flip Sketch Direction")
+      _tip_ = FreeCAD.Qt.translate("App::Property","Flip Sketch Direction")
       fp.addProperty("App::PropertyBool","sketchflip","ParametersEx2",_tip_).sketchflip = False
-      _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Invert Sketch Start")
+      _tip_ = FreeCAD.Qt.translate("App::Property","Invert Sketch Start")
       fp.addProperty("App::PropertyBool","sketchinvert","ParametersEx2",_tip_).sketchinvert = False
-      _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Length of Wall List")
+      _tip_ = FreeCAD.Qt.translate("App::Property","Length of Wall List")
       fp.addProperty("App::PropertyFloatList", "LengthList", "ParametersEx3",_tip_)
-      _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Bend Angle List")
+      _tip_ = FreeCAD.Qt.translate("App::Property","Bend Angle List")
       fp.addProperty("App::PropertyFloatList", "bendAList", "ParametersEx3",_tip_)
 
     if (not hasattr(fp,"minGap")):
-      _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Auto Miter Minimum Gap")
+      _tip_ = FreeCAD.Qt.translate("App::Property","Auto Miter Minimum Gap")
       fp.addProperty("App::PropertyLength","minGap","ParametersEx",_tip_).minGap = 0.2
-      _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Auto Miter maximum Extend Distance")
+      _tip_ = FreeCAD.Qt.translate("App::Property","Auto Miter maximum Extend Distance")
       fp.addProperty("App::PropertyLength","maxExtendDist","ParametersEx",_tip_).maxExtendDist = 5.0
 
     if (not hasattr(fp,"minReliefGap")):
-      _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Minimum Gap to Relief Cut")
+      _tip_ = FreeCAD.Qt.translate("App::Property","Minimum Gap to Relief Cut")
       fp.addProperty("App::PropertyLength","minReliefGap","ParametersEx",_tip_).minReliefGap = 1.0
 
     # restrict some params
@@ -1355,9 +1360,9 @@ class AddWallCommandClass():
 
   def GetResources(self):
     return {'Pixmap'  : os.path.join( iconPath , 'SheetMetal_AddWall.svg'), # the name of a svg file available in the resources
-            'MenuText': QtCore.QT_TRANSLATE_NOOP('SheetMetal','Make Wall'),
+            'MenuText': FreeCAD.Qt.translate('SheetMetal','Make Wall'),
             'Accel': "W",
-            'ToolTip' : QtCore.QT_TRANSLATE_NOOP('SheetMetal','Extends one or more face, connected by a bend on existing sheet metal.\n'
+            'ToolTip' : FreeCAD.Qt.translate('SheetMetal','Extends one or more face, connected by a bend on existing sheet metal.\n'
             '1. Select edges or thickness side faces to create bends with walls.\n'
             '2. Use Property editor to modify other parameters')}
 

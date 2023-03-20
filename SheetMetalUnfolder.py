@@ -3457,10 +3457,14 @@ class SMUnfoldCommandClass():
   def GetResources(self):
     __dir__ = os.path.dirname(__file__)
     iconPath = os.path.join( __dir__, 'Resources', 'icons' )
+    # add translations path
+    LanguagePath = os.path.join( __dir__, 'translations')
+    Gui.addLanguagePath(LanguagePath)
+    Gui.updateLocale()
     return {'Pixmap'  : os.path.join( iconPath , 'SheetMetal_Unfold.svg'), # the name of a svg file available in the resources
-            'MenuText': QtCore.QT_TRANSLATE_NOOP('SheetMetal','Unfold'),
+            'MenuText': FreeCAD.Qt.translate('SheetMetal','Unfold'),
             'Accel': "U",
-            'ToolTip' : QtCore.QT_TRANSLATE_NOOP('SheetMetal','Flatten folded sheet metal object.\n'
+            'ToolTip' : FreeCAD.Qt.translate('SheetMetal','Flatten folded sheet metal object.\n'
             '1. Select flat face on sheetmetal shape.\n'
             '2. Change parameters from task Panel to create unfold Shape & Flatten drawing.')}
 
@@ -3504,9 +3508,9 @@ class SMUnfoldUnattendedCommandClass():
     __dir__ = os.path.dirname(__file__)
     iconPath = os.path.join( __dir__, 'Resources', 'icons' )
     return {'Pixmap'  : os.path.join( iconPath , 'SheetMetal_UnfoldUnattended.svg'), # the name of a svg file available in the resources
-            'MenuText': QtCore.QT_TRANSLATE_NOOP('SheetMetal','Unattended Unfold'),
+            'MenuText': FreeCAD.Qt.translate('SheetMetal','Unattended Unfold'),
             'Accel': "U",
-            'ToolTip' : QtCore.QT_TRANSLATE_NOOP('SheetMetal','Flatten folded sheet metal object with default options\n'
+            'ToolTip' : FreeCAD.Qt.translate('SheetMetal','Flatten folded sheet metal object with default options\n'
             '1. Select flat face on sheetmetal shape.\n'
             '2. Change parameters from task Panel to create unfold Shape & Flatten drawing.')}
 

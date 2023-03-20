@@ -31,6 +31,11 @@ __dir__ = os.path.dirname(__file__)
 iconPath = os.path.join( __dir__, 'Resources', 'icons' )
 smEpsilon = 0.0000001
 
+# add translations path
+LanguagePath = os.path.join( __dir__, 'translations')
+Gui.addLanguagePath(LanguagePath)
+Gui.updateLocale()
+
 import BOPTools.SplitFeatures, BOPTools.JoinFeatures
 import SheetMetalBendSolid
 import SheetMetalBaseCmd
@@ -424,21 +429,21 @@ class SMCornerRelief:
     '''"Add Corner Relief to Sheetmetal Bends" '''
     selobj = Gui.Selection.getSelectionEx()
 
-    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Corner Relief Type")
+    _tip_ = FreeCAD.Qt.translate("App::Property","Corner Relief Type")
     obj.addProperty("App::PropertyEnumeration", "ReliefSketch", "Parameters",_tip_).ReliefSketch = ["Circle", "Circle-Scaled", "Square", "Square-Scaled", "Sketch"]
-    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Base object")
+    _tip_ = FreeCAD.Qt.translate("App::Property","Base object")
     obj.addProperty("App::PropertyLinkSub", "baseObject", "Parameters",_tip_).baseObject = (selobj[0].Object, selobj[0].SubElementNames)
-    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Size of Shape")
+    _tip_ = FreeCAD.Qt.translate("App::Property","Size of Shape")
     obj.addProperty("App::PropertyLength","Size","Parameters",_tip_).Size = 3.0
-    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Size Ratio of Shape")
+    _tip_ = FreeCAD.Qt.translate("App::Property","Size Ratio of Shape")
     obj.addProperty("App::PropertyFloat","SizeRatio","Parameters",_tip_).SizeRatio = 1.5
-    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Neutral Axis Position")
+    _tip_ = FreeCAD.Qt.translate("App::Property","Neutral Axis Position")
     obj.addProperty("App::PropertyFloatConstraint","kfactor","Parameters",_tip_).kfactor = (0.5,0.0,1.0,0.01)
-    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Corner Relief Sketch")
+    _tip_ = FreeCAD.Qt.translate("App::Property","Corner Relief Sketch")
     obj.addProperty("App::PropertyLink","Sketch","Parameters1",_tip_)
-    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Gap from side one")
+    _tip_ = FreeCAD.Qt.translate("App::Property","Gap from side one")
     obj.addProperty("App::PropertyDistance","XOffset","Parameters1",_tip_).XOffset = 0.0
-    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Gap from side two")
+    _tip_ = FreeCAD.Qt.translate("App::Property","Gap from side two")
     obj.addProperty("App::PropertyDistance","YOffset","Parameters1",_tip_).YOffset = 0.0
     obj.Proxy = self
 
@@ -546,9 +551,9 @@ class AddCornerReliefCommandClass():
 
   def GetResources(self):
     return {'Pixmap'  : os.path.join( iconPath , 'SheetMetal_AddCornerRelief.svg'), # the name of a svg file available in the resources
-            'MenuText': QtCore.QT_TRANSLATE_NOOP('SheetMetal','Add Corner Relief'),
+            'MenuText': FreeCAD.Qt.translate('SheetMetal','Add Corner Relief'),
             'Accel': "C, R",
-            'ToolTip' : QtCore.QT_TRANSLATE_NOOP('SheetMetal','Corner Relief to metal sheet corner.\n'
+            'ToolTip' : FreeCAD.Qt.translate('SheetMetal','Corner Relief to metal sheet corner.\n'
             '1. Select 2 Edges (on flat face that shared with bend faces) to create Relief on sheetmetal.\n'
             '2. Use Property editor to modify default parameters')}
 
