@@ -1051,14 +1051,31 @@ class SheetTree(object):
               counter_found = False
 
         if counter_found:
-          distance = self.__Shape.Faces[i].distToShape(self.__Shape.Faces[face_idx])[0]
-
-          if math.isclose(distance, self.__thickness):
-            FreeCAD.Console.PrintLog( "found counter-face"+ str(i + 1) + "\n")
-            counterFaceList.append([i, distance])
-            gotCFace = True
+          if FreeCADGui.Selection.getSelection()[0].Refine is True:
+            distance = self.__Shape.Faces[i].distToShape(self.__Shape.Faces[face_idx])[0]
+            if math.isclose(distance, self.__thickness):
+              FreeCAD.Console.PrintLog( "found counter-face"+ str(i + 1) + "\n")
+              counterFaceList.append([i, distance])
+              gotCFace = True
+            else:
+              counter_found = False
           else:
-            counter_found = False
+            # need a mean point of the face to avoid false counter faces
+            counterMiddle = Base.Vector(0.0,0.0,0.0) # calculating a mean vector
+            for Vvec in self.__Shape.Faces[i].OuterWire.Vertexes:
+              counterMiddle = counterMiddle.add(Vvec.Point)
+            counterMiddle = counterMiddle.multiply(1.0/len(self.__Shape.Faces[i].OuterWire.Vertexes))
+
+            distVector = counterMiddle.sub(faceMiddle)
+            counterDistance = distVector.Length
+
+            if counterDistance < 2*self.__thickness: # FIXME: small stripes are a risk!
+              FreeCAD.Console.PrintLog( "found counter-face"+ str(i + 1) + "\n")
+              counterFaceList.append([i, counterDistance])
+              gotCFace = True
+            else:
+              counter_found = False
+              FreeCAD.Console.PrintLog("faceMiddle: " + str(faceMiddle) + " counterMiddle: "+ str(counterMiddle) + "\n")
 
       if gotCFace:
         newNode.c_face_idx = counterFaceList[0][0]
@@ -1348,7 +1365,10 @@ class SheetTree(object):
           edge = child_info[1]
 
           if not self.handle_hole(parent_node, face_idx, edge, child_face, child_index):
-            if not self.handle_chamfer(face_idx, edge, child_face, child_face_idx):
+            if FreeCADGui.Selection.getSelection()[0].Refine is True:
+              if not self.handle_chamfer(face_idx, edge, child_face, child_face_idx):
+                self.Bend_analysis(child_face_idx, parent_node, edge)
+            else:
               self.Bend_analysis(child_face_idx, parent_node, edge)
         else:
           FreeCAD.Console.PrintLog("remove child from List: " + str(child_info[0]) + "\n")
