@@ -127,6 +127,7 @@ intSketchColor = '#ff5733'
 genObjTransparency = 70
 manKFactor = None
 kFactorStandard = None
+exportType = None
 
 # TODO: Error Codes
 # - Put error numbers into the text
@@ -2893,7 +2894,24 @@ class SMUnfoldTaskPanel:
         self.genColor.setMaximumHeight(self.checkSketch.height() * 2 / 3)
         self.genColor.setColor(genSketchColor)
         self.horizontalLayout_1.addWidget(self.genColor)
-        self.verticalLayout.addLayout(self.horizontalLayout_1)
+
+        # DXF/SVG selection
+        self.exportLabel = QtGui.QLabel(self.form)
+        self.exportLabel.setObjectName(_fromUtf8("exportLabel"))
+        self.horizontalLayout_1.addWidget(self.exportLabel)
+        export_group = QtGui.QButtonGroup(SMUnfoldTaskPanel)
+        self.dxfExport = QtGui.QRadioButton("exportDXF")
+        self.dxfExport.setText("DXF")
+        self.dxfExport.setObjectName(_fromUtf8("dxfExport"))
+        export_group.addButton(self.dxfExport)
+        self.svgExport = QtGui.QRadioButton("exportSVG")
+        self.svgExport.setText("SVG")
+        self.svgExport.setObjectName(_fromUtf8("svgExport"))
+        export_group.addButton(self.svgExport)
+        self.horizontalLayout_1.addWidget(self.dxfExport)
+        self.horizontalLayout_1.addWidget(self.svgExport)
+	
+	self.verticalLayout.addLayout(self.horizontalLayout_1)
 
         self.checkSeparate = QtGui.QCheckBox(self.form)
         self.checkSeparate.setObjectName(_fromUtf8("checkSeparate"))
@@ -3016,7 +3034,8 @@ class SMUnfoldTaskPanel:
         self.transSpin.setProperty("value", genObjTransparency)
 
         self.updateKfactorStandard()
-        self.checkKfactChange()
+        self.updatetypeExport()
+	self.checkKfactChange()
         self.checkSketchChange()
         self.populateMdsList()
         self.retranslateUi()
@@ -3115,6 +3134,11 @@ class SMUnfoldTaskPanel:
         self.kfactorAnsi.setChecked(kFactorStandard == 'ansi')
         self.kfactorDin.setChecked(kFactorStandard == 'din')
 
+    def updatetypeExport(self):
+        global exportType
+        self.dxfExport.setChecked(exportType == 'dxf')
+        self.svgExport.setChecked(exportType == 'svg')
+
     def getManualKFactorString(self, k_factor, standard):
         return "material_%.2f%s" % (k_factor, standard)
 
@@ -3122,11 +3146,16 @@ class SMUnfoldTaskPanel:
         global genSketchChecked, bendSketchChecked, genObjTransparency, manKFactor
         global genSketchColor, bendSketchColor
         global kFactorStandard
-        mds_help_url = "https://github.com/shaise/FreeCAD_SheetMetal#material-definition-sheet"
+        global exportType
+	mds_help_url = "https://github.com/shaise/FreeCAD_SheetMetal#material-definition-sheet"
 
         genSketchChecked = self.checkSketch.isChecked()
         genSketchColor = self.genColor.color()
-        bendSketchChecked = self.checkSeparate.isChecked()
+        if self.dxfExport.isChecked():
+            exportType = 'dxf'
+        if self.svgExport.isChecked():
+            exportType = 'svg'
+	bendSketchChecked = self.checkSeparate.isChecked()
         bendSketchColor = self.bendColor.color()
         intSketchColor = self.internalColor.color()
 
@@ -3392,6 +3421,21 @@ class SMUnfoldTaskPanel:
           doc.commitTransaction()
           docG = FreeCADGui.ActiveDocument
           docG.getObject(a.Name).Transparency = genObjTransparency
+          doc.recompute()
+          if exportType == "dxf":
+              __objs__=[]
+              __objs__.append(FreeCAD.getDocument(doc.Name).getObject(sku.Name))
+              import importDXF
+              dxfFilename = FreeCAD.ActiveDocument.FileName[0:-6] + "-" + sku.Name + ".dxf"
+              importDXF.export(__objs__,dxfFilename)
+              del __objs__
+          if exportType == "svg":
+              __objs__=[]
+              __objs__.append(FreeCAD.getDocument(doc.Name).getObject(sku.Name))
+              import importSVG
+              svgFilename = FreeCAD.ActiveDocument.FileName[0:-6] + "-" + sku.Name + ".svg"
+              importSVG.export(__objs__,svgFilename)
+              del __objs__
         doc.recompute()
         FreeCAD.ActiveDocument.recompute()
         return True
@@ -3433,12 +3477,21 @@ class SMUnfoldTaskPanel:
 
     def checkSketchChange(self):
         self.checkSeparate.setEnabled(self.checkSketch.isChecked())
+        if self.checkSketch.isChecked():
+            self.exportLabel.show()
+            self.dxfExport.show() 
+            self.svgExport.show()
+        else:
+            self.exportLabel.hide()
+            self.dxfExport.hide() 
+            self.svgExport.hide()
         #self.genColor.setEnabled(self.checkSketch.isChecked())
         #self.bendColor.setEnabled(self.checkSketch.isChecked() and self.checkSeparate.isChecked())
 
     def retranslateUi(self):
         self.form.setWindowTitle(_translate("SheetMetal",   "Unfold sheet metal object", None))
         self.checkSketch.setText(_translate("SheetMetal",   "Generate projection sketch", None))
+        self.exportLabel.setText(_translate("SheetMetal",   "Export Sketch", None))
         self.checkSeparate.setText(_translate("SheetMetal", "Separate projection layers", None))
         self.checkKfact.setText(_translate("SheetMetal",    "Manual K-factor", None))
         self.label.setText(_translate("SheetMetal",         "Unfold object transparency", None))
