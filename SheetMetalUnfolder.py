@@ -2930,8 +2930,8 @@ class SMUnfoldTaskPanel:
         export_group.addButton(self.svgExport)
         self.horizontalLayout_1.addWidget(self.dxfExport)
         self.horizontalLayout_1.addWidget(self.svgExport)
-	
-	self.verticalLayout.addLayout(self.horizontalLayout_1)
+
+        self.verticalLayout.addLayout(self.horizontalLayout_1)
 
         self.checkSeparate = QtGui.QCheckBox(self.form)
         self.checkSeparate.setObjectName(_fromUtf8("checkSeparate"))
@@ -3055,7 +3055,7 @@ class SMUnfoldTaskPanel:
 
         self.updateKfactorStandard()
         self.updatetypeExport()
-	self.checkKfactChange()
+        self.checkKfactChange()
         self.checkSketchChange()
         self.populateMdsList()
         self.retranslateUi()
@@ -3167,7 +3167,7 @@ class SMUnfoldTaskPanel:
         global genSketchColor, bendSketchColor
         global kFactorStandard
         global exportType
-	mds_help_url = "https://github.com/shaise/FreeCAD_SheetMetal#material-definition-sheet"
+        mds_help_url = "https://github.com/shaise/FreeCAD_SheetMetal#material-definition-sheet"
 
         genSketchChecked = self.checkSketch.isChecked()
         genSketchColor = self.genColor.color()
@@ -3175,7 +3175,7 @@ class SMUnfoldTaskPanel:
             exportType = 'dxf'
         if self.svgExport.isChecked():
             exportType = 'svg'
-	bendSketchChecked = self.checkSeparate.isChecked()
+        bendSketchChecked = self.checkSeparate.isChecked()
         bendSketchColor = self.bendColor.color()
         intSketchColor = self.internalColor.color()
 
