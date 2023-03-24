@@ -100,7 +100,8 @@ Starting from FreeCAD 0.17 it can be installed via the [Addon Manager](https://g
 * FreeCAD Forum announcement/discussion [thread](https://forum.freecadweb.org/viewtopic.php?f=3&t=60818) 
 
 #### Release notes: 
-* V0.2.62 24 Mar 2023:  Add translation support + Portuguese translation by [@riqueenz][Henrique Enzweiler].   
+* V0.2.62 24 Mar 2023:  Add translation support + Portuguese translation by [@riqueenz][Henrique Enzweiler].  
+                      - Add dxf/svg export option to unfolder + fix unfolding issue by [@Syres916][Syres916].    
 * V0.2.61 01 Jan 2023:  Add option to link all bend radii to base bend radius by [@alexneufeld][alexneufeld].   
 * V0.2.60 24 Dec 2022:  Improved unfolding script to better handle chamfers by [[@chappatted][chappatted].   
 * V0.2.59 11 Nov 2022:  Make unfolder sketch work with linkstage version by [@Syres916][Syres916].  
