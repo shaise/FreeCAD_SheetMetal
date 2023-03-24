@@ -30,6 +30,11 @@ import FreeCAD, Part, os
 __dir__ = os.path.dirname(__file__)
 iconPath = os.path.join( __dir__, 'Resources', 'icons' )
 
+# add translations path
+LanguagePath = os.path.join( __dir__, 'translations')
+Gui.addLanguagePath(LanguagePath)
+Gui.updateLocale()
+
 def smWarnDialog(msg):
     diag = QtGui.QMessageBox(QtGui.QMessageBox.Warning, 'Error in macro MessageBox', msg)
     diag.setWindowModality(QtCore.Qt.ApplicationModal)
@@ -156,28 +161,28 @@ class SMBaseBend:
     '''"Add wall or Wall with radius bend" '''
     selobj = Gui.Selection.getSelectionEx()[0]
 
-    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Bend Radius")
+    _tip_ = FreeCAD.Qt.translate("App::Property","Bend Radius")
     obj.addProperty("App::PropertyLength","radius","Parameters",_tip_).radius = 1.0
-    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Thickness of sheetmetal")
+    _tip_ = FreeCAD.Qt.translate("App::Property","Thickness of sheetmetal")
     obj.addProperty("App::PropertyLength","thickness","Parameters",_tip_).thickness = 1.0
-    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Relief Type")
+    _tip_ = FreeCAD.Qt.translate("App::Property","Relief Type")
     obj.addProperty("App::PropertyEnumeration", "BendSide", "Parameters",_tip_).BendSide = ["Outside", "Inside", "Middle"]
-    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Length of wall")
+    _tip_ = FreeCAD.Qt.translate("App::Property","Length of wall")
     obj.addProperty("App::PropertyLength","length","Parameters",_tip_).length = 100.0
-    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Wall Sketch object")
+    _tip_ = FreeCAD.Qt.translate("App::Property","Wall Sketch object")
     obj.addProperty("App::PropertyLink", "BendSketch", "Parameters",_tip_).BendSketch = selobj.Object
-    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Extrude Symmetric to Plane")
+    _tip_ = FreeCAD.Qt.translate("App::Property","Extrude Symmetric to Plane")
     obj.addProperty("App::PropertyBool","MidPlane","Parameters",_tip_).MidPlane = False
-    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Reverse Extrusion Direction")
+    _tip_ = FreeCAD.Qt.translate("App::Property","Reverse Extrusion Direction")
     obj.addProperty("App::PropertyBool","Reverse","Parameters",_tip_).Reverse = False
     obj.Proxy = self
 
   def execute(self, fp):
     '''"Print a short message when doing a recomputation, this method is mandatory" '''
     if (not hasattr(fp,"MidPlane")):
-      _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Extrude Symmetric to Plane")
+      _tip_ = FreeCAD.Qt.translate("App::Property","Extrude Symmetric to Plane")
       fp.addProperty("App::PropertyBool","MidPlane","Parameters",_tip_).MidPlane = False
-      _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Reverse Extrusion Direction")
+      _tip_ = FreeCAD.Qt.translate("App::Property","Reverse Extrusion Direction")
       fp.addProperty("App::PropertyBool","Reverse","Parameters",_tip_).Reverse = False
 
     s = smBase(thk = fp.thickness.Value, length = fp.length.Value, radius = fp.radius.Value, Side = fp.BendSide,
@@ -236,9 +241,9 @@ class AddBaseCommandClass():
 
   def GetResources(self):
     return {'Pixmap'  : os.path.join( iconPath , 'SheetMetal_AddBase.svg'), # the name of a svg file available in the resources
-            'MenuText': QtCore.QT_TRANSLATE_NOOP('SheetMetal','Make Base Wall'),
+            'MenuText': FreeCAD.Qt.translate('SheetMetal','Make Base Wall'),
             'Accel': "C, B",
-            'ToolTip' : QtCore.QT_TRANSLATE_NOOP('SheetMetal','Create a sheetmetal wall from a sketch\n'
+            'ToolTip' : FreeCAD.Qt.translate('SheetMetal','Create a sheetmetal wall from a sketch\n'
             '1. Select a Skech to create bends with walls.\n'
             '2. Use Property editor to modify other parameters')}
 

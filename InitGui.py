@@ -27,9 +27,15 @@ from PySide import QtCore
 import smwb_locator
 import os
 from engineering_mode import engineering_mode_enabled
+from FreeCAD import Gui
 
 smWBpath = os.path.dirname(smwb_locator.__file__)
 smWB_icons_path =  os.path.join( smWBpath, 'Resources', 'icons')
+
+# add translations path
+LanguagePath = os.path.join(smWBpath, 'translations')
+Gui.addLanguagePath(LanguagePath)
+Gui.updateLocale()
 
 global main_smWB_Icon
 main_smWB_Icon = os.path.join( smWB_icons_path , 'SMLogo.svg')
@@ -44,7 +50,7 @@ class SMWorkbench (Workbench):
     global smWB_icons_path
 
     MenuText = 'Sheet Metal'
-    ToolTip = QtCore.QT_TRANSLATE_NOOP('SheetMetal','Sheet Metal workbench allows for designing and unfolding sheet metal parts')
+    ToolTip = FreeCAD.Qt.translate('SheetMetal','Sheet Metal workbench allows for designing and unfolding sheet metal parts')
     Icon = main_smWB_Icon
 
     def Initialize(self):

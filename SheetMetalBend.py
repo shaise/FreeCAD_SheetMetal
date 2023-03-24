@@ -32,6 +32,11 @@ __dir__ = os.path.dirname(__file__)
 iconPath = os.path.join( __dir__, 'Resources', 'icons' )
 smEpsilon = 0.0000001
 
+# add translations path
+LanguagePath = os.path.join( __dir__, 'translations')
+Gui.addLanguagePath(LanguagePath)
+Gui.updateLocale()
+
 # IMPORTANT: please remember to change the element map version in case of any
 # changes in modeling logic
 smElementMapVersion = 'sm1.'
@@ -106,12 +111,12 @@ class SMSolidBend:
     '''"Add Bend to Solid" '''
     selobj = Gui.Selection.getSelectionEx()[0]
 
-    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Bend Radius")
+    _tip_ = FreeCAD.Qt.translate("App::Property","Bend Radius")
     obj.addProperty("App::PropertyLength","radius","Parameters", _tip_).radius = 1.0
 
-    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Thickness of sheetmetal")
+    _tip_ = FreeCAD.Qt.translate("App::Property","Thickness of sheetmetal")
     obj.addProperty("App::PropertyLength","thickness","Parameters", _tip_).thickness = 1.0
-    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Base object")
+    _tip_ = FreeCAD.Qt.translate("App::Property","Base object")
     obj.addProperty("App::PropertyLinkSub", "baseObject", "Parameters", _tip_).baseObject = (selobj.Object, selobj.SubElementNames)
     obj.Proxy = self
 
@@ -350,9 +355,9 @@ class AddBendCommandClass():
 
   def GetResources(self):
     return {'Pixmap'  : os.path.join( iconPath , 'SheetMetal_AddBend.svg'), # the name of a svg file available in the resources
-            'MenuText': QtCore.QT_TRANSLATE_NOOP('SheetMetal','Make Bend'),
+            'MenuText': FreeCAD.Qt.translate('SheetMetal','Make Bend'),
             'Accel': "S, B",
-            'ToolTip' : QtCore.QT_TRANSLATE_NOOP('SheetMetal','Create Bend where two walls come together on solids\n'
+            'ToolTip' : FreeCAD.Qt.translate('SheetMetal','Create Bend where two walls come together on solids\n'
             '1. Select edge(s) to create bend on corner edge(s).\n'
             '2. Use Property editor to modify parameters')}
 

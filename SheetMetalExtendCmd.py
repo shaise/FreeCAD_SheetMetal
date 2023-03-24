@@ -34,6 +34,11 @@ iconPath = os.path.join( __dir__, 'Resources', 'icons' )
 smEpsilon = 0.0000001
 import BOPTools.SplitFeatures
 
+# add translations path
+LanguagePath = os.path.join( __dir__, 'translations')
+Gui.addLanguagePath(LanguagePath)
+Gui.updateLocale()
+
 # IMPORTANT: please remember to change the element map version in case of any
 # changes in modeling logic
 smElementMapVersion = 'sm1.'
@@ -296,21 +301,21 @@ class SMExtrudeWall:
     '''"Add Sheetmetal Wall by Extending" '''
     selobj = Gui.Selection.getSelectionEx()[0]
 
-    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Length of Wall")
+    _tip_ = FreeCAD.Qt.translate("App::Property","Length of Wall")
     obj.addProperty("App::PropertyLength","length","Parameters",_tip_).length = 10.0
-    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Gap from left side")
+    _tip_ = FreeCAD.Qt.translate("App::Property","Gap from left side")
     obj.addProperty("App::PropertyDistance","gap1","Parameters",_tip_).gap1 = 0.0
-    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Gap from right side")
+    _tip_ = FreeCAD.Qt.translate("App::Property","Gap from right side")
     obj.addProperty("App::PropertyDistance","gap2","Parameters",_tip_).gap2 = 0.0
-    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Base object")
+    _tip_ = FreeCAD.Qt.translate("App::Property","Base object")
     obj.addProperty("App::PropertyLinkSub", "baseObject", "Parameters",_tip_).baseObject = (selobj.Object, selobj.SubElementNames)
-    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Wall Sketch")
+    _tip_ = FreeCAD.Qt.translate("App::Property","Wall Sketch")
     obj.addProperty("App::PropertyLink","Sketch","ParametersExt",_tip_)
-    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Use Subtraction")
+    _tip_ = FreeCAD.Qt.translate("App::Property","Use Subtraction")
     obj.addProperty("App::PropertyBool","UseSubtraction","ParametersExt",_tip_).UseSubtraction = False
-    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Offset for subtraction")
+    _tip_ = FreeCAD.Qt.translate("App::Property","Offset for subtraction")
     obj.addProperty("App::PropertyDistance","Offset","ParametersExt",_tip_).Offset = 0.02
-    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Use Refine")
+    _tip_ = FreeCAD.Qt.translate("App::Property","Use Refine")
     obj.addProperty("App::PropertyBool","Refine","ParametersExt",_tip_).Refine = True
     obj.Proxy = self
 
@@ -320,17 +325,17 @@ class SMExtrudeWall:
 
   def execute(self, fp):
     if (not hasattr(fp,"Sketch")):
-      _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Wall Sketch")
+      _tip_ = FreeCAD.Qt.translate("App::Property","Wall Sketch")
       fp.addProperty("App::PropertyLink","Sketch","ParametersExt",_tip_)
-      _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Use Subtraction")
+      _tip_ = FreeCAD.Qt.translate("App::Property","Use Subtraction")
       fp.addProperty("App::PropertyDistance","Offset","ParametersExt",_tip_).Offset = 0.02
-      _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Use Refine")
+      _tip_ = FreeCAD.Qt.translate("App::Property","Use Refine")
       fp.addProperty("App::PropertyBool","Refine","ParametersExt",_tip_).Refine = False
     if (not hasattr(fp, "UseSubtraction")):
       useSub = False
       if (hasattr(fp,"UseSubstraction")):
         useSub = fp.UseSubstraction # compatibility with old files
-      _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Use Subtraction")
+      _tip_ = FreeCAD.Qt.translate("App::Property","Use Subtraction")
       fp.addProperty("App::PropertyBool","UseSubtraction","ParametersExt",_tip_).UseSubtraction = fp.UseSubstraction
     # pass selected object shape
     Main_Object = fp.baseObject[0].Shape.copy()
@@ -566,9 +571,9 @@ class SMExtrudeCommandClass():
 
   def GetResources(self):
     return {'Pixmap'  : os.path.join( iconPath , 'SheetMetal_Extrude.svg'), # the name of a svg file available in the resources
-            'MenuText': QtCore.QT_TRANSLATE_NOOP('SheetMetal','Extend Face'),
+            'MenuText': FreeCAD.Qt.translate('SheetMetal','Extend Face'),
             'Accel': "E",
-            'ToolTip' : QtCore.QT_TRANSLATE_NOOP('SheetMetal','Extends one or more face, on existing sheet metal.\n'
+            'ToolTip' : FreeCAD.Qt.translate('SheetMetal','Extends one or more face, on existing sheet metal.\n'
             '1. Select edges or thickness side faces to create walls.\n'
             '2. Select a sketch in property editor to create tabs. \n'
             '3. Use Property editor to modify other parameters')}

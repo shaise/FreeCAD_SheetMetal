@@ -31,6 +31,11 @@ __dir__ = os.path.dirname(__file__)
 iconPath = os.path.join( __dir__, 'Resources', 'icons' )
 smEpsilon = 0.0000001
 
+# add translations path
+LanguagePath = os.path.join( __dir__, 'translations')
+Gui.addLanguagePath(LanguagePath)
+Gui.updateLocale()
+
 import SheetMetalBendSolid
 import SheetMetalBaseCmd
 
@@ -230,23 +235,23 @@ class SMFoldWall:
     '''"Fold / Bend a Sheetmetal with given Bend Radius" '''
     selobj = Gui.Selection.getSelectionEx()
 
-    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Bend Radius")
+    _tip_ = FreeCAD.Qt.translate("App::Property","Bend Radius")
     obj.addProperty("App::PropertyLength","radius","Parameters",_tip_).radius = 1.0
-    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Bend Angle")
+    _tip_ = FreeCAD.Qt.translate("App::Property","Bend Angle")
     obj.addProperty("App::PropertyAngle","angle","Parameters",_tip_).angle = 90.0
-    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Base Object")
+    _tip_ = FreeCAD.Qt.translate("App::Property","Base Object")
     obj.addProperty("App::PropertyLinkSub", "baseObject", "Parameters",_tip_).baseObject = (selobj[0].Object, selobj[0].SubElementNames)
-    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Bend Reference Line List")
+    _tip_ = FreeCAD.Qt.translate("App::Property","Bend Reference Line List")
     obj.addProperty("App::PropertyLink","BendLine","Parameters",_tip_).BendLine = selobj[1].Object
-    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Invert Solid Bend Direction")
+    _tip_ = FreeCAD.Qt.translate("App::Property","Invert Solid Bend Direction")
     obj.addProperty("App::PropertyBool","invertbend","Parameters",_tip_).invertbend = False
-    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Neutral Axis Position")
+    _tip_ = FreeCAD.Qt.translate("App::Property","Neutral Axis Position")
     obj.addProperty("App::PropertyFloatConstraint","kfactor","Parameters",_tip_).kfactor = (0.5,0.0,1.0,0.01)
-    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Invert Bend Direction")
+    _tip_ = FreeCAD.Qt.translate("App::Property","Invert Bend Direction")
     obj.addProperty("App::PropertyBool","invert","Parameters",_tip_).invert = False
-    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Unfold Bend")
+    _tip_ = FreeCAD.Qt.translate("App::Property","Unfold Bend")
     obj.addProperty("App::PropertyBool","unfold","Parameters",_tip_).unfold = False
-    _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Bend Line Position")
+    _tip_ = FreeCAD.Qt.translate("App::Property","Bend Line Position")
     obj.addProperty("App::PropertyEnumeration", "Position", "Parameters",_tip_).Position = ["forward", "middle", "backward"]
     obj.Proxy = self
 
@@ -254,7 +259,7 @@ class SMFoldWall:
     '''"Print a short message when doing a recomputation, this method is mandatory" '''
 
     if (not hasattr(fp,"Position")):
-      _tip_ = QtCore.QT_TRANSLATE_NOOP("App::Property","Bend Line Position")
+      _tip_ = FreeCAD.Qt.translate("App::Property","Bend Line Position")
       fp.addProperty("App::PropertyEnumeration", "Position", "Parameters",_tip_).Position = ["forward", "middle", "backward"]
 
     s = smFold(bendR = fp.radius.Value, bendA = fp.angle.Value, flipped = fp.invert, unfold = fp.unfold, kfactor = fp.kfactor, bendlinesketch = fp.BendLine,
@@ -353,9 +358,9 @@ class AddFoldWallCommandClass():
 
   def GetResources(self):
     return {'Pixmap'  : os.path.join( iconPath , 'SheetMetal_AddFoldWall.svg'), # the name of a svg file available in the resources
-            'MenuText': QtCore.QT_TRANSLATE_NOOP('SheetMetal','Fold a Wall'),
+            'MenuText': FreeCAD.Qt.translate('SheetMetal','Fold a Wall'),
             'Accel': "C, F",
-            'ToolTip' : QtCore.QT_TRANSLATE_NOOP('SheetMetal','Fold a wall of metal sheet\n'
+            'ToolTip' : FreeCAD.Qt.translate('SheetMetal','Fold a wall of metal sheet\n'
             '1. Select a flat face on sheet metal and\n'
             '2. Select a bend line(sketch) on same face(size more than face) to create sheetmetal fold.\n'
             '3. Use Property editor to modify other parameters')}
