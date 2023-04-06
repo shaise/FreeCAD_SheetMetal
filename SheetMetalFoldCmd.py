@@ -168,6 +168,9 @@ def smFold(bendR = 1.0, bendA = 90.0, kfactor = 0.5, invertbend = False, flipped
       #Part.show(solid1,"solid1")
 
       bendEdges = FoldShape.common(tool)
+      if tool.Length <= (bendEdges.Edges[0].Length * 1.002):
+          FreeCAD.Console.PrintError('The bend line sketch ' + bendlinesketch.Label +  ' is not overhanging'
+                  ' the face sufficiently at one end or both, extend to get reliable results for the unfold operation\n')
       #Part.show(bendEdges,"bendEdges")
       bendEdge = bendEdges.Edges[0]
       if not(flipped) :
