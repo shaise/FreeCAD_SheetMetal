@@ -365,7 +365,8 @@ class AddFoldWallCommandClass():
             'Accel': "C, F",
             'ToolTip' : FreeCAD.Qt.translate('SheetMetal','Fold a wall of metal sheet\n'
             '1. Select a flat face on sheet metal and\n'
-            '2. Select a bend line(sketch) on same face(size more than face) to create sheetmetal fold.\n'
+            '2. Select a bend line (sketch) on same face (ends of sketch bend lines must'
+                       ' extend beyond edges of face) to create sheetmetal fold.\n'
             '3. Use Property editor to modify other parameters')}
 
   def Activated(self):
