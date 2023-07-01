@@ -70,6 +70,7 @@ class SMWorkbench(Workbench):
         import SketchOnSheetMetalCmd
         import SheetMetalCornerReliefCmd
         import SheetMetalFormingCmd
+        import SheetMetalUnfoldCmd
         import os.path
 
         self.list = [
