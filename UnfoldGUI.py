@@ -13,7 +13,7 @@ from PySide import QtGui, QtCore
 import os
 import FreeCAD
 import FreeCADGui
-import re
+import SheetMetalKfactor
 
 modPath = os.path.dirname(__file__).replace("\\", "/")
 
@@ -35,58 +35,6 @@ class TaskPanel:
 
         self.setupUi()
 
-    def _find_objects(self, objs, _filter):
-        res = []
-        queue = list(objs)
-        visited = set(objs)
-        while queue:
-            obj = queue.pop(0)
-            r = _filter(obj)
-            if r:
-                res.append(obj)
-                if r > 1:
-                    break
-            elif r < 0:
-                break
-            else:
-                linked = obj.getLinkedObject()
-                if linked not in visited:
-                    visited.add(linked)
-                    queue.append(linked)
-            try:
-                names = obj.getSubObjects()
-            except Exception:
-                names = []
-            for name in names:
-                sobj = obj.getSubObject(name, retType=1)
-                if sobj not in visited:
-                    visited.add(sobj)
-                    queue.append(sobj)
-        return res
-
-    def onColor(self, btn):
-        print("onColor")
-
-        # color = QtGui.QColorDialog()
-        # col = color.getColor()
-        # print(color.currentColor())
-
-        # c = QtGui.QColor(int(color[0]*255),int(color[1]*255),int(color[2]*255))
-        # color = QtGui.QColorDialog.getColor()
-        #color = QtGui.QColorDialog.getColor(QtGui.QColor(int(c[0]*255),int(c[1]*255),int(c[2]*255)))
-        print(btn.getRgbF())
-
-        
-
-        # palette = dialog.palette()
-        # palette.setColor(dialog.backgroundRole(), col)
-        # dialog.setPalette(palette)
-
-    def findObjectsByTypeRecursive(self, doc, tp):
-        return self._find_objects(
-            doc.Objects, lambda obj: obj and obj.isDerivedFrom(tp)
-        )
-
     def updateData(self):
         pass
 
@@ -99,7 +47,7 @@ class TaskPanel:
     def _setData(self):
         self.updateKfactorStandard()
         self.chkSketchChange()
-        self.populateMdsList()
+        # self.populateMdsList()
 
     def _getData(self):
 
@@ -110,9 +58,9 @@ class TaskPanel:
             "manKFactor": self.form.kFactSpin.value(),
             "exportType": exportType,
             "genObjTransparency": self.form.transSpin.value(),
-            # "genSketchColor": self.form.genColor.color().name(),
-            # "bendSketchColor": self.form.bendColor.color().name(),
-            # "intSketchColor": self.form.internalColor.color().name(),
+            "genSketchcolor": self.form.genColor.property("color"),
+            "bendSketchColor": self.form.bendColor.property("color"),
+            "intSketchColor": self.form.internalColor.property("color"),
             "DinAnsi": DinAnsi,
         }
 
@@ -142,9 +90,7 @@ class TaskPanel:
         self.form.chkSketch.setCheckState(
             self._boolToState(self.pg.GetBool("genSketch"))
         )
-
-        self.form.genColor.onChanged.connect(self.onColor)
-
+        self.form.genColor.property("color", "#000080")
         # self.form.genColor.setColor(pg.GetString("genColor", "#000080"))
         # self.form.bendColor.setColor(pg.GetString("bendColor", "#c00000"))
         # self.form.internalColor.setColor(pg.GetString("intColor", "#ff5733"))
@@ -178,19 +124,11 @@ class TaskPanel:
 
     def populateMdsList(self):
 
-        material_sheet_regex_str = "material_([a-zA-Z0-9_\-\[\]\.]+)"
-        material_sheet_regex = re.compile(material_sheet_regex_str)
-
-        spreadsheets = self.findObjectsByTypeRecursive(
-            FreeCAD.ActiveDocument, "Spreadsheet::Sheet"
-        )
-        availableMdsObjects = [
-            o for o in spreadsheets if material_sheet_regex.match(o.Label)
-        ]
+        sheetnames = SheetMetalKfactor.getSpreadSheetNames()
 
         self.form.availableMds.clear()
         self.form.availableMds.addItem("None")
-        for mds in availableMdsObjects:
+        for mds in sheetnames:
             self.form.availableMds.addItem(mds.Label)
 
         self.form.availableMds.setCurrentIndex(0)
