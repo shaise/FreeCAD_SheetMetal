@@ -1,28 +1,16 @@
-from PySide.QtGui import (
-    QWidget,
-    QVBoxLayout,
-    QHBoxLayout,
-    QLabel,
-    QCheckBox,
-    QRadioButton,
-    QPushButton,
-    QSpinBox,
-    QComboBox,
-)
-from PySide import QtGui, QtCore
+from PySide import QtCore
 import os
 import FreeCAD
 import FreeCADGui
 import SheetMetalKfactor
+from engineering_mode import engineering_mode_enabled
 
 modPath = os.path.dirname(__file__).replace("\\", "/")
 
-
-genSketchColor = "#000080"
-bendSketchColor = "#c00000"
-intSketchColor = "#ff5733"
-kfactor = 0.40
-
+GENSKETCHCOLOR = "#000080"
+BENDSKETCHCOLOR = "#c00000"
+INTSKETCHCOLOR = "#ff5733"
+KFACTOR = 0.40
 
 mw = FreeCADGui.getMainWindow()
 
@@ -47,21 +35,28 @@ class TaskPanel:
     def _setData(self):
         self.updateKfactorStandard()
         self.chkSketchChange()
-        # self.populateMdsList()
+        self.populateMdsList()
 
     def _getData(self):
 
-        DinAnsi = "Din" if self.form.kfactorDin.isChecked() else "Ansi"
-        exportType = "dxf" if self.form.dxfExportDxf.isChecked() else "svg"
+        kFactorStandard = "Din" if self.form.kfactorDin.isChecked() else "Ansi"
+
+        if self.form.dxfExport.isChecked():
+            exportType = "dxf"
+
+        elif self.form.svgExport.isChecked():
+            exportType = "svg"
+        else:
+            exportType = None
 
         results = {
             "manKFactor": self.form.kFactSpin.value(),
             "exportType": exportType,
             "genObjTransparency": self.form.transSpin.value(),
-            "genSketchcolor": self.form.genColor.property("color"),
-            "bendSketchColor": self.form.bendColor.property("color"),
-            "intSketchColor": self.form.internalColor.property("color"),
-            "DinAnsi": DinAnsi,
+            "genSketchColor": self.form.genColor.property("color").name(),
+            "bendSketchColor": self.form.bendColor.property("color").name(),
+            "intSketchColor": self.form.internalColor.property("color").name(),
+            "kFactorStandard": kFactorStandard,
         }
 
         self.pg.SetString("kFactorStandard", str(results["kFactorStandard"]))
@@ -69,9 +64,12 @@ class TaskPanel:
         self.pg.SetBool("bendSketch", 0)
         self.pg.SetBool("genSketch", 1)
 
-        # self.pg.SetString("bendColor",bendSketchColor)
-        # self.pg.SetString("genColor",genSketchColor)
-        # self.pg.SetString("intColor",intSketchColor)
+        self.pg.SetString("genColor", results["genSketchColor"])
+        self.pg.SetString("bendColor", results["bendSketchColor"])
+        self.pg.SetString("internalColor", results["intSketchColor"])
+        self.pg.SetBool("separateSketches", self.form.chkSeparate.isChecked())
+
+        print(results)
 
         return results
 
@@ -90,15 +88,28 @@ class TaskPanel:
         self.form.chkSketch.setCheckState(
             self._boolToState(self.pg.GetBool("genSketch"))
         )
-        self.form.genColor.property("color", "#000080")
-        # self.form.genColor.setColor(pg.GetString("genColor", "#000080"))
-        # self.form.bendColor.setColor(pg.GetString("bendColor", "#c00000"))
-        # self.form.internalColor.setColor(pg.GetString("intColor", "#ff5733"))
+
+        self.form.genColor.setProperty(
+            "color", self.pg.GetString("genColor", GENSKETCHCOLOR)
+        )
+        self.form.bendColor.setProperty(
+            "color", self.pg.GetString("bendColor", BENDSKETCHCOLOR)
+        )
+        self.form.internalColor.setProperty(
+            "color", self.pg.GetString("internalColor", INTSKETCHCOLOR)
+        )
+
+        self.form.transSpin.setValue(self.pg.GetInt("genObjTransparency", 50))
+        self.form.kFactSpin.setValue(self.pg.GetFloat("manualKFactor", KFACTOR))
+
+        self.form.chkSeparate.setEnabled(self.pg.GetBool("separateSketches", False))
+
         self._setData()
         self.form.update()
 
     def accept(self):
-        print(self._getData())
+        self._getData()
+
         FreeCAD.ActiveDocument.commitTransaction()
         FreeCADGui.ActiveDocument.resetEdit()
         FreeCADGui.Control.closeDialog()
@@ -109,25 +120,17 @@ class TaskPanel:
         FreeCADGui.Control.closeDialog()
         FreeCAD.ActiveDocument.recompute()
 
-
-
-    # def setMds(self, mds_name):
-    #     # in engineering_mode, user should not loose any data, so
-    #     # manual k-fa.ctor is also saved upon "unfold" operation.
-    #     advanced_mode = engineering_mode_enabled() or not using_manual_kFactor
-
-    #     if mds_name is None or not advanced_mode:
-    #         self.root_obj.Label = self.root_label
-    #     else:
-    #         self.root_obj.Label = "%s_%s" % (self.root_label, mds_name)
-    #     self.material_sheet_name = mds_name
-
     def populateMdsList(self):
 
         sheetnames = SheetMetalKfactor.getSpreadSheetNames()
 
         self.form.availableMds.clear()
-        self.form.availableMds.addItem("None")
+
+        if engineering_mode_enabled():
+            self.form.availableMds.addItem("None")
+        else:
+            self.form.availableMds.addItem("Manual K-Factor")
+
         for mds in sheetnames:
             self.form.availableMds.addItem(mds.Label)
 
@@ -144,7 +147,6 @@ class TaskPanel:
 
         self.form.kfactorAnsi.setChecked(kFactorStandard == "ansi")
         self.form.kfactorDin.setChecked(kFactorStandard == "din")
-
 
     def chkSketchChange(self):
         self.form.chkSeparate.setEnabled(self.form.chkSketch.isChecked())

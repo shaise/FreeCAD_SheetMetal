@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>660</width>
-    <height>513</height>
+    <width>676</width>
+    <height>565</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -166,17 +166,17 @@
      <item>
       <widget class="QDoubleSpinBox" name="kFactSpin">
        <property name="enabled">
-        <bool>false</bool>
+        <bool>true</bool>
        </property>
        <property name="sizePolicy">
-        <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
          <horstretch>0</horstretch>
          <verstretch>0</verstretch>
         </sizepolicy>
        </property>
        <property name="maximumSize">
         <size>
-         <width>70</width>
+         <width>100</width>
          <height>16777215</height>
         </size>
        </property>
@@ -220,6 +220,12 @@
      </property>
      <item>
       <widget class="QLabel" name="label">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Minimum" vsizetype="MinimumExpanding">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
        <property name="text">
         <string>Unfold object transparency</string>
        </property>
@@ -228,14 +234,14 @@
      <item>
       <widget class="QSpinBox" name="transSpin">
        <property name="sizePolicy">
-        <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
          <horstretch>0</horstretch>
          <verstretch>0</verstretch>
         </sizepolicy>
        </property>
        <property name="maximumSize">
         <size>
-         <width>70</width>
+         <width>100</width>
          <height>16777215</height>
         </size>
        </property>

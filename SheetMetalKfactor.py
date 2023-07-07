@@ -1,12 +1,12 @@
 import re
 import FreeCAD
 
-def findObjectsByTypeRecursive(self, doc, tp):
-    return self._find_objects(
+def findObjectsByTypeRecursive(doc, tp):
+    return _find_objects(
         doc.Objects, lambda obj: obj and obj.isDerivedFrom(tp)
     )
 
-def _find_objects(self, objs, _filter):
+def _find_objects(objs, _filter):
     res = []
     queue = list(objs)
     visited = set(objs)
