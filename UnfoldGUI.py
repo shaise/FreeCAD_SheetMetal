@@ -1,9 +1,13 @@
-from PySide import QtCore
-import os
+from PySide import QtCore, QtGui
+from SheetMetalLogger import UnfoldException
+from engineering_mode import engineering_mode_enabled
 import FreeCAD
 import FreeCADGui
 import SheetMetalKfactor
-from engineering_mode import engineering_mode_enabled
+import importDXF
+import importSVG
+import os
+import SheetMetalUnfolder as smu
 
 modPath = os.path.dirname(__file__).replace("\\", "/")
 
@@ -21,37 +25,48 @@ class TaskPanel:
         self.form = FreeCADGui.PySideUic.loadUi(path)
         self.pg = FreeCAD.ParamGet("User parameter:BaseApp/Preferences/Mod/sheetmetal")
 
+        # Technical Debt.
+        # The command that gets us here is defined in SheetMetalUnfoldCmd.py.
+        # It limits the selection to planar faces.
+        # However, once the dialog is open, the user can change the selection
+        # and select any kind of geometry.  This is wrong.
+
+        # if it is desirable to allow user to change the selection with the
+        # dialog open, then a selectiongate should be written to limit
+        # what the user can select.
+        # If we want to prevent changing selection, then something else has to
+        # happen.
+        # For now, we are setting the reference plane when the user activates
+        # the command. Any change by the user is ignored.
+
+        self.referenceFace = FreeCADGui.Selection.getSelectionEx()[0].SubObjects[0]
+        self.facename = FreeCADGui.Selection.getSelectionEx()[0].SubElementNames[0]
+        self.object = FreeCADGui.Selection.getSelectionEx()[0].Object
+
+        # End Technical debt
+
         self.setupUi()
 
-    def updateData(self):
-        pass
-
     def _boolToState(self, bool):
-        if bool:
-            return QtCore.Qt.Checked
-        else:
-            return QtCore.Qt.Unchecked
+        return QtCore.Qt.Checked if bool else QtCore.Qt.Unchecked
 
     def _setData(self):
-        self.updateKfactorStandard()
         self.chkSketchChange()
         self.populateMdsList()
 
-    def _getData(self):
-
-        kFactorStandard = "Din" if self.form.kfactorDin.isChecked() else "Ansi"
-
+    def _getExportType(self):
         if self.form.dxfExport.isChecked():
-            exportType = "dxf"
-
+            return "dxf"
         elif self.form.svgExport.isChecked():
-            exportType = "svg"
+            return "svg"
         else:
-            exportType = None
+            return None
+
+    def _getData(self):
+        kFactorStandard = "din" if self.form.kfactorDin.isChecked() else "ansi"
 
         results = {
-            "manKFactor": self.form.kFactSpin.value(),
-            "exportType": exportType,
+            "exportType": self._getExportType(),
             "genObjTransparency": self.form.transSpin.value(),
             "genSketchColor": self.form.genColor.property("color").name(),
             "bendSketchColor": self.form.bendColor.property("color").name(),
@@ -59,8 +74,21 @@ class TaskPanel:
             "kFactorStandard": kFactorStandard,
         }
 
+        if self.form.availableMds.currentText() == "Manual K-Factor":
+            results["lookupTable"] = {1: self.form.kFactSpin.value()}
+        elif self.form.availableMds.currentText() == "None":
+            QtGui.QMessageBox.warning(
+                "Warning", "No material definition sheet selected"
+            )
+            return None
+        else:
+            lookupTable = SheetMetalKfactor.KFactorLookupTable(
+                self.availableMds.currentText()
+            )
+            results["lookupTable"] = lookupTable.k_factor_lookup
+
         self.pg.SetString("kFactorStandard", str(results["kFactorStandard"]))
-        self.pg.SetString("manualKFactor", str(results["manKFactor"]))
+        self.pg.SetString("manualKFactor", str(self.form.kFactSpin.value()))
         self.pg.SetBool("bendSketch", 0)
         self.pg.SetBool("genSketch", 1)
 
@@ -69,18 +97,21 @@ class TaskPanel:
         self.pg.SetString("internalColor", results["intSketchColor"])
         self.pg.SetBool("separateSketches", self.form.chkSeparate.isChecked())
 
-        print(results)
-
         return results
 
     def setupUi(self):
 
-        self.form.kfactorAnsi.setChecked(True)
-        self.form.dxfExport.setChecked(True)
+        kFactorStandard = self.pg.GetString("kFactorStandard", "ansi")
+        if kFactorStandard == "ansi":
+            self.form.kfactorAnsi.setChecked(True)
+        else:
+            self.form.kfactorDin.setChecked(True)
+
+        self.form.dxfExport.setChecked(False)
+        self.form.svgExport.setChecked(False)
 
         self.form.chkSketch.stateChanged.connect(self.chkSketchChange)
         self.form.chkSeparate.stateChanged.connect(self.chkSketchChange)
-        # self.form.availableMds.currentIndexChanged.connect(self.mdsChanged)
 
         self.form.chkSeparate.setCheckState(
             self._boolToState(self.pg.GetBool("bendSketch"))
@@ -106,24 +137,80 @@ class TaskPanel:
 
         self._setData()
         self.form.update()
+        FreeCAD.ActiveDocument.openTransaction("Unfold")
 
     def accept(self):
-        self._getData()
+        params = self._getData()
 
-        FreeCAD.ActiveDocument.commitTransaction()
-        FreeCADGui.ActiveDocument.resetEdit()
-        FreeCADGui.Control.closeDialog()
-        FreeCAD.ActiveDocument.recompute()
+        try:
+            result = smu.processUnfold(
+                params["lookupTable"],
+                self.object,
+                self.referenceFace,
+                self.facename,
+                genSketch=self.form.chkSketch.isChecked(),
+                splitSketches=self.form.chkSeparate.isChecked(),
+                sketchColor=params["genSketchColor"],
+                bendSketchColor=params["bendSketchColor"],
+                internalSketchColor=params["intSketchColor"],
+                transparency=params["genObjTransparency"],
+                kFactorStandard=params["kFactorStandard"],
+            )
+            if result:
+                self.doExport(result[1])
+
+                FreeCAD.ActiveDocument.commitTransaction()
+                FreeCADGui.ActiveDocument.resetEdit()
+                FreeCADGui.Control.closeDialog()
+                FreeCAD.ActiveDocument.recompute()
+            else:
+                FreeCAD.ActiveDocument.abortTransaction()
+                FreeCADGui.Control.closeDialog()
+                FreeCAD.ActiveDocument.recompute()
+
+        except UnfoldException:
+            msg = (
+                """Unfold is failing.<br>Please try to select a different face to unfold your object
+                <br><br>If the opposite face also fails then switch Refine to false on feature """
+                + FreeCADGui.Selection.getSelection()[0].Name
+            )
+            QtGui.QMessageBox.question(None, "Warning", msg, QtGui.QMessageBox.Ok)
+
+        except Exception as e:
+            raise e
 
     def reject(self):
         FreeCAD.ActiveDocument.abortTransaction()
         FreeCADGui.Control.closeDialog()
         FreeCAD.ActiveDocument.recompute()
 
+    def doExport(self, obj):
+        # Not sure we should be doing export in this dialog but if we want to,
+        # it should be handled here and not in the unfold function.
+
+        # This implementation of export is limited because it doesn't export
+        # split sketches.  More reason to potentially remove it entirely and
+        # let the user use the standard export functions
+
+        if obj is None:
+            return
+
+        if self._getExportType() is None:
+            return
+
+        __objs__ = []
+        __objs__.append(obj)
+        filename = f"{FreeCAD.ActiveDocument.FileName[0:-6]}-{obj.Name}.{self._getExportType()}"
+        print("Exporting to " + filename)
+
+        if self._getExportType == "dxf":
+            importDXF.export(__objs__, filename)
+        else:
+            importSVG.export(__objs__, filename)
+        del __objs__
+
     def populateMdsList(self):
-
         sheetnames = SheetMetalKfactor.getSpreadSheetNames()
-
         self.form.availableMds.clear()
 
         if engineering_mode_enabled():
@@ -135,18 +222,6 @@ class TaskPanel:
             self.form.availableMds.addItem(mds.Label)
 
         self.form.availableMds.setCurrentIndex(0)
-
-    def updateKfactorStandard(self, transient_std=None):
-        global kFactor
-        if transient_std is None:
-            # Use any previously saved the K-factor standard if available.
-            # (note: this will be ignored while using material definition sheet.)
-            kFactorStandard = self.pg.GetString("kFactorStandard")
-        else:
-            kFactorStandard = transient_std
-
-        self.form.kfactorAnsi.setChecked(kFactorStandard == "ansi")
-        self.form.kfactorDin.setChecked(kFactorStandard == "din")
 
     def chkSketchChange(self):
         self.form.chkSeparate.setEnabled(self.form.chkSketch.isChecked())

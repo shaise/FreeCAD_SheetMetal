@@ -61,11 +61,9 @@ class SMUnfoldUnattendedCommandClass:
             or len(Gui.Selection.getSelectionEx()[0].SubElementNames) != 1
         ):
             return False
-        # selobj = Gui.Selection.getSelection()[0]
         selFace = Gui.Selection.getSelectionEx()[0].SubObjects[0]
-        if type(selFace) != Part.Face:
-            return False
-        return True
+
+        return isinstance(selFace.Surface, Part.Plane)
 
 
 Gui.addCommand("SMUnfoldUnattended", SMUnfoldUnattendedCommandClass())
@@ -116,9 +114,6 @@ class SMUnfoldCommandClass:
         ):
             return False
         selFace = Gui.Selection.getSelectionEx()[0].SubObjects[0]
-        if type(selFace) != Part.Face:
-            return False
-        return True
-
+        return isinstance(selFace.Surface, Part.Plane)
 
 Gui.addCommand("SMUnfold", SMUnfoldCommandClass())
