@@ -27,13 +27,15 @@ import collections
 
 
 def get_val_from_range(lookup, input, interpolate=False):
-    '''
+    """
     lookup: dictionary
     input: float
 
     For working principle, see below tests
-    '''
-    lookup_sorted = collections.OrderedDict(sorted(lookup.items(), key=lambda t: float(t[0])))
+    """
+    lookup_sorted = collections.OrderedDict(
+        sorted(lookup.items(), key=lambda t: float(t[0]))
+    )
     val = None
     prev_val = None
     prev_key = None
@@ -49,24 +51,19 @@ def get_val_from_range(lookup, input, interpolate=False):
             # Do the interpolation here
             if prev_key is not None:
                 key = float(_range)
-                #print "interpolate for input: ", input, ": ", prev_key, "to ", key, "->", prev_val, val
+                # print "interpolate for input: ", input, ": ", prev_key, "to ", key, "->", prev_val, val
                 input_offset_percentage = (input - prev_key) / (key - prev_key)
                 val_diff = val - prev_val
                 val_offset = val_diff * input_offset_percentage
                 interpolated_val = prev_val + val_offset
                 round_2 = lambda a: int((a * 100) + 0.5) / 100.0
                 val = round_2(interpolated_val)
-                #print "...interpolated to: ", val, interpolated_val
+                # print "...interpolated to: ", val, interpolated_val
         break
     return val
 
-mytable = {
-    1: 0.25,
-    1.1: 0.28,
-    3: 0.33,
-    5: 0.42,
-    7: 0.5
-}
+
+mytable = {1: 0.25, 1.1: 0.28, 3: 0.33, 5: 0.42, 7: 0.5}
 
 # Interpolation disabled
 assert get_val_from_range(mytable, 0.1) == 0.25
