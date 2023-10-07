@@ -8,8 +8,18 @@
 # sudo apt install -y qttools5-dev-tools
 # sudo apt install -y pyqt5-dev-tools
 #
-# This is array of supported languages. New languages, must be added to it.
-languages=(pt-br pt-pt)
+# Usage:
+#     Update all languages: ./update.sh
+#     Update a specific language: ./update.sh pt-br
+#
+
+if [ $# -eq 1 ]; then
+   languages="$1"
+else
+   # This is an array of the supported languages. New languages, must be added to it.
+   languages=(pt-br pt-pt es-ar es-es)
+fi
+
 for lang in ${languages[*]}
 do
    # Check if fastners_$lang.ts exist
