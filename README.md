@@ -103,7 +103,7 @@ Starting from FreeCAD 0.17 it can be installed via the [Addon Manager](https://g
 * V0.3.01 09 Oct 2023:  Add Spanish translation by [@hasecilu][hasecilu].  
 * V0.3.00 02 Sep 2023:  Refactoring Unfolder by [@sliptonic][sliptonic].  
 * V0.2.63 28 Mar 2023:  Fix further unfolding issue by [@Syres916][Syres916].  
-* V0.2.62 24 Mar 2023:  Add translation support + Portuguese translation by [@riqueenz][Henrique Enzweiler].  
+* V0.2.62 24 Mar 2023:  Add translation support + Portuguese translation by [@riqueenz][riqueenz].  
                       - Add dxf/svg export option to unfolder + fix unfolding issue by [@Syres916][Syres916].    
 * V0.2.61 01 Jan 2023:  Add option to link all bend radii to base bend radius by [@alexneufeld][alexneufeld].   
 * V0.2.60 24 Dec 2022:  Improved unfolding script to better handle chamfers by [[@chappatted][chappatted].   
