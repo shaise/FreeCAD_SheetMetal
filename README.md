@@ -194,9 +194,9 @@ Starting from FreeCAD 0.17 it can be installed via the [Addon Manager](https://g
 [chappatted]: https://github.com/chappatted
 [alexneufeld]: https://github.com/alexneufeld
 [luzpaz]: https://github.com/luzpaz
-[riqueenz]: [https://github.com/riqueenz]
-[sliptonic]: [https://github.com/sliptonic]
-[hasecilu]: [https://github.com/hasecilu]
+[riqueenz]: https://github.com/riqueenz
+[sliptonic]: https://github.com/sliptonic
+[hasecilu]: https://github.com/hasecilu
 [30]: https://github.com/shaise/FreeCAD_SheetMetal/issues/30
 [33]: https://github.com/shaise/FreeCAD_SheetMetal/issues/33
 [41]: https://github.com/shaise/FreeCAD_SheetMetal/issues/41
