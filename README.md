@@ -100,6 +100,7 @@ Starting from FreeCAD 0.17 it can be installed via the [Addon Manager](https://g
 * FreeCAD Forum announcement/discussion [thread](https://forum.freecadweb.org/viewtopic.php?f=3&t=60818) 
 
 #### Release notes: 
+* V0.3.02 10 Oct 2023:  Add Polish translation by [@kaktusus][kaktusus].  
 * V0.3.01 09 Oct 2023:  Add Spanish translation by [@hasecilu][hasecilu].  
 * V0.3.00 02 Sep 2023:  Refactoring Unfolder by [@sliptonic][sliptonic].  
 * V0.2.63 28 Mar 2023:  Fix further unfolding issue by [@Syres916][Syres916].  
@@ -197,6 +198,7 @@ Starting from FreeCAD 0.17 it can be installed via the [Addon Manager](https://g
 [riqueenz]: https://github.com/riqueenz
 [sliptonic]: https://github.com/sliptonic
 [hasecilu]: https://github.com/hasecilu
+[kaktusus]: https://github.com/kaktusus
 [30]: https://github.com/shaise/FreeCAD_SheetMetal/issues/30
 [33]: https://github.com/shaise/FreeCAD_SheetMetal/issues/33
 [41]: https://github.com/shaise/FreeCAD_SheetMetal/issues/41
