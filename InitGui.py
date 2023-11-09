@@ -71,6 +71,7 @@ class SMWorkbench(Workbench):
         import SheetMetalCornerReliefCmd
         import SheetMetalFormingCmd
         import SheetMetalUnfoldCmd
+        import SheetMetalBaseShapeCmd
         import os.path
 
         self.list = [
@@ -85,6 +86,7 @@ class SMWorkbench(Workbench):
             "SMMakeBend",
             "SMSketchOnSheet",
             "SMFormingWall",
+            "SMBaseShape"
         ]  # A list of command names created in the line above
         if engineering_mode_enabled():
             self.list.insert(self.list.index("SMUnfold") + 1, "SMUnfoldUnattended")

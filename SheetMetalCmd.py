@@ -42,6 +42,36 @@ Gui.updateLocale()
 # changes in modeling logic
 smElementMapVersion = "sm1."
 
+def smAddProperty(obj, proptype, name, proptip, defval = None, paramgroup = "Parameters"):
+    if not hasattr(obj, name):
+        _tip_ = FreeCAD.Qt.translate("App::Property",proptip)
+        obj.addProperty(proptype, name, paramgroup, _tip_)
+        if defval is not None:
+            setattr(obj, name, defval)
+
+def smAddLengthProperty(obj, name, proptip, defval, paramgroup = "Parameters"):
+    smAddProperty(obj, "App::PropertyLength", name, proptip, defval, paramgroup)
+
+def smAddBoolProperty(obj, name, proptip, defval, paramgroup = "Parameters"):
+    smAddProperty(obj, "App::PropertyBool", name, proptip, defval, paramgroup)
+
+def smAddDistanceProperty(obj, name, proptip, defval, paramgroup = "Parameters"):
+    smAddProperty(obj, "App::PropertyDistance", name, proptip, defval, paramgroup)
+
+def smAddAngleProperty(obj, name, proptip, defval, paramgroup = "Parameters"):
+    smAddProperty(obj, "App::PropertyAngle", name, proptip, defval, paramgroup)
+
+def smAddFloatProperty(obj, name, proptip, defval, paramgroup = "Parameters"):
+    smAddProperty(obj, "App::PropertyFloat", name, proptip, defval, paramgroup)
+
+def smAddEnumProperty(obj, name, proptip, enumlist, defval = None, paramgroup = "Parameters"):
+    if not hasattr(obj, name):
+        _tip_ = FreeCAD.Qt.translate("App::Property", proptip)
+        obj.addProperty("App::PropertyEnumeration", name, paramgroup, _tip_)
+        setattr(obj, name, enumlist)
+        if defval is not None:
+            setattr(obj, name, defval)
+
 
 def smWarnDialog(msg):
     diag = QtGui.QMessageBox(
@@ -1230,189 +1260,39 @@ class SMBendWall:
 
     def _addProperties(self, obj):
 
-        if not hasattr(obj, "radius"):
-            _tip_ = FreeCAD.Qt.translate("App::Property", "Bend Radius")
-            obj.addProperty(
-                "App::PropertyLength", "radius", "Parameters", _tip_
-            ).radius = 1.0
-
-        if not hasattr(obj, "length"):
-            _tip_ = FreeCAD.Qt.translate("App::Property", "Length of Wall")
-            obj.addProperty(
-                "App::PropertyLength", "length", "Parameters", _tip_
-            ).length = 10.0
-
-        if not hasattr(obj, "gap1"):
-            _tip_ = FreeCAD.Qt.translate("App::Property", "Gap from Left Side")
-            obj.addProperty(
-                "App::PropertyDistance", "gap1", "Parameters", _tip_
-            ).gap1 = 0.0
-
-        if not hasattr(obj, "gap2"):
-            _tip_ = FreeCAD.Qt.translate("App::Property", "Gap from Right Side")
-            obj.addProperty(
-                "App::PropertyDistance", "gap2", "Parameters", _tip_
-            ).gap2 = 0.0
-
-        if not hasattr(obj, "invert"):
-            _tip_ = FreeCAD.Qt.translate("App::Property", "Invert Bend Direction")
-            obj.addProperty(
-                "App::PropertyBool", "invert", "Parameters", _tip_
-            ).invert = False
-
-        if not hasattr(obj, "angle"):
-            _tip_ = FreeCAD.Qt.translate("App::Property", "Bend Angle")
-            obj.addProperty(
-                "App::PropertyAngle", "angle", "Parameters", _tip_
-            ).angle = 90.0
-
-        if not hasattr(obj, "reliefw"):
-            _tip_ = FreeCAD.Qt.translate("App::Property", "Relief Width")
-            obj.addProperty(
-                "App::PropertyLength", "reliefw", "ParametersRelief", _tip_
-            ).reliefw = 0.8
-
-        if not hasattr(obj, "reliefd"):
-            _tip_ = FreeCAD.Qt.translate("App::Property", "Relief Depth")
-            obj.addProperty(
-                "App::PropertyLength", "reliefd", "ParametersRelief", _tip_
-            ).reliefd = 1.0
-
-        if not hasattr(obj, "offset"):
-            _tip_ = FreeCAD.Qt.translate("App::Property", "Offset Bend")
-            obj.addProperty(
-                "App::PropertyDistance", "offset", "ParametersEx", _tip_
-            ).offset = 0.0
-
-        if not hasattr(obj, "miterangle1"):
-            _tip_ = FreeCAD.Qt.translate(
-                "App::Property", "Bend Miter Angle from Left Side"
-            )
-            obj.addProperty(
-                "App::PropertyAngle", "miterangle1", "ParametersMiterangle", _tip_
-            ).miterangle1 = 0.0
-
-        if not hasattr(obj, "miterangle2"):
-            _tip_ = FreeCAD.Qt.translate(
-                "App::Property", "Bend Miter Angle from Right Side"
-            )
-            obj.addProperty(
-                "App::PropertyAngle", "miterangle2", "ParametersMiterangle", _tip_
-            ).miterangle2 = 0.0
-
-        if not hasattr(obj, "AutoMiter"):
-            _tip_ = FreeCAD.Qt.translate("App::Property", "Enable Auto Miter")
-            obj.addProperty(
-                "App::PropertyBool", "AutoMiter", "ParametersEx", _tip_
-            ).AutoMiter = True
-
-        if not hasattr(obj, "reliefType"):
-            _tip_ = FreeCAD.Qt.translate("App::Property", "Relief Type")
-            obj.addProperty(
-                "App::PropertyEnumeration", "reliefType", "ParametersRelief", _tip_
-            ).reliefType = ["Rectangle", "Round"]
-
-        if not hasattr(obj, "extend1"):
-            _tip_ = FreeCAD.Qt.translate("App::Property", "Extend from Left Side")
-            obj.addProperty(
-                "App::PropertyDistance", "extend1", "Parameters", _tip_
-            ).extend1 = 0.0
-
-        if not hasattr(obj, "extend2"):
-            _tip_ = FreeCAD.Qt.translate("App::Property", "Extend from Right Side")
-            obj.addProperty(
-                "App::PropertyDistance", "extend2", "Parameters", _tip_
-            ).extend2 = 0.0
-
-        if not hasattr(obj, "unfold"):
-            _tip_ = FreeCAD.Qt.translate(
-                "App::Property", "Shows Unfold View of Current Bend"
-            )
-            obj.addProperty(
-                "App::PropertyBool", "unfold", "ParametersEx", _tip_
-            ).unfold = False
-
-        if not hasattr(obj, "kfactor"):
-            _tip_ = FreeCAD.Qt.translate(
-                "App::Property",
-                "Location of Neutral Line. Caution: Using ANSI standards, not DIN.",
-            )
-            obj.addProperty(
-                "App::PropertyFloatConstraint", "kfactor", "ParametersEx", _tip_
-            ).kfactor = (0.5, 0.0, 1.0, 0.01)
-
-        if not hasattr(obj, "BendType"):
-            _tip_ = FreeCAD.Qt.translate("App::Property", "Bend Type")
-            obj.addProperty(
-                "App::PropertyEnumeration", "BendType", "Parameters", _tip_
-            ).BendType = [
-                "Material Outside",
-                "Material Inside",
-                "Thickness Outside",
-                "Offset",
-            ]
-
-        if not hasattr(obj, "offset"):
-            _tip_ = FreeCAD.Qt.translate("App::Property", "Offset Bend")
-            obj.addProperty(
-                "App::PropertyDistance", "offset", "ParametersEx", _tip_
-            ).offset = 0.0
-
-        if not hasattr(obj, "LengthSpec"):
-            _tip_ = FreeCAD.Qt.translate(
-                "App::Property", "Type of Length Specification"
-            )
-            obj.addProperty(
-                "App::PropertyEnumeration", "LengthSpec", "Parameters", _tip_
-            ).LengthSpec = ["Leg", "Outer Sharp", "Inner Sharp", "Tangential"]
-
-        if not hasattr(obj, "ReliefFactor"):
-            _tip_ = FreeCAD.Qt.translate("App::Property", "Use Relief Factor")
-            obj.addProperty(
-                "App::PropertyBool", "UseReliefFactor", "ParametersRelief", _tip_
-            ).UseReliefFactor = False
-            _tip_ = FreeCAD.Qt.translate("App::Property", "Relief Factor")
-            obj.addProperty(
-                "App::PropertyFloat", "ReliefFactor", "ParametersRelief", _tip_
-            ).ReliefFactor = 0.7
-
-        if not hasattr(obj, "Sketch"):
-            _tip_ = FreeCAD.Qt.translate("App::Property", "Sketch Object")
-            obj.addProperty("App::PropertyLink", "Sketch", "ParametersEx2", _tip_)
-            _tip_ = FreeCAD.Qt.translate("App::Property", "Flip Sketch Direction")
-            obj.addProperty(
-                "App::PropertyBool", "sketchflip", "ParametersEx2", _tip_
-            ).sketchflip = False
-            _tip_ = FreeCAD.Qt.translate("App::Property", "Invert Sketch Start")
-            obj.addProperty(
-                "App::PropertyBool", "sketchinvert", "ParametersEx2", _tip_
-            ).sketchinvert = False
-            _tip_ = FreeCAD.Qt.translate("App::Property", "Length of Wall List")
-            obj.addProperty(
-                "App::PropertyFloatList", "LengthList", "ParametersEx3", _tip_
-            )
-            _tip_ = FreeCAD.Qt.translate("App::Property", "Bend Angle List")
-            obj.addProperty(
-                "App::PropertyFloatList", "bendAList", "ParametersEx3", _tip_
-            )
-
-        if not hasattr(obj, "minGap"):
-            _tip_ = FreeCAD.Qt.translate("App::Property", "Auto Miter Minimum Gap")
-            obj.addProperty(
-                "App::PropertyLength", "minGap", "ParametersEx", _tip_
-            ).minGap = 0.2
-            _tip_ = FreeCAD.Qt.translate(
-                "App::Property", "Auto Miter maximum Extend Distance"
-            )
-            obj.addProperty(
-                "App::PropertyLength", "maxExtendDist", "ParametersEx", _tip_
-            ).maxExtendDist = 5.0
-
-        if not hasattr(obj, "minReliefGap"):
-            _tip_ = FreeCAD.Qt.translate("App::Property", "Minimum Gap to Relief Cut")
-            obj.addProperty(
-                "App::PropertyLength", "minReliefGap", "ParametersEx", _tip_
-            ).minReliefGap = 1.0
+        smAddLengthProperty(obj, "radius", "Bend Radius", 1.0)
+        smAddLengthProperty(obj, "length", "Length of Wall", 10.0)
+        smAddDistanceProperty(obj, "gap1", "Gap from Left Side", 0.0)
+        smAddDistanceProperty(obj, "gap2", "Gap from Right Side", 0.0)
+        smAddBoolProperty(obj, "invert", "Invert Bend Direction", False)
+        smAddAngleProperty(obj, "angle", "Bend Angle", 90.0)
+        smAddDistanceProperty(obj, "extend1", "Extend from Left Side", 0.0)
+        smAddDistanceProperty(obj, "extend2", "Extend from Right Side", 0.0)
+        smAddEnumProperty(obj, "BendType", "Bend Type", 
+                          ["Material Outside", "Material Inside", "Thickness Outside", "Offset"])
+        smAddEnumProperty(obj, "LengthSpec", "Type of Length Specification", 
+                          ["Leg", "Outer Sharp", "Inner Sharp", "Tangential"])
+        smAddLengthProperty(obj, "reliefw", "Relief Width", 0.8, "ParametersRelief")
+        smAddLengthProperty(obj, "reliefd", "Relief Depth", 1.0, "ParametersRelief")
+        smAddBoolProperty(obj, "UseReliefFactor", "Use Relief Factor", False, "ParametersRelief")
+        smAddEnumProperty(obj, "reliefType", "Relief Type", ["Rectangle", "Round"], None, "ParametersRelief")
+        smAddFloatProperty(obj, "ReliefFactor", "Relief Factor", 0.7, "ParametersRelief")
+        smAddAngleProperty(obj, "miterangle1", "Bend Miter Angle from Left Side", 0.0, "ParametersMiterangle")
+        smAddAngleProperty(obj, "miterangle2", "Bend Miter Angle from Right Side", 0.0, "ParametersMiterangle")
+        smAddLengthProperty(obj, "minGap", "Auto Miter Minimum Gap", 0.2, "ParametersEx")
+        smAddLengthProperty(obj, "maxExtendDist", "Auto Miter maximum Extend Distance", 5.0, "ParametersEx")
+        smAddLengthProperty(obj, "minReliefGap", "Minimum Gap to Relief Cut", 1.0, "ParametersEx")
+        smAddDistanceProperty(obj, "offset", "Offset Bend", 0.0, "ParametersEx")
+        smAddBoolProperty(obj, "AutoMiter", "Enable Auto Miter", True, "ParametersEx")
+        smAddBoolProperty(obj, "unfold", "Shows Unfold View of Current Bend", False, "ParametersEx")
+        smAddProperty(obj, "App::PropertyFloatConstraint", "kfactor", 
+                      "Location of Neutral Line. Caution: Using ANSI standards, not DIN.", 
+                      (0.5, 0.0, 1.0, 0.01), "ParametersEx")
+        smAddBoolProperty(obj, "sketchflip", "Flip Sketch Direction", False, "ParametersEx2")
+        smAddBoolProperty(obj, "sketchinvert", "Invert Sketch Start", False, "ParametersEx2")
+        smAddProperty(obj, "App::PropertyLink", "Sketch", "Sketch Object", None, "ParametersEx2")
+        smAddProperty(obj, "App::PropertyFloatList", "LengthList", "Length of Wall List", None, "ParametersEx3")
+        smAddProperty(obj, "App::PropertyFloatList", "bendAList", "Bend Angle List", None, "ParametersEx3")
 
     def getElementMapVersion(self, _fp, ver, _prop, restored):
         if not restored:

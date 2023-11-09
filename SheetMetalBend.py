@@ -136,7 +136,7 @@ class SMSolidBend:
 
 
 class SMBendViewProviderTree:
-  "A View provider that nests children objects under the created one"
+  "A View provider that nests children objects under the created one (Part WB style)"
 
   def __init__(self, obj):
     obj.Proxy = self
@@ -206,7 +206,7 @@ class SMBendViewProviderTree:
     return False
 
 class SMBendViewProviderFlat:
-  "A View provider that nests children objects under the created one"
+  "A View provider that place new objects under the base object (Part design WB style)"
 
   def __init__(self, obj):
     obj.Proxy = self
