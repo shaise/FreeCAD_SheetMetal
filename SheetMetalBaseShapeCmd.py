@@ -289,15 +289,6 @@ class SMBaseshapeCommandClass:
         dialog.update()
         FreeCADGui.Control.showDialog(dialog)
 
-        # try:
-        #     taskd = TaskPanel()
-        # except ValueError as e:
-        #     SMErrorBox(e.args[0])
-        #     return
-
-        # FreeCADGui.Control.showDialog(taskd)
-        # return
-
     def IsActive(self):
         return FreeCAD.ActiveDocument is not None
 

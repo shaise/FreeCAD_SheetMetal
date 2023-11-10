@@ -1,4 +1,5 @@
 import FreeCAD
+from PySide import QtCore, QtGui
 
 class SMLogger:
     @classmethod
@@ -28,6 +29,22 @@ class SMLogger:
         for x in args:
             message += str(x)
         FreeCAD.Console.PrintWarning(message + "\n")
+
+    @classmethod
+    def warningBox(cls, *args):
+        message = ""
+        for x in args:
+            message += str(x)
+        QtGui.QMessageBox.warning(None, "Warning", message)
+        FreeCAD.Console.PrintWarning(message + "\n")
+
+    @classmethod
+    def errorBox(cls, *args):
+        message = ""
+        for x in args:
+            message += str(x)
+        QtGui.QMessageBox.warning(None, "Error", message)
+        FreeCAD.Console.PrintError(message + "\n")
 
 
 

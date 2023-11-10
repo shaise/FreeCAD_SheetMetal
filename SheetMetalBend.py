@@ -345,8 +345,8 @@ class SMBendTaskPanel:
         #self.obj.ViewObject.Visibility=True
         return True
 
-    def retranslateUi(self, TaskPanel):
-        #TaskPanel.setWindowTitle(QtGui.QApplication.translate("draft", "Faces", None))
+    def retranslateUi(self, SMUnfoldTaskPanel):
+        #SMUnfoldTaskPanel.setWindowTitle(QtGui.QApplication.translate("draft", "Faces", None))
         self.addButton.setText(QtGui.QApplication.translate("draft", "Update", None))
 
 

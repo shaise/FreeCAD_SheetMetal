@@ -1,7 +1,7 @@
 import Part, FreeCAD, FreeCADGui, os
 from PySide import QtGui, QtCore
 from FreeCAD import Gui
-from UnfoldGUI import TaskPanel
+from UnfoldGUI import SMUnfoldTaskPanel
 
 try:
     from TechDraw import projectEx
@@ -35,24 +35,24 @@ class SMUnfoldUnattendedCommandClass:
     def Activated(self):
         SMLogger.message("Running unattended unfold...")
         try:
-            taskd = TaskPanel()
+            taskd = SMUnfoldTaskPanel()
         except ValueError as e:
             SMLogger.error(e.args[0])
             return
 
-        pg = FreeCAD.ParamGet("User parameter:BaseApp/Preferences/Mod/sheetmetal")
-        if pg.GetBool("bendSketch"):
-            taskd.chkSeparate.setCheckState(QtCore.Qt.CheckState.Checked)
+        pg = FreeCAD.ParamGet("User parameter:BaseApp/Preferences/Mod/SheetMetal")
+        if pg.GetBool("separateSketches"):
+            taskd.form.chkSeparate.setCheckState(QtCore.Qt.CheckState.Checked)
         else:
-            taskd.chkSeparate.setCheckState(QtCore.Qt.CheckState.Unchecked)
+            taskd.form.chkSeparate.setCheckState(QtCore.Qt.CheckState.Unchecked)
         if pg.GetBool("genSketch"):
-            taskd.chkSketch.setCheckState(QtCore.Qt.CheckState.Checked)
+            taskd.form.chkSketch.setCheckState(QtCore.Qt.CheckState.Checked)
         else:
-            taskd.chkSketch.setCheckState(QtCore.Qt.CheckState.Unchecked)
-        taskd.bendColor.setColor(pg.GetString("bendColor"))
-        taskd.genColor.setColor(pg.GetString("genColor"))
-        taskd.internalColor.setColor(pg.GetString("intColor"))
-        taskd.new_mds_name = taskd.material_sheet_name
+            taskd.form.chkSketch.setCheckState(QtCore.Qt.CheckState.Unchecked)
+        taskd.form.bendColor.setProperty("color", pg.GetString("bendColor"))
+        taskd.form.genColor.setProperty("color", pg.GetString("genColor"))
+        taskd.form.internalColor.setProperty("color", pg.GetString("intColor"))
+        #taskd.new_mds_name = taskd.material_sheet_name
         taskd.accept()
         return
 
@@ -96,11 +96,11 @@ class SMUnfoldCommandClass:
 
     def Activated(self):
 
-        dialog = TaskPanel()
+        dialog = SMUnfoldTaskPanel()
         FreeCADGui.Control.showDialog(dialog)
 
         # try:
-        #     taskd = TaskPanel()
+        #     taskd = SMUnfoldTaskPanel()
         # except ValueError as e:
         #     SMErrorBox(e.args[0])
         #     return

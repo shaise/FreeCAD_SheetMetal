@@ -1,5 +1,5 @@
 from PySide import QtCore, QtGui
-from SheetMetalLogger import UnfoldException
+from SheetMetalLogger import SMLogger, UnfoldException
 from engineering_mode import engineering_mode_enabled
 import FreeCAD
 import FreeCADGui
@@ -19,11 +19,11 @@ KFACTOR = 0.40
 mw = FreeCADGui.getMainWindow()
 
 
-class TaskPanel:
+class SMUnfoldTaskPanel:
     def __init__(self):
         path = f"{modPath}/UnfoldOptions.ui"
         self.form = FreeCADGui.PySideUic.loadUi(path)
-        self.pg = FreeCAD.ParamGet("User parameter:BaseApp/Preferences/Mod/sheetmetal")
+        self.pg = FreeCAD.ParamGet("User parameter:BaseApp/Preferences/Mod/SheetMetal")
 
         # Technical Debt.
         # The command that gets us here is defined in SheetMetalUnfoldCmd.py.
@@ -55,6 +55,8 @@ class TaskPanel:
         self.populateMdsList()
 
     def _getExportType(self):
+        if not self.form.chkExport.isChecked():
+            return None
         if self.form.dxfExport.isChecked():
             return "dxf"
         elif self.form.svgExport.isChecked():
@@ -71,31 +73,30 @@ class TaskPanel:
             "genSketchColor": self.form.genColor.property("color").name(),
             "bendSketchColor": self.form.bendColor.property("color").name(),
             "intSketchColor": self.form.internalColor.property("color").name(),
+            "separateSketches": self.form.chkSeparate.isChecked(),
+            "genSketch": self.form.chkSketch.isChecked(),
             "kFactorStandard": kFactorStandard,
         }
 
         if self.form.availableMds.currentText() == "Manual K-Factor":
             results["lookupTable"] = {1: self.form.kFactSpin.value()}
         elif self.form.availableMds.currentText() == "None":
-            QtGui.QMessageBox.warning(
-                "Warning", "No material definition sheet selected"
-            )
+            SMLogger.warningBox("No material definition sheet selected")
             return None
         else:
             lookupTable = SheetMetalKfactor.KFactorLookupTable(
-                self.availableMds.currentText()
+                self.form.availableMds.currentText()
             )
             results["lookupTable"] = lookupTable.k_factor_lookup
 
         self.pg.SetString("kFactorStandard", str(results["kFactorStandard"]))
         self.pg.SetString("manualKFactor", str(self.form.kFactSpin.value()))
-        self.pg.SetBool("bendSketch", 0)
-        self.pg.SetBool("genSketch", 1)
+        self.pg.SetBool("genSketch", results["genSketch"])
 
         self.pg.SetString("genColor", results["genSketchColor"])
         self.pg.SetString("bendColor", results["bendSketchColor"])
         self.pg.SetString("internalColor", results["intSketchColor"])
-        self.pg.SetBool("separateSketches", self.form.chkSeparate.isChecked())
+        self.pg.SetBool("separateSketches", results["separateSketches"])
 
         return results
 
@@ -114,7 +115,7 @@ class TaskPanel:
         self.form.chkSeparate.stateChanged.connect(self.chkSketchChange)
 
         self.form.chkSeparate.setCheckState(
-            self._boolToState(self.pg.GetBool("bendSketch"))
+            self._boolToState(self.pg.GetBool("separateSketches"))
         )
         self.form.chkSketch.setCheckState(
             self._boolToState(self.pg.GetBool("genSketch"))
@@ -141,6 +142,8 @@ class TaskPanel:
 
     def accept(self):
         params = self._getData()
+        if params is None:
+            return
 
         try:
             result = smu.processUnfold(
@@ -213,13 +216,17 @@ class TaskPanel:
         sheetnames = SheetMetalKfactor.getSpreadSheetNames()
         self.form.availableMds.clear()
 
-        if engineering_mode_enabled():
-            self.form.availableMds.addItem("None")
-        else:
+        if not engineering_mode_enabled():
             self.form.availableMds.addItem("Manual K-Factor")
 
-        for mds in sheetnames:
-            self.form.availableMds.addItem(mds.Label)
+        if len(sheetnames) == 0:
+            self.form.availableMds.addItem("None")
+        else:
+            for mds in sheetnames:
+                if (mds.Label.startswith("material_")):
+                    self.form.availableMds.addItem(mds.Label)
+
+
 
         self.form.availableMds.setCurrentIndex(0)
 
