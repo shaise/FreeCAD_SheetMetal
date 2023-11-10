@@ -38,6 +38,7 @@ Gui.updateLocale()
 
 import SheetMetalBendSolid
 import SheetMetalBaseCmd
+from SheetMetalLogger import SMLogger, UnfoldException, BendException, TreeException
 
 def smWarnDialog(msg):
     diag = QtGui.QMessageBox(QtGui.QMessageBox.Warning, 'Error in macro MessageBox', msg)
@@ -66,7 +67,7 @@ def smthk(obj, foldface) :
   normal = foldface.normalAt(0,0)
   theVol = obj.Volume
   if theVol < 0.0001:
-      SMError("Shape is not a real 3D-object or to small for a metal-sheet!")
+      SMLogger.error("Shape is not a real 3D-object or to small for a metal-sheet!")
   else:
       # Make a first estimate of the thickness
       estimated_thk = theVol/(foldface.Area)

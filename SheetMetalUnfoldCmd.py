@@ -9,6 +9,7 @@ except:
     from Drawing import projectEx
 
 from engineering_mode import engineering_mode_enabled
+from SheetMetalLogger import SMLogger, UnfoldException, BendException, TreeException
 
 
 class SMUnfoldUnattendedCommandClass:
@@ -32,11 +33,11 @@ class SMUnfoldUnattendedCommandClass:
         }
 
     def Activated(self):
-        SMMessage("Running unattended unfold...")
+        SMLogger.message("Running unattended unfold...")
         try:
             taskd = TaskPanel()
         except ValueError as e:
-            SMErrorBox(e.args[0])
+            SMLogger.error(e.args[0])
             return
 
         pg = FreeCAD.ParamGet("User parameter:BaseApp/Preferences/Mod/sheetmetal")

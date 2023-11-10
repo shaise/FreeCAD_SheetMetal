@@ -29,6 +29,8 @@ from PySide import QtCore, QtGui
 import FreeCAD, FreeCADGui, Part, os, math
 import SheetMetalBaseCmd
 
+from SheetMetalLogger import SMLogger, UnfoldException, BendException, TreeException
+
 __dir__ = os.path.dirname(__file__)
 iconPath = os.path.join( __dir__, 'Resources', 'icons' )
 smEpsilon = 0.0000001
@@ -65,7 +67,7 @@ def smthk(obj, foldface) :
   normal = foldface.normalAt(0,0)
   theVol = obj.Volume
   if theVol < 0.0001:
-      SMError("Shape is not a real 3D-object or to small for a metal-sheet!")
+      SMLogger.error("Shape is not a real 3D-object or to small for a metal-sheet!")
   else:
       # Make a first estimate of the thickness
       estimated_thk = theVol/(obj.Area / 2.0)
