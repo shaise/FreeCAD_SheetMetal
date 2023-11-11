@@ -3149,8 +3149,16 @@ def processUnfold(
     unfoldShape.Shape = shape
 
     if genSketch:
+        #locate the projection face
+        unfoldobj = shape
+        for face in shape.Faces:
+            fnorm = face.normalAt(0,0)
+            isSameDir = abs(fnorm.dot(norm) - 1.0) < 0.00001
+            if isSameDir:
+                unfoldobj = face
+                break
         edges = []
-        perimEdges = projectEx(shape, norm)[0]
+        perimEdges = projectEx(unfoldobj, norm)[0]
         edges.append(perimEdges)
         if len(foldLines) > 0:
             co = Part.makeCompound(foldLines)
