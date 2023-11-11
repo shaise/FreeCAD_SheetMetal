@@ -100,6 +100,7 @@ Starting from FreeCAD 0.17 it can be installed via the [Addon Manager](https://g
 * FreeCAD Forum announcement/discussion [thread](https://forum.freecadweb.org/viewtopic.php?f=3&t=60818) 
 
 #### Release notes: 
+* V0.3.11 11 Nov 2023:  Fix broken engineering mode. Some unfold gui cleanup.  
 * V0.3.10 09 Nov 2023:  Add base Sheetmetal shape tool, proposed by [@blindmessenger][opic82482].  
 * V0.3.02 10 Oct 2023:  Add Polish translation by [@kaktusus][kaktusus].  
 * V0.3.01 09 Oct 2023:  Add Spanish translation by [@hasecilu][hasecilu].  
