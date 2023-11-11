@@ -110,7 +110,7 @@ class SMUnfoldTaskPanel:
             results["lookupTable"] = lookupTable.k_factor_lookup
 
         self.pg.SetString("kFactorStandard", str(results["kFactorStandard"]))
-        self.pg.SetString("manualKFactor", str(self.form.kFactSpin.value()))
+        self.pg.SetFloat("manualKFactor", float(self.form.kFactSpin.value()))
         self.pg.SetBool("genSketch", results["genSketch"])
 
         self.pg.SetString("genColor", results["genSketchColor"])
