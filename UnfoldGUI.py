@@ -54,15 +54,13 @@ class SMUnfoldTaskPanel:
         self.chkSketchChange()
         self.populateMdsList()
 
-    def _getExportType(self):
-        if not self.form.chkExport.isChecked():
+    def _getExportType(self, typeonly = False):
+        if not typeonly and not self.form.chkExport.isChecked():
             return None
-        if self.form.dxfExport.isChecked():
-            return "dxf"
-        elif self.form.svgExport.isChecked():
+        if self.form.svgExport.isChecked():
             return "svg"
         else:
-            return None
+            return "dxf"
 
     def _getData(self):
         kFactorStandard = "din" if self.form.kfactorDin.isChecked() else "ansi"
@@ -97,6 +95,8 @@ class SMUnfoldTaskPanel:
         self.pg.SetString("bendColor", results["bendSketchColor"])
         self.pg.SetString("internalColor", results["intSketchColor"])
         self.pg.SetBool("separateSketches", results["separateSketches"])
+        self.pg.SetBool("exportEn", self.form.chkExport.isChecked())
+        self.pg.SetString("exportType", self._getExportType(True))
 
         return results
 
@@ -107,9 +107,6 @@ class SMUnfoldTaskPanel:
             self.form.kfactorAnsi.setChecked(True)
         else:
             self.form.kfactorDin.setChecked(True)
-
-        self.form.dxfExport.setChecked(False)
-        self.form.svgExport.setChecked(False)
 
         self.form.chkSketch.stateChanged.connect(self.chkSketchChange)
         self.form.chkSeparate.stateChanged.connect(self.chkSketchChange)
@@ -135,6 +132,12 @@ class SMUnfoldTaskPanel:
         self.form.kFactSpin.setValue(self.pg.GetFloat("manualKFactor", KFACTOR))
 
         self.form.chkSeparate.setEnabled(self.pg.GetBool("separateSketches", False))
+
+        self.form.chkExport.setCheckState(self._boolToState(self.pg.GetBool("exportEn", False)))
+        if self.pg.GetString("exportType", "dxf") == "dxf":
+            self.form.dxfExport.setChecked(True)
+        else:
+            self.form.svgExport.setChecked(True)
 
         self._setData()
         self.form.update()
