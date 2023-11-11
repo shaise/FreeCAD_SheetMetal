@@ -16,6 +16,9 @@ BENDSKETCHCOLOR = "#c00000"
 INTSKETCHCOLOR = "#ff5733"
 KFACTOR = 0.40
 
+last_selected_mds = "none"
+mds_help_url = "https://github.com/shaise/FreeCAD_SheetMetal#material-definition-sheet"
+
 mw = FreeCADGui.getMainWindow()
 
 
@@ -50,10 +53,6 @@ class SMUnfoldTaskPanel:
     def _boolToState(self, bool):
         return QtCore.Qt.Checked if bool else QtCore.Qt.Unchecked
 
-    def _setData(self):
-        self.chkSketchChange()
-        self.populateMdsList()
-
     def _getExportType(self, typeonly = False):
         if not typeonly and not self.form.chkExport.isChecked():
             return None
@@ -61,6 +60,12 @@ class SMUnfoldTaskPanel:
             return "svg"
         else:
             return "dxf"
+        
+    def _isManualKSelected(self):
+        return self.form.availableMds.currentIndex() == (self.form.availableMds.count() - 1)
+    
+    def _isNoMdsSelected(self):
+        return self.form.availableMds.currentIndex() == 0
 
     def _getData(self):
         kFactorStandard = "din" if self.form.kfactorDin.isChecked() else "ansi"
@@ -76,10 +81,16 @@ class SMUnfoldTaskPanel:
             "kFactorStandard": kFactorStandard,
         }
 
-        if self.form.availableMds.currentText() == "Manual K-Factor":
+        if self._isManualKSelected():
             results["lookupTable"] = {1: self.form.kFactSpin.value()}
-        elif self.form.availableMds.currentText() == "None":
-            SMLogger.warningBox("No material definition sheet selected")
+        elif self._isNoMdsSelected():
+            msg = "Unfold operation needs to know K-factor value(s) to be used."
+            SMLogger.warning(msg)
+            msg += "<ol>"
+            msg += "<li>Either select 'Manual K-factor'</li>"
+            msg += "<li>Or use a <a href='%s'>Material Definition Sheet</a></li>" % mds_help_url
+            msg += "</ol>"
+            QtGui.QMessageBox.warning(None, "Warning", msg)
             return None
         else:
             lookupTable = SheetMetalKfactor.KFactorLookupTable(
@@ -110,6 +121,7 @@ class SMUnfoldTaskPanel:
 
         self.form.chkSketch.stateChanged.connect(self.chkSketchChange)
         self.form.chkSeparate.stateChanged.connect(self.chkSketchChange)
+        self.form.availableMds.currentIndexChanged.connect(self.availableMdsChacnge)
 
         self.form.chkSeparate.setCheckState(
             self._boolToState(self.pg.GetBool("separateSketches"))
@@ -139,7 +151,10 @@ class SMUnfoldTaskPanel:
         else:
             self.form.svgExport.setChecked(True)
 
-        self._setData()
+        self.chkSketchChange()
+        self.populateMdsList()
+        self.availableMdsChacnge()
+
         self.form.update()
         FreeCAD.ActiveDocument.openTransaction("Unfold")
 
@@ -219,19 +234,19 @@ class SMUnfoldTaskPanel:
         sheetnames = SheetMetalKfactor.getSpreadSheetNames()
         self.form.availableMds.clear()
 
-        if not engineering_mode_enabled():
-            self.form.availableMds.addItem("Manual K-Factor")
+        self.form.availableMds.addItem("Please select")
+        for mds in sheetnames:
+            if (mds.Label.startswith("material_")):
+                self.form.availableMds.addItem(mds.Label)
 
-        if len(sheetnames) == 0:
-            self.form.availableMds.addItem("None")
-        else:
-            for mds in sheetnames:
-                if (mds.Label.startswith("material_")):
-                    self.form.availableMds.addItem(mds.Label)
+        self.form.availableMds.addItem("Manual K-Factor")
 
-
-
-        self.form.availableMds.setCurrentIndex(0)
+        if len(sheetnames) == 1:
+            self.form.availableMds.setCurrentIndex(1)
+        elif engineering_mode_enabled():
+            self.form.availableMds.setCurrentIndex(0)
+        elif len(sheetnames) == 0:
+            self.form.availableMds.setCurrentIndex(1)
 
     def chkSketchChange(self):
         self.form.chkSeparate.setEnabled(self.form.chkSketch.isChecked())
@@ -247,3 +262,10 @@ class SMUnfoldTaskPanel:
         enabled = self.form.chkSketch.isChecked() and self.form.chkSeparate.isChecked()
         self.form.bendColor.setEnabled(enabled)
         self.form.internalColor.setEnabled(enabled)
+
+    def availableMdsChacnge(self):
+        isManualK = self._isManualKSelected()
+        self.form.kfactorAnsi.setEnabled(isManualK)
+        self.form.kfactorDin.setEnabled(isManualK)
+        self.form.kFactSpin.setEnabled(isManualK)
+        
