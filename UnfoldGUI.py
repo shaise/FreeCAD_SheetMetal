@@ -66,6 +66,17 @@ class SMUnfoldTaskPanel:
     
     def _isNoMdsSelected(self):
         return self.form.availableMds.currentIndex() == 0
+    
+    def _updateSelectedMds(self):
+        global last_selected_mds
+        last_selected_mds = self.form.availableMds.currentText()
+
+    def _getLastSelectedMdsIndex(self):
+        global last_selected_mds
+        for i in range(self.form.availableMds.count()):
+            if self.form.availableMds.itemText(i) == last_selected_mds:
+                return i
+        return -1
 
     def _getData(self):
         kFactorStandard = "din" if self.form.kfactorDin.isChecked() else "ansi"
@@ -112,7 +123,6 @@ class SMUnfoldTaskPanel:
         return results
 
     def setupUi(self):
-
         kFactorStandard = self.pg.GetString("kFactorStandard", "ansi")
         if kFactorStandard == "ansi":
             self.form.kfactorAnsi.setChecked(True)
@@ -159,9 +169,11 @@ class SMUnfoldTaskPanel:
         FreeCAD.ActiveDocument.openTransaction("Unfold")
 
     def accept(self):
+        self._updateSelectedMds()
         params = self._getData()
         if params is None:
             return
+        
 
         try:
             result = smu.processUnfold(
@@ -238,10 +250,13 @@ class SMUnfoldTaskPanel:
         for mds in sheetnames:
             if (mds.Label.startswith("material_")):
                 self.form.availableMds.addItem(mds.Label)
-
         self.form.availableMds.addItem("Manual K-Factor")
 
-        if len(sheetnames) == 1:
+        selMdsIndex = self._getLastSelectedMdsIndex()
+
+        if (selMdsIndex >= 0):
+            self.form.availableMds.setCurrentIndex(selMdsIndex)
+        elif len(sheetnames) == 1:
             self.form.availableMds.setCurrentIndex(1)
         elif engineering_mode_enabled():
             self.form.availableMds.setCurrentIndex(0)
