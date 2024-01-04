@@ -236,7 +236,7 @@ class SMUnfoldTaskPanel:
         filename = f"{FreeCAD.ActiveDocument.FileName[0:-6]}-{obj.Name}.{self._getExportType()}"
         print("Exporting to " + filename)
 
-        if self._getExportType == "dxf":
+        if self._getExportType() == "dxf":
             importDXF.export(__objs__, filename)
         else:
             importSVG.export(__objs__, filename)

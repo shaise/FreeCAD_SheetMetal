@@ -100,6 +100,7 @@ Starting from FreeCAD 0.17 it can be installed via the [Addon Manager](https://g
 * FreeCAD Forum announcement/discussion [thread](https://forum.freecadweb.org/viewtopic.php?f=3&t=60818) 
 
 #### Release notes: 
+* V0.3.14 04 Jan 2024:  Fix export of dxf.  
 * V0.3.13 10 Dec 2023:  update polish translations by [@kaktusus][kaktusus].  
 * V0.3.12 11 Nov 2023:  Fix duplicate lines in unfold sketches issue #284.  
 * V0.3.11 11 Nov 2023:  Fix broken engineering mode. Some unfold gui cleanup.  
