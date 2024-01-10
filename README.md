@@ -100,6 +100,7 @@ Starting from FreeCAD 0.17 it can be installed via the [Addon Manager](https://g
 * FreeCAD Forum announcement/discussion [thread](https://forum.freecadweb.org/viewtopic.php?f=3&t=60818) 
 
 #### Release notes: 
+* V0.3.15 10 Jan 2024:  Unfold compatability with old freecad versions by [@ksigurdur][ksigurdur].  
 * V0.3.14 04 Jan 2024:  Fix export of dxf.  
 * V0.3.13 10 Dec 2023:  update polish translations by [@kaktusus][kaktusus].  
 * V0.3.12 11 Nov 2023:  Fix duplicate lines in unfold sketches issue #284.  
@@ -204,6 +205,7 @@ Starting from FreeCAD 0.17 it can be installed via the [Addon Manager](https://g
 [sliptonic]: https://github.com/sliptonic
 [hasecilu]: https://github.com/hasecilu
 [kaktusus]: https://github.com/kaktusus
+[ksigurdur]: https://github.com/ksigurdur
 [topic82482]: https://forum.freecad.org/viewtopic.php?t=82482
 [30]: https://github.com/shaise/FreeCAD_SheetMetal/issues/30
 [33]: https://github.com/shaise/FreeCAD_SheetMetal/issues/33
