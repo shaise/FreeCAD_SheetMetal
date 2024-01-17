@@ -328,10 +328,7 @@ class SMSketchOnSheetVP:
     return None
 
   def __setstate__(self, state):
-    if state is not None:
-      import FreeCAD
-      doc = FreeCAD.ActiveDocument #crap
-      self.Object = doc.getObject(state['ObjectName'])
+    self.loads(state)
 
   # dumps and loads replace __getstate__ and __setstate__ post v. 0.21.2
   def dumps(self):
@@ -382,10 +379,7 @@ class SMSketchOnSheetPDVP:
     return None
 
   def __setstate__(self, state):
-    if state is not None:
-      import FreeCAD
-      doc = FreeCAD.ActiveDocument #crap
-      self.Object = doc.getObject(state['ObjectName'])
+    self.loads(state)
 
   # dumps and loads replace __getstate__ and __setstate__ post v. 0.21.2
   def dumps(self):

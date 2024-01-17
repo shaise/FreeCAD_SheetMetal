@@ -100,6 +100,8 @@ Starting from FreeCAD 0.17 it can be installed via the [Addon Manager](https://g
 * FreeCAD Forum announcement/discussion [thread](https://forum.freecadweb.org/viewtopic.php?f=3&t=60818) 
 
 #### Release notes: 
+* V0.3.16 17 Jan 2024:  Compatability with python 3.11 by [@Syres916][Syres916].  
+                      - Remove debug libraries by [@Syres916][Syres916].  
 * V0.3.15 10 Jan 2024:  Unfold compatability with old freecad versions by [@ksigurdur][ksigurdur].  
 * V0.3.14 04 Jan 2024:  Fix export of dxf.  
 * V0.3.13 10 Dec 2023:  update polish translations by [@kaktusus][kaktusus].  
