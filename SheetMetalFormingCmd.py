@@ -228,7 +228,17 @@ class SMFormingVP:
     #        return {'ObjectName' : self.Object.Name}
     return None
 
-  def __setstate__(self,state):
+  def __setstate__(self, state):
+    if state is not None:
+      import FreeCAD
+      doc = FreeCAD.ActiveDocument #crap
+      self.Object = doc.getObject(state['ObjectName'])
+
+  # dumps and loads replace __getstate__ and __setstate__ post v. 0.21.2
+  def dumps(self):
+    return None
+
+  def loads(self, state):
     if state is not None:
       import FreeCAD
       doc = FreeCAD.ActiveDocument #crap
@@ -292,7 +302,17 @@ class SMFormingPDVP:
     #        return {'ObjectName' : self.Object.Name}
     return None
 
-  def __setstate__(self,state):
+  def __setstate__(self, state):
+    if state is not None:
+      import FreeCAD
+      doc = FreeCAD.ActiveDocument #crap
+      self.Object = doc.getObject(state['ObjectName'])
+
+  # dumps and loads replace __getstate__ and __setstate__ post v. 0.21.2
+  def dumps(self):
+    return None
+
+  def loads(self, state):
     if state is not None:
       import FreeCAD
       doc = FreeCAD.ActiveDocument #crap
