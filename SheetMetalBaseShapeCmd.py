@@ -215,9 +215,16 @@ class SMBaseShapeViewProviderFlat:
         #        return {'ObjectName' : self.Object.Name}
         return None
 
-    def __setstate__(self,state):
+    def __setstate__(self, state):
+        self.loads(state)
+
+    # dumps and loads replace __getstate__ and __setstate__ post v. 0.21.2
+    def dumps(self):
+        return None
+
+    def loads(self, state):
         if state is not None:
-          self.Object = FreeCAD.ActiveDocument.getObject(state['ObjectName'])
+            self.Object = FreeCAD.ActiveDocument.getObject(state['ObjectName'])
 
     def claimChildren(self):
         return []

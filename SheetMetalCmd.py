@@ -1415,6 +1415,13 @@ class SMViewProviderTree:
         return None
 
     def __setstate__(self, state):
+        self.loads(state)
+
+    # dumps and loads replace __getstate__ and __setstate__ post v. 0.21.2
+    def dumps(self):
+        return None
+
+    def loads(self, state):
         if state is not None:
             import FreeCAD
 
@@ -1495,6 +1502,13 @@ class SMViewProviderFlat:
         return None
 
     def __setstate__(self, state):
+        self.loads(state)
+
+    # dumps and loads replace __getstate__ and __setstate__ post v. 0.21.2
+    def dumps(self):
+        return None
+
+    def loads(self, state):
         if state is not None:
             import FreeCAD
 

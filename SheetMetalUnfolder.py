@@ -108,9 +108,9 @@ from FreeCAD import Base
 import DraftVecUtils, math, time
 import Draft
 
-import traceback
+# import traceback
 
-traceback.print_exc()
+# traceback.print_exc()
 
 try:
     from TechDraw import projectEx
