@@ -100,6 +100,7 @@ Starting from FreeCAD 0.17 it can be installed via the [Addon Manager](https://g
 * FreeCAD Forum announcement/discussion [thread](https://forum.freecadweb.org/viewtopic.php?f=3&t=60818) 
 
 #### Release notes: 
+* V0.4.01 10 Feb 2024:  Fix basic shape dimensions by [@RexLinz][RexLinz].  
 * V0.4.00 27 Jan 2024:  Relicense SheetMetal WB from GPL3 to LGPL2 by [@prokoudine][prokoudine].  
 * V0.3.16 17 Jan 2024:  Compatability with python 3.11 by [@Syres916][Syres916].  
                       - Remove debug libraries by [@Syres916][Syres916].  
@@ -210,6 +211,7 @@ Starting from FreeCAD 0.17 it can be installed via the [Addon Manager](https://g
 [kaktusus]: https://github.com/kaktusus
 [ksigurdur]: https://github.com/ksigurdur
 [prokoudine]: https://github.com/prokoudine
+[RexLinz]: https://github.com/RexLinz
 [topic82482]: https://forum.freecad.org/viewtopic.php?t=82482
 [30]: https://github.com/shaise/FreeCAD_SheetMetal/issues/30
 [33]: https://github.com/shaise/FreeCAD_SheetMetal/issues/33

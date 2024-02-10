@@ -140,15 +140,17 @@ class BaseShapeTaskPanel:
 
 def smCreateBaseShape(type, thickness, radius, width, length, height, flangeWidth, fillGaps):
     bendCompensation = thickness + radius
-    numfolds = 1
-    width -= bendCompensation
-    height -= bendCompensation
+    height -= bendCompensation    
     if type == "U-Shape":
         numfolds = 2
-        width -= bendCompensation
+        width -= 2.0 * bendCompensation
     elif type == "Tub" or type == "Hat" or type == "Box":
-        length -= 2.0 * bendCompensation
         numfolds = 4
+        width -= 2.0 * bendCompensation
+        length -= 2.0 * bendCompensation
+    else:
+        numfolds = 1
+        width -= bendCompensation
     if type == "Hat" or type == "Box":
         height -= bendCompensation
         flangeWidth -= radius
