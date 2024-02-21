@@ -169,6 +169,9 @@ def smFold(bendR = 1.0, bendA = 90.0, kfactor = 0.5, invertbend = False, flipped
       #Part.show(solid1,"solid1")
 
       bendEdges = FoldShape.common(tool)
+      if tool.Length <= (bendEdges.Edges[0].Length * 1.002):
+          FreeCAD.Console.PrintError('The bend line sketch ' + bendlinesketch.Label +  ' is not overhanging'
+                  ' the face sufficiently at one end or both, extend to get reliable results for the unfold operation\n')
       #Part.show(bendEdges,"bendEdges")
       bendEdge = bendEdges.Edges[0]
       if not(flipped) :
@@ -377,7 +380,8 @@ class AddFoldWallCommandClass():
             'Accel': "C, F",
             'ToolTip' : FreeCAD.Qt.translate('SheetMetal','Fold a wall of metal sheet\n'
             '1. Select a flat face on sheet metal and\n'
-            '2. Select a bend line(sketch) on same face(size more than face) to create sheetmetal fold.\n'
+            '2. Select a bend line (sketch) on same face (ends of sketch bend lines must'
+                       ' extend beyond edges of face) to create sheetmetal fold.\n'
             '3. Use Property editor to modify other parameters')}
 
   def Activated(self):
