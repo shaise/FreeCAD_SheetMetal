@@ -407,7 +407,7 @@ class AddSketchOnSheetCommandClass():
     return {'Pixmap'  : os.path.join( iconPath , 'SheetMetal_SketchOnSheet.svg'), # the name of a svg file available in the resources
             'MenuText': FreeCAD.Qt.translate('SheetMetal','Sketch On Sheet metal'),
             'Accel': "M, S",
-            'ToolTip' : FreeCAD.Qt.translate('SheetMetal',' Extruded cut from Sketch On Sheet metal faces\n'
+            'ToolTip' : FreeCAD.Qt.translate('SheetMetal', 'Extruded cut from Sketch On Sheet metal faces\n'
             '1. Select a flat face on sheet metal and\n'
             '2. Select a sketch on same face to create sheetmetal extruded cut.\n'
             '3. Use Property editor to modify other parameters')}

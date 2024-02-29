@@ -27,6 +27,7 @@ from PySide import QtCore
 import smwb_locator
 import os
 from engineering_mode import engineering_mode_enabled
+import FreeCAD
 from FreeCAD import Gui
 
 smWBpath = os.path.dirname(smwb_locator.__file__)
@@ -50,7 +51,7 @@ class SMWorkbench(Workbench):
     global smWBpath
     global smWB_icons_path
 
-    MenuText = "Sheet Metal"
+    MenuText = FreeCAD.Qt.translate("SheetMetal", "Sheet Metal")
     ToolTip = FreeCAD.Qt.translate(
         "SheetMetal",
         "Sheet Metal workbench allows for designing and unfolding sheet metal parts",
@@ -91,9 +92,11 @@ class SMWorkbench(Workbench):
         if engineering_mode_enabled():
             self.list.insert(self.list.index("SMUnfold") + 1, "SMUnfoldUnattended")
         self.appendToolbar(
-            "Sheet Metal", self.list
+            FreeCAD.Qt.translate("SheetMetal", "Sheet Metal"), self.list
         )  # creates a new toolbar with your commands
-        self.appendMenu("Sheet Metal", self.list)  # creates a new menu
+        self.appendMenu(
+            FreeCAD.Qt.translate("SheetMetal", "&Sheet Metal"), self.list
+        )  # creates a new menu
         # self.appendMenu(["An existing Menu","My submenu"],self.list) # appends a submenu to an existing menu
         FreeCADGui.addPreferencePage(os.path.join(smWBpath, "SMprefs.ui"), "SheetMetal")
         FreeCADGui.addIconPath(smWB_icons_path)
@@ -110,7 +113,7 @@ class SMWorkbench(Workbench):
         "This is executed whenever the user right-clicks on screen"
         # "recipient" will be either "view" or "tree"
         self.appendContextMenu(
-            "Sheet Metal", self.list
+            FreeCAD.Qt.translate("SheetMetal", "Sheet Metal"), self.list
         )  # add commands to the context menu
 
     def GetClassName(self):
