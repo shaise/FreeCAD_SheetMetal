@@ -100,6 +100,9 @@ Starting from FreeCAD 0.17 it can be installed via the [Addon Manager](https://g
 * FreeCAD Forum announcement/discussion [thread](https://forum.freecadweb.org/viewtopic.php?f=3&t=60818) 
 
 #### Release notes: 
+* V0.4.03 10 Mar 2024:  Add Spanish translation by [@hasecilu][hasecilu].  
+                      - Update translation script by [@hasecilu][hasecilu].  
+                      - Set fold direction by selected edge position 
 * V0.4.02 21 Feb 2024:  Update bend sketch tooltip by [@Syres916][Syres916].  
 * V0.4.01 10 Feb 2024:  Fix basic shape dimensions by [@RexLinz][RexLinz].  
 * V0.4.00 27 Jan 2024:  Relicense SheetMetal WB from GPL3 to LGPL2 by [@prokoudine][prokoudine].  
