@@ -434,12 +434,12 @@ def smEdge(selFaceName, MainObject):
     return seledge, selFace, thk, revAxisV
 
 
-def getBendetail(selFaceNames, MainObject, bendR, bendA, flipped, offset, gap1, gap2):
+def getBendetail(selItemNames, MainObject, bendR, bendA, isflipped, offset, gap1, gap2):
     mainlist = []
     edgelist = []
     nogap_edgelist = []
-    for selFaceName in selFaceNames:
-        lenEdge, selFace, thk, revAxisV = smEdge(selFaceName, MainObject)
+    for selItemName in selItemNames:
+        lenEdge, selFace, thk, revAxisV = smEdge(selItemName, MainObject)
 
         # find the large face connected with selected face
         list2 = MainObject.ancestorsOfType(lenEdge, Part.Face)
@@ -458,11 +458,15 @@ def getBendetail(selFaceNames, MainObject, bendR, bendA, flipped, offset, gap1, 
         if (thkDir.cross(revAxisV).normalize() - FaceDir).Length < smEpsilon:
             revAxisV = revAxisV * -1
 
+        flipped = isflipped
         # restrict angle
         if bendA < 0:
             bendA = -bendA
             flipped = not flipped
 
+        if type(MainObject.getElement(selItemName)) == Part.Edge:
+            flipped = not flipped
+       
         if not (flipped):
             revAxisP = lenEdge.valueAt(lenEdge.FirstParameter) + thkDir * (bendR + thk)
             revAxisV = revAxisV * -1
