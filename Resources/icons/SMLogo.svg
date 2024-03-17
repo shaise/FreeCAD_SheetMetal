@@ -1,1097 +1,468 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
 <svg
-   version="1.2"
-   height="64"
-   viewBox="0 0 169.33333 169.33333"
    width="64"
-   id="svg373"
-   sodipodi:docname="sheet metal icon.svg"
-   inkscape:version="1.2.2 (1:1.2.2+202305151914+b0a8486541)"
-   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   height="64"
+   id="svg2869"
+   version="1.1"
+   viewBox="0 0 64 64"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
    xmlns="http://www.w3.org/2000/svg"
    xmlns:svg="http://www.w3.org/2000/svg"
    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
    xmlns:cc="http://creativecommons.org/ns#"
    xmlns:dc="http://purl.org/dc/elements/1.1/">
-  <sodipodi:namedview
-     id="namedview375"
-     pagecolor="#ffffff"
-     bordercolor="#000000"
-     borderopacity="0.25"
-     inkscape:showpageshadow="2"
-     inkscape:pageopacity="0.0"
-     inkscape:pagecheckerboard="0"
-     inkscape:deskcolor="#d1d1d1"
-     inkscape:document-units="mm"
-     showgrid="false"
-     inkscape:zoom="0.25"
-     inkscape:cx="20"
-     inkscape:cy="42"
-     inkscape:window-width="2560"
-     inkscape:window-height="1368"
-     inkscape:window-x="0"
-     inkscape:window-y="0"
-     inkscape:window-maximized="1"
-     inkscape:current-layer="Page" />
-  <title
-     id="title2">FreeCAD SVG Export</title>
-  <desc
-     id="desc4">Drawing page: Page exported from FreeCAD document: Unnamed</desc>
   <defs
-     id="defs6" />
-  <g
-     inkscape:label="TechDraw"
-     id="Page"
-     inkscape:groupmode="layer">
-    <g
-       stroke="#000000"
-       stroke-width="1"
-       fill-rule="evenodd"
-       stroke-linecap="square"
-       fill="none"
-       stroke-linejoin="bevel"
-       id="DrawingContent"
-       transform="matrix(0.80234134,0,0,0.80240264,-1106.8102,-757.85611)"
-       style="fill:#00a9ff;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none">
-      <g
-         font-weight="400"
-         stroke="none"
-         transform="translate(1485,1050)"
-         font-family="'Sans Serif'"
-         font-style="normal"
-         fill="#ffffff"
-         fill-opacity="0"
-         font-size="31.75px"
-         id="g169"
-         style="fill:#00a9ff;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none">
-        <path
-           fill-rule="evenodd"
-           vector-effect="non-scaling-stroke"
-           d="M -70.7107,44.9073 0,85.7321 70.7107,44.9073 C 78.5212,40.3979 84.8528,29.4312 84.8528,20.4124 v -32.6598 l -70.7107,-40.8249 -7.07103,4.0825 v 19.7518 c 5.02733,5.3814 9.03193,12.3176 11.17863,19.36208 1.1384,2.6583 0.9962,5.61777 -0.3669,7.95311 -1.3409,2.348166 -3.8328,3.95107 -6.7041,4.29434 -7.1741,1.66316 -15.1833,1.66316 -22.3574,0 -2.9299,-0.35132 -5.464,-2.01421 -6.7841,-4.43829 -1.2902,-2.31283 -1.3989,-5.20395 -0.2869,-7.80916 2.1467,-7.04448 6.1513,-13.98068 11.17863,-19.36208 v -52.4117 l -7.07103,-4.0824 -70.7107,40.8248 v 65.3197 c 0,9.0188 6.3316,19.9855 14.1421,24.4949"
-           id="path167"
-           style="fill:#00a9ff;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none" />
-      </g>
-      <g
-         font-weight="400"
-         stroke="none"
-         transform="translate(1485,1050)"
-         font-family="'Sans Serif'"
-         font-style="normal"
-         fill="#ffffff"
-         fill-opacity="0"
-         font-size="31.75px"
-         id="g173"
-         style="fill:#00a9ff;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none">
-        <path
-           fill-rule="evenodd"
-           vector-effect="non-scaling-stroke"
-           d="M -11.1787,2.37153 -70.7107,36.7423 0,77.5672 70.7107,36.7423 11.1787,2.37153 c -7.1741,1.66316 -15.1833,1.66316 -22.3574,0"
-           id="path171"
-           style="fill:#00a9ff;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none" />
-      </g>
-      <g
-         font-weight="400"
-         stroke="none"
-         transform="translate(1485,1050)"
-         font-family="'Sans Serif'"
-         font-style="normal"
-         fill="#ffffff"
-         fill-opacity="0"
-         font-size="31.75px"
-         id="g177"
-         style="fill:#00a9ff;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none">
-        <path
-           fill-rule="evenodd"
-           vector-effect="non-scaling-stroke"
-           d="m -7.07107,-29.238 v -52.4117 l -70.71063,40.8249 v 65.3197 l 59.532,-34.37082 c 2.1467,-7.04448 6.1513,-13.98068 11.17863,-19.36208"
-           id="path175"
-           style="fill:#00a9ff;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none" />
-      </g>
-      <g
-         font-weight="400"
-         stroke="none"
-         transform="translate(1485,1050)"
-         font-family="'Sans Serif'"
-         font-style="normal"
-         fill="#ffffff"
-         fill-opacity="0"
-         font-size="31.75px"
-         id="g181"
-         style="fill:#00a9ff;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none">
-        <path
-           fill-rule="evenodd"
-           vector-effect="non-scaling-stroke"
-           d="M 18.2497,-9.87592 77.7817,24.4949 V -8.16497 L 7.07107,-48.9898 v 19.7518 c 5.02733,5.3814 9.03193,12.3176 11.17863,19.36208"
-           id="path179"
-           style="fill:#00a9ff;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none" />
-      </g>
-      <g
-         font-weight="400"
-         stroke="none"
-         transform="translate(1485,1050)"
-         font-family="'Sans Serif'"
-         font-style="normal"
-         fill="#ffffff"
-         fill-opacity="0"
-         font-size="31.75px"
-         id="g185"
-         style="fill:#00a9ff;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none">
-        <path
-           fill-rule="evenodd"
-           vector-effect="non-scaling-stroke"
-           d="m -11.1787,2.37153 c -2.9299,-0.35132 -5.464,-2.01421 -6.7841,-4.43829 -1.2902,-2.31283 -1.3989,-5.20395 -0.2869,-7.80916 l -59.532,34.37082 c 0,4.5094 3.1658,9.9928 7.071,12.2474 l 59.532,-34.37077"
-           id="path183"
-           style="fill:#00a9ff;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none" />
-      </g>
-      <g
-         font-weight="400"
-         stroke="none"
-         transform="translate(1485,1050)"
-         font-family="'Sans Serif'"
-         font-style="normal"
-         fill="#ffffff"
-         fill-opacity="0"
-         font-size="31.75px"
-         id="g189"
-         style="fill:#00a9ff;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none">
-        <path
-           fill-rule="evenodd"
-           vector-effect="non-scaling-stroke"
-           d="m 70.7107,36.7423 c 3.9052,-2.2546 7.071,-7.738 7.071,-12.2474 L 18.2497,-9.87592 c 1.1384,2.6583 0.9962,5.61777 -0.3669,7.95311 -1.3409,2.348166 -3.8328,3.95107 -6.7041,4.29434 l 59.532,34.37077"
-           id="path187"
-           style="fill:#00a9ff;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none" />
-      </g>
-      <g
-         font-weight="400"
-         stroke="none"
-         transform="translate(1485,1050)"
-         font-family="'Sans Serif'"
-         font-style="normal"
-         fill="#ffffff"
-         fill-opacity="0"
-         font-size="31.75px"
-         id="g193"
-         style="fill:#000000;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none">
-        <path
-           fill-rule="evenodd"
-           vector-effect="non-scaling-stroke"
-           d="m -7.07107,-81.6497 -7.07103,-4.0824 -70.7107,40.8248 7.0711,4.0825 70.71063,-40.8249"
-           id="path191"
-           style="fill:#000000;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none" />
-      </g>
-      <g
-         font-weight="400"
-         stroke="none"
-         transform="translate(1485,1050)"
-         font-family="'Sans Serif'"
-         font-style="normal"
-         fill="#ffffff"
-         fill-opacity="0"
-         font-size="31.75px"
-         id="g197"
-         style="fill:#000000;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none">
-        <path
-           fill-rule="evenodd"
-           vector-effect="non-scaling-stroke"
-           d="M 77.7817,-8.16497 84.8528,-12.2474 14.1421,-53.0723 7.07107,-48.9898 77.7817,-8.16497"
-           id="path195"
-           style="fill:#000000;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none" />
-      </g>
-      <g
-         font-weight="400"
-         stroke="none"
-         transform="translate(1485,1050)"
-         font-family="'Sans Serif'"
-         font-style="normal"
-         fill="#ffffff"
-         fill-opacity="0"
-         font-size="31.75px"
-         id="g201"
-         style="fill:#000000;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none">
-        <path
-           fill-rule="evenodd"
-           vector-effect="non-scaling-stroke"
-           d="M 0,85.7321 70.7107,44.9073 v -8.165 L 0,77.5672 v 8.1649"
-           id="path199"
-           style="fill:#000000;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none" />
-      </g>
-      <g
-         font-weight="400"
-         stroke="none"
-         transform="translate(1485,1050)"
-         font-family="'Sans Serif'"
-         font-style="normal"
-         fill="#ffffff"
-         fill-opacity="0"
-         font-size="31.75px"
-         id="g205"
-         style="fill:#000000;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none">
-        <path
-           fill-rule="evenodd"
-           vector-effect="non-scaling-stroke"
-           d="M -70.7107,44.9073 0,85.7321 V 77.5672 L -70.7107,36.7423 v 8.165"
-           id="path203"
-           style="fill:#000000;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none" />
-      </g>
-      <g
-         font-weight="400"
-         stroke="none"
-         transform="translate(1485,1050)"
-         font-family="'Sans Serif'"
-         font-style="normal"
-         fill="#ffffff"
-         fill-opacity="0"
-         font-size="31.75px"
-         id="g209"
-         style="fill:#000000;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none">
-        <path
-           fill-rule="evenodd"
-           vector-effect="non-scaling-stroke"
-           d="m -77.7817,-40.8248 v 65.3197 l -7.0711,-4.0825 v -65.3197 l 7.0711,4.0825"
-           id="path207"
-           style="fill:#000000;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none" />
-      </g>
-      <g
-         font-weight="400"
-         stroke="none"
-         transform="translate(1485,1050)"
-         font-family="'Sans Serif'"
-         font-style="normal"
-         fill="#ffffff"
-         fill-opacity="0"
-         font-size="31.75px"
-         id="g213"
-         style="fill:#000000;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none">
-        <path
-           fill-rule="evenodd"
-           vector-effect="non-scaling-stroke"
-           d="m 77.7817,24.4949 7.0711,-4.0825 v -32.6598 l -7.0711,4.08243 V 24.4949"
-           id="path211"
-           style="fill:#000000;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none" />
-      </g>
-      <g
-         font-weight="400"
-         stroke="none"
-         transform="translate(1485,1050)"
-         font-family="'Sans Serif'"
-         font-style="normal"
-         fill="#ffffff"
-         fill-opacity="0"
-         font-size="31.75px"
-         id="g217"
-         style="fill:#000000;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none">
-        <path
-           fill-rule="evenodd"
-           vector-effect="non-scaling-stroke"
-           d="m -70.7107,44.9073 v -8.165 c -3.9052,-2.2546 -7.071,-7.738 -7.071,-12.2474 l -7.0711,-4.0825 c 0,9.0188 6.3316,19.9855 14.1421,24.4949"
-           id="path215"
-           style="fill:#000000;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none" />
-      </g>
-      <g
-         font-weight="400"
-         stroke="none"
-         transform="translate(1485,1050)"
-         font-family="'Sans Serif'"
-         font-style="normal"
-         fill="#ffffff"
-         fill-opacity="0"
-         font-size="31.75px"
-         id="g221"
-         style="fill:#000005;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none">
-        <path
-           fill-rule="evenodd"
-           vector-effect="non-scaling-stroke"
-           d="m 70.7107,44.9073 v -8.165 c 3.9052,-2.2546 7.071,-7.738 7.071,-12.2474 l 7.0711,-4.0825 c 0,9.0188 -6.3316,19.9855 -14.1421,24.4949"
-           id="path219"
-           style="fill:#000005;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none" />
-      </g>
-      <g
-         font-weight="400"
-         stroke="#000000"
-         stroke-width="7"
-         transform="translate(1485,1050)"
-         font-family="'Sans Serif'"
-         font-style="normal"
-         stroke-linecap="round"
-         stroke-opacity="1"
-         fill="none"
-         stroke-linejoin="bevel"
-         font-size="31.75px"
-         id="g225"
-         style="fill:#00a9ff;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none">
-        <path
-           fill-rule="evenodd"
-           vector-effect="none"
-           d="m 77.7817,24.4949 7.0711,-4.0825"
-           id="path223"
-           style="fill:#00a9ff;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none" />
-      </g>
-      <g
-         font-weight="400"
-         stroke="#000000"
-         stroke-width="7"
-         transform="translate(1485,1050)"
-         font-family="'Sans Serif'"
-         font-style="normal"
-         stroke-linecap="round"
-         stroke-opacity="1"
-         fill="none"
-         stroke-linejoin="bevel"
-         font-size="31.75px"
-         id="g229"
-         style="fill:#00a9ff;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none">
-        <path
-           fill-rule="evenodd"
-           vector-effect="none"
-           d="m 77.7817,-8.16497 7.0711,-4.08243"
-           id="path227"
-           style="fill:#00a9ff;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none" />
-      </g>
-      <g
-         font-weight="400"
-         stroke="#000000"
-         stroke-width="7"
-         transform="translate(1485,1050)"
-         font-family="'Sans Serif'"
-         font-style="normal"
-         stroke-linecap="round"
-         stroke-opacity="1"
-         fill="none"
-         stroke-linejoin="bevel"
-         font-size="31.75px"
-         id="g233"
-         style="fill:#00a9ff;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none">
-        <path
-           fill-rule="evenodd"
-           vector-effect="none"
-           d="M 77.7817,24.4949 V -8.16497"
-           id="path231"
-           style="fill:#00a9ff;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none" />
-      </g>
-      <g
-         font-weight="400"
-         stroke="#000000"
-         stroke-width="7"
-         transform="translate(1485,1050)"
-         font-family="'Sans Serif'"
-         font-style="normal"
-         stroke-linecap="round"
-         stroke-opacity="1"
-         fill="none"
-         stroke-linejoin="bevel"
-         font-size="31.75px"
-         id="g237"
-         style="fill:#00a9ff;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none">
-        <path
-           fill-rule="evenodd"
-           vector-effect="none"
-           d="M 84.8528,20.4124 V -12.2474"
-           id="path235"
-           style="fill:#00a9ff;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none" />
-      </g>
-      <g
-         font-weight="400"
-         stroke="#000000"
-         stroke-width="7"
-         transform="translate(1485,1050)"
-         font-family="'Sans Serif'"
-         font-style="normal"
-         stroke-linecap="round"
-         stroke-opacity="1"
-         fill="none"
-         stroke-linejoin="bevel"
-         font-size="31.75px"
-         id="g241"
-         style="fill:#00a9ff;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none">
-        <path
-           fill-rule="evenodd"
-           vector-effect="none"
-           d="m 70.7107,36.7423 c 3.9052,-2.2546 7.071,-7.738 7.071,-12.2474"
-           id="path239"
-           style="fill:#00a9ff;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none" />
-      </g>
-      <g
-         font-weight="400"
-         stroke="#000000"
-         stroke-width="7"
-         transform="translate(1485,1050)"
-         font-family="'Sans Serif'"
-         font-style="normal"
-         stroke-linecap="round"
-         stroke-opacity="1"
-         fill="none"
-         stroke-linejoin="bevel"
-         font-size="31.75px"
-         id="g245"
-         style="fill:none;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none">
-        <path
-           fill-rule="evenodd"
-           vector-effect="none"
-           d="M 70.7107,44.9073 C 78.5212,40.3979 84.8528,29.4312 84.8528,20.4124"
-           id="path243"
-           style="fill:none;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none" />
-      </g>
-      <g
-         font-weight="400"
-         stroke="#000000"
-         stroke-width="7"
-         transform="translate(1485,1050)"
-         font-family="'Sans Serif'"
-         font-style="normal"
-         stroke-linecap="round"
-         stroke-opacity="1"
-         fill="none"
-         stroke-linejoin="bevel"
-         font-size="31.75px"
-         id="g249"
-         style="fill:#00a9ff;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none">
-        <path
-           fill-rule="evenodd"
-           vector-effect="none"
-           d="m 70.7107,44.9073 v -8.165"
-           id="path247"
-           style="fill:#00a9ff;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none" />
-      </g>
-      <g
-         font-weight="400"
-         stroke="#000000"
-         stroke-width="7"
-         transform="translate(1485,1050)"
-         font-family="'Sans Serif'"
-         font-style="normal"
-         stroke-linecap="round"
-         stroke-opacity="1"
-         fill="none"
-         stroke-linejoin="bevel"
-         font-size="31.75px"
-         id="g253"
-         style="fill:#00a9ff;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none">
-        <path
-           fill-rule="evenodd"
-           vector-effect="none"
-           d="m 7.07107,-48.9898 7.07103,-4.0825"
-           id="path251"
-           style="fill:#00a9ff;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none" />
-      </g>
-      <g
-         font-weight="400"
-         stroke="#000000"
-         stroke-width="7"
-         transform="translate(1485,1050)"
-         font-family="'Sans Serif'"
-         font-style="normal"
-         stroke-linecap="round"
-         stroke-opacity="1"
-         fill="none"
-         stroke-linejoin="bevel"
-         font-size="31.75px"
-         id="g257"
-         style="fill:#00a9ff;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none">
-        <path
-           fill-rule="evenodd"
-           vector-effect="none"
-           d="M 77.7817,-8.16497 7.07107,-48.9898"
-           id="path255"
-           style="fill:#00a9ff;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none" />
-      </g>
-      <g
-         font-weight="400"
-         stroke="#000000"
-         stroke-width="7"
-         transform="translate(1485,1050)"
-         font-family="'Sans Serif'"
-         font-style="normal"
-         stroke-linecap="round"
-         stroke-opacity="1"
-         fill="none"
-         stroke-linejoin="bevel"
-         font-size="31.75px"
-         id="g261"
-         style="fill:#00a9ff;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none">
-        <path
-           fill-rule="evenodd"
-           vector-effect="none"
-           d="M 84.8528,-12.2474 14.1421,-53.0723"
-           id="path259"
-           style="fill:#00a9ff;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none" />
-      </g>
-      <g
-         font-weight="400"
-         stroke="#000000"
-         stroke-width="7"
-         transform="translate(1485,1050)"
-         font-family="'Sans Serif'"
-         font-style="normal"
-         stroke-linecap="round"
-         stroke-opacity="1"
-         fill="none"
-         stroke-linejoin="bevel"
-         font-size="31.75px"
-         id="g265"
-         style="fill:none;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none">
-        <path
-           fill-rule="evenodd"
-           vector-effect="none"
-           d="M 18.2497,-9.87592 C 16.103,-16.9204 12.0984,-23.8566 7.07107,-29.238"
-           id="path263"
-           style="fill:none;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none" />
-      </g>
-      <g
-         font-weight="400"
-         stroke="#000000"
-         stroke-width="7"
-         transform="translate(1485,1050)"
-         font-family="'Sans Serif'"
-         font-style="normal"
-         stroke-linecap="round"
-         stroke-opacity="1"
-         fill="none"
-         stroke-linejoin="bevel"
-         font-size="31.75px"
-         id="g269"
-         style="fill:#00a9ff;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none">
-        <path
-           fill-rule="evenodd"
-           vector-effect="none"
-           d="M 7.07107,-48.9898 V -29.238"
-           id="path267"
-           style="fill:#00a9ff;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none" />
-      </g>
-      <g
-         font-weight="400"
-         stroke="#000000"
-         stroke-width="7"
-         transform="translate(1485,1050)"
-         font-family="'Sans Serif'"
-         font-style="normal"
-         stroke-linecap="round"
-         stroke-opacity="1"
-         fill="none"
-         stroke-linejoin="bevel"
-         font-size="31.75px"
-         id="g273"
-         style="fill:#00a9ff;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none">
-        <path
-           fill-rule="evenodd"
-           vector-effect="none"
-           d="M 18.2497,-9.87592 77.7817,24.4949"
-           id="path271"
-           style="fill:#00a9ff;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none" />
-      </g>
-      <g
-         font-weight="400"
-         stroke="#000000"
-         stroke-width="7"
-         transform="translate(1485,1050)"
-         font-family="'Sans Serif'"
-         font-style="normal"
-         stroke-linecap="round"
-         stroke-opacity="1"
-         fill="none"
-         stroke-linejoin="bevel"
-         font-size="31.75px"
-         id="g277"
-         style="fill:#00a9ff;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none">
-        <path
-           fill-rule="evenodd"
-           vector-effect="none"
-           d="M 70.7107,36.7423 11.1787,2.37153"
-           id="path275"
-           style="fill:#00a9ff;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none" />
-      </g>
-      <g
-         font-weight="400"
-         stroke="#000000"
-         stroke-width="7"
-         transform="translate(1485,1050)"
-         font-family="'Sans Serif'"
-         font-style="normal"
-         stroke-linecap="round"
-         stroke-opacity="1"
-         fill="none"
-         stroke-linejoin="bevel"
-         font-size="31.75px"
-         id="g281"
-         style="fill:none;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none">
-        <path
-           fill-rule="evenodd"
-           vector-effect="none"
-           d="m 18.2497,-9.87592 c 1.1384,2.6583 0.9962,5.61777 -0.3669,7.95311"
-           id="path279"
-           style="fill:none;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none" />
-      </g>
-      <g
-         font-weight="400"
-         stroke="#000000"
-         stroke-width="7"
-         transform="translate(1485,1050)"
-         font-family="'Sans Serif'"
-         font-style="normal"
-         stroke-linecap="round"
-         stroke-opacity="1"
-         fill="none"
-         stroke-linejoin="bevel"
-         font-size="31.75px"
-         id="g285"
-         style="fill:none;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none">
-        <path
-           fill-rule="evenodd"
-           vector-effect="none"
-           d="M 17.8828,-1.92281 C 16.5419,0.425356 14.05,2.02826 11.1787,2.37153"
-           id="path283"
-           style="fill:none;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none" />
-      </g>
-      <g
-         font-weight="400"
-         stroke="#000000"
-         stroke-width="7"
-         transform="translate(1485,1050)"
-         font-family="'Sans Serif'"
-         font-style="normal"
-         stroke-linecap="round"
-         stroke-opacity="1"
-         fill="none"
-         stroke-linejoin="bevel"
-         font-size="31.75px"
-         id="g289"
-         style="fill:#00a9ff;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none">
-        <path
-           fill-rule="evenodd"
-           vector-effect="none"
-           d="M 0,85.7321 V 77.5672"
-           id="path287"
-           style="fill:#00a9ff;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none" />
-      </g>
-      <g
-         font-weight="400"
-         stroke="#000000"
-         stroke-width="7"
-         transform="translate(1485,1050)"
-         font-family="'Sans Serif'"
-         font-style="normal"
-         stroke-linecap="round"
-         stroke-opacity="1"
-         fill="none"
-         stroke-linejoin="bevel"
-         font-size="31.75px"
-         id="g293"
-         style="fill:#00a9ff;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none">
-        <path
-           fill-rule="evenodd"
-           vector-effect="none"
-           d="M 0,85.7321 70.7107,44.9073"
-           id="path291"
-           style="fill:#00a9ff;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none" />
-      </g>
-      <g
-         font-weight="400"
-         stroke="#000000"
-         stroke-width="7"
-         transform="translate(1485,1050)"
-         font-family="'Sans Serif'"
-         font-style="normal"
-         stroke-linecap="round"
-         stroke-opacity="1"
-         fill="none"
-         stroke-linejoin="bevel"
-         font-size="31.75px"
-         id="g297"
-         style="fill:#00a9ff;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none">
-        <path
-           fill-rule="evenodd"
-           vector-effect="none"
-           d="M 0,77.5672 70.7107,36.7423"
-           id="path295"
-           style="fill:#00a9ff;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none" />
-      </g>
-      <g
-         font-weight="400"
-         stroke="#000000"
-         stroke-width="7"
-         transform="translate(1485,1050)"
-         font-family="'Sans Serif'"
-         font-style="normal"
-         stroke-linecap="round"
-         stroke-opacity="1"
-         fill="none"
-         stroke-linejoin="bevel"
-         font-size="31.75px"
-         id="g301"
-         style="fill:#00a9ff;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none">
-        <path
-           fill-rule="evenodd"
-           vector-effect="none"
-           d="M -11.1787,2.37153 -70.7107,36.7423"
-           id="path299"
-           style="fill:#00a9ff;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none" />
-      </g>
-      <g
-         font-weight="400"
-         stroke="#000000"
-         stroke-width="7"
-         transform="translate(1485,1050)"
-         font-family="'Sans Serif'"
-         font-style="normal"
-         stroke-linecap="round"
-         stroke-opacity="1"
-         fill="none"
-         stroke-linejoin="bevel"
-         font-size="31.75px"
-         id="g305"
-         style="fill:none;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none">
-        <path
-           fill-rule="evenodd"
-           vector-effect="none"
-           d="m -11.1787,2.37153 c 7.1741,1.66316 15.1833,1.66316 22.3574,0"
-           id="path303"
-           style="fill:none;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none" />
-      </g>
-      <g
-         font-weight="400"
-         stroke="#000000"
-         stroke-width="7"
-         transform="translate(1485,1050)"
-         font-family="'Sans Serif'"
-         font-style="normal"
-         stroke-linecap="round"
-         stroke-opacity="1"
-         fill="none"
-         stroke-linejoin="bevel"
-         font-size="31.75px"
-         id="g309"
-         style="fill:#00a9ff;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none">
-        <path
-           fill-rule="evenodd"
-           vector-effect="none"
-           d="M -70.7107,36.7423 0,77.5672"
-           id="path307"
-           style="fill:#00a9ff;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none" />
-      </g>
-      <g
-         font-weight="400"
-         stroke="#000000"
-         stroke-width="7"
-         transform="translate(1485,1050)"
-         font-family="'Sans Serif'"
-         font-style="normal"
-         stroke-linecap="round"
-         stroke-opacity="1"
-         fill="none"
-         stroke-linejoin="bevel"
-         font-size="31.75px"
-         id="g313"
-         style="fill:#00a9ff;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none">
-        <path
-           fill-rule="evenodd"
-           vector-effect="none"
-           d="M -70.7107,44.9073 0,85.7321"
-           id="path311"
-           style="fill:#00a9ff;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none" />
-      </g>
-      <g
-         font-weight="400"
-         stroke="#000000"
-         stroke-width="7"
-         transform="translate(1485,1050)"
-         font-family="'Sans Serif'"
-         font-style="normal"
-         stroke-linecap="round"
-         stroke-opacity="1"
-         fill="none"
-         stroke-linejoin="bevel"
-         font-size="31.75px"
-         id="g317"
-         style="fill:#00a9ff;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none">
-        <path
-           fill-rule="evenodd"
-           vector-effect="none"
-           d="m -70.7107,44.9073 v -8.165"
-           id="path315"
-           style="fill:#00a9ff;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none" />
-      </g>
-      <g
-         font-weight="400"
-         stroke="#000000"
-         stroke-width="7"
-         transform="translate(1485,1050)"
-         font-family="'Sans Serif'"
-         font-style="normal"
-         stroke-linecap="round"
-         stroke-opacity="1"
-         fill="none"
-         stroke-linejoin="bevel"
-         font-size="31.75px"
-         id="g321"
-         style="fill:none;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none">
-        <path
-           fill-rule="evenodd"
-           vector-effect="none"
-           d="m -11.1787,2.37153 c -2.9299,-0.35132 -5.464,-2.01421 -6.7841,-4.43829 -1.2902,-2.31283 -1.3989,-5.20395 -0.2869,-7.80916"
-           id="path319"
-           style="fill:none;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none" />
-      </g>
-      <g
-         font-weight="400"
-         stroke="#000000"
-         stroke-width="7"
-         transform="translate(1485,1050)"
-         font-family="'Sans Serif'"
-         font-style="normal"
-         stroke-linecap="round"
-         stroke-opacity="1"
-         fill="none"
-         stroke-linejoin="bevel"
-         font-size="31.75px"
-         id="g325"
-         style="fill:#00a9ff;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none">
-        <path
-           fill-rule="evenodd"
-           vector-effect="none"
-           d="m -77.7817,24.4949 59.532,-34.37082"
-           id="path323"
-           style="fill:#00a9ff;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none" />
-      </g>
-      <g
-         font-weight="400"
-         stroke="#000000"
-         stroke-width="7"
-         transform="translate(1485,1050)"
-         font-family="'Sans Serif'"
-         font-style="normal"
-         stroke-linecap="round"
-         stroke-opacity="1"
-         fill="none"
-         stroke-linejoin="bevel"
-         font-size="31.75px"
-         id="g329"
-         style="fill:#00a9ff;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none">
-        <path
-           fill-rule="evenodd"
-           vector-effect="none"
-           d="m -70.7107,36.7423 c -3.9052,-2.2546 -7.071,-7.738 -7.071,-12.2474"
-           id="path327"
-           style="fill:#00a9ff;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none" />
-      </g>
-      <g
-         font-weight="400"
-         stroke="#000000"
-         stroke-width="7"
-         transform="translate(1485,1050)"
-         font-family="'Sans Serif'"
-         font-style="normal"
-         stroke-linecap="round"
-         stroke-opacity="1"
-         fill="none"
-         stroke-linejoin="bevel"
-         font-size="31.75px"
-         id="g333"
-         style="fill:none;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none">
-        <path
-           fill-rule="evenodd"
-           vector-effect="none"
-           d="M -70.7107,44.9073 C -78.5212,40.3979 -84.8528,29.4312 -84.8528,20.4124"
-           id="path331"
-           style="fill:none;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none" />
-      </g>
-      <g
-         font-weight="400"
-         stroke="#000000"
-         stroke-width="7"
-         transform="translate(1485,1050)"
-         font-family="'Sans Serif'"
-         font-style="normal"
-         stroke-linecap="round"
-         stroke-opacity="1"
-         fill="none"
-         stroke-linejoin="bevel"
-         font-size="31.75px"
-         id="g337"
-         style="fill:#00a9ff;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none">
-        <path
-           fill-rule="evenodd"
-           vector-effect="none"
-           d="m -84.8528,20.4124 7.0711,4.0825"
-           id="path335"
-           style="fill:#00a9ff;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none" />
-      </g>
-      <g
-         font-weight="400"
-         stroke="#000000"
-         stroke-width="7"
-         transform="translate(1485,1050)"
-         font-family="'Sans Serif'"
-         font-style="normal"
-         stroke-linecap="round"
-         stroke-opacity="1"
-         fill="none"
-         stroke-linejoin="bevel"
-         font-size="31.75px"
-         id="g341"
-         style="fill:#00a9ff;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none">
-        <path
-           fill-rule="evenodd"
-           vector-effect="none"
-           d="M -77.7817,-40.8248 V 24.4949"
-           id="path339"
-           style="fill:#00a9ff;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none" />
-      </g>
-      <g
-         font-weight="400"
-         stroke="#000000"
-         stroke-width="7"
-         transform="translate(1485,1050)"
-         font-family="'Sans Serif'"
-         font-style="normal"
-         stroke-linecap="round"
-         stroke-opacity="1"
-         fill="none"
-         stroke-linejoin="bevel"
-         font-size="31.75px"
-         id="g345"
-         style="fill:#00a9ff;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none">
-        <path
-           fill-rule="evenodd"
-           vector-effect="none"
-           d="M -7.07107,-81.6497 -77.7817,-40.8248"
-           id="path343"
-           style="fill:#00a9ff;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none" />
-      </g>
-      <g
-         font-weight="400"
-         stroke="#000000"
-         stroke-width="7"
-         transform="translate(1485,1050)"
-         font-family="'Sans Serif'"
-         font-style="normal"
-         stroke-linecap="round"
-         stroke-opacity="1"
-         fill="none"
-         stroke-linejoin="bevel"
-         font-size="31.75px"
-         id="g349"
-         style="fill:#00a9ff;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none">
-        <path
-           fill-rule="evenodd"
-           vector-effect="none"
-           d="M -7.07107,-29.238 V -81.6497"
-           id="path347"
-           style="fill:#00a9ff;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none" />
-      </g>
-      <g
-         font-weight="400"
-         stroke="#000000"
-         stroke-width="7"
-         transform="translate(1485,1050)"
-         font-family="'Sans Serif'"
-         font-style="normal"
-         stroke-linecap="round"
-         stroke-opacity="1"
-         fill="none"
-         stroke-linejoin="bevel"
-         font-size="31.75px"
-         id="g353"
-         style="fill:none;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none">
-        <path
-           fill-rule="evenodd"
-           vector-effect="none"
-           d="m -7.07107,-29.238 c -5.02733,5.3814 -9.03193,12.3176 -11.17863,19.36208"
-           id="path351"
-           style="fill:none;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none" />
-      </g>
-      <g
-         font-weight="400"
-         stroke="#000000"
-         stroke-width="7"
-         transform="translate(1485,1050)"
-         font-family="'Sans Serif'"
-         font-style="normal"
-         stroke-linecap="round"
-         stroke-opacity="1"
-         fill="none"
-         stroke-linejoin="bevel"
-         font-size="31.75px"
-         id="g357"
-         style="fill:#00a9ff;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none">
-        <path
-           fill-rule="evenodd"
-           vector-effect="none"
-           d="M -84.8528,-44.9073 V 20.4124"
-           id="path355"
-           style="fill:#00a9ff;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none" />
-      </g>
-      <g
-         font-weight="400"
-         stroke="#000000"
-         stroke-width="7"
-         transform="translate(1485,1050)"
-         font-family="'Sans Serif'"
-         font-style="normal"
-         stroke-linecap="round"
-         stroke-opacity="1"
-         fill="none"
-         stroke-linejoin="bevel"
-         font-size="31.75px"
-         id="g361"
-         style="fill:#00a9ff;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none">
-        <path
-           fill-rule="evenodd"
-           vector-effect="none"
-           d="m -14.1421,-85.7321 -70.7107,40.8248"
-           id="path359"
-           style="fill:#00a9ff;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none" />
-      </g>
-      <g
-         font-weight="400"
-         stroke="#000000"
-         stroke-width="7"
-         transform="translate(1485,1050)"
-         font-family="'Sans Serif'"
-         font-style="normal"
-         stroke-linecap="round"
-         stroke-opacity="1"
-         fill="none"
-         stroke-linejoin="bevel"
-         font-size="31.75px"
-         id="g365"
-         style="fill:#00a9ff;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none">
-        <path
-           fill-rule="evenodd"
-           vector-effect="none"
-           d="m -77.7817,-40.8248 -7.0711,-4.0825"
-           id="path363"
-           style="fill:#00a9ff;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none" />
-      </g>
-      <g
-         font-weight="400"
-         stroke="#000000"
-         stroke-width="7"
-         transform="translate(1485,1050)"
-         font-family="'Sans Serif'"
-         font-style="normal"
-         stroke-linecap="round"
-         stroke-opacity="1"
-         fill="none"
-         stroke-linejoin="bevel"
-         font-size="31.75px"
-         id="g369"
-         style="fill:#00a9ff;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none">
-        <path
-           fill-rule="evenodd"
-           vector-effect="none"
-           d="m -7.07107,-81.6497 -7.07103,-4.0824"
-           id="path367"
-           style="fill:#00a9ff;fill-opacity:1;stroke-width:6.59503;stroke-linejoin:round;stroke-dasharray:none" />
-      </g>
-    </g>
-  </g>
+     id="defs2871">
+    <linearGradient
+       id="linearGradient43">
+      <stop
+         style="stop-color:#729fcf;stop-opacity:1"
+         offset="0"
+         id="stop42" />
+      <stop
+         style="stop-color:#3465a4;stop-opacity:1"
+         offset="1"
+         id="stop43" />
+    </linearGradient>
+    <linearGradient
+       id="linearGradient41">
+      <stop
+         style="stop-color:#729fcf;stop-opacity:1"
+         offset="0"
+         id="stop41" />
+      <stop
+         style="stop-color:#3465a4;stop-opacity:1"
+         offset="1"
+         id="stop40" />
+    </linearGradient>
+    <linearGradient
+       id="linearGradient38">
+      <stop
+         style="stop-color:#3465a4;stop-opacity:1;"
+         offset="0"
+         id="stop38" />
+      <stop
+         style="stop-color:#3465a4;stop-opacity:0;"
+         offset="1"
+         id="stop39" />
+    </linearGradient>
+    <linearGradient
+       id="linearGradient37">
+      <stop
+         style="stop-color:#3465a4;stop-opacity:1"
+         offset="0"
+         id="stop37" />
+      <stop
+         style="stop-color:#729fcf;stop-opacity:1"
+         offset="1"
+         id="stop36" />
+    </linearGradient>
+    <linearGradient
+       id="linearGradient32">
+      <stop
+         style="stop-color:#729fcf;stop-opacity:1"
+         offset="0"
+         id="stop32" />
+      <stop
+         style="stop-color:#3465a4;stop-opacity:1"
+         offset="1"
+         id="stop31" />
+    </linearGradient>
+    <linearGradient
+       id="linearGradient28">
+      <stop
+         style="stop-color:#3465a4;stop-opacity:1"
+         offset="0"
+         id="stop28" />
+      <stop
+         style="stop-color:#204a87;stop-opacity:1"
+         offset="1"
+         id="stop27" />
+    </linearGradient>
+    <linearGradient
+       id="linearGradient5">
+      <stop
+         style="stop-color:#ef2929;stop-opacity:1;"
+         offset="0"
+         id="stop19" />
+      <stop
+         style="stop-color:#ef2929;stop-opacity:0;"
+         offset="1"
+         id="stop20" />
+    </linearGradient>
+    <linearGradient
+       id="swatch18">
+      <stop
+         style="stop-color:#ef2929;stop-opacity:1;"
+         offset="0"
+         id="stop18" />
+    </linearGradient>
+    <linearGradient
+       id="swatch15">
+      <stop
+         style="stop-color:#3d0000;stop-opacity:1;"
+         offset="0"
+         id="stop15" />
+    </linearGradient>
+    <linearGradient
+       id="linearGradient5-1">
+      <stop
+         style="stop-color:#ef2929;stop-opacity:1;"
+         offset="0"
+         id="stop5" />
+      <stop
+         style="stop-color:#ef2929;stop-opacity:0;"
+         offset="1"
+         id="stop6" />
+    </linearGradient>
+    <linearGradient
+       id="linearGradient3836-9">
+      <stop
+         style="stop-color:#a40000;stop-opacity:1"
+         offset="0"
+         id="stop3838-8" />
+      <stop
+         style="stop-color:#ef2929;stop-opacity:1"
+         offset="1"
+         id="stop3840-1" />
+    </linearGradient>
+    <linearGradient
+       id="linearGradient3836-9-3">
+      <stop
+         style="stop-color:#a40000;stop-opacity:1"
+         offset="0"
+         id="stop3838-8-5" />
+      <stop
+         style="stop-color:#ef2929;stop-opacity:1"
+         offset="1"
+         id="stop3840-1-6" />
+    </linearGradient>
+    <linearGradient
+       y2="5"
+       x2="-22"
+       y1="18"
+       x1="-18"
+       gradientUnits="userSpaceOnUse"
+       id="linearGradient3082"
+       xlink:href="#linearGradient3836-9-3" />
+    <linearGradient
+       id="linearGradient3836-9-7">
+      <stop
+         style="stop-color:#a40000;stop-opacity:1"
+         offset="0"
+         id="stop3838-8-0" />
+      <stop
+         style="stop-color:#ef2929;stop-opacity:1"
+         offset="1"
+         id="stop3840-1-9" />
+    </linearGradient>
+    <linearGradient
+       y2="5"
+       x2="-22"
+       y1="18"
+       x1="-18"
+       gradientUnits="userSpaceOnUse"
+       id="linearGradient3082-3"
+       xlink:href="#linearGradient3836-9-7" />
+    <linearGradient
+       xlink:href="#linearGradient3836-9-3"
+       id="linearGradient3801-1-3"
+       gradientUnits="userSpaceOnUse"
+       x1="-18"
+       y1="18"
+       x2="-22"
+       y2="5"
+       gradientTransform="matrix(0.76342439,0,0,0.75750425,-4.596389,2.7525637)" />
+    <linearGradient
+       xlink:href="#linearGradient3836-9-3"
+       id="linearGradient3801-1-3-2"
+       gradientUnits="userSpaceOnUse"
+       x1="-18"
+       y1="18"
+       x2="-22"
+       y2="5"
+       gradientTransform="matrix(0.84956703,0,0,0.84301394,-2.927337,1.7790378)" />
+    <linearGradient
+       xlink:href="#linearGradient3838"
+       id="linearGradient3844"
+       x1="36"
+       y1="1039.3622"
+       x2="32"
+       y2="1003.3622"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="translate(2.0563921e-6,-988.36218)" />
+    <linearGradient
+       id="linearGradient3838">
+      <stop
+         style="stop-color:#d3d7cf;stop-opacity:1;"
+         offset="0"
+         id="stop3840" />
+      <stop
+         style="stop-color:#ffffff;stop-opacity:1;"
+         offset="1"
+         id="stop3842" />
+    </linearGradient>
+    <linearGradient
+       xlink:href="#linearGradient3830"
+       id="linearGradient3836"
+       x1="36"
+       y1="1037.3622"
+       x2="32"
+       y2="1005.3622"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="translate(2.0563921e-6,-988.36218)" />
+    <linearGradient
+       id="linearGradient3830">
+      <stop
+         style="stop-color:#ffffff;stop-opacity:1;"
+         offset="0"
+         id="stop3832" />
+      <stop
+         style="stop-color:#d3d7cf;stop-opacity:1;"
+         offset="1"
+         id="stop3834" />
+    </linearGradient>
+    <linearGradient
+       x1="10.504496"
+       y1="16.48678"
+       x2="5.9349072"
+       y2="1.6356685"
+       id="linearGradient-1"
+       gradientTransform="scale(0.99999018,1.0000098)"
+       gradientUnits="userSpaceOnUse">
+      <stop
+         stop-color="#A40000"
+         offset="0%"
+         id="stop6-9" />
+      <stop
+         stop-color="#EF2929"
+         offset="100%"
+         id="stop8" />
+    </linearGradient>
+    <linearGradient
+       xlink:href="#linearGradient3815"
+       id="linearGradient3856"
+       gradientUnits="userSpaceOnUse"
+       x1="80"
+       y1="58"
+       x2="79"
+       y2="42" />
+    <linearGradient
+       id="linearGradient3815">
+      <stop
+         style="stop-color:#3465a4;stop-opacity:1"
+         offset="0"
+         id="stop3817" />
+      <stop
+         style="stop-color:#729fcf;stop-opacity:1"
+         offset="1"
+         id="stop3819" />
+    </linearGradient>
+    <linearGradient
+       xlink:href="#linearGradient3841"
+       id="linearGradient3858"
+       gradientUnits="userSpaceOnUse"
+       x1="109"
+       y1="51"
+       x2="105"
+       y2="38" />
+    <linearGradient
+       id="linearGradient3841">
+      <stop
+         style="stop-color:#204a87;stop-opacity:1"
+         offset="0"
+         id="stop3843" />
+      <stop
+         style="stop-color:#3465a4;stop-opacity:1"
+         offset="1"
+         id="stop3845" />
+    </linearGradient>
+    <linearGradient
+       y2="5"
+       x2="-22"
+       y1="18"
+       x1="-18"
+       gradientTransform="matrix(0.77114848,0,0,0.77113937,-4.4090973,2.5859051)"
+       gradientUnits="userSpaceOnUse"
+       id="linearGradient3898"
+       xlink:href="#linearGradient3836-9-3" />
+    <linearGradient
+       xlink:href="#linearGradient3815"
+       id="linearGradient3978"
+       gradientUnits="userSpaceOnUse"
+       x1="-15"
+       y1="37"
+       x2="-19"
+       y2="37"
+       gradientTransform="rotate(135.18861,5.7426909,37.969029)" />
+    <linearGradient
+       xlink:href="#linearGradient17"
+       id="linearGradient3898-0"
+       x1="37.429146"
+       y1="41.590584"
+       x2="24.483221"
+       y2="4.9104676"
+       gradientUnits="userSpaceOnUse" />
+    <linearGradient
+       id="linearGradient17">
+      <stop
+         style="stop-color:#ffffff;stop-opacity:1;"
+         offset="0"
+         id="stop16" />
+      <stop
+         style="stop-color:#ffffff;stop-opacity:0"
+         offset="1"
+         id="stop17" />
+    </linearGradient>
+    <linearGradient
+       xlink:href="#linearGradient17"
+       id="linearGradient3856-9"
+       x1="22.84341"
+       y1="4.8241611"
+       x2="30.783579"
+       y2="28.644661"
+       gradientUnits="userSpaceOnUse" />
+    <linearGradient
+       id="linearGradient2">
+      <stop
+         style="stop-color:#73d216;stop-opacity:1;"
+         offset="0"
+         id="stop1" />
+      <stop
+         style="stop-color:#8ae234;stop-opacity:1;"
+         offset="1"
+         id="stop2" />
+    </linearGradient>
+    <linearGradient
+       xlink:href="#linearGradient32"
+       id="linearGradient23"
+       x1="36.609718"
+       y1="56.146202"
+       x2="29.319534"
+       y2="34.389023"
+       gradientUnits="userSpaceOnUse" />
+    <linearGradient
+       xlink:href="#linearGradient37"
+       id="linearGradient27"
+       x1="39.140495"
+       y1="33.060661"
+       x2="55.566719"
+       y2="19.44771"
+       gradientUnits="userSpaceOnUse" />
+    <linearGradient
+       xlink:href="#linearGradient38"
+       id="linearGradient39"
+       x1="28.779562"
+       y1="32.370514"
+       x2="7.1819806"
+       y2="10.643484"
+       gradientUnits="userSpaceOnUse" />
+  </defs>
   <metadata
-     id="metadata658">
+     id="metadata2874">
     <rdf:RDF>
       <cc:Work
          rdf:about="">
-        <dc:title>FreeCAD SVG Export</dc:title>
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:creator>
+          <cc:Agent>
+            <dc:title>[maxwxyz]</dc:title>
+          </cc:Agent>
+        </dc:creator>
+        <dc:relation>https://www.freecad.org/wiki/index.php?title=Artwork</dc:relation>
+        <dc:publisher>
+          <cc:Agent>
+            <dc:title>FreeCAD</dc:title>
+          </cc:Agent>
+        </dc:publisher>
+        <dc:identifier>FreeCAD/src/Mod/Sketcher/Gui/Resources/icons/Sketcher_CreateArc.svg</dc:identifier>
+        <dc:rights>
+          <cc:Agent>
+            <dc:title>FreeCAD LGPL2+</dc:title>
+          </cc:Agent>
+        </dc:rights>
+        <dc:date>2023-12-19</dc:date>
       </cc:Work>
     </rdf:RDF>
   </metadata>
+  <g
+     id="layer3"
+     style="display:inline">
+    <path
+       d="M 30.087891,4.3652344 6.1582031,18.183594 V 40.291016 L 26.304687,28.658203 c 0.726468,-2.384172 2.0819,-4.731424 3.783204,-6.552734 z"
+       style="font-size:31.75px;font-family:'Sans Serif';fill:#729fcf;fill-rule:evenodd;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;stroke:#0c1522;stroke-dasharray:none;stroke-opacity:1"
+       id="path14" />
+    <path
+       d="M 38.65625,28.658203 58.802734,40.291016 V 29.236328 L 34.875,15.419922 v 6.685547 c 1.701303,1.82131 3.054783,4.168562 3.78125,6.552734 z"
+       style="font-size:31.75px;font-family:'Sans Serif';fill:#729fcf;fill-rule:evenodd;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;stroke:#0c1522;stroke-dasharray:none;stroke-opacity:1"
+       id="path18" />
+    <path
+       d="M 28.699219,32.802734 8.5527344,44.435547 32.480469,58.251953 56.410156,44.435547 36.263672,32.802734 c -2.427795,0.56289 -5.136659,0.56289 -7.564453,0 z"
+       style="font-size:31.75px;font-family:'Sans Serif';fill:#729fcf;fill-rule:evenodd;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;stroke:#0c1522;stroke-dasharray:none;stroke-opacity:1"
+       id="path19" />
+    <path
+       d="M 26.304687,28.658203 6.1582031,40.291016 c 0,1.526186 1.0729686,3.381472 2.3945313,4.144531 L 28.699219,32.802734 C 27.707708,32.683832 26.84908,32.1212 26.402344,31.300781 25.965725,30.518016 25.928375,29.539924 26.304687,28.658203 Z"
+       style="font-size:31.75px;font-family:'Sans Serif';fill:#729fcf;fill-rule:evenodd;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;stroke:#0c1522;stroke-dasharray:none;stroke-opacity:1"
+       id="path15" />
+    <path
+       d="m 36.263672,32.802734 20.146484,11.632813 c 1.321564,-0.763059 2.392578,-2.618345 2.392578,-4.144531 L 38.65625,28.658203 c 0.385247,0.899689 0.338242,1.901021 -0.123047,2.691406 -0.453774,0.794727 -1.297851,1.336947 -2.269531,1.453125 z"
+       style="font-size:31.75px;font-family:'Sans Serif';fill:#729fcf;fill-rule:evenodd;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;stroke:#0c1522;stroke-dasharray:none;stroke-opacity:1"
+       id="path17" />
+    <path
+       d="M 27.695312,2.984375 3.765625,16.800781 6.1582031,18.183594 30.087891,4.3652344 Z"
+       style="font-size:31.75px;font-family:'Sans Serif';fill-rule:evenodd;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;stroke:#0c1522;stroke-dasharray:none;fill:#729fcf;stroke-opacity:1"
+       id="path2" />
+    <path
+       d="M 34.875,15.419922 58.802734,29.236328 61.197266,27.855469 37.267578,14.037109 Z"
+       style="font-size:31.75px;font-family:'Sans Serif';fill-rule:evenodd;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;stroke:#0c1522;stroke-dasharray:none;fill:#729fcf;stroke-opacity:1"
+       id="path4" />
+    <path
+       d="M 56.410156,47.199219 V 44.435547 L 32.480469,58.251953 v 2.763672 z"
+       style="font-size:31.75px;font-family:'Sans Serif';fill-rule:evenodd;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;stroke:#0c1522;stroke-dasharray:none;fill:#729fcf;stroke-opacity:1"
+       id="path11" />
+    <path
+       d="M 32.480469,61.015625 V 58.251953 L 8.5527344,44.435547 v 2.763672 z"
+       style="font-size:31.75px;font-family:'Sans Serif';fill-rule:evenodd;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;stroke:#0c1522;stroke-dasharray:none;fill:#729fcf;stroke-opacity:1"
+       id="path12" />
+    <path
+       d="m 3.765625,38.908203 2.3925781,1.382813 V 18.183594 L 3.765625,16.800781 Z"
+       style="font-size:31.75px;font-family:'Sans Serif';fill-rule:evenodd;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;stroke:#0c1522;stroke-dasharray:none;fill:#729fcf;stroke-opacity:1"
+       id="path3" />
+    <path
+       d="m 61.197266,27.855469 -2.394532,1.380859 v 11.054688 l 2.394532,-1.382813 z"
+       style="font-size:31.75px;font-family:'Sans Serif';fill-rule:evenodd;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;stroke:#0c1522;stroke-dasharray:none;fill:#729fcf;stroke-opacity:1"
+       id="path9" />
+    <path
+       d="m 61.197266,38.908203 -2.394532,1.382813 c 0,1.526186 -1.071014,3.381472 -2.392578,4.144531 v 2.763672 c 2.64316,-1.526186 4.78711,-5.238644 4.78711,-8.291016 z"
+       style="font-size:31.75px;font-family:'Sans Serif';fill:#729fcf;fill-rule:evenodd;stroke:#0c1522;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
+       id="path10" />
+    <path
+       d="M 8.5527344,47.199219 V 44.435547 C 7.2311717,43.672488 6.1582031,41.817202 6.1582031,40.291016 L 3.765625,38.908203 c 0,3.052372 2.1439501,6.76483 4.7871094,8.291016 z"
+       style="font-size:31.75px;font-family:'Sans Serif';fill:#729fcf;fill-rule:evenodd;stroke:#0c1522;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
+       id="path13" />
+    <path
+       d="m 28.960937,34.384766 c 2.281383,0.44211 4.759633,0.44211 7.041016,0 L 53.410156,44.435547 32.480469,56.519531 11.552734,44.435547 Z"
+       style="font-size:31.75px;font-family:'Sans Serif';fill:url(#linearGradient23);fill-rule:evenodd;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;stroke:#729fcf;stroke-dasharray:none;stroke-opacity:1"
+       id="path16" />
+    <path
+       d="m 36.375,18.017578 20.927734,12.083984 v 7.591797 L 39.896484,27.642578 C 39.138886,25.444999 37.899187,23.296845 36.375,21.541016 Z"
+       style="font-size:31.75px;font-family:'Sans Serif';display:inline;fill:url(#linearGradient27);fill-rule:evenodd;stroke:#729fcf;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
+       id="path20" />
+    <path
+       d="M 28.587891,6.9628906 V 21.541016 c -1.524188,1.755535 -2.765454,3.903559 -3.523438,6.101562 L 7.6582031,37.693359 V 19.048828 Z"
+       style="font-size:31.75px;font-family:'Sans Serif';fill:url(#linearGradient39);fill-rule:evenodd;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;stroke:#729fcf;stroke-dasharray:none;stroke-opacity:1;fill-opacity:1"
+       id="path21" />
+    <path
+       style="fill:#3465a4;fill-opacity:1;stroke:#3465a4;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1;paint-order:normal"
+       d="M 7.9248048,40.935547 24.614679,31.298621"
+       id="path41" />
+    <path
+       style="fill:#3465a4;fill-opacity:1;stroke:#3465a4;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1;paint-order:normal"
+       d="M 56.989679,40.935547 40.299805,31.298621"
+       id="path42" />
+  </g>
 </svg>
