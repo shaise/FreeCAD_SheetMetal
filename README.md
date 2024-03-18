@@ -100,6 +100,8 @@ Starting from FreeCAD 0.17 it can be installed via the [Addon Manager](https://g
 * FreeCAD Forum announcement/discussion [thread](https://forum.freecadweb.org/viewtopic.php?f=3&t=60818) 
 
 #### Release notes: 
+* V0.4.04 18 Mar 2024:  Change main icon to comply with freecad's theme by [@maxwxyz][maxwxyz] and [@pierreporte][pierreporte].  
+                      - Fix base shape UI's minimum values.  
 * V0.4.03 10 Mar 2024:  Add Spanish translation by [@hasecilu][hasecilu].  
                       - Update translation script by [@hasecilu][hasecilu].  
                       - Set fold direction by selected edge position 
@@ -216,6 +218,8 @@ Starting from FreeCAD 0.17 it can be installed via the [Addon Manager](https://g
 [ksigurdur]: https://github.com/ksigurdur
 [prokoudine]: https://github.com/prokoudine
 [RexLinz]: https://github.com/RexLinz
+[maxwxyz]: https://github.com/maxwxyz
+[pierreporte]: https://github.com/pierreporte
 [topic82482]: https://forum.freecad.org/viewtopic.php?t=82482
 [30]: https://github.com/shaise/FreeCAD_SheetMetal/issues/30
 [33]: https://github.com/shaise/FreeCAD_SheetMetal/issues/33
