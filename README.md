@@ -100,6 +100,7 @@ Starting from FreeCAD 0.17 it can be installed via the [Addon Manager](https://g
 * FreeCAD Forum announcement/discussion [thread](https://forum.freecadweb.org/viewtopic.php?f=3&t=60818) 
 
 #### Release notes: 
+* V0.4.05 20 Mar 2024:  Update all other sheetmetal icons by [@maxwxyz][maxwxyz].  
 * V0.4.04 18 Mar 2024:  Change main icon to comply with freecad's theme by [@maxwxyz][maxwxyz] and [@pierreporte][pierreporte].  
                       - Fix base shape UI's minimum values.  
 * V0.4.03 10 Mar 2024:  Add Spanish translation by [@hasecilu][hasecilu].  
