@@ -38,6 +38,7 @@ mw = FreeCADGui.getMainWindow()
 # changes in modeling logic
 smElementMapVersion = 'sm1.'
 
+base_shape_types = ["L-Shape", "U-Shape", "Tub", "Hat", "Box"]
 
 ##########################################################################################################
 # Task
@@ -95,7 +96,10 @@ class BaseShapeTaskPanel:
         self.obj.height = self.form.bHeightSpin.property('value')
         self.obj.flangeWidth = self.form.bFlangeWidthSpin.property('value')
         self.obj.length = self.form.bLengthSpin.property('value')
-        self.obj.shapeType = self.form.shapeType.currentText()
+        selected_type = self.form.shapeType.currentText()
+        if selected_type not in base_shape_types:
+            selected_type = base_shape_types[self.form.shapeType.currentIndex()]
+        self.obj.shapeType = selected_type
         self.obj.fillGaps = self._stateToBool(self.form.chkFillGaps.checkState())
 
     def accept(self):
@@ -144,14 +148,14 @@ def smCreateBaseShape(type, thickness, radius, width, length, height, flangeWidt
     if type == "U-Shape":
         numfolds = 2
         width -= 2.0 * bendCompensation
-    elif type == "Tub" or type == "Hat" or type == "Box":
+    elif type in ["Tub", "Hat", "Box"]:
         numfolds = 4
         width -= 2.0 * bendCompensation
         length -= 2.0 * bendCompensation
     else:
         numfolds = 1
         width -= bendCompensation
-    if type == "Hat" or type == "Box":
+    if type in ["Hat", "Box"]:
         height -= bendCompensation
         flangeWidth -= radius
     if width < thickness: width = thickness
@@ -170,7 +174,7 @@ def smCreateBaseShape(type, thickness, radius, width, length, height, flangeWidt
 
     shape, f = smBend(thickness, selFaceNames = faces, extLen = height, bendR = radius,
                       MainObject = box, automiter = fillGaps)
-    if type == "Hat" or type == "Box":
+    if type in ["Hat", "Box"]:
         faces = []
         invertBend = False
         if type == "Hat": invertBend = True
@@ -269,7 +273,7 @@ class SMBaseShape:
         smAddLengthProperty(obj, "length", "Shape length", 30.0)
         smAddLengthProperty(obj, "height", "Shape height", 10.0)
         smAddLengthProperty(obj, "flangeWidth", "Width of top flange", 5.0)
-        smAddEnumProperty(obj, "shapeType", "Base shape type", ["L-Shape", "U-Shape", "Tub", "Hat", "Box"])
+        smAddEnumProperty(obj, "shapeType", "Base shape type", base_shape_types)
         smAddBoolProperty(obj, "fillGaps", "Extend sides and flange to close all gaps", True)
 
     def getElementMapVersion(self, _fp, ver, _prop, restored):
