@@ -406,5 +406,5 @@ class AddJunctionCommandClass():
         return False
     return True
 
-Gui.addCommand('SMMakeJunction',AddJunctionCommandClass())
+Gui.addCommand("SheetMetal_AddJunction", AddJunctionCommandClass())
 

@@ -363,4 +363,4 @@ class AddBaseCommandClass:
         return True
 
 
-Gui.addCommand("SMBase", AddBaseCommandClass())
+Gui.addCommand("SheetMetal_AddBase", AddBaseCommandClass())

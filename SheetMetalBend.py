@@ -451,5 +451,5 @@ class AddBendCommandClass():
         return False
     return True
 
-Gui.addCommand('SMMakeBend',AddBendCommandClass())
+Gui.addCommand("SheetMetal_AddBend", AddBendCommandClass())
 

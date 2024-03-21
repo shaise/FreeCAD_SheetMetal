@@ -462,4 +462,4 @@ class AddSketchOnSheetCommandClass():
 #      return False
     return True
 
-Gui.addCommand('SMSketchOnSheet',AddSketchOnSheetCommandClass())
+Gui.addCommand("SheetMetal_SketchOnSheet", AddSketchOnSheetCommandClass())

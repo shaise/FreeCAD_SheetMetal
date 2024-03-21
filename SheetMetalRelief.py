@@ -454,5 +454,5 @@ class AddReliefCommandClass():
         return False
     return True
 
-Gui.addCommand('SMMakeRelief',AddReliefCommandClass())
+Gui.addCommand("SheetMetal_AddRelief", AddReliefCommandClass())
 

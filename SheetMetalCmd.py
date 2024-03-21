@@ -1906,4 +1906,4 @@ class AddWallCommandClass:
         return True
 
 
-Gui.addCommand("SMMakeWall", AddWallCommandClass())
+Gui.addCommand("SheetMetal_AddWall", AddWallCommandClass())

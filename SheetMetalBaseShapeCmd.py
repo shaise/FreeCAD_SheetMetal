@@ -374,4 +374,4 @@ class SMBaseshapeCommandClass:
     def IsActive(self):
         return FreeCAD.ActiveDocument is not None
 
-Gui.addCommand("SMBaseShape", SMBaseshapeCommandClass())
+Gui.addCommand("SheetMetal_BaseShape", SMBaseshapeCommandClass())

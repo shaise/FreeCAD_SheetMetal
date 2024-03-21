@@ -640,4 +640,4 @@ class SMExtrudeCommandClass():
         return False
     return True
 
-Gui.addCommand('SMExtrudeFace',SMExtrudeCommandClass())
+Gui.addCommand("SheetMetal_Extrude", SMExtrudeCommandClass())

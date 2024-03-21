@@ -441,4 +441,4 @@ class AddFoldWallCommandClass():
       return False
     return True
 
-Gui.addCommand('SMFoldWall',AddFoldWallCommandClass())
+Gui.addCommand("SheetMetal_AddFoldWall", AddFoldWallCommandClass())

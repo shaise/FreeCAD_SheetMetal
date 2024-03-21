@@ -624,5 +624,5 @@ class AddCornerReliefCommandClass():
         return False
     return True
 
-Gui.addCommand('SMCornerRelief',AddCornerReliefCommandClass())
+Gui.addCommand("SheetMetal_AddCornerRelief", AddCornerReliefCommandClass())
 

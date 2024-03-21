@@ -527,5 +527,5 @@ class AddFormingWallCommand():
         return False
     return True
 
-Gui.addCommand('SMFormingWall', AddFormingWallCommand())
+Gui.addCommand("SheetMetal_Forming", AddFormingWallCommand())
 
