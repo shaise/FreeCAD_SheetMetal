@@ -86,13 +86,13 @@ class SMUnfoldTaskPanel:
             return "svg"
         else:
             return "dxf"
-        
+
     def _isManualKSelected(self):
         return self.form.availableMds.currentIndex() == (self.form.availableMds.count() - 1)
-    
+
     def _isNoMdsSelected(self):
         return self.form.availableMds.currentIndex() == 0
-    
+
     def _updateSelectedMds(self):
         global last_selected_mds
         last_selected_mds = self.form.availableMds.currentText()
@@ -199,7 +199,7 @@ class SMUnfoldTaskPanel:
         params = self._getData()
         if params is None:
             return
-        
+
 
         try:
             result = smu.processUnfold(
@@ -309,4 +309,4 @@ class SMUnfoldTaskPanel:
         self.form.kfactorAnsi.setEnabled(isManualK)
         self.form.kfactorDin.setEnabled(isManualK)
         self.form.kFactSpin.setEnabled(isManualK)
-        
+

@@ -54,7 +54,7 @@ class BaseShapeTaskPanel:
 
     def _boolToState(self, bool):
         return QtCore.Qt.Checked if bool else QtCore.Qt.Unchecked
-    
+
     def _stateToBool(self, state):
         return True if state == QtCore.Qt.Checked else False
 
@@ -71,7 +71,7 @@ class BaseShapeTaskPanel:
         self.form.shapeType.currentIndexChanged.connect(self.typeChanged)
         self.form.chkFillGaps.stateChanged.connect(self.checkChanged)
         self.form.update()
-        
+
         #SMLogger.log(str(self.formReady) + " <2 \n")
 
     def spinValChanged(self):
@@ -79,7 +79,7 @@ class BaseShapeTaskPanel:
            return
         self.updateObj()
         self.obj.recompute()
-        
+
     def typeChanged(self):
         self.spinValChanged()
 
@@ -140,7 +140,7 @@ class BaseShapeTaskPanel:
 
 def smCreateBaseShape(type, thickness, radius, width, length, height, flangeWidth, fillGaps):
     bendCompensation = thickness + radius
-    height -= bendCompensation    
+    height -= bendCompensation
     if type == "U-Shape":
         numfolds = 2
         width -= 2.0 * bendCompensation
@@ -167,8 +167,8 @@ def smCreateBaseShape(type, thickness, radius, width, length, height, flangeWidt
             (v.x > 0.5 and numfolds > 2) or
             (v.x < -0.5 and numfolds > 3)):
             faces.append("Face" + str(i+1))
-    
-    shape, f = smBend(thickness, selFaceNames = faces, extLen = height, bendR = radius, 
+
+    shape, f = smBend(thickness, selFaceNames = faces, extLen = height, bendR = radius,
                       MainObject = box, automiter = fillGaps)
     if type == "Hat" or type == "Box":
         faces = []
@@ -179,10 +179,10 @@ def smCreateBaseShape(type, thickness, radius, width, length, height, flangeWidt
             z = shape.Faces[i].CenterOfGravity.z
             if v.z > 0.9999 and z > bendCompensation:
                 faces.append("Face" + str(i+1))
-        shape, f = smBend(thickness, selFaceNames = faces, extLen = flangeWidth, 
+        shape, f = smBend(thickness, selFaceNames = faces, extLen = flangeWidth,
                           bendR = radius, MainObject = shape, flipped = invertBend,
                           automiter = fillGaps)
-            
+
 
 
 
@@ -278,9 +278,9 @@ class SMBaseShape:
 
     def execute(self, fp):
         self._addVerifyProperties(fp)
-        s = smCreateBaseShape(type = fp.shapeType, thickness = fp.thickness.Value, 
-                              radius = fp.radius.Value, width = fp.width.Value, 
-                              length = fp.length.Value, height = fp.height.Value, 
+        s = smCreateBaseShape(type = fp.shapeType, thickness = fp.thickness.Value,
+                              radius = fp.radius.Value, width = fp.width.Value,
+                              length = fp.length.Value, height = fp.height.Value,
                               flangeWidth = fp.flangeWidth.Value, fillGaps = fp.fillGaps)
 
         fp.Shape = s
