@@ -267,14 +267,56 @@ class SMBaseShape:
         obj.Proxy = self
 
     def _addVerifyProperties(self, obj):
-        smAddLengthProperty(obj, "thickness", "Thickness of sheetmetal", 1.0)
-        smAddLengthProperty(obj, "radius", "Bend Radius", 1.0)
-        smAddLengthProperty(obj, "width", "Shape width", 20.0)
-        smAddLengthProperty(obj, "length", "Shape length", 30.0)
-        smAddLengthProperty(obj, "height", "Shape height", 10.0)
-        smAddLengthProperty(obj, "flangeWidth", "Width of top flange", 5.0)
-        smAddEnumProperty(obj, "shapeType", "Base shape type", base_shape_types)
-        smAddBoolProperty(obj, "fillGaps", "Extend sides and flange to close all gaps", True)
+        smAddLengthProperty(
+            obj,
+            "thickness",
+            FreeCAD.Qt.translate("SMBaseShape", "Thickness of sheetmetal", "Property"),
+            1.0,
+        )
+        smAddLengthProperty(
+            obj,
+            "radius",
+            FreeCAD.Qt.translate("SMBaseShape", "Bend Radius", "Property"),
+            1.0,
+        )
+        smAddLengthProperty(
+            obj,
+            "width",
+            FreeCAD.Qt.translate("SMBaseShape", "Shape width", "Property"),
+            20.0,
+        )
+        smAddLengthProperty(
+            obj,
+            "length",
+            FreeCAD.Qt.translate("SMBaseShape", "Shape length", "Property"),
+            30.0,
+        )
+        smAddLengthProperty(
+            obj,
+            "height",
+            FreeCAD.Qt.translate("SMBaseShape", "Shape height", "Property"),
+            10.0,
+        )
+        smAddLengthProperty(
+            obj,
+            "flangeWidth",
+            FreeCAD.Qt.translate("SMBaseShape", "Width of top flange", "Property"),
+            5.0,
+        )
+        smAddEnumProperty(
+            obj,
+            "shapeType",
+            FreeCAD.Qt.translate("SMBaseShape", "Base shape type", "Property"),
+            base_shape_types,
+        )
+        smAddBoolProperty(
+            obj,
+            "fillGaps",
+            FreeCAD.Qt.translate(
+                "SMBaseShape", "Extend sides and flange to close all gaps", "Property"
+            ),
+            True,
+        )
 
     def getElementMapVersion(self, _fp, ver, _prop, restored):
         if not restored:
