@@ -79,7 +79,7 @@ class SMUnfoldTaskPanel:
     def _boolToState(self, bool):
         return QtCore.Qt.Checked if bool else QtCore.Qt.Unchecked
 
-    def _getExportType(self, typeonly = False):
+    def _getExportType(self, typeonly=False):
         if not typeonly and not self.form.chkExport.isChecked():
             return None
         if self.form.svgExport.isChecked():
@@ -88,7 +88,9 @@ class SMUnfoldTaskPanel:
             return "dxf"
 
     def _isManualKSelected(self):
-        return self.form.availableMds.currentIndex() == (self.form.availableMds.count() - 1)
+        return self.form.availableMds.currentIndex() == (
+            self.form.availableMds.count() - 1
+        )
 
     def _isNoMdsSelected(self):
         return self.form.availableMds.currentIndex() == 0
@@ -121,12 +123,17 @@ class SMUnfoldTaskPanel:
         if self._isManualKSelected():
             results["lookupTable"] = {1: self.form.kFactSpin.value()}
         elif self._isNoMdsSelected():
-            msg = "Unfold operation needs to know K-factor value(s) to be used."
+            msg = FreeCAD.Qt.translate(
+                "Logger", "Unfold operation needs to know K-factor value(s) to be used."
+            )
             SMLogger.warning(msg)
-            msg += "<ol>"
-            msg += "<li>Either select 'Manual K-factor'</li>"
-            msg += "<li>Or use a <a href='%s'>Material Definition Sheet</a></li>" % mds_help_url
-            msg += "</ol>"
+            msg += FreeCAD.Qt.translate(
+                "QMessageBox",
+                "<ol>\n"
+                "<li>Either select 'Manual K-factor'</li>\n"
+                "<li>Or use a <a href='{}'>Material Definition Sheet</a></li>\n"
+                "</ol>",
+            ).format(mds_help_url)
             QtGui.QMessageBox.warning(None, "Warning", msg)
             return None
         else:
@@ -181,7 +188,9 @@ class SMUnfoldTaskPanel:
 
         self.form.chkSeparate.setEnabled(self.pg.GetBool("separateSketches", False))
 
-        self.form.chkExport.setCheckState(self._boolToState(self.pg.GetBool("exportEn", False)))
+        self.form.chkExport.setCheckState(
+            self._boolToState(self.pg.GetBool("exportEn", False))
+        )
         if self.pg.GetString("exportType", "dxf") == "dxf":
             self.form.dxfExport.setChecked(True)
         else:
@@ -199,7 +208,6 @@ class SMUnfoldTaskPanel:
         params = self._getData()
         if params is None:
             return
-
 
         try:
             result = smu.processUnfold(
@@ -229,11 +237,20 @@ class SMUnfoldTaskPanel:
 
         except UnfoldException:
             msg = (
-                """Unfold is failing.<br>Please try to select a different face to unfold your object
-                <br><br>If the opposite face also fails then switch Refine to false on feature """
+                FreeCAD.Qt.translate(
+                    "QMessageBox",
+                    "Unfold is failing.\n"
+                    "Please try to select a different face to unfold your object\n\n"
+                    "If the opposite face also fails then switch Refine to false on feature ",
+                )
                 + FreeCADGui.Selection.getSelection()[0].Name
             )
-            QtGui.QMessageBox.question(None, "Warning", msg, QtGui.QMessageBox.Ok)
+            QtGui.QMessageBox.question(
+                None,
+                FreeCAD.Qt.translate("QMessageBox", "Warning"),
+                msg,
+                QtGui.QMessageBox.Ok,
+            )
 
         except Exception as e:
             raise e
@@ -274,13 +291,13 @@ class SMUnfoldTaskPanel:
 
         self.form.availableMds.addItem("Please select")
         for mds in sheetnames:
-            if (mds.Label.startswith("material_")):
+            if mds.Label.startswith("material_"):
                 self.form.availableMds.addItem(mds.Label)
         self.form.availableMds.addItem("Manual K-Factor")
 
         selMdsIndex = self._getLastSelectedMdsIndex()
 
-        if (selMdsIndex >= 0):
+        if selMdsIndex >= 0:
             self.form.availableMds.setCurrentIndex(selMdsIndex)
         elif len(sheetnames) == 1:
             self.form.availableMds.setCurrentIndex(1)
@@ -309,4 +326,3 @@ class SMUnfoldTaskPanel:
         self.form.kfactorAnsi.setEnabled(isManualK)
         self.form.kfactorDin.setEnabled(isManualK)
         self.form.kFactSpin.setEnabled(isManualK)
-

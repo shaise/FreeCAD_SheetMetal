@@ -59,7 +59,7 @@ class SMUnfoldUnattendedCommandClass:
         }
 
     def Activated(self):
-        SMLogger.message("Running unattended unfold...")
+        SMLogger.message(FreeCAD.Qt.translate("Logger", "Running unattended unfold..."))
         try:
             taskd = SMUnfoldTaskPanel()
         except ValueError as e:
@@ -78,7 +78,7 @@ class SMUnfoldUnattendedCommandClass:
         taskd.form.bendColor.setProperty("color", pg.GetString("bendColor"))
         taskd.form.genColor.setProperty("color", pg.GetString("genColor"))
         taskd.form.internalColor.setProperty("color", pg.GetString("intColor"))
-        #taskd.new_mds_name = taskd.material_sheet_name
+        # taskd.new_mds_name = taskd.material_sheet_name
         taskd.accept()
         return
 
@@ -121,7 +121,6 @@ class SMUnfoldCommandClass:
         }
 
     def Activated(self):
-
         dialog = SMUnfoldTaskPanel()
         FreeCADGui.Control.showDialog(dialog)
 
@@ -142,5 +141,6 @@ class SMUnfoldCommandClass:
             return False
         selFace = Gui.Selection.getSelectionEx()[0].SubObjects[0]
         return isinstance(selFace.Surface, Part.Plane)
+
 
 Gui.addCommand("SMUnfold", SMUnfoldCommandClass())

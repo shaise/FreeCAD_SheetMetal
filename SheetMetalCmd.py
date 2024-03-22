@@ -94,7 +94,9 @@ def smAddEnumProperty(
 
 def smWarnDialog(msg):
     diag = QtGui.QMessageBox(
-        QtGui.QMessageBox.Warning, "Error in macro MessageBox", msg
+        QtGui.QMessageBox.Warning,
+        FreeCAD.Qt.translate("QMessageBox", "Error in macro MessageBox"),
+        msg
     )
     diag.setWindowModality(QtCore.Qt.ApplicationModal)
     diag.exec_()

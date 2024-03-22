@@ -353,12 +353,8 @@ class Simple_node(object):
         self.bend_angle = None  # Angle in radians
         self.tan_vec = None  # Direction of translation for Bend nodes
         self.oppositePoint = None  # Point of a vertex on the opposite site, used to align points to the sheet plane
-        self.vertexDict = (
-            {}
-        )  # Vertexes of a bend, original and unbend coordinates, flags p, c, t, o
-        self.edgeDict = (
-            {}
-        )  # Unbend edges dictionary, key is a combination of indexes to vertexDict.
+        self.vertexDict = {}  # Vertexes of a bend, original and unbend coordinates, flags p, c, t, o
+        self.edgeDict = {}  # Unbend edges dictionary, key is a combination of indexes to vertexDict.
         self._trans_length = None  # Length of translation for Bend nodes
         self.analysis_ok = (
             True  # Indicator if something went wrong with the analysis of the face
@@ -368,9 +364,7 @@ class Simple_node(object):
             k_factor_lookup  # K-factor lookup dictionary, according to ANSI standard
         )
         # new node features:
-        self.nfIndexes = (
-            []
-        )  # List of all face-indexes of a node (flat and bend: folded state)
+        self.nfIndexes = []  # List of all face-indexes of a node (flat and bend: folded state)
         self.seam_edges = []  # List with edges to seams
         # bend faces are needed for movement simulation at single other bends.
         # otherwise unfolded faces are recreated from self.b_edges
@@ -380,9 +374,7 @@ class Simple_node(object):
         self.actual_angle = None  # State of angle in refolded sheet metal part
         self.p_wire = None  # Wire common with parent node, used for bend node
         self.c_wire = None  # Wire common with child node, used for bend node
-        self.b_edges = (
-            []
-        )  # List of edges in a bend node, that needs to be recalculated, at unfolding
+        self.b_edges = []  # List of edges in a bend node, that needs to be recalculated, at unfolding
 
     def dump(self):
         print("Node: %s" % (str(self.idx)))
@@ -423,14 +415,18 @@ class Simple_node(object):
 
     @property
     def k_Factor(self):
-
         k = get_val_from_range(self.k_factor_lookup, self.innerRadius / self.thickness)
 
         return k if KFACTORSTANDARD == "ansi" else k / 2
 
     @k_Factor.setter
     def k_Factor(self, val):
-        SMLogger.error("k_Factor is a readonly property! Won't set to:", val)
+        SMLogger.error(
+            FreeCAD.Qt.translate(
+                "Logger", "k_Factor is a readonly property! Won't set to:"
+            ),
+            val,
+        )
 
 
 def get_surface(face):
@@ -450,7 +446,6 @@ def get_surface(face):
 
 
 class SheetTree(object):
-
     # Class representing a wire to replace in the unfolded shape. During tree creation, some features are detected
     # (e.g. countersink and counterbore holes) and are replaced later when the unfolded shape is created.
     class WireReplacement:
@@ -478,9 +473,7 @@ class SheetTree(object):
         self.error_code = None
         self.failed_face_idx = None
         self.k_factor_lookup = k_factor_lookup
-        self.wire_replacements = (
-            []
-        )  # list of wires to be replaced during unfold shape creation
+        self.wire_replacements = []  # list of wires to be replaced during unfold shape creation
 
         if not self.__Shape.isValid():
             FreeCAD.Console.PrintLog("The shape is not valid!" + "\n")
@@ -2502,7 +2495,10 @@ class SheetTree(object):
                 # theFace = Part.makeFilledFace(wires)
                 theFace = faces[0]
                 SMLogger.error(
-                    "at line " + str(exc_tb.tb_lineno) + " got exception: ", str(e)
+                    FreeCAD.Qt.translate("Logger", "at line {} got exception: ").format(
+                        str(exc_tb.tb_lineno),
+                    ),
+                    str(e),
                 )
                 # Part.show(theFace, 'exception')
         keyList = []
@@ -2912,7 +2908,6 @@ def sew_Shape():
 
 
 def makeSolidExpSTEP():
-
     doc = FreeCAD.ActiveDocument
     docG = FreeCADGui.ActiveDocument
     if doc is not None:
@@ -2996,7 +2991,6 @@ def getUnfold(k_factor_lookup, solid, subelement, facename):
                     # for newFace in theFaceList:
                     # Part.show(newFace)
                 else:
-
                     try:
                         TheSolid = Part.Solid(newShell)
                         solidTime = time.process_time()
@@ -3121,7 +3115,6 @@ def processUnfold(
     transparency=0.7,
     kFactorStandard="ansi",
 ):
-
     global KFACTORSTANDARD
     KFACTORSTANDARD = kFactorStandard
 
@@ -3138,7 +3131,11 @@ def processUnfold(
         foldLines = foldComp.Edges
     except Exception as e:
         exc_type, exc_obj, exc_tb = sys.exc_info()
-        SMLogger.error("exception at line " + str(exc_tb.tb_lineno), e.args)
+        SMLogger.error(
+            FreeCAD.Qt.translate("Logger", "exception at line ")
+            + str(exc_tb.tb_lineno),
+            e.args,
+        )
         SMLogger.error(e.args)
         raise UnfoldException()
 
@@ -3149,10 +3146,10 @@ def processUnfold(
     unfoldShape.Shape = shape
 
     if genSketch:
-        #locate the projection face
+        # locate the projection face
         unfoldobj = shape
         for face in shape.Faces:
-            fnorm = face.normalAt(0,0)
+            fnorm = face.normalAt(0, 0)
             isSameDir = abs(fnorm.dot(norm) - 1.0) < 0.00001
             if isSameDir:
                 unfoldobj = face
@@ -3180,9 +3177,11 @@ def processUnfold(
                 except:
                     exc_type, exc_obj, exc_tb = sys.exc_info()
                     SMLogger.error(
-                        "Exception at line "
-                        + str(exc_tb.tb_lineno)
-                        + ": Outline Sketch failed, re-trying after tidying up"
+                        FreeCAD.Qt.translate(
+                            "Logger",
+                            "Exception at line {}"
+                            ": Outline Sketch failed, re-trying after tidying up",
+                        ).format(str(exc_tb.tb_lineno))
                     )
                     tidy = True
                     owEdgs = unfold_sketch.Shape.Edges
@@ -3194,7 +3193,11 @@ def processUnfold(
                 )
 
                 if tidy:
-                    SMLogger.error("tidying up Unfold_Sketch_Outline")
+                    SMLogger.error(
+                        FreeCAD.Qt.translate(
+                            "Logger", "tidying up Unfold_Sketch_Outline"
+                        )
+                    )
                 intEdgs = []
                 idx = []
                 for i, e in enumerate(faceEdgs):
@@ -3213,9 +3216,10 @@ def processUnfold(
                 print(e)
                 exc_type, exc_obj, exc_tb = sys.exc_info()
                 SMLogger.error(
-                    "Exception at line "
-                    + str(exc_tb.tb_lineno)
-                    + ": Outline Sketch not created"
+                    FreeCAD.Qt.translate(
+                        "Logger",
+                        "Exception at line {}: Outline Sketch not created",
+                    ).format(str(exc_tb.tb_lineno))
                 )
 
         if len(foldLines) > 0 and splitSketches:
@@ -3236,7 +3240,6 @@ def processUnfold(
 
 
 def generateSketch(edges, name, color):
-
     p = Part.makeCompound(edges)
     try:
         sk = Draft.makeSketch(
@@ -3247,7 +3250,7 @@ def generateSketch(edges, name, color):
         doc = FreeCAD.ActiveDocument
         skb = doc.ActiveObject
         doc.removeObject(skb.Name)
-        SMLogger.warning("discretizing Sketch")
+        SMLogger.warning(FreeCAD.Qt.translate("Logger", "discretizing Sketch"))
         sk = SMmakeSketchfromEdges(p.Edges, name)
 
     if FreeCAD.GuiUp:

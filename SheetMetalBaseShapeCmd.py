@@ -239,8 +239,10 @@ class SMBaseShapeViewProviderFlat:
         return os.path.join( iconPath , 'SheetMetal_AddBaseShape.svg')
 
     def setEdit(self, vobj, mode):
-        SMLogger.log("Base shape edit mode: " + str(mode))
-        if (mode != 0):
+        SMLogger.log(
+            FreeCAD.Qt.translate("Logger", "Base shape edit mode: ") + str(mode)
+        )
+        if mode != 0:
             return None
             return super.setEdit(vobj, mode)
         taskd = BaseShapeTaskPanel()
