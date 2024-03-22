@@ -216,22 +216,34 @@ def smGetEdge(Face, obj):
 
 def LineAngle(edge1, edge2):
     # find angle between two lines
-    if edge1.Orientation == edge2.Orientation:
-        lineDir = edge1.valueAt(edge1.FirstParameter) - edge1.valueAt(
-            edge1.LastParameter
-        )
-        edgeDir = edge2.valueAt(edge2.FirstParameter) - edge2.valueAt(
-            edge2.LastParameter
-        )
-    else:
-        lineDir = edge1.valueAt(edge1.FirstParameter) - edge1.valueAt(
-            edge1.LastParameter
-        )
-        edgeDir = edge2.valueAt(edge2.LastParameter) - edge2.valueAt(
-            edge2.FirstParameter
-        )
-    angle1 = edgeDir.getAngle(lineDir)
-    angle = math.degrees(angle1)
+    v1a = edge1.Vertexes[0].Point
+    v1b = edge1.Vertexes[1].Point
+    v2a = edge2.Vertexes[0].Point
+    v2b = edge2.Vertexes[1].Point
+
+    # Find the right order of the wire verts to calculate the angle
+    # the order of the verts v1a v1b v2a v2b should be such that v1b is the closest vert to v2a
+    minlen = (v1a - v2a).Length
+    order = [v1b, v1a, v2a, v2b]
+    len = (v1a - v2b).Length
+    if  (len < minlen):
+        minlen = len
+        order = [v1b, v1a, v2b, v2a]
+    len = (v1b - v2a).Length
+    if  (len < minlen):
+        minlen = len
+        order = [v1a, v1b, v2a, v2b]
+    len = (v1b - v2b).Length
+    if  (len < minlen):
+        order = [v1a, v1b, v2b, v2a]
+
+    lineDir = order[1] - order[0]
+    edgeDir = order[3] - order[2]
+
+    angleRad = edgeDir.getAngle(lineDir)
+    angle = math.degrees(angleRad)
+    #if (angle > 90):
+    #    angle = 180.0 - angle
     return angle
 
 
@@ -579,6 +591,7 @@ def smMiter(
 
             # Produce Offset Edge
             lenEdge = trimedgelist[i].copy()
+            #Part.show(lenEdge)
             revAxisP = revAxisP + FaceDir * offset
 
             # narrow the wall, if we have gaps
@@ -587,13 +600,16 @@ def smMiter(
             )
             if BendFace.normalAt(0, 0) != thkDir:
                 BendFace.reverse()
+            #Part.show(BendFace)
             transBendFace = BendFace.copy()
             BendFace.rotate(revAxisP, revAxisV, bendA)
-            # Part.show(BendFace,'BendFace')
+            
+            #Part.show(BendFace,'BendFace')
             facelist.append(BendFace)
             transBendFace.translate(thkDir * thk)
             transBendFace.rotate(revAxisP, revAxisV, bendA)
             tranfacelist.append(transBendFace)
+            #Part.show(transBendFace,'transBendFace')
 
             # narrow the wall, if we have gaps
             BendFace = smMakeFace(
@@ -606,13 +622,15 @@ def smMiter(
             )
             if BendFace.normalAt(0, 0) != thkDir:
                 BendFace.reverse()
+            
             transBendFace = BendFace.copy()
             BendFace.rotate(revAxisP, revAxisV, bendA)
-            # Part.show(BendFace,'BendFace')
+            #Part.show(BendFace,'BendFaceB')
             extfacelist.append(BendFace)
             transBendFace.translate(thkDir * thk)
             transBendFace.rotate(revAxisP, revAxisV, bendA)
             exttranfacelist.append(transBendFace)
+            #Part.show(transBendFace,'transBendFaceB')
 
             #      edge_len = lenEdge.copy()
             edge_len = LineExtend(lenEdge, (-gap1 + extend1), (-gap2 + extend2))
