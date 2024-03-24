@@ -39,7 +39,9 @@ Gui.updateLocale()
 
 def smWarnDialog(msg):
     diag = QtGui.QMessageBox(
-        QtGui.QMessageBox.Warning, "Error in macro MessageBox", msg
+        QtGui.QMessageBox.Warning,
+        FreeCAD.Qt.translate("QMessageBox", "Error in macro MessageBox"),
+        msg,
     )
     diag.setWindowModality(QtCore.Qt.ApplicationModal)
     diag.exec_()
@@ -73,7 +75,7 @@ def GetViewConfig(obj):
     viewconf["objShapeCol"] = obj.ViewObject.ShapeColor
     viewconf["objShapeTsp"] = obj.ViewObject.Transparency
     viewconf["objDiffuseCol"] = obj.ViewObject.DiffuseColor
-    # TODO Make the individual face colors be retained
+    # TODO: Make the individual face colors be retained
     # needDiffuseColorExtension = ( len(selobj.ViewObject.DiffuseColor) < len(selobj.Shape.Faces) )
     return viewconf
 

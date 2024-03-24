@@ -41,7 +41,11 @@ Gui.addLanguagePath(LanguagePath)
 Gui.updateLocale()
 
 def smWarnDialog(msg):
-    diag = QtGui.QMessageBox(QtGui.QMessageBox.Warning, 'Error in macro MessageBox', msg)
+    diag = QtGui.QMessageBox(
+        QtGui.QMessageBox.Warning,
+        FreeCAD.Qt.translate("QMessageBox", "Error in macro MessageBox"),
+        msg,
+    )
     diag.setWindowModality(QtCore.Qt.ApplicationModal)
     diag.exec_()
 
@@ -59,7 +63,14 @@ def smIsPartDesign(obj):
 def smIsOperationLegal(body, selobj):
     #FreeCAD.Console.PrintLog(str(selobj) + " " + str(body) + " " + str(smBelongToBody(selobj, body)) + "\n")
     if smIsPartDesign(selobj) and not smBelongToBody(selobj, body):
-        smWarnDialog("The selected geometry does not belong to the active Body.\nPlease make the container of this item active by\ndouble clicking on it.")
+        smWarnDialog(
+            FreeCAD.Qt.translate(
+                "QMessageBox",
+                "The selected geometry does not belong to the active Body.\n"
+                "Please make the container of this item active by\n"
+                "double clicking on it."
+            )
+        )
         return False
     return True
  
@@ -67,7 +78,12 @@ def smthk(obj, foldface) :
   normal = foldface.normalAt(0,0)
   theVol = obj.Volume
   if theVol < 0.0001:
-      SMLogger.error("Shape is not a real 3D-object or to small for a metal-sheet!")
+      SMLogger.error(
+            FreeCAD.Qt.translate(
+                "Logger",
+                "Shape is not a real 3D-object or to small for a metal-sheet!"
+            )
+        )
   else:
       # Make a first estimate of the thickness
       estimated_thk = theVol/(obj.Area / 2.0)

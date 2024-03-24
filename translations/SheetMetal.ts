@@ -2,6 +2,319 @@
 <!DOCTYPE TS>
 <TS version="2.1">
 <context>
+    <name>App::Property</name>
+    <message>
+        <location filename="../SheetMetalFoldCmd.py" line="242"/>
+        <source>Bend Radius</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SheetMetalBend.py" line="117"/>
+        <source>Thickness of sheetmetal</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SheetMetalBaseCmd.py" line="202"/>
+        <source>Relief Type</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SheetMetalBaseCmd.py" line="206"/>
+        <source>Length of wall</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SheetMetalBaseCmd.py" line="210"/>
+        <source>Wall Sketch object</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SheetMetalBaseCmd.py" line="227"/>
+        <source>Extrude Symmetric to Plane</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SheetMetalBaseCmd.py" line="231"/>
+        <source>Reverse Extrusion Direction</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SheetMetalExtendCmd.py" line="310"/>
+        <source>Base object</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SketchOnSheetMetalCmd.py" line="288"/>
+        <source>Base Object</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SheetMetalExtendCmd.py" line="304"/>
+        <source>Length of Wall</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SketchOnSheetMetalCmd.py" line="292"/>
+        <source>Gap from Left Side</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SheetMetalCmd.py" line="1300"/>
+        <source>Gap from Right Side</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SheetMetalFoldCmd.py" line="254"/>
+        <source>Invert Bend Direction</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SheetMetalFoldCmd.py" line="244"/>
+        <source>Bend Angle</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SheetMetalCmd.py" line="1315"/>
+        <source>Extend from Left Side</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SheetMetalCmd.py" line="1321"/>
+        <source>Extend from Right Side</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SheetMetalCmd.py" line="1327"/>
+        <source>Bend Type</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SheetMetalCmd.py" line="1333"/>
+        <source>Type of Length Specification</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SheetMetalCmd.py" line="1339"/>
+        <source>Relief Width</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SheetMetalCmd.py" line="1346"/>
+        <source>Relief Depth</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SheetMetalCmd.py" line="1353"/>
+        <source>Use Relief Factor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SheetMetalCmd.py" line="1368"/>
+        <source>Relief Factor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SheetMetalCmd.py" line="1375"/>
+        <source>Bend Miter Angle from Left Side</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SheetMetalCmd.py" line="1382"/>
+        <source>Bend Miter Angle from Right Side</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SheetMetalCmd.py" line="1389"/>
+        <source>Auto Miter Minimum Gap</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SheetMetalCmd.py" line="1396"/>
+        <source>Auto Miter maximum Extend Distance</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SheetMetalCmd.py" line="1403"/>
+        <source>Minimum Gap to Relief Cut</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SheetMetalCmd.py" line="1410"/>
+        <source>Offset Bend</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SheetMetalCmd.py" line="1417"/>
+        <source>Enable Auto Miter</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SheetMetalCmd.py" line="1424"/>
+        <source>Shows Unfold View of Current Bend</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SheetMetalCmd.py" line="1432"/>
+        <source>Location of Neutral Line. Caution: Using ANSI standards, not DIN.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SheetMetalCmd.py" line="1442"/>
+        <source>Flip Sketch Direction</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SheetMetalCmd.py" line="1449"/>
+        <source>Invert Sketch Start</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SheetMetalCmd.py" line="1457"/>
+        <source>Sketch Object</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SheetMetalCmd.py" line="1465"/>
+        <source>Length of Wall List</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SheetMetalCmd.py" line="1473"/>
+        <source>Bend Angle List</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SheetMetalCornerReliefCmd.py" line="434"/>
+        <source>Corner Relief Type</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SheetMetalCornerReliefCmd.py" line="438"/>
+        <source>Size of Shape</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SheetMetalCornerReliefCmd.py" line="440"/>
+        <source>Size Ratio of Shape</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SheetMetalFoldCmd.py" line="252"/>
+        <source>Neutral Axis Position</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SheetMetalCornerReliefCmd.py" line="444"/>
+        <source>Corner Relief Sketch</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SheetMetalCornerReliefCmd.py" line="446"/>
+        <source>Gap from side one</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SheetMetalCornerReliefCmd.py" line="448"/>
+        <source>Gap from side two</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SheetMetalExtendCmd.py" line="306"/>
+        <source>Gap from left side</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SheetMetalExtendCmd.py" line="308"/>
+        <source>Gap from right side</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SheetMetalExtendCmd.py" line="328"/>
+        <source>Wall Sketch</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SheetMetalExtendCmd.py" line="338"/>
+        <source>Use Subtraction</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SheetMetalExtendCmd.py" line="316"/>
+        <source>Offset for subtraction</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SheetMetalExtendCmd.py" line="332"/>
+        <source>Use Refine</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SheetMetalFoldCmd.py" line="248"/>
+        <source>Bend Reference Line List</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SheetMetalFoldCmd.py" line="250"/>
+        <source>Invert Solid Bend Direction</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SheetMetalFoldCmd.py" line="256"/>
+        <source>Unfold Bend</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SheetMetalFoldCmd.py" line="266"/>
+        <source>Bend Line Position</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SheetMetalFormingCmd.py" line="139"/>
+        <source>Offset from Center of Face</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SheetMetalFormingCmd.py" line="141"/>
+        <source>Suppress Forming Feature</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SheetMetalFormingCmd.py" line="143"/>
+        <source>Tool Position Angle</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SheetMetalFormingCmd.py" line="145"/>
+        <source>Thickness of Sheetmetal</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SheetMetalFormingCmd.py" line="149"/>
+        <source>Forming Tool Object</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SheetMetalFormingCmd.py" line="151"/>
+        <source>Point Sketch on Sheetmetal</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SheetMetalJunction.py" line="104"/>
+        <source>Junction Gap</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SheetMetalRelief.py" line="151"/>
+        <source>Relief Size</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SketchOnSheetMetalCmd.py" line="290"/>
+        <source>Sketch on Sheetmetal</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>Gui::Dialog::DlgSettingsDraft</name>
     <message>
         <location filename="../SMprefs.ui" line="14"/>
@@ -44,6 +357,164 @@
     <message>
         <location filename="../SMprefs.ui" line="177"/>
         <source>Preferences for the SheetMetal Workbench</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>Logger</name>
+    <message>
+        <location filename="../SheetMetalBaseShapeCmd.py" line="243"/>
+        <source>Base shape edit mode: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SketchOnSheetMetalCmd.py" line="88"/>
+        <location filename="../SheetMetalFormingCmd.py" line="75"/>
+        <location filename="../SheetMetalFoldCmd.py" line="75"/>
+        <location filename="../SheetMetalCornerReliefCmd.py" line="77"/>
+        <source>Shape is not a real 3D-object or to small for a metal-sheet!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SheetMetalUnfoldCmd.py" line="62"/>
+        <source>Running unattended unfold...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SheetMetalUnfolder.py" line="425"/>
+        <source>k_Factor is a readonly property! Won&apos;t set to:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SheetMetalUnfolder.py" line="2498"/>
+        <source>at line {} got exception: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SheetMetalUnfolder.py" line="3135"/>
+        <source>exception at line </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SheetMetalUnfolder.py" line="3180"/>
+        <source>Exception at line {}: Outline Sketch failed, re-trying after tidying up</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SheetMetalUnfolder.py" line="3197"/>
+        <source>tidying up Unfold_Sketch_Outline</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SheetMetalUnfolder.py" line="3219"/>
+        <source>Exception at line {}: Outline Sketch not created</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SheetMetalUnfolder.py" line="3253"/>
+        <source>discretizing Sketch</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../UnfoldGUI.py" line="126"/>
+        <source>Unfold operation needs to know K-factor value(s) to be used.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QMessageBox</name>
+    <message>
+        <location filename="../SketchOnSheetMetalCmd.py" line="47"/>
+        <location filename="../SheetMetalRelief.py" line="48"/>
+        <location filename="../SheetMetalJunction.py" line="47"/>
+        <location filename="../SheetMetalFormingCmd.py" line="46"/>
+        <location filename="../SheetMetalFoldCmd.py" line="46"/>
+        <location filename="../SheetMetalExtendCmd.py" line="49"/>
+        <location filename="../SheetMetalCornerReliefCmd.py" line="48"/>
+        <location filename="../SheetMetalCmd.py" line="98"/>
+        <location filename="../SheetMetalBend.py" line="47"/>
+        <location filename="../SheetMetalBaseCmd.py" line="43"/>
+        <source>Error in macro MessageBox</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../UnfoldGUI.py" line="130"/>
+        <source>&lt;ol&gt;
+&lt;li&gt;Either select &apos;Manual K-factor&apos;&lt;/li&gt;
+&lt;li&gt;Or use a &lt;a href=&apos;{}&apos;&gt;Material Definition Sheet&lt;/a&gt;&lt;/li&gt;
+&lt;/ol&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../UnfoldGUI.py" line="240"/>
+        <source>Unfold is failing.
+Please try to select a different face to unfold your object
+
+If the opposite face also fails then switch Refine to false on feature </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../UnfoldGUI.py" line="250"/>
+        <source>Warning</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QObject</name>
+    <message>
+        <location filename="../SheetMetalRelief.py" line="189"/>
+        <source>Edit %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>SMBaseShape</name>
+    <message>
+        <location filename="../SheetMetalBaseShapeCmd.py" line="297"/>
+        <source>Thickness of sheetmetal</source>
+        <comment>Property</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SheetMetalBaseShapeCmd.py" line="301"/>
+        <source>Bend Radius</source>
+        <comment>Property</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SheetMetalBaseShapeCmd.py" line="304"/>
+        <source>Shape width</source>
+        <comment>Property</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SheetMetalBaseShapeCmd.py" line="307"/>
+        <source>Shape length</source>
+        <comment>Property</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SheetMetalBaseShapeCmd.py" line="310"/>
+        <source>Shape height</source>
+        <comment>Property</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SheetMetalBaseShapeCmd.py" line="315"/>
+        <source>Width of top flange</source>
+        <comment>Property</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SheetMetalBaseShapeCmd.py" line="321"/>
+        <source>Base shape type</source>
+        <comment>Property</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SheetMetalBaseShapeCmd.py" line="327"/>
+        <source>Extend sides and flange to close all gaps</source>
+        <comment>Property</comment>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -239,213 +710,12 @@
     </message>
 </context>
 <context>
-    <name>App::Property</name>
-    <message>
-        <location filename="../SheetMetalFoldCmd.py" line="242"/>
-        <source>Bend Radius</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../SheetMetalFoldCmd.py" line="244"/>
-        <source>Bend Angle</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../SheetMetalFoldCmd.py" line="248"/>
-        <source>Bend Reference Line List</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../SheetMetalFoldCmd.py" line="250"/>
-        <source>Invert Solid Bend Direction</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../SheetMetalFoldCmd.py" line="252"/>
-        <source>Neutral Axis Position</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../SheetMetalFoldCmd.py" line="254"/>
-        <source>Invert Bend Direction</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../SheetMetalFoldCmd.py" line="256"/>
-        <source>Unfold Bend</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../SheetMetalFoldCmd.py" line="266"/>
-        <source>Bend Line Position</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../SheetMetalBend.py" line="117"/>
-        <source>Thickness of sheetmetal</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../SheetMetalBaseCmd.py" line="202"/>
-        <source>Relief Type</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../SheetMetalBaseCmd.py" line="206"/>
-        <source>Length of wall</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../SheetMetalBaseCmd.py" line="210"/>
-        <source>Wall Sketch object</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../SheetMetalBaseCmd.py" line="227"/>
-        <source>Extrude Symmetric to Plane</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../SheetMetalBaseCmd.py" line="231"/>
-        <source>Reverse Extrusion Direction</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../SheetMetalExtendCmd.py" line="304"/>
-        <source>Length of Wall</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../SheetMetalExtendCmd.py" line="306"/>
-        <source>Gap from left side</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../SheetMetalExtendCmd.py" line="308"/>
-        <source>Gap from right side</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../SheetMetalExtendCmd.py" line="310"/>
-        <source>Base object</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../SheetMetalExtendCmd.py" line="316"/>
-        <source>Offset for subtraction</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../SheetMetalExtendCmd.py" line="328"/>
-        <source>Wall Sketch</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../SheetMetalExtendCmd.py" line="332"/>
-        <source>Use Refine</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../SheetMetalExtendCmd.py" line="338"/>
-        <source>Use Subtraction</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../SketchOnSheetMetalCmd.py" line="288"/>
-        <source>Base Object</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../SketchOnSheetMetalCmd.py" line="290"/>
-        <source>Sketch on Sheetmetal</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../SketchOnSheetMetalCmd.py" line="292"/>
-        <source>Gap from Left Side</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../SheetMetalCornerReliefCmd.py" line="434"/>
-        <source>Corner Relief Type</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../SheetMetalCornerReliefCmd.py" line="438"/>
-        <source>Size of Shape</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../SheetMetalCornerReliefCmd.py" line="440"/>
-        <source>Size Ratio of Shape</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../SheetMetalCornerReliefCmd.py" line="444"/>
-        <source>Corner Relief Sketch</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../SheetMetalCornerReliefCmd.py" line="446"/>
-        <source>Gap from side one</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../SheetMetalCornerReliefCmd.py" line="448"/>
-        <source>Gap from side two</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../SheetMetalFormingCmd.py" line="139"/>
-        <source>Offset from Center of Face</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../SheetMetalFormingCmd.py" line="141"/>
-        <source>Suppress Forming Feature</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../SheetMetalFormingCmd.py" line="143"/>
-        <source>Tool Position Angle</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../SheetMetalFormingCmd.py" line="145"/>
-        <source>Thickness of Sheetmetal</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../SheetMetalFormingCmd.py" line="149"/>
-        <source>Forming Tool Object</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../SheetMetalFormingCmd.py" line="151"/>
-        <source>Point Sketch on Sheetmetal</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../SheetMetalJunction.py" line="104"/>
-        <source>Junction Gap</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../SheetMetalRelief.py" line="151"/>
-        <source>Relief Size</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>QObject</name>
-    <message>
-        <location filename="../SheetMetalRelief.py" line="189"/>
-        <source>Edit %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>SheetMetal</name>
+    <message>
+        <location filename="../InitGui.py" line="52"/>
+        <source>Sheet Metal</source>
+        <translation type="unfinished"></translation>
+    </message>
     <message>
         <location filename="../InitGui.py" line="54"/>
         <source>Sheet Metal workbench allows for designing and unfolding sheet metal parts</source>
@@ -459,11 +729,6 @@
     <message>
         <location filename="../InitGui.py" line="96"/>
         <source>Sheet Me&amp;tal</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../InitGui.py" line="52"/>
-        <source>Sheet Metal</source>
         <translation type="unfinished"></translation>
     </message>
     <message>

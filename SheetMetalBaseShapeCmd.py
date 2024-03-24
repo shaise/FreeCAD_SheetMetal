@@ -38,6 +38,7 @@ mw = FreeCADGui.getMainWindow()
 # changes in modeling logic
 smElementMapVersion = 'sm1.'
 
+base_shape_types = ["L-Shape", "U-Shape", "Tub", "Hat", "Box"]
 
 ##########################################################################################################
 # Task
@@ -54,7 +55,7 @@ class BaseShapeTaskPanel:
 
     def _boolToState(self, bool):
         return QtCore.Qt.Checked if bool else QtCore.Qt.Unchecked
-    
+
     def _stateToBool(self, state):
         return True if state == QtCore.Qt.Checked else False
 
@@ -71,7 +72,7 @@ class BaseShapeTaskPanel:
         self.form.shapeType.currentIndexChanged.connect(self.typeChanged)
         self.form.chkFillGaps.stateChanged.connect(self.checkChanged)
         self.form.update()
-        
+
         #SMLogger.log(str(self.formReady) + " <2 \n")
 
     def spinValChanged(self):
@@ -79,7 +80,7 @@ class BaseShapeTaskPanel:
            return
         self.updateObj()
         self.obj.recompute()
-        
+
     def typeChanged(self):
         self.spinValChanged()
 
@@ -95,7 +96,10 @@ class BaseShapeTaskPanel:
         self.obj.height = self.form.bHeightSpin.property('value')
         self.obj.flangeWidth = self.form.bFlangeWidthSpin.property('value')
         self.obj.length = self.form.bLengthSpin.property('value')
-        self.obj.shapeType = self.form.shapeType.currentText()
+        selected_type = self.form.shapeType.currentText()
+        if selected_type not in base_shape_types:
+            selected_type = base_shape_types[self.form.shapeType.currentIndex()]
+        self.obj.shapeType = selected_type
         self.obj.fillGaps = self._stateToBool(self.form.chkFillGaps.checkState())
 
     def accept(self):
@@ -140,18 +144,18 @@ class BaseShapeTaskPanel:
 
 def smCreateBaseShape(type, thickness, radius, width, length, height, flangeWidth, fillGaps):
     bendCompensation = thickness + radius
-    height -= bendCompensation    
+    height -= bendCompensation
     if type == "U-Shape":
         numfolds = 2
         width -= 2.0 * bendCompensation
-    elif type == "Tub" or type == "Hat" or type == "Box":
+    elif type in ["Tub", "Hat", "Box"]:
         numfolds = 4
         width -= 2.0 * bendCompensation
         length -= 2.0 * bendCompensation
     else:
         numfolds = 1
         width -= bendCompensation
-    if type == "Hat" or type == "Box":
+    if type in ["Hat", "Box"]:
         height -= bendCompensation
         flangeWidth -= radius
     if width < thickness: width = thickness
@@ -167,10 +171,10 @@ def smCreateBaseShape(type, thickness, radius, width, length, height, flangeWidt
             (v.x > 0.5 and numfolds > 2) or
             (v.x < -0.5 and numfolds > 3)):
             faces.append("Face" + str(i+1))
-    
-    shape, f = smBend(thickness, selFaceNames = faces, extLen = height, bendR = radius, 
+
+    shape, f = smBend(thickness, selFaceNames = faces, extLen = height, bendR = radius,
                       MainObject = box, automiter = fillGaps)
-    if type == "Hat" or type == "Box":
+    if type in ["Hat", "Box"]:
         faces = []
         invertBend = False
         if type == "Hat": invertBend = True
@@ -179,10 +183,10 @@ def smCreateBaseShape(type, thickness, radius, width, length, height, flangeWidt
             z = shape.Faces[i].CenterOfGravity.z
             if v.z > 0.9999 and z > bendCompensation:
                 faces.append("Face" + str(i+1))
-        shape, f = smBend(thickness, selFaceNames = faces, extLen = flangeWidth, 
+        shape, f = smBend(thickness, selFaceNames = faces, extLen = flangeWidth,
                           bendR = radius, MainObject = shape, flipped = invertBend,
                           automiter = fillGaps)
-            
+
 
 
 
@@ -235,8 +239,10 @@ class SMBaseShapeViewProviderFlat:
         return os.path.join( iconPath , 'SheetMetal_AddBaseShape.svg')
 
     def setEdit(self, vobj, mode):
-        SMLogger.log("Base shape edit mode: " + str(mode))
-        if (mode != 0):
+        SMLogger.log(
+            FreeCAD.Qt.translate("Logger", "Base shape edit mode: ") + str(mode)
+        )
+        if mode != 0:
             return None
             return super.setEdit(vobj, mode)
         taskd = BaseShapeTaskPanel()
@@ -263,14 +269,56 @@ class SMBaseShape:
         obj.Proxy = self
 
     def _addVerifyProperties(self, obj):
-        smAddLengthProperty(obj, "thickness", "Thickness of sheetmetal", 1.0)
-        smAddLengthProperty(obj, "radius", "Bend Radius", 1.0)
-        smAddLengthProperty(obj, "width", "Shape width", 20.0)
-        smAddLengthProperty(obj, "length", "Shape length", 30.0)
-        smAddLengthProperty(obj, "height", "Shape height", 10.0)
-        smAddLengthProperty(obj, "flangeWidth", "Width of top flange", 5.0)
-        smAddEnumProperty(obj, "shapeType", "Base shape type", ["L-Shape", "U-Shape", "Tub", "Hat", "Box"])
-        smAddBoolProperty(obj, "fillGaps", "Extend sides and flange to close all gaps", True)
+        smAddLengthProperty(
+            obj,
+            "thickness",
+            FreeCAD.Qt.translate("SMBaseShape", "Thickness of sheetmetal", "Property"),
+            1.0,
+        )
+        smAddLengthProperty(
+            obj,
+            "radius",
+            FreeCAD.Qt.translate("SMBaseShape", "Bend Radius", "Property"),
+            1.0,
+        )
+        smAddLengthProperty(
+            obj,
+            "width",
+            FreeCAD.Qt.translate("SMBaseShape", "Shape width", "Property"),
+            20.0,
+        )
+        smAddLengthProperty(
+            obj,
+            "length",
+            FreeCAD.Qt.translate("SMBaseShape", "Shape length", "Property"),
+            30.0,
+        )
+        smAddLengthProperty(
+            obj,
+            "height",
+            FreeCAD.Qt.translate("SMBaseShape", "Shape height", "Property"),
+            10.0,
+        )
+        smAddLengthProperty(
+            obj,
+            "flangeWidth",
+            FreeCAD.Qt.translate("SMBaseShape", "Width of top flange", "Property"),
+            5.0,
+        )
+        smAddEnumProperty(
+            obj,
+            "shapeType",
+            FreeCAD.Qt.translate("SMBaseShape", "Base shape type", "Property"),
+            base_shape_types,
+        )
+        smAddBoolProperty(
+            obj,
+            "fillGaps",
+            FreeCAD.Qt.translate(
+                "SMBaseShape", "Extend sides and flange to close all gaps", "Property"
+            ),
+            True,
+        )
 
     def getElementMapVersion(self, _fp, ver, _prop, restored):
         if not restored:
@@ -278,9 +326,9 @@ class SMBaseShape:
 
     def execute(self, fp):
         self._addVerifyProperties(fp)
-        s = smCreateBaseShape(type = fp.shapeType, thickness = fp.thickness.Value, 
-                              radius = fp.radius.Value, width = fp.width.Value, 
-                              length = fp.length.Value, height = fp.height.Value, 
+        s = smCreateBaseShape(type = fp.shapeType, thickness = fp.thickness.Value,
+                              radius = fp.radius.Value, width = fp.width.Value,
+                              length = fp.length.Value, height = fp.height.Value,
                               flangeWidth = fp.flangeWidth.Value, fillGaps = fp.fillGaps)
 
         fp.Shape = s
