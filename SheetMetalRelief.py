@@ -70,7 +70,7 @@ def smIsOperationLegal(body, selobj):
                 "QMessageBox",
                 "The selected geometry does not belong to the active Body.\n"
                 "Please make the container of this item active by\n"
-                "double clicking on it."
+                "double clicking on it.",
             )
         )
         return False
@@ -454,5 +454,5 @@ class AddReliefCommandClass():
         return False
     return True
 
-Gui.addCommand('SMMakeRelief',AddReliefCommandClass())
+Gui.addCommand("SheetMetal_AddRelief", AddReliefCommandClass())
 

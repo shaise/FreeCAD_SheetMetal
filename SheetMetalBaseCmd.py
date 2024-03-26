@@ -64,7 +64,12 @@ def smIsOperationLegal(body, selobj):
     # FreeCAD.Console.PrintLog(str(selobj) + " " + str(body) + " " + str(smBelongToBody(selobj, body)) + "\n")
     if smIsSketchObject(selobj) and not smBelongToBody(selobj, body):
         smWarnDialog(
-            "The selected geometry does not belong to the active Body.\nPlease make the container of this item active by\ndouble clicking on it."
+            FreeCAD.Qt.translate(
+                "QMessageBox",
+                "The selected geometry does not belong to the active Body.\n"
+                "Please make the container of this item active by\n"
+                "double clicking on it.",
+            )
         )
         return False
     return True
@@ -358,4 +363,4 @@ class AddBaseCommandClass:
         return True
 
 
-Gui.addCommand("SMBase", AddBaseCommandClass())
+Gui.addCommand("SheetMetal_AddBase", AddBaseCommandClass())

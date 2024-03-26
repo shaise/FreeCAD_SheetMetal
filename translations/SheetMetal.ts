@@ -438,6 +438,22 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../SketchOnSheetMetalCmd.py" line="68"/>
+        <location filename="../SheetMetalRelief.py" line="69"/>
+        <location filename="../SheetMetalJunction.py" line="68"/>
+        <location filename="../SheetMetalFormingCmd.py" line="67"/>
+        <location filename="../SheetMetalFoldCmd.py" line="67"/>
+        <location filename="../SheetMetalExtendCmd.py" line="70"/>
+        <location filename="../SheetMetalCornerReliefCmd.py" line="69"/>
+        <location filename="../SheetMetalCmd.py" line="122"/>
+        <location filename="../SheetMetalBend.py" line="68"/>
+        <location filename="../SheetMetalBaseCmd.py" line="67"/>
+        <source>The selected geometry does not belong to the active Body.
+Please make the container of this item active by
+double clicking on it.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../UnfoldGUI.py" line="130"/>
         <source>&lt;ol&gt;
 &lt;li&gt;Either select &apos;Manual K-factor&apos;&lt;/li&gt;
@@ -446,16 +462,16 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../UnfoldGUI.py" line="250"/>
+        <source>Warning</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../UnfoldGUI.py" line="240"/>
         <source>Unfold is failing.
 Please try to select a different face to unfold your object
 
 If the opposite face also fails then switch Refine to false on feature </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../UnfoldGUI.py" line="250"/>
-        <source>Warning</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

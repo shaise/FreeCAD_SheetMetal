@@ -43,7 +43,6 @@ main_smWB_Icon = os.path.join(smWB_icons_path, "SMLogo.svg")
 
 
 class SMWorkbench(Workbench):
-
     global main_smWB_Icon
     global SHEETMETALWB_VERSION
     global QtCore
@@ -76,21 +75,23 @@ class SMWorkbench(Workbench):
         import os.path
 
         self.list = [
-            "SMBase",
-            "SMMakeWall",
-            "SMExtrudeFace",
-            "SMFoldWall",
-            "SMUnfold",
-            "SMCornerRelief",
-            "SMMakeRelief",
-            "SMMakeJunction",
-            "SMMakeBend",
-            "SMSketchOnSheet",
-            "SMFormingWall",
-            "SMBaseShape"
+            "SheetMetal_AddBase",
+            "SheetMetal_AddWall",
+            "SheetMetal_Extrude",
+            "SheetMetal_AddFoldWall",
+            "SheetMetal_Unfold",
+            "SheetMetal_AddCornerRelief",
+            "SheetMetal_AddRelief",
+            "SheetMetal_AddJunction",
+            "SheetMetal_AddBend",
+            "SheetMetal_SketchOnSheet",
+            "SheetMetal_Forming",
+            "SheetMetal_BaseShape",
         ]  # A list of command names created in the line above
         if engineering_mode_enabled():
-            self.list.insert(self.list.index("SMUnfold") + 1, "SMUnfoldUnattended")
+            self.list.insert(
+                self.list.index("SheetMetal_Unfold") + 1, "SheetMetal_UnattendedUnfold"
+            )
         self.appendToolbar(
             FreeCAD.Qt.translate("SheetMetal", "Sheet Metal"), self.list
         )  # creates a new toolbar with your commands

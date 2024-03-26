@@ -134,7 +134,9 @@ class SMUnfoldTaskPanel:
                 "<li>Or use a <a href='{}'>Material Definition Sheet</a></li>\n"
                 "</ol>",
             ).format(mds_help_url)
-            QtGui.QMessageBox.warning(None, "Warning", msg)
+            QtGui.QMessageBox.warning(
+                None, FreeCAD.Qt.translate("QMessageBox", "Warning"), msg
+            )
             return None
         else:
             lookupTable = SheetMetalKfactor.KFactorLookupTable(

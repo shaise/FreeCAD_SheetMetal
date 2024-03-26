@@ -93,7 +93,7 @@ class SMUnfoldUnattendedCommandClass:
         return isinstance(selFace.Surface, Part.Plane)
 
 
-Gui.addCommand("SMUnfoldUnattended", SMUnfoldUnattendedCommandClass())
+Gui.addCommand("SheetMetal_UnattendedUnfold", SMUnfoldUnattendedCommandClass())
 
 
 class SMUnfoldCommandClass:
@@ -142,5 +142,4 @@ class SMUnfoldCommandClass:
         selFace = Gui.Selection.getSelectionEx()[0].SubObjects[0]
         return isinstance(selFace.Surface, Part.Plane)
 
-
-Gui.addCommand("SMUnfold", SMUnfoldCommandClass())
+Gui.addCommand("SheetMetal_Unfold", SMUnfoldCommandClass())
