@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Unfold sheet metal object</string>
+   <string>Generate Sheet Metal base shape</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
