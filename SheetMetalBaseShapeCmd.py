@@ -39,6 +39,7 @@ mw = FreeCADGui.getMainWindow()
 smElementMapVersion = 'sm1.'
 
 base_shape_types = ["L-Shape", "U-Shape", "Tub", "Hat", "Box"]
+origin_location_types = ["-X,-Y", "-X,0", "-X,+Y", "0,-Y", "0,0", "0,+Y", "+X,-Y", "+X,0", "+X,+Y"]
 
 ##########################################################################################################
 # Task
@@ -70,6 +71,7 @@ class BaseShapeTaskPanel:
         self.form.bFlangeWidthSpin.valueChanged.connect(self.spinValChanged)
         self.form.bLengthSpin.valueChanged.connect(self.spinValChanged)
         self.form.shapeType.currentIndexChanged.connect(self.typeChanged)
+        self.form.originLoc.currentIndexChanged.connect(self.typeChanged)
         self.form.chkFillGaps.stateChanged.connect(self.checkChanged)
         self.form.update()
 
@@ -100,6 +102,7 @@ class BaseShapeTaskPanel:
         if selected_type not in base_shape_types:
             selected_type = base_shape_types[self.form.shapeType.currentIndex()]
         self.obj.shapeType = selected_type
+        self.obj.originLoc = self.form.originLoc.currentText()
         self.obj.fillGaps = self._stateToBool(self.form.chkFillGaps.checkState())
 
     def accept(self):
@@ -133,6 +136,7 @@ class BaseShapeTaskPanel:
         self.updateSpin(self.form.bFlangeWidthSpin, 'flangeWidth')
         self.updateSpin(self.form.bLengthSpin, 'length')
         self.form.shapeType.setCurrentText(self.obj.shapeType)
+        self.form.originLoc.setCurrentText(self.obj.originLoc)
         self.form.chkFillGaps.setCheckState(self._boolToState(self.obj.fillGaps))
         self.form.chkNewBody.setVisible(self.firstTime)
         self.formReady = True
@@ -142,16 +146,28 @@ class BaseShapeTaskPanel:
 # Object class and creation function
 ##########################################################################################################
 
-def smCreateBaseShape(type, thickness, radius, width, length, height, flangeWidth, fillGaps):
+def GetOriginShift(dimension, type, bendCompensation):
+    type = type[0]
+    if type == '+':
+        return -dimension - bendCompensation
+    if type == '0':
+        return -dimension / 2.0
+    return bendCompensation
+
+def smCreateBaseShape(type, thickness, radius, width, length, height, flangeWidth, fillGaps, origin):
     bendCompensation = thickness + radius
     height -= bendCompensation
+    compx = 0
+    compy = 0
     if type == "U-Shape":
         numfolds = 2
         width -= 2.0 * bendCompensation
+        compy = bendCompensation
     elif type in ["Tub", "Hat", "Box"]:
         numfolds = 4
         width -= 2.0 * bendCompensation
         length -= 2.0 * bendCompensation
+        compx = compy = bendCompensation
     else:
         numfolds = 1
         width -= bendCompensation
@@ -162,7 +178,13 @@ def smCreateBaseShape(type, thickness, radius, width, length, height, flangeWidt
     if height < thickness: height = thickness
     if length < thickness: length = thickness
     if flangeWidth < thickness: flangeWidth = thickness
+    originX, originY = origin.split(',')
+    offsx = GetOriginShift(length, originX, compx)
+    offsy = GetOriginShift(width, originY, compy)
+    if type == "L-Shape" and originY == "+Y":
+        offsy -= bendCompensation
     box = Part.makeBox(length, width, thickness)
+    box.translate(FreeCAD.Vector(offsx, offsy, 0))
     faces = []
     for i in range(len(box.Faces)):
         v = box.Faces[i].normalAt(0,0)
@@ -311,6 +333,13 @@ class SMBaseShape:
             FreeCAD.Qt.translate("SMBaseShape", "Base shape type", "Property"),
             base_shape_types,
         )
+        smAddEnumProperty(
+            obj,
+            "originLoc",
+            FreeCAD.Qt.translate("SMBaseShape", "Location of part origin", "Property"),
+            origin_location_types,
+            defval = "0,0"
+        )
         smAddBoolProperty(
             obj,
             "fillGaps",
@@ -329,7 +358,8 @@ class SMBaseShape:
         s = smCreateBaseShape(type = fp.shapeType, thickness = fp.thickness.Value,
                               radius = fp.radius.Value, width = fp.width.Value,
                               length = fp.length.Value, height = fp.height.Value,
-                              flangeWidth = fp.flangeWidth.Value, fillGaps = fp.fillGaps)
+                              flangeWidth = fp.flangeWidth.Value, fillGaps = fp.fillGaps,
+                              origin = fp.originLoc)
 
         fp.Shape = s
 
