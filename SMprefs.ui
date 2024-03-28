@@ -56,9 +56,6 @@
           <property name="enabled">
            <bool>true</bool>
           </property>
-          <property name="toolTip">
-           <string>Method of icon grouping</string>
-          </property>
           <property name="currentIndex">
            <number>0</number>
           </property>
@@ -111,9 +108,6 @@
          <widget class="Gui::PrefComboBox" name="gui::comboBox_2">
           <property name="enabled">
            <bool>true</bool>
-          </property>
-          <property name="toolTip">
-           <string>Method of icon grouping</string>
           </property>
           <property name="currentIndex">
            <number>0</number>
