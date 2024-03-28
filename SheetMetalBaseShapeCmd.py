@@ -52,6 +52,7 @@ class BaseShapeTaskPanel:
         self.form = FreeCADGui.PySideUic.loadUi(path)
         self.formReady = False
         self.firstTime = True
+        self.ShowAxisCross()
         self.setupUi()
 
 
@@ -90,6 +91,13 @@ class BaseShapeTaskPanel:
     def checkChanged(self):
         self.spinValChanged()
 
+    def ShowAxisCross(self):
+        self.hasAxisCross = FreeCADGui.ActiveDocument.ActiveView.hasAxisCross()
+        FreeCADGui.ActiveDocument.ActiveView.setAxisCross(True)
+
+    def RevertAxisCross(self):
+        FreeCADGui.ActiveDocument.ActiveView.setAxisCross(self.hasAxisCross)
+
     def updateObj(self):
         #spin = Gui.UiLoader().createWidget("Gui::QuantitySpinBox")
         #SMLogger.log(str(self.form.bRadiusSpin.property('rawValue')))
@@ -117,12 +125,14 @@ class BaseShapeTaskPanel:
         doc.commitTransaction()
         FreeCADGui.Control.closeDialog()
         doc.recompute()
+        self.RevertAxisCross()
 
 
     def reject(self):
         FreeCAD.ActiveDocument.abortTransaction()
         FreeCADGui.Control.closeDialog()
         FreeCAD.ActiveDocument.recompute()
+        self.RevertAxisCross()
 
     def updateSpin(self, spin, property):
         Gui.ExpressionBinding(spin).bind(self.obj, property)
