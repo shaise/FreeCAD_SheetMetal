@@ -459,11 +459,20 @@
    </item>
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_8">
+     <property name="sizeConstraint">
+      <enum>QLayout::SetNoConstraint</enum>
+     </property>
      <property name="topMargin">
       <number>0</number>
      </property>
      <item>
       <widget class="QLabel" name="label_8">
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>40</height>
+        </size>
+       </property>
        <property name="text">
         <string>Location of part origin</string>
        </property>
@@ -485,63 +494,111 @@
      <item>
       <widget class="QComboBox" name="originLoc">
        <property name="sizePolicy">
-        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+        <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
          <horstretch>0</horstretch>
          <verstretch>0</verstretch>
         </sizepolicy>
        </property>
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>40</height>
+        </size>
+       </property>
        <property name="maximumSize">
         <size>
          <width>100</width>
-         <height>16777215</height>
+         <height>40</height>
         </size>
        </property>
        <property name="currentIndex">
         <number>0</number>
        </property>
+       <property name="iconSize">
+        <size>
+         <width>64</width>
+         <height>32</height>
+        </size>
+       </property>
        <item>
         <property name="text">
-         <string>-X,-Y</string>
+         <string/>
+        </property>
+        <property name="icon">
+         <iconset>
+          <normaloff>Icons:BaseShape_BL.svg</normaloff>Icons:BaseShape_BL.svg</iconset>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>-X,0</string>
+         <string/>
+        </property>
+        <property name="icon">
+         <iconset>
+          <normaloff>Icons:BaseShape_CL.svg</normaloff>Icons:BaseShape_CL.svg</iconset>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>-X,+Y</string>
+         <string/>
+        </property>
+        <property name="icon">
+         <iconset>
+          <normaloff>Icons:BaseShape_TL.svg</normaloff>Icons:BaseShape_TL.svg</iconset>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>0,-Y</string>
+         <string/>
+        </property>
+        <property name="icon">
+         <iconset>
+          <normaloff>Icons:BaseShape_BC.svg</normaloff>Icons:BaseShape_BC.svg</iconset>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>0,0</string>
+         <string/>
+        </property>
+        <property name="icon">
+         <iconset>
+          <normaloff>Icons:BaseShape_CC.svg</normaloff>Icons:BaseShape_CC.svg</iconset>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>0,+Y</string>
+         <string/>
+        </property>
+        <property name="icon">
+         <iconset>
+          <normaloff>Icons:BaseShape_TC.svg</normaloff>Icons:BaseShape_TC.svg</iconset>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>+X,-Y</string>
+         <string/>
+        </property>
+        <property name="icon">
+         <iconset>
+          <normaloff>Icons:BaseShape_BR.svg</normaloff>Icons:BaseShape_BR.svg</iconset>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>+X,0</string>
+         <string/>
+        </property>
+        <property name="icon">
+         <iconset>
+          <normaloff>Icons:BaseShape_CR.svg</normaloff>Icons:BaseShape_CR.svg</iconset>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>+X,+Y</string>
+         <string/>
+        </property>
+        <property name="icon">
+         <iconset>
+          <normaloff>Icons:BaseShape_TR.svg</normaloff>Icons:BaseShape_TR.svg</iconset>
         </property>
        </item>
       </widget>

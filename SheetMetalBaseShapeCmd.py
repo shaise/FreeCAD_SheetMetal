@@ -47,6 +47,7 @@ origin_location_types = ["-X,-Y", "-X,0", "-X,+Y", "0,-Y", "0,0", "0,+Y", "+X,-Y
 
 class BaseShapeTaskPanel:
     def __init__(self):
+        QtCore.QDir.addSearchPath('Icons', iconPath)
         path = f"{modPath}/BaseShapeOptions.ui"
         self.form = FreeCADGui.PySideUic.loadUi(path)
         self.formReady = False
@@ -102,7 +103,7 @@ class BaseShapeTaskPanel:
         if selected_type not in base_shape_types:
             selected_type = base_shape_types[self.form.shapeType.currentIndex()]
         self.obj.shapeType = selected_type
-        self.obj.originLoc = self.form.originLoc.currentText()
+        self.obj.originLoc = origin_location_types[self.form.originLoc.currentIndex()]
         self.obj.fillGaps = self._stateToBool(self.form.chkFillGaps.checkState())
 
     def accept(self):
@@ -136,7 +137,7 @@ class BaseShapeTaskPanel:
         self.updateSpin(self.form.bFlangeWidthSpin, 'flangeWidth')
         self.updateSpin(self.form.bLengthSpin, 'length')
         self.form.shapeType.setCurrentText(self.obj.shapeType)
-        self.form.originLoc.setCurrentText(self.obj.originLoc)
+        self.form.originLoc.setCurrentIndex(origin_location_types.index(self.obj.originLoc))
         self.form.chkFillGaps.setCheckState(self._boolToState(self.obj.fillGaps))
         self.form.chkNewBody.setVisible(self.firstTime)
         self.formReady = True
