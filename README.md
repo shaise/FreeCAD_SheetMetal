@@ -99,6 +99,7 @@ Starting from FreeCAD 0.17 it can be installed via the [Addon Manager](https://g
 * FreeCAD Forum announcement/discussion [thread](https://forum.freecadweb.org/viewtopic.php?f=3&t=60818) 
 
 #### Release notes: 
+* V0.4.09 28 Mar 2024:  Enhance bend function to work on refined faces as well.  
 * V0.4.08 27 Mar 2024:  Add option to set origin of base shape.  
 * V0.4.07 26 Mar 2024:  Fix Translation issues by [@hasecilu][hasecilu].  
                       - Update function names to match the wiki help by [@hasecilu][hasecilu].  

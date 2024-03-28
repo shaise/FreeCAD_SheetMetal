@@ -424,21 +424,45 @@ def getSketchDetails(Sketch, sketchflip, sketchinvert, radius, thk):
     # print(LengthList, bendAList)
     return LengthList, bendAList
 
+def check_parallel(edge1, edge2):
+    v1 = edge1.Vertexes[0].Point - edge1.Vertexes[1].Point
+    v2 = edge2.Vertexes[0].Point - edge2.Vertexes[1].Point
+    if v1.isEqual(v2,0.00001):
+        return  True, edge2.Vertexes[0].Point - edge1.Vertexes[0].Point
+    if v1.isEqual(v2,0.00001) or v1.isEqual(-v2,0.00001):
+        return  True, edge2.Vertexes[0].Point - edge1.Vertexes[1].Point
+    return False, None
 
 def sheet_thk(MainObject, selFaceName):
     selItem = MainObject.getElement(selFaceName)
     selFace = smFace(selItem, MainObject)
     # find the narrow edge
     thk = 999999.0
-    for edge in selFace.Edges:
-        if abs(edge.Length) < thk:
-            thk = abs(edge.Length)
-    return thk
+    thkDir = None
+    if type(selItem) == Part.Face:
+        for edge in selFace.Edges:
+            if abs(edge.Length) < thk:
+                thk = abs(edge.Length)
+    else:
+        # if selected item is edge, try to find closest parallel edge - works better
+        # when object is refined and faces are not rectangle
+        for edge in selFace.Edges:
+            if edge.isSame(selItem):
+                continue
+            isParallel, distVect = check_parallel(selItem, edge)
+            if isParallel:
+                dist = distVect.Length
+                if  dist < thk:
+                    thk = dist
+                    thkDir = distVect
+        thkDir.normalize()
+    return thk, thkDir
 
 
 def smEdge(selFaceName, MainObject):
     # find Edge, if Face Selected
     selItem = MainObject.getElement(selFaceName)
+    thkDir = None
     if type(selItem) == Part.Face:
         # find the narrow edge
         thk = 999999.0
@@ -463,13 +487,14 @@ def smEdge(selFaceName, MainObject):
         seledge = lenEdge
         selFace = selItem
     elif type(selItem) == Part.Edge:
-        thk = sheet_thk(MainObject, selFaceName)
+        thk, thkDir = sheet_thk(MainObject, selFaceName)
         seledge = selItem
         selFace = smFace(selItem, MainObject)
         p1 = seledge.valueAt(seledge.FirstParameter)
         p2 = seledge.valueAt(seledge.LastParameter)
         revAxisV = p2 - p1
-    return seledge, selFace, thk, revAxisV
+    #print(str(revAxisV))
+    return seledge, selFace, thk, revAxisV, thkDir
 
 
 def getBendetail(selItemNames, MainObject, bendR, bendA, isflipped, offset, gap1, gap2):
@@ -477,7 +502,7 @@ def getBendetail(selItemNames, MainObject, bendR, bendA, isflipped, offset, gap1
     edgelist = []
     nogap_edgelist = []
     for selItemName in selItemNames:
-        lenEdge, selFace, thk, revAxisV = smEdge(selItemName, MainObject)
+        lenEdge, selFace, thk, revAxisV, thkDir = smEdge(selItemName, MainObject)
 
         # find the large face connected with selected face
         list2 = MainObject.ancestorsOfType(lenEdge, Part.Face)
@@ -487,9 +512,11 @@ def getBendetail(selItemNames, MainObject, bendR, bendA, isflipped, offset, gap1
 
         # main Length Edge
         revAxisV.normalize()
-        pThkDir1 = selFace.CenterOfMass
-        pThkDir2 = lenEdge.Curve.value(lenEdge.Curve.parameter(pThkDir1))
-        thkDir = pThkDir1.sub(pThkDir2).normalize()
+        if thkDir is None:
+            pThkDir1 = selFace.CenterOfMass
+            pThkDir2 = lenEdge.Curve.value(lenEdge.Curve.parameter(pThkDir1))
+            thkDir = pThkDir1.sub(pThkDir2).normalize()
+            #print(str(thkDir))
         FaceDir = selFace.normalAt(0, 0)
 
         # make sure the direction vector is correct in respect to the normal
@@ -1519,7 +1546,7 @@ class SMBendWall:
         # pass selected object shape
         Main_Object = fp.baseObject[0].Shape.copy()
         face = fp.baseObject[1]
-        thk = sheet_thk(Main_Object, face[0])
+        thk, thkDir = sheet_thk(Main_Object, face[0])
 
         if fp.Sketch:
             WireList = fp.Sketch.Shape.Wires[0]
