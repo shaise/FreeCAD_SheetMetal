@@ -73,11 +73,16 @@ class BaseShapeTaskPanel:
         self.form.bFlangeWidthSpin.valueChanged.connect(self.spinValChanged)
         self.form.bLengthSpin.valueChanged.connect(self.spinValChanged)
         self.form.shapeType.currentIndexChanged.connect(self.typeChanged)
-        self.form.originLoc.currentIndexChanged.connect(self.typeChanged)
+        self.form.originLoc.currentIndexChanged.connect(self.spinValChanged)
         self.form.chkFillGaps.stateChanged.connect(self.checkChanged)
         self.form.update()
 
         #SMLogger.log(str(self.formReady) + " <2 \n")
+    def updateEnableState(self):
+        type = base_shape_types[self.form.shapeType.currentIndex()]
+        self.form.bFlangeWidthSpin.setEnabled(type in ["Hat", "Box"])
+        self.form.bRadiusSpin.setEnabled(not type == "Flat")
+        self.form.bHeightSpin.setEnabled(not type == "Flat")
 
     def spinValChanged(self):
         if not self.formReady:
@@ -86,6 +91,7 @@ class BaseShapeTaskPanel:
         self.obj.recompute()
 
     def typeChanged(self):
+        self.updateEnableState()
         self.spinValChanged()
 
     def checkChanged(self):
