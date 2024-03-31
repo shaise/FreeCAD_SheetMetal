@@ -28,6 +28,8 @@ from PySide import QtCore, QtGui
 
 import FreeCAD, Part, os
 
+translate = FreeCAD.Qt.translate
+
 __dir__ = os.path.dirname(__file__)
 iconPath = os.path.join(__dir__, "Resources", "icons")
 
@@ -40,7 +42,7 @@ Gui.updateLocale()
 def smWarnDialog(msg):
     diag = QtGui.QMessageBox(
         QtGui.QMessageBox.Warning,
-        FreeCAD.Qt.translate("QMessageBox", "Error in macro MessageBox"),
+        translate("QMessageBox", "Error in macro MessageBox"),
         msg,
     )
     diag.setWindowModality(QtCore.Qt.ApplicationModal)
@@ -64,7 +66,7 @@ def smIsOperationLegal(body, selobj):
     # FreeCAD.Console.PrintLog(str(selobj) + " " + str(body) + " " + str(smBelongToBody(selobj, body)) + "\n")
     if smIsSketchObject(selobj) and not smBelongToBody(selobj, body):
         smWarnDialog(
-            FreeCAD.Qt.translate(
+            translate(
                 "QMessageBox",
                 "The selected geometry does not belong to the active Body.\n"
                 "Please make the container of this item active by\n"
@@ -178,7 +180,6 @@ def smBase(
             traj.translate(normal * -length / 2.0)
         elif reverse:
             traj.translate(normal * -length)
-
         traj_extr = traj.extrude(normal * length)
         # Part.show(traj_extr,"traj_extr")
         solidlist = []
@@ -190,7 +191,6 @@ def smBase(
         else:
             wallSolid = solidlist[0]
         # Part.show(wallSolid,"wallSolid")
-
     # Part.show(wallSolid,"wallSolid")
     return wallSolid
 
@@ -200,31 +200,31 @@ class SMBaseBend:
         '''"Add wall or Wall with radius bend"'''
         selobj = Gui.Selection.getSelectionEx()[0]
 
-        _tip_ = FreeCAD.Qt.translate("App::Property", "Bend Radius")
+        _tip_ = translate("App::Property", "Bend Radius")
         obj.addProperty(
             "App::PropertyLength", "radius", "Parameters", _tip_
         ).radius = 1.0
-        _tip_ = FreeCAD.Qt.translate("App::Property", "Thickness of sheetmetal")
+        _tip_ = translate("App::Property", "Thickness of sheetmetal")
         obj.addProperty(
             "App::PropertyLength", "thickness", "Parameters", _tip_
         ).thickness = 1.0
-        _tip_ = FreeCAD.Qt.translate("App::Property", "Relief Type")
+        _tip_ = translate("App::Property", "Relief Type")
         obj.addProperty(
             "App::PropertyEnumeration", "BendSide", "Parameters", _tip_
         ).BendSide = ["Outside", "Inside", "Middle"]
-        _tip_ = FreeCAD.Qt.translate("App::Property", "Length of wall")
+        _tip_ = translate("App::Property", "Length of wall")
         obj.addProperty(
             "App::PropertyLength", "length", "Parameters", _tip_
         ).length = 100.0
-        _tip_ = FreeCAD.Qt.translate("App::Property", "Wall Sketch object")
+        _tip_ = translate("App::Property", "Wall Sketch object")
         obj.addProperty(
             "App::PropertyLink", "BendSketch", "Parameters", _tip_
         ).BendSketch = selobj.Object
-        _tip_ = FreeCAD.Qt.translate("App::Property", "Extrude Symmetric to Plane")
+        _tip_ = translate("App::Property", "Extrude Symmetric to Plane")
         obj.addProperty(
             "App::PropertyBool", "MidPlane", "Parameters", _tip_
         ).MidPlane = False
-        _tip_ = FreeCAD.Qt.translate("App::Property", "Reverse Extrusion Direction")
+        _tip_ = translate("App::Property", "Reverse Extrusion Direction")
         obj.addProperty(
             "App::PropertyBool", "Reverse", "Parameters", _tip_
         ).Reverse = False
@@ -233,15 +233,14 @@ class SMBaseBend:
     def execute(self, fp):
         '''"Print a short message when doing a recomputation, this method is mandatory"'''
         if not hasattr(fp, "MidPlane"):
-            _tip_ = FreeCAD.Qt.translate("App::Property", "Extrude Symmetric to Plane")
+            _tip_ = translate("App::Property", "Extrude Symmetric to Plane")
             fp.addProperty(
                 "App::PropertyBool", "MidPlane", "Parameters", _tip_
             ).MidPlane = False
-            _tip_ = FreeCAD.Qt.translate("App::Property", "Reverse Extrusion Direction")
+            _tip_ = translate("App::Property", "Reverse Extrusion Direction")
             fp.addProperty(
                 "App::PropertyBool", "Reverse", "Parameters", _tip_
             ).Reverse = False
-
         s = smBase(
             thk=fp.thickness.Value,
             length=fp.length.Value,
@@ -318,9 +317,9 @@ class AddBaseCommandClass:
             "Pixmap": os.path.join(
                 iconPath, "SheetMetal_AddBase.svg"
             ),  # the name of a svg file available in the resources
-            "MenuText": FreeCAD.Qt.translate("SheetMetal", "Make Base Wall"),
+            "MenuText": translate("SheetMetal", "Make Base Wall"),
             "Accel": "C, B",
-            "ToolTip": FreeCAD.Qt.translate(
+            "ToolTip": translate(
                 "SheetMetal",
                 "Create a sheetmetal wall from a sketch\n"
                 "1. Select a Skech to create bends with walls.\n"

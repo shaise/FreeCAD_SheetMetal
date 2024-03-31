@@ -50,7 +50,7 @@ mw = FreeCADGui.getMainWindow()
 
 class SMUnfoldTaskPanel:
     def __init__(self):
-        path = f"{modPath}/UnfoldOptions.ui"
+        path = f"{modPath}/Resources/panels/UnfoldOptions.ui"
         self.form = FreeCADGui.PySideUic.loadUi(path)
         self.pg = FreeCAD.ParamGet("User parameter:BaseApp/Preferences/Mod/SheetMetal")
 

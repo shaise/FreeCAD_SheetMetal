@@ -48,7 +48,7 @@ origin_location_types = ["-X,-Y", "-X,0", "-X,+Y", "0,-Y", "0,0", "0,+Y", "+X,-Y
 class BaseShapeTaskPanel:
     def __init__(self):
         QtCore.QDir.addSearchPath('Icons', iconPath)
-        path = f"{modPath}/BaseShapeOptions.ui"
+        path = f"{modPath}/Resources/panels/BaseShapeOptions.ui"
         self.form = FreeCADGui.PySideUic.loadUi(path)
         self.formReady = False
         self.firstTime = True
