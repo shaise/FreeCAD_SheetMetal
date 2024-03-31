@@ -58,6 +58,11 @@
        </property>
        <item>
         <property name="text">
+         <string>Flat</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
          <string>L-Shape</string>
         </property>
        </item>

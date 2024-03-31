@@ -38,7 +38,7 @@ mw = FreeCADGui.getMainWindow()
 # changes in modeling logic
 smElementMapVersion = 'sm1.'
 
-base_shape_types = ["L-Shape", "U-Shape", "Tub", "Hat", "Box"]
+base_shape_types = ["Flat", "L-Shape", "U-Shape", "Tub", "Hat", "Box"]
 origin_location_types = ["-X,-Y", "-X,0", "-X,+Y", "0,-Y", "0,0", "0,+Y", "+X,-Y", "+X,0", "+X,+Y"]
 
 ##########################################################################################################
@@ -179,9 +179,11 @@ def smCreateBaseShape(type, thickness, radius, width, length, height, flangeWidt
         width -= 2.0 * bendCompensation
         length -= 2.0 * bendCompensation
         compx = compy = bendCompensation
-    else:
+    elif type == "L-Shape":
         numfolds = 1
         width -= bendCompensation
+    else:
+        numfolds = 0
     if type in ["Hat", "Box"]:
         height -= bendCompensation
         flangeWidth -= radius
@@ -194,8 +196,10 @@ def smCreateBaseShape(type, thickness, radius, width, length, height, flangeWidt
     offsy = GetOriginShift(width, originY, compy)
     if type == "L-Shape" and originY == "+Y":
         offsy -= bendCompensation
-    box = Part.makeBox(length, width, thickness)
-    box.translate(FreeCAD.Vector(offsx, offsy, 0))
+    box = Part.makeBox(length, width, thickness, FreeCAD.Vector(offsx, offsy, 0))
+    #box.translate(FreeCAD.Vector(offsx, offsy, 0))
+    if numfolds == 0:
+        return box
     faces = []
     for i in range(len(box.Faces)):
         v = box.Faces[i].normalAt(0,0)
@@ -219,10 +223,6 @@ def smCreateBaseShape(type, thickness, radius, width, length, height, flangeWidt
         shape, f = smBend(thickness, selFaceNames = faces, extLen = flangeWidth,
                           bendR = radius, MainObject = shape, flipped = invertBend,
                           automiter = fillGaps)
-
-
-
-
     #SMLogger.message(str(faces))
     return shape
 
@@ -343,6 +343,7 @@ class SMBaseShape:
             "shapeType",
             FreeCAD.Qt.translate("SMBaseShape", "Base shape type", "Property"),
             base_shape_types,
+            defval = "L-Shape"
         )
         smAddEnumProperty(
             obj,
