@@ -23,5 +23,5 @@
 
 import TestApp
 
-from Tests.testFolder import TestFolder
-from Tests.testKfactor import TestKFactor
+from SMTests.testFolder import TestFolder
+from SMTests.testKfactor import TestKFactor
