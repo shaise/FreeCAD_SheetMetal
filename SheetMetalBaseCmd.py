@@ -76,6 +76,7 @@ def smIsOperationLegal(body, selobj):
 
 
 def GetViewConfig(obj):
+    return obj.ViewObject.dumpContent()
     viewconf = {}
     viewconf["objShapeCol"] = obj.ViewObject.ShapeColor
     viewconf["objShapeTsp"] = obj.ViewObject.Transparency
@@ -86,9 +87,10 @@ def GetViewConfig(obj):
 
 
 def SetViewConfig(obj, viewconf):
-    obj.ViewObject.ShapeColor = viewconf["objShapeCol"]
-    obj.ViewObject.Transparency = viewconf["objShapeTsp"]
-    obj.ViewObject.DiffuseColor = viewconf["objDiffuseCol"]
+    obj.ViewObject.restoreContent(viewconf)
+    #obj.ViewObject.ShapeColor = viewconf["objShapeCol"]
+    #obj.ViewObject.Transparency = viewconf["objShapeTsp"]
+    #obj.ViewObject.DiffuseColor = viewconf["objDiffuseCol"]
 
 
 def getOriginalBendObject(obj):
