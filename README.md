@@ -1,6 +1,7 @@
 # FreeCAD SheetMetal Workbench
 
 A simple sheet metal tools workbench for FreeCAD
+[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/shaise/FreeCAD_SheetMetal/badge)](https://securityscorecards.dev/viewer/?uri=github.com/shaise/FreeCAD_SheetMetal)
 
 ![Demo Workflow](Resources/SheetMetal4.gif)
 
