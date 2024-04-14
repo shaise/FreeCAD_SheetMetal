@@ -31,6 +31,7 @@ import SheetMetalBaseCmd
 
 __dir__ = os.path.dirname(__file__)
 iconPath = os.path.join(__dir__, "Resources", "icons")
+panelsPath = os.path.join(__dir__, "Resources", "panels")
 smEpsilon = 0.0000001
 
 # add translations path
@@ -1671,11 +1672,7 @@ class SMViewProviderTree:
         return os.path.join(iconPath, "SheetMetal_AddWall.svg")
 
     def setEdit(self, vobj, mode):
-        taskd = SMBendWallTaskPanel()
-        taskd.obj = vobj.Object
-        taskd.update()
-        self.Object.ViewObject.Visibility = False
-        self.Object.baseObject[0].ViewObject.Visibility = True
+        taskd = SMBendWallTaskPanel(vobj.Object)
         FreeCADGui.Control.showDialog(taskd)
         return True
 
@@ -1756,11 +1753,7 @@ class SMViewProviderFlat:
         return os.path.join(iconPath, "SheetMetal_AddWall.svg")
 
     def setEdit(self, vobj, mode):
-        taskd = SMBendWallTaskPanel()
-        taskd.obj = vobj.Object
-        taskd.update()
-        self.Object.ViewObject.Visibility = False
-        self.Object.baseObject[0].ViewObject.Visibility = True
+        taskd = SMBendWallTaskPanel(vobj.Object)
         FreeCADGui.Control.showDialog(taskd)
         return True
 
@@ -1774,35 +1767,36 @@ class SMViewProviderFlat:
 class SMBendWallTaskPanel:
     """A TaskPanel for the Sheetmetal"""
 
-    def __init__(self):
-        self.obj = None
-        self.form = QtGui.QWidget()
-        self.form.setObjectName("SMBendWallTaskPanel")
-        self.form.setWindowTitle("Binded faces/edges list")
-        self.grid = QtGui.QGridLayout(self.form)
-        self.grid.setObjectName("grid")
-        self.title = QtGui.QLabel(self.form)
-        self.grid.addWidget(self.title, 0, 0, 1, 2)
-        self.title.setText("Select new face(s)/Edge(s) and press Update")
-
-        # tree
-        self.tree = QtGui.QTreeWidget(self.form)
-        self.grid.addWidget(self.tree, 1, 0, 1, 2)
-        self.tree.setColumnCount(2)
-        self.tree.setHeaderLabels(["Name", "Subelement"])
-
-        # buttons
-        self.addButton = QtGui.QPushButton(self.form)
-        self.addButton.setObjectName("addButton")
-        self.addButton.setIcon(
-            QtGui.QIcon(os.path.join(iconPath, "SheetMetal_Update.svg"))
-        )
-        self.grid.addWidget(self.addButton, 3, 0, 1, 2)
-
-        QtCore.QObject.connect(
-            self.addButton, QtCore.SIGNAL("clicked()"), self.updateElement
-        )
+    def __init__(self, obj):
+        self.obj = obj
+        path = os.path.join(panelsPath, "FlangeParameters.ui")
+        path2 = os.path.join(panelsPath, "FlangeAdvancedParameters.ui")
+        self.SelModeActive = False
+        self.form = []
+        self.form.append(FreeCADGui.PySideUic.loadUi(path))
+        self.form.append(FreeCADGui.PySideUic.loadUi(path2))
         self.update()
+        # flange parameters connects
+        self.form[0].AddRemove.toggled.connect(self.toggleSelectionMode)
+        self.form[0].BendType.currentIndexChanged.connect(self.updateProperties)
+        self.form[0].Offset.valueChanged.connect(self.updateProperties)
+        self.form[0].Radius.valueChanged.connect(self.updateProperties)
+        self.form[0].Angle.valueChanged.connect(self.updateProperties)
+        self.form[0].Length.valueChanged.connect(self.updateProperties)
+        self.form[0].LengthSpec.currentIndexChanged.connect(self.updateProperties)
+        self.form[0].UnfoldCheckbox.toggled.connect(self.updateProperties)
+        self.form[0].ReversedCheckbox.toggled.connect(self.updateProperties)
+        self.form[0].extend1.valueChanged.connect(self.updateProperties)
+        self.form[0].extend2.valueChanged.connect(self.updateProperties)
+        # advanced flange parameters connects
+        self.form[1].reliefTypeButtonGroup.buttonToggled.connect(self.updateProperties)
+        self.form[1].reliefWidth.valueChanged.connect(self.updateProperties)
+        self.form[1].reliefDepth.valueChanged.connect(self.updateProperties)
+        self.form[1].autoMiterCheckbox.toggled.connect(self.updateProperties)
+        self.form[1].minGap.valueChanged.connect(self.updateProperties)
+        self.form[1].maxExDist.valueChanged.connect(self.updateProperties)
+        self.form[1].miterAngle1.valueChanged.connect(self.updateProperties)
+        self.form[1].miterAngle2.valueChanged.connect(self.updateProperties)
 
     def isAllowedAlterSelection(self):
         return True
@@ -1813,24 +1807,95 @@ class SMBendWallTaskPanel:
     def getStandardButtons(self):
         return int(QtGui.QDialogButtonBox.Ok)
 
+    def updateProperties(self):
+        self.obj.BendType = self.form[0].BendType.currentIndex()
+        if self.obj.BendType == "Offset":
+            self.form[0].Offset.setEnabled(True)
+        else:
+            self.form[0].Offset.setEnabled(False)
+        self.obj.offset = self.form[0].Offset.property("value")
+        self.obj.radius = self.form[0].Radius.property("value")
+        self.obj.angle = self.form[0].Angle.property("value")
+        self.obj.length = self.form[0].Length.property("value")
+        self.obj.LengthSpec = self.form[0].LengthSpec.currentIndex()
+        self.obj.unfold = self.form[0].UnfoldCheckbox.isChecked()
+        self.obj.invert = self.form[0].ReversedCheckbox.isChecked()
+        self.obj.extend1 = self.form[0].extend1.property("value")
+        self.obj.extend2 = self.form[0].extend2.property("value")
+        self.obj.reliefType = (
+            "Rectangle" if self.form[1].reliefRectangle.isChecked() else "Round"
+        )
+        self.obj.reliefw = self.form[1].reliefWidth.property("value")
+        self.obj.reliefd = self.form[1].reliefDepth.property("value")
+        self.obj.AutoMiter = self.form[1].autoMiterCheckbox.isChecked()
+        self.obj.minGap = self.form[1].minGap.property("value")
+        self.obj.maxExtendDist = self.form[1].maxExDist.property("value")
+        self.obj.miterangle1 = self.form[1].miterAngle1.property("value")
+        self.obj.miterangle2 = self.form[1].miterAngle2.property("value")
+        self.obj.Document.recompute()
+
     def update(self):
-        "fills the treewidget"
-        self.tree.clear()
-        if self.obj:
-            f = self.obj.baseObject
-            if isinstance(f[1], list):
-                for subf in f[1]:
-                    # FreeCAD.Console.PrintLog("item: " + subf + "\n")
-                    item = QtGui.QTreeWidgetItem(self.tree)
-                    item.setText(0, f[0].Name)
-                    item.setIcon(0, QtGui.QIcon(":/icons/Tree_Part.svg"))
-                    item.setText(1, subf)
-            else:
-                item = QtGui.QTreeWidgetItem(self.tree)
+        # load property values
+        typeList = ["Material Outside","Material Inside","Thickness Outside","Offset"]
+        lSpecList = ["Leg","Outer Sharp","Inner Sharp","Tangential"]
+        self.form[0].BendType.setProperty("currentIndex", typeList.index(self.obj.BendType))
+        if self.obj.BendType == "Offset":
+            self.form[0].Offset.setEnabled(True)
+        else:
+            self.form[0].Offset.setEnabled(False)
+        self.form[0].Offset.setProperty("value", self.obj.offset)
+        self.form[0].Radius.setProperty("value", self.obj.radius)
+        self.form[0].Angle.setProperty("value", self.obj.angle)
+        self.form[0].Length.setProperty("value", self.obj.length)
+        self.form[0].LengthSpec.setProperty("currentIndex", lSpecList.index(self.obj.LengthSpec))
+        self.form[0].UnfoldCheckbox.setChecked(self.obj.unfold)
+        self.form[0].ReversedCheckbox.setChecked(self.obj.invert)
+        self.form[0].extend1.setProperty("value", self.obj.extend1)
+        self.form[0].extend2.setProperty("value", self.obj.extend2)
+        # fill the treewidget
+        self.form[0].tree.clear()
+        f = self.obj.baseObject
+        if isinstance(f[1], list):
+            for subf in f[1]:
+                # FreeCAD.Console.PrintLog("item: " + subf + "\n")
+                item = QtGui.QTreeWidgetItem(self.form[0].tree)
                 item.setText(0, f[0].Name)
                 item.setIcon(0, QtGui.QIcon(":/icons/Tree_Part.svg"))
-                item.setText(1, f[1][0])
-        self.retranslateUi(self.form)
+                item.setText(1, subf)
+        else:
+            item = QtGui.QTreeWidgetItem(self.form[0].tree)
+            item.setText(0, f[0].Name)
+            item.setIcon(0, QtGui.QIcon(":/icons/Tree_Part.svg"))
+            item.setText(1, f[1][0])
+        # Advanced parameters update
+        if self.obj.reliefType == "Rectangle":
+            self.form[1].reliefRectangle.setChecked(True)
+        else:
+            self.form[1].reliefRound.setChecked(True)
+        self.form[1].reliefDepth.setProperty("value", self.obj.reliefd)
+        self.form[1].reliefWidth.setProperty("value", self.obj.reliefw)
+        self.form[1].autoMiterCheckbox.setChecked(self.obj.AutoMiter)
+        self.form[1].minGap.setProperty("value", self.obj.minGap)
+        self.form[1].maxExDist.setProperty("value", self.obj.maxExtendDist)
+        self.form[1].miterAngle1.setProperty("value", self.obj.miterangle1)
+        self.form[1].miterAngle2.setProperty("value", self.obj.miterangle2)
+
+    def toggleSelectionMode(self):
+        if not self.SelModeActive:
+            self.obj.Visibility=False
+            self.obj.baseObject[0].Visibility=True
+            FreeCADGui.Selection.clearSelection()
+            FreeCADGui.Selection.addSelection(self.obj.baseObject[0],self.obj.baseObject[1])
+            self.SelModeActive=True
+            self.form[0].AddRemove.setText('Preview')
+        else:
+            self.updateElement()
+            FreeCADGui.Selection.clearSelection()
+            self.obj.Document.recompute()
+            self.obj.baseObject[0].Visibility=False
+            self.obj.Visibility=True
+            self.SelModeActive=False
+            self.form[0].AddRemove.setText('Select')
 
     def updateElement(self):
         if not self.obj:
@@ -1863,11 +1928,6 @@ class SMBendWallTaskPanel:
         FreeCADGui.ActiveDocument.resetEdit()
         # self.obj.ViewObject.Visibility=True
         return True
-
-    def retranslateUi(self, TaskPanel):
-        # TaskPanel.setWindowTitle(QtGui.QApplication.translate("draft", "Faces", None))
-        self.addButton.setText(QtGui.QApplication.translate("draft", "Update", None))
-
 
 class AddWallCommandClass:
     """Add Wall command"""
@@ -1914,7 +1974,9 @@ class AddWallCommandClass:
             root = SheetMetalBaseCmd.getOriginalBendObject(a)
             if root:
                 a.setExpression("radius", root.Label + ".radius")
+        dialog = SMBendWallTaskPanel(a)
         doc.recompute()
+        FreeCADGui.Control.showDialog(dialog)
         doc.commitTransaction()
         return
 
