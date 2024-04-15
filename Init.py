@@ -23,4 +23,15 @@
 #
 ##############################################################################
 
-print("Sheet Metal workbench loaded")
+import FreeCAD 
+import SheetMetalBaseShape
+import SheetMetalBendWall
+import SheetMetalBaseBend
+import SheetMetalSolidBend
+import SheetMetalFoldWall
+import SheetMetalForming
+import SheetMetalJunction
+import SheetMetalRelief
+import SketchOnSheetMetal
+import SheetMetalCornerRelief
+import SheetMetalExtend

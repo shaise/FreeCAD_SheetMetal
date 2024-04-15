@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-###################################################################################
+###############################################################################
 #
-#  SheetMetalExtendCmd.py
+#  SheetMetalRelief.py
 #
-#  Copyright 2020 Jaise James <jaisekjames at gmail dot com>
+#  Copyright 2015 Shai Seger <shaise at gmail dot com>
 #
 #  This program is free software; you can redistribute it and/or
 #  modify it under the terms of the GNU Lesser General Public
@@ -21,16 +21,21 @@
 #  MA 02110-1301, USA.
 #
 #
-###################################################################################
+###############################################################################
 
 import FreeCAD, Part, os, SheetMetalTools
-from FreeCAD import Gui
 from PySide import QtCore, QtGui
-from SheetMetalExtend import SMExtrudeWall
+from FreeCAD import Gui
+from SheetMetalRelief import SMRelief
 
 icons_path = SheetMetalTools.icons_path
 
-class SMViewProviderTree:
+# add translations path
+Gui.addLanguagePath(SheetMetalTools.language_path)
+Gui.updateLocale()
+
+
+class SMReliefViewProviderTree:
   "A View provider that nests children objects under the created one"
 
   def __init__(self, obj):
@@ -87,15 +92,13 @@ class SMViewProviderTree:
     objs = []
     if hasattr(self.Object,"baseObject"):
       objs.append(self.Object.baseObject[0])
-    if hasattr(self.Object,"Sketch"):
-      objs.append(self.Object.Sketch)
     return objs
 
   def getIcon(self):
-    return os.path.join( icons_path , 'SheetMetal_Extrude.svg')
+    return os.path.join( icons_path , 'SheetMetal_AddRelief.svg')
 
   def setEdit(self,vobj,mode):
-    taskd = SMBendWallTaskPanel()
+    taskd = SMReliefTaskPanel()
     taskd.obj = vobj.Object
     taskd.update()
     self.Object.ViewObject.Visibility=False
@@ -109,8 +112,8 @@ class SMViewProviderTree:
     self.Object.ViewObject.Visibility=True
     return False
 
-class SMViewProviderFlat:
-  "A View provider that places objects flat under base object"
+class SMReliefViewProviderFlat:
+  "A View provider that nests children objects under the created one"
 
   def __init__(self, obj):
     obj.Proxy = self
@@ -151,16 +154,14 @@ class SMViewProviderFlat:
       self.Object = doc.getObject(state['ObjectName'])
 
   def claimChildren(self):
-    objs = []
-    if hasattr(self.Object,"Sketch"):
-      objs.append(self.Object.Sketch)
-    return objs
+
+    return []
 
   def getIcon(self):
-    return os.path.join( icons_path , 'SheetMetal_Extrude.svg')
+    return os.path.join( icons_path , 'SheetMetal_AddRelief.svg')
 
   def setEdit(self,vobj,mode):
-    taskd = SMBendWallTaskPanel()
+    taskd = SMReliefTaskPanel()
     taskd.obj = vobj.Object
     taskd.update()
     self.Object.ViewObject.Visibility=False
@@ -174,19 +175,19 @@ class SMViewProviderFlat:
     self.Object.ViewObject.Visibility=True
     return False
 
-class SMBendWallTaskPanel:
+class SMReliefTaskPanel:
     '''A TaskPanel for the Sheetmetal'''
     def __init__(self):
 
       self.obj = None
       self.form = QtGui.QWidget()
-      self.form.setObjectName("SMBendWallTaskPanel")
-      self.form.setWindowTitle("Binded faces/edges list")
+      self.form.setObjectName("SMReliefTaskPanel")
+      self.form.setWindowTitle("Binded vertexes list")
       self.grid = QtGui.QGridLayout(self.form)
       self.grid.setObjectName("grid")
       self.title = QtGui.QLabel(self.form)
       self.grid.addWidget(self.title, 0, 0, 1, 2)
-      self.title.setText("Select new face(s)/Edge(s) and press Update")
+      self.title.setText("Select new vertex(es) and press Update")
 
       # tree
       self.tree = QtGui.QTreeWidget(self.form)
@@ -237,16 +238,16 @@ class SMBendWallTaskPanel:
         if sel.HasSubObjects:
           obj = sel.Object
           for elt in sel.SubElementNames:
-            if "Face" in elt or "Edge" in elt:
-              face = self.obj.baseObject
+            if "Vertex" in elt:
+              vertex = self.obj.baseObject
               found = False
-              if (face[0] == obj.Name):
-                if isinstance(face[1],tuple):
-                  for subf in face[1]:
+              if (vertex[0] == obj.Name):
+                if isinstance(vertex[1],tuple):
+                  for subf in vertex[1]:
                     if subf == elt:
                       found = True
                 else:
-                  if (face[1][0] == elt):
+                  if (vertex[1][0] == elt):
                     found = True
               if not found:
                 self.obj.baseObject = (sel.Object, sel.SubElementNames)
@@ -259,45 +260,46 @@ class SMBendWallTaskPanel:
         return True
 
     def retranslateUi(self, TaskPanel):
-        #TaskPanel.setWindowTitle(QtGui.QApplication.translate("draft", "Faces", None))
+        #TaskPanel.setWindowTitle(QtGui.QApplication.translate("draft", "vertexs", None))
         self.addButton.setText(QtGui.QApplication.translate("draft", "Update", None))
 
-class SMExtrudeCommandClass():
-  """Extrude face"""
+
+class AddReliefCommandClass():
+  """Add Relief command"""
 
   def GetResources(self):
-    return {'Pixmap'  : os.path.join( icons_path , 'SheetMetal_Extrude.svg'), # the name of a svg file available in the resources
-            'MenuText': FreeCAD.Qt.translate('SheetMetal','Extend Face'),
-            'Accel': "E",
-            'ToolTip' : FreeCAD.Qt.translate('SheetMetal','Extends one or more face, on existing sheet metal.\n'
-            '1. Select edges or thickness side faces to create walls.\n'
-            '2. Select a sketch in property editor to create tabs. \n'
-            '3. Use Property editor to modify other parameters')}
+    return {'Pixmap'  : os.path.join( icons_path , 'SheetMetal_AddRelief.svg'), # the name of a svg file available in the resources
+            'MenuText': FreeCAD.Qt.translate('SheetMetal','Make Relief'),
+            'Accel': "S, R",
+            'ToolTip' : FreeCAD.Qt.translate('SheetMetal','Modify an Individual solid corner to create Relief.\n'
+            '1. Select Vertex(es) to create Relief on Solid corner Vertex(es).\n'
+            '2. Use Property editor to modify default parameters')}
 
   def Activated(self):
     doc = FreeCAD.ActiveDocument
     view = Gui.ActiveDocument.ActiveView
     activeBody = None
     sel = Gui.Selection.getSelectionEx()[0]
-    selobj = sel.Object
+    selobj = Gui.Selection.getSelectionEx()[0].Object
     viewConf = SheetMetalTools.GetViewConfig(selobj)
     if hasattr(view,'getActiveObject'):
       activeBody = view.getActiveObject('pdbody')
     if not SheetMetalTools.smIsOperationLegal(activeBody, selobj):
         return
-    doc.openTransaction("Extend")
-    if (activeBody is None):
-      a = doc.addObject("Part::FeaturePython","Extend")
-      SMExtrudeWall(a)
+    doc.openTransaction("Add Relief")
+    if activeBody is None or not SheetMetalTools.smIsPartDesign(selobj):
+      a = doc.addObject("Part::FeaturePython","Relief")
+      SMRelief(a)
       a.baseObject = (selobj, sel.SubElementNames)
-      SMViewProviderTree(a.ViewObject)
+      SMReliefViewProviderTree(a.ViewObject)
     else:
-      a = doc.addObject("PartDesign::FeaturePython","Extend")
-      SMExtrudeWall(a)
+      #FreeCAD.Console.PrintLog("found active body: " + activeBody.Name)
+      a = doc.addObject("PartDesign::FeaturePython","Relief")
+      SMRelief(a)
       a.baseObject = (selobj, sel.SubElementNames)
-      SMViewProviderFlat(a.ViewObject)
+      SMReliefViewProviderFlat(a.ViewObject)
       activeBody.addObject(a)
-    SheetMetalTools.SetViewConfig(a, viewConf)    
+    SheetMetalTools.SetViewConfig(a, viewConf)
     Gui.Selection.clearSelection()
     doc.recompute()
     doc.commitTransaction()
@@ -306,12 +308,11 @@ class SMExtrudeCommandClass():
   def IsActive(self):
     if len(Gui.Selection.getSelection()) < 1 or len(Gui.Selection.getSelectionEx()[0].SubElementNames) < 1:
       return False
-    selobj = Gui.Selection.getSelection()[0]
-    if selobj.isDerivedFrom("Sketcher::SketchObject"):
-      return False
-    for selFace in Gui.Selection.getSelectionEx()[0].SubObjects:
-      if type(selFace) == Part.Vertex :
+#    selobj = Gui.Selection.getSelection()[0]
+    for selVertex in Gui.Selection.getSelectionEx()[0].SubObjects:
+      if type(selVertex) != Part.Vertex :
         return False
     return True
 
-Gui.addCommand("SheetMetal_Extrude", SMExtrudeCommandClass())
+Gui.addCommand("SheetMetal_AddRelief", AddReliefCommandClass())
+

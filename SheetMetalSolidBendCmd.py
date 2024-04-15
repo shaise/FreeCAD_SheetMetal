@@ -23,152 +23,12 @@
 #
 ##############################################################################
 
+import FreeCAD, Part, os, SheetMetalTools
 from FreeCAD import Gui
 from PySide import QtCore, QtGui
+from SheetMetalSolidBend import SMSolidBend
 
-import FreeCAD, FreeCADGui, Part, os
-import SheetMetalBaseCmd
-__dir__ = os.path.dirname(__file__)
-iconPath = os.path.join( __dir__, 'Resources', 'icons' )
-smEpsilon = 0.0000001
-
-# add translations path
-LanguagePath = os.path.join( __dir__, 'translations')
-Gui.addLanguagePath(LanguagePath)
-Gui.updateLocale()
-
-# IMPORTANT: please remember to change the element map version in case of any
-# changes in modeling logic
-smElementMapVersion = 'sm1.'
-
-def smWarnDialog(msg):
-    diag = QtGui.QMessageBox(
-        QtGui.QMessageBox.Warning,
-        FreeCAD.Qt.translate("QMessageBox", "Error in macro MessageBox"),
-        msg,
-    )
-    diag.setWindowModality(QtCore.Qt.ApplicationModal)
-    diag.exec_()
-
-def smBelongToBody(item, body):
-    if (body is None):
-        return False
-    for obj in body.Group:
-        if obj.Name == item.Name:
-            return True
-    return False
-
-def smIsPartDesign(obj):
-    return str(obj).find("<PartDesign::") == 0
-
-def smIsOperationLegal(body, selobj):
-    #FreeCAD.Console.PrintLog(str(selobj) + " " + str(body) + " " + str(smBelongToBody(selobj, body)) + "\n")
-    if smIsPartDesign(selobj) and not smBelongToBody(selobj, body):
-        smWarnDialog(
-            FreeCAD.Qt.translate(
-                "QMessageBox",
-                "The selected geometry does not belong to the active Body.\n"
-                "Please make the container of this item active by\n"
-                "double clicking on it.",
-            )
-        )
-        return False
-    return True
-
-def smGetClosestVert(vert, face):
-  closestVert = None
-  closestDist = 99999999
-  for v in face.Vertexes:
-    if vert.isSame(v):
-      continue
-    d = vert.distToShape(v)[0]
-    if (d < closestDist):
-      closestDist = d
-      closestVert = v
-  return closestVert
-
-
-# we look for a matching inner edge to the selected outer one
-# this function finds a single vertex of that edge
-def smFindMatchingVert(shape, edge, vertid):
-  facelist = shape.ancestorsOfType(edge, Part.Face)
-  edgeVerts = edge.Vertexes
-  v = edgeVerts[vertid]
-  vfacelist = shape.ancestorsOfType(v, Part.Face)
-
-  # find the face that is not in facelist
-  for vface in vfacelist:
-    if not vface.isSame(facelist[0]) and not vface.isSame(facelist[1]):
-      break
-
-  return smGetClosestVert(v, vface)
-  
-def smFindEdgeByVerts(shape, vert1, vert2):
-  for edge in shape.Edges:
-    if vert1.isSame(edge.Vertexes[0]) and vert2.isSame(edge.Vertexes[1]):
-      break
-    if vert1.isSame(edge.Vertexes[1]) and vert2.isSame(edge.Vertexes[0]):
-      break
-  else:
-    edge = None
-  return edge
-
-def smSolidBend(radius = 1.0, selEdgeNames = '', MainObject = None):
-  InnerEdgesToBend = []
-  OuterEdgesToBend = []
-  for selEdgeName in selEdgeNames:
-    edge = MainObject.getElement(selEdgeName)
-
-
-    facelist = MainObject.ancestorsOfType(edge, Part.Face)
-
-    # find matching inner edge to selected outer one    
-    v1 = smFindMatchingVert(MainObject, edge, 0)
-    v2 = smFindMatchingVert(MainObject, edge, 1)
-    matchingEdge = smFindEdgeByVerts(MainObject, v1, v2)
-    if matchingEdge is not None:
-      InnerEdgesToBend.append(matchingEdge)
-      OuterEdgesToBend.append(edge)
-  
-  if len(InnerEdgesToBend) > 0:
-    # find thickness of sheet by distance from v1 to one of the edges comming out of edge[0]
-    # we assume all corners have same thickness
-    for dedge in MainObject.ancestorsOfType(edge.Vertexes[0], Part.Edge):
-      if not dedge.isSame(edge):
-        break
-    
-    thickness = v1.distToShape(dedge)[0]
-
-    resultSolid = MainObject.makeFillet(radius, InnerEdgesToBend)
-    resultSolid = resultSolid.makeFillet(radius + thickness, OuterEdgesToBend)
-
-  return resultSolid
-
-class SMSolidBend:
-  def __init__(self, obj):
-    '''"Add Bend to Solid" '''
-    selobj = Gui.Selection.getSelectionEx()[0]
-
-    _tip_ = FreeCAD.Qt.translate("App::Property","Bend Radius")
-    obj.addProperty("App::PropertyLength","radius","Parameters", _tip_).radius = 1.0
-
-    _tip_ = FreeCAD.Qt.translate("App::Property","Base object")
-    obj.addProperty("App::PropertyLinkSub", "baseObject", "Parameters", _tip_).baseObject = (selobj.Object, selobj.SubElementNames)
-    obj.Proxy = self
-
-  def getElementMapVersion(self, _fp, ver, _prop, restored):
-      if not restored:
-          return smElementMapVersion + ver
-
-  def execute(self, fp):
-    '''"Print a short message when doing a recomputation, this method is mandatory" '''
-    # pass selected object shape
-
-    Main_Object = fp.baseObject[0].Shape.copy()
-    s = smSolidBend(radius = fp.radius.Value, selEdgeNames = fp.baseObject[1],
-                MainObject = Main_Object)
-    fp.Shape = s
-    fp.baseObject[0].ViewObject.Visibility = False
+icons_path = SheetMetalTools.icons_path
 
 
 class SMBendViewProviderTree:
@@ -231,7 +91,7 @@ class SMBendViewProviderTree:
     return objs
 
   def getIcon(self):
-    return os.path.join( iconPath , 'SheetMetal_AddBend.svg')
+    return os.path.join( icons_path , 'SheetMetal_AddBend.svg')
 
   def setEdit(self,vobj,mode):
     taskd = SMBendTaskPanel()
@@ -239,11 +99,11 @@ class SMBendViewProviderTree:
     taskd.update()
     self.Object.ViewObject.Visibility=False
     self.Object.baseObject[0].ViewObject.Visibility=True
-    FreeCADGui.Control.showDialog(taskd)
+    Gui.Control.showDialog(taskd)
     return True
 
   def unsetEdit(self,vobj,mode):
-    FreeCADGui.Control.closeDialog()
+    Gui.Control.closeDialog()
     self.Object.baseObject[0].ViewObject.Visibility=False
     self.Object.ViewObject.Visibility=True
     return False
@@ -294,7 +154,7 @@ class SMBendViewProviderFlat:
     return []
 
   def getIcon(self):
-    return os.path.join( iconPath , 'SheetMetal_AddBend.svg')
+    return os.path.join( icons_path , 'SheetMetal_AddBend.svg')
 
   def setEdit(self,vobj,mode):
     taskd = SMBendTaskPanel()
@@ -302,11 +162,11 @@ class SMBendViewProviderFlat:
     taskd.update()
     self.Object.ViewObject.Visibility=False
     self.Object.baseObject[0].ViewObject.Visibility=True
-    FreeCADGui.Control.showDialog(taskd)
+    Gui.Control.showDialog(taskd)
     return True
 
   def unsetEdit(self,vobj,mode):
-    FreeCADGui.Control.closeDialog()
+    Gui.Control.closeDialog()
     self.Object.baseObject[0].ViewObject.Visibility=False
     self.Object.ViewObject.Visibility=True
     return False
@@ -334,7 +194,7 @@ class SMBendTaskPanel:
       # buttons
       self.addButton = QtGui.QPushButton(self.form)
       self.addButton.setObjectName("addButton")
-      self.addButton.setIcon(QtGui.QIcon(os.path.join( iconPath , 'SheetMetal_Update.svg')))
+      self.addButton.setIcon(QtGui.QIcon(os.path.join( icons_path , 'SheetMetal_Update.svg')))
       self.grid.addWidget(self.addButton, 3, 0, 1, 2)
 
       QtCore.QObject.connect(self.addButton, QtCore.SIGNAL("clicked()"), self.updateElement)
@@ -370,7 +230,7 @@ class SMBendTaskPanel:
 
     def updateElement(self):
       if self.obj:
-        sel = FreeCADGui.Selection.getSelectionEx()[0]
+        sel = Gui.Selection.getSelectionEx()[0]
         if sel.HasSubObjects:
           obj = sel.Object
           for elt in sel.SubElementNames:
@@ -391,7 +251,7 @@ class SMBendTaskPanel:
 
     def accept(self):
         FreeCAD.ActiveDocument.recompute()
-        FreeCADGui.ActiveDocument.resetEdit()
+        Gui.ActiveDocument.resetEdit()
         #self.obj.ViewObject.Visibility=True
         return True
 
@@ -404,7 +264,7 @@ class AddBendCommandClass():
   """Add Solid Bend command"""
 
   def GetResources(self):
-    return {'Pixmap'  : os.path.join( iconPath , 'SheetMetal_AddBend.svg'), # the name of a svg file available in the resources
+    return {'Pixmap'  : os.path.join( icons_path , 'SheetMetal_AddBend.svg'), # the name of a svg file available in the resources
             'MenuText': FreeCAD.Qt.translate('SheetMetal','Make Bend'),
             'Accel': "S, B",
             'ToolTip' : FreeCAD.Qt.translate('SheetMetal','Create Bend where two walls come together on solids\n'
@@ -415,16 +275,18 @@ class AddBendCommandClass():
     doc = FreeCAD.ActiveDocument
     view = Gui.ActiveDocument.ActiveView
     activeBody = None
-    selobj = Gui.Selection.getSelectionEx()[0].Object
-    viewConf = SheetMetalBaseCmd.GetViewConfig(selobj)
+    sel = Gui.Selection.getSelectionEx()[0]
+    selobj = sel.Object
+    viewConf = SheetMetalTools.GetViewConfig(selobj)
     if hasattr(view,'getActiveObject'):
       activeBody = view.getActiveObject('pdbody')
-    if not smIsOperationLegal(activeBody, selobj):
+    if not SheetMetalTools.smIsOperationLegal(activeBody, selobj):
         return
     doc.openTransaction("Add Bend")
-    if activeBody is None or not smIsPartDesign(selobj):
+    if activeBody is None or not SheetMetalTools.smIsPartDesign(selobj):
       a = doc.addObject("Part::FeaturePython","SolidBend")
       SMSolidBend(a)
+      a.baseObject = (selobj, sel.SubElementNames)
       SMBendViewProviderTree(a.ViewObject)
     else:
       #FreeCAD.Console.PrintLog("found active body: " + activeBody.Name)
@@ -432,12 +294,12 @@ class AddBendCommandClass():
       SMSolidBend(a)
       SMBendViewProviderFlat(a.ViewObject)
       activeBody.addObject(a)
-    SheetMetalBaseCmd.SetViewConfig(a, viewConf)
-    if SheetMetalBaseCmd.autolink_enabled():
-      root = SheetMetalBaseCmd.getOriginalBendObject(a)
+    SheetMetalTools.SetViewConfig(a, viewConf)
+    if SheetMetalTools.is_autolink_enabled():
+      root = SheetMetalTools.getOriginalBendObject(a)
       if root:
         a.setExpression("radius", root.Label + ".radius")
-    FreeCADGui.Selection.clearSelection()
+    Gui.Selection.clearSelection()
     doc.recompute()
     doc.commitTransaction()
     return
