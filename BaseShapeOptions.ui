@@ -516,6 +516,9 @@
          <height>40</height>
         </size>
        </property>
+       <property name="toolTip">
+        <string>Top view</string>
+       </property>
        <property name="currentIndex">
         <number>0</number>
        </property>
