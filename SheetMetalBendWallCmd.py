@@ -174,6 +174,7 @@ class SMViewProviderFlat:
 
     def unsetEdit(self, vobj, mode):
         Gui.Control.closeDialog()
+        Gui.Selection.setSelectionStyle(Gui.Selection.SelectionStyle.NormalSelection)
         self.Object.baseObject[0].ViewObject.Visibility = False
         self.Object.ViewObject.Visibility = True
         return False
@@ -301,11 +302,13 @@ class SMBendWallTaskPanel:
             self.obj.baseObject[0].Visibility=True
             Gui.Selection.clearSelection()
             Gui.Selection.addSelection(self.obj.baseObject[0],self.obj.baseObject[1])
+            Gui.Selection.setSelectionStyle(Gui.Selection.SelectionStyle.GreedySelection)
             self.SelModeActive=True
             self.form[0].AddRemove.setText('Preview')
         else:
             self.updateElement()
             Gui.Selection.clearSelection()
+            Gui.Selection.setSelectionStyle(Gui.Selection.SelectionStyle.NormalSelection)
             self.obj.Document.recompute()
             self.obj.baseObject[0].Visibility=False
             self.obj.Visibility=True
@@ -340,6 +343,7 @@ class SMBendWallTaskPanel:
 
     def accept(self):
         FreeCAD.ActiveDocument.recompute()
+        Gui.Selection.setSelectionStyle(Gui.Selection.SelectionStyle.NormalSelection)
         Gui.ActiveDocument.resetEdit()
         # self.obj.ViewObject.Visibility=True
         return True
