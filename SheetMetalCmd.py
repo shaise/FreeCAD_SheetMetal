@@ -1811,7 +1811,7 @@ class SMBendWallTaskPanel:
         return True
 
     def getStandardButtons(self):
-        return int(QtGui.QDialogButtonBox.Ok)
+        return QtGui.QDialogButtonBox.Ok
 
     def update(self):
         "fills the treewidget"
