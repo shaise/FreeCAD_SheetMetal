@@ -99,6 +99,7 @@ Starting from FreeCAD 0.17 it can be installed via the [Addon Manager](https://g
 * FreeCAD Forum announcement/discussion [thread](https://forum.freecadweb.org/viewtopic.php?f=3&t=60818) 
 
 #### Release notes:
+* V0.4.13 27 Apr 2024:  Hot fix: revert material preservation system. New system has issues.  
 * V0.4.12 26 Apr 2024:  Add 'intersection of planes' to fold options by [@free777cat][free777cat].  
                       - Remove redundant casts for better compatibility by [@YakoYakoYokuYoku][YakoYakoYokuYoku].  
 * V0.4.11 07 Apr 2024:  Make material preservation system a bit more robust.  
