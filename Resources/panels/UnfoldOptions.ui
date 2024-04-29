@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>708</width>
-    <height>588</height>
+    <width>277</width>
+    <height>231</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -15,150 +15,14 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_3">
-     <item>
-      <widget class="QCheckBox" name="chkSketch">
-       <property name="text">
-        <string>Sketch Projection</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <spacer name="horizontalSpacer_4">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>40</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
-     <item>
-      <widget class="Gui::ColorButton" name="genColor">
-       <property name="color">
-        <color>
-         <red>66</red>
-         <green>203</green>
-         <blue>105</blue>
-        </color>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </item>
-   <item>
-    <widget class="QCheckBox" name="chkSeparate">
+    <widget class="QPushButton" name="selectFaceButton">
      <property name="text">
-      <string>Separate  Layers</string>
+      <string>Select Face</string>
+     </property>
+     <property name="checkable">
+      <bool>true</bool>
      </property>
     </widget>
-   </item>
-   <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_5">
-     <item>
-      <widget class="QLabel" name="label_2">
-       <property name="text">
-        <string>Bend Lines Color</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <spacer name="horizontalSpacer_3">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>40</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
-     <item>
-      <widget class="Gui::ColorButton" name="bendColor"/>
-     </item>
-    </layout>
-   </item>
-   <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_4">
-     <item>
-      <widget class="QLabel" name="label_3">
-       <property name="text">
-        <string>Internal Lines Color</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <spacer name="horizontalSpacer_2">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>40</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
-     <item>
-      <widget class="Gui::ColorButton" name="internalColor"/>
-     </item>
-    </layout>
-   </item>
-   <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_7">
-     <property name="leftMargin">
-      <number>0</number>
-     </property>
-     <item>
-      <widget class="QCheckBox" name="chkExport">
-       <property name="text">
-        <string>Export Sketch</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <spacer name="horizontalSpacer_5">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>40</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
-     <item>
-      <widget class="QRadioButton" name="dxfExport">
-       <property name="text">
-        <string>DXF</string>
-       </property>
-       <property name="autoExclusive">
-        <bool>true</bool>
-       </property>
-       <attribute name="buttonGroup">
-        <string notr="true">exportGroup</string>
-       </attribute>
-      </widget>
-     </item>
-     <item>
-      <widget class="QRadioButton" name="svgExport">
-       <property name="text">
-        <string>SVG</string>
-       </property>
-       <attribute name="buttonGroup">
-        <string notr="true">exportGroup</string>
-       </attribute>
-      </widget>
-     </item>
-    </layout>
    </item>
    <item>
     <widget class="QGroupBox" name="groupBox">
@@ -176,7 +40,14 @@
          </widget>
         </item>
         <item>
-         <widget class="QComboBox" name="availableMds"/>
+         <widget class="QComboBox" name="availableMds">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+         </widget>
         </item>
        </layout>
       </item>
@@ -187,23 +58,16 @@
         </property>
         <item>
          <widget class="QLabel" name="label_5">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
           <property name="text">
            <string>Manual K-Factor</string>
           </property>
          </widget>
-        </item>
-        <item>
-         <spacer name="horizontalSpacer">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>40</width>
-            <height>20</height>
-           </size>
-          </property>
-         </spacer>
         </item>
         <item>
          <widget class="QDoubleSpinBox" name="kFactSpin">
@@ -211,7 +75,7 @@
            <bool>true</bool>
           </property>
           <property name="sizePolicy">
-           <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+           <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
             <horstretch>0</horstretch>
             <verstretch>0</verstretch>
            </sizepolicy>
@@ -236,13 +100,30 @@
           </property>
          </widget>
         </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_3">
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <item>
+         <widget class="QLabel" name="label_2">
+          <property name="text">
+           <string>Standard</string>
+          </property>
+         </widget>
+        </item>
         <item>
          <widget class="QRadioButton" name="kfactorAnsi">
           <property name="text">
            <string>ANSI</string>
           </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
           <attribute name="buttonGroup">
-           <string notr="true">kFactorGroup</string>
+           <string notr="true">kFactorStandardGroup</string>
           </attribute>
          </widget>
         </item>
@@ -252,7 +133,7 @@
            <string>DIN</string>
           </property>
           <attribute name="buttonGroup">
-           <string notr="true">kFactorGroup</string>
+           <string notr="true">kFactorStandardGroup</string>
           </attribute>
          </widget>
         </item>
@@ -278,7 +159,7 @@
         </sizepolicy>
        </property>
        <property name="text">
-        <string>Unfold object transparency</string>
+        <string>Unfold Transparency</string>
        </property>
       </widget>
      </item>
@@ -324,17 +205,9 @@
    </item>
   </layout>
  </widget>
- <customwidgets>
-  <customwidget>
-   <class>Gui::ColorButton</class>
-   <extends>QPushButton</extends>
-   <header>Gui/Widgets.h</header>
-  </customwidget>
- </customwidgets>
  <resources/>
  <connections/>
  <buttongroups>
-  <buttongroup name="kFactorGroup"/>
-  <buttongroup name="exportGroup"/>
+  <buttongroup name="kFactorStandardGroup"/>
  </buttongroups>
 </ui>

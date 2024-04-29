@@ -10,6 +10,12 @@ language_path = os.path.join(mod_path, "translations")
 params = FreeCAD.ParamGet("User parameter:BaseApp/Preferences/Mod/SheetMetal")
 smEpsilon = 0.0000001
 
+def isGuiLoaded():
+    try:
+        return FreeCAD.GuiUp
+    except:
+        return False
+
 def smBelongToBody(item, body):
     if body is None:
         return False

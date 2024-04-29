@@ -23,7 +23,6 @@
 #
 ##############################################################################
 
-import FreeCAD 
 import SheetMetalBaseShape
 import SheetMetalBendWall
 import SheetMetalBaseBend
@@ -34,4 +33,5 @@ import SheetMetalJunction
 import SheetMetalRelief
 import SketchOnSheetMetal
 import SheetMetalCornerRelief
-import SheetMetalExtend
+import SheetMetalExtend
+import SheetMetalUnfolder
