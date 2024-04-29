@@ -93,6 +93,7 @@ class SMViewProviderTree:
 
     def unsetEdit(self, vobj, mode):
         Gui.Control.closeDialog()
+        Gui.Selection.setSelectionStyle(Gui.Selection.SelectionStyle.NormalSelection)
         self.Object.baseObject[0].ViewObject.Visibility = False
         self.Object.ViewObject.Visibility = True
         return False
@@ -344,9 +345,16 @@ class SMBendWallTaskPanel:
     def accept(self):
         FreeCAD.ActiveDocument.recompute()
         Gui.Selection.setSelectionStyle(Gui.Selection.SelectionStyle.NormalSelection)
+        self.obj.Document.commitTransaction()
+        Gui.Control.closeDialog()
         Gui.ActiveDocument.resetEdit()
         # self.obj.ViewObject.Visibility=True
         return True
+
+    def reject(self):
+        FreeCAD.ActiveDocument.abortTransaction()
+        Gui.Control.closeDialog()
+        FreeCAD.ActiveDocument.recompute()
 
 class AddWallCommandClass:
     """Add Wall command"""
@@ -399,7 +407,6 @@ class AddWallCommandClass:
         dialog = SMBendWallTaskPanel(a)
         doc.recompute()
         Gui.Control.showDialog(dialog)
-        doc.commitTransaction()
         return
 
     def IsActive(self):

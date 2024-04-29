@@ -41,11 +41,24 @@ def smIsOperationLegal(body, selobj):
 def is_autolink_enabled():
     return params.GetInt("AutoLinkBendRadius", 0)
 
-def GetViewConfig(obj):
-    return obj.ViewObject.dumpContent()
-
-def SetViewConfig(obj, viewconf):
-    obj.ViewObject.restoreContent(viewconf)
+def GetViewConfig(obj): 
+    viewconf = {} 
+    if hasattr(obj.ViewObject, "ShapeColor"): 
+        viewconf["objShapeCol"] = obj.ViewObject.ShapeColor 
+        viewconf["objShapeTsp"] = obj.ViewObject.Transparency 
+        viewconf["objDiffuseCol"] = obj.ViewObject.DiffuseColor 
+        # TODO: Make the individual face colors be retained 
+        # needDiffuseColorExtension = ( len(selobj.ViewObject.DiffuseColor) < len(selobj.Shape.Faces) ) 
+    else:
+        return None
+    return viewconf 
+ 
+ 
+def SetViewConfig(obj, viewconf): 
+    if hasattr(obj.ViewObject, "ShapeColor") and viewconf: 
+        obj.ViewObject.ShapeColor = viewconf["objShapeCol"] 
+        obj.ViewObject.Transparency = viewconf["objShapeTsp"] 
+        obj.ViewObject.DiffuseColor = viewconf["objDiffuseCol"] 
 
 def getOriginalBendObject(obj):
     for item in obj.OutListRecursive:

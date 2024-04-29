@@ -48,7 +48,6 @@ class BaseShapeTaskPanel:
         path = os.path.join(panels_path, 'BaseShapeOptions.ui')
         self.form = Gui.PySideUic.loadUi(path)
         self.formReady = False
-        self.firstTime = True
         self.ShowAxisCross()
         self.setupUi()
 
@@ -120,14 +119,10 @@ class BaseShapeTaskPanel:
     def accept(self):
         doc = FreeCAD.ActiveDocument
         self.updateObj()
-        if self.firstTime  and self._stateToBool(self.form.chkNewBody.checkState()):
-            body = FreeCAD.activeDocument().addObject('PartDesign::Body','Body')
-            body.Label = 'Body'
-            body.addObject(self.obj)
-            Gui.ActiveDocument.ActiveView.setActiveObject('pdbody', body)
         doc.commitTransaction()
         Gui.Control.closeDialog()
         doc.recompute()
+        Gui.ActiveDocument.resetEdit()
         self.RevertAxisCross()
 
 
@@ -152,7 +147,6 @@ class BaseShapeTaskPanel:
         self.form.shapeType.setCurrentText(self.obj.shapeType)
         self.form.originLoc.setCurrentIndex(origin_location_types.index(self.obj.originLoc))
         self.form.chkFillGaps.setCheckState(self._boolToState(self.obj.fillGaps))
-        self.form.chkNewBody.setVisible(self.firstTime)
         self.formReady = True
 
 
@@ -214,7 +208,6 @@ class SMBaseShapeViewProviderFlat:
             return super.setEdit(vobj, mode)
         taskd = BaseShapeTaskPanel()
         taskd.obj = vobj.Object
-        taskd.firstTime = False
         taskd.update()
         #self.Object.ViewObject.Visibility=False
         Gui.Selection.clearSelection()
@@ -254,15 +247,22 @@ class SMBaseshapeCommandClass:
 
     def Activated(self):
         doc = FreeCAD.ActiveDocument
+        activeBody = None
+        view = Gui.ActiveDocument.ActiveView
+        if hasattr(view, "getActiveObject"):
+            activeBody = view.getActiveObject("pdbody")
         doc.openTransaction("BaseShape")
         a = doc.addObject("PartDesign::FeaturePython","BaseShape")
         SMBaseShape(a)
         SMBaseShapeViewProviderFlat(a.ViewObject)
+        if not activeBody:
+            activeBody = FreeCAD.activeDocument().addObject('PartDesign::Body','Body')
+            Gui.ActiveDocument.ActiveView.setActiveObject('pdbody', activeBody)
+        activeBody.addObject(a)
         doc.recompute()
 
         dialog = BaseShapeTaskPanel()
         dialog.obj = a
-        dialog.firstTime = True
         dialog.update()
         Gui.Control.showDialog(dialog)
 
