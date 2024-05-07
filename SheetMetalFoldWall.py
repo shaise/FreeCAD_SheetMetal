@@ -35,9 +35,9 @@ def smCutFace(Face, obj):
 
 
 def smFold(
-    bendR=1.0,
+    bendR=0.8,
     bendA=90.0,
-    kfactor=0.5,
+    kfactor=1,
     invertbend=False,
     flipped=False,
     unfold=False,
@@ -61,12 +61,16 @@ def smFold(
             tool = bendlinesketch.Shape.copy()
             normal = foldface.normalAt(0, 0)
             thk = smthk(FoldShape, foldface)
-            print(thk)
+            #print(thk)
 
             # if not(flipped) :
             # offset =  thk * kfactor
             # else :
             # offset = thk * (1 - kfactor )
+            # adaptive   адаптивний
+            if position == "intersection of planes" :
+                kfactor = (( bendR ) * math.tan(math.radians(bendA / 2.0)) * 180 / (bendA / 2.0) / math.pi - bendR ) / thk
+                print (kfactor)
 
             unfoldLength = (bendR + kfactor * thk) * bendA * math.pi / 180.0
             neutralRadius = bendR + kfactor * thk
@@ -134,6 +138,20 @@ def smFold(
                 )
             # Part.show(bendEdges,"bendEdges")
             bendEdge = bendEdges.Edges[0]
+
+
+###########################################################################################################################
+
+            if not (flipped):
+
+                    bendR_flip = bendR
+            else:
+                    bendR_flip = bendR + thk
+
+            if position == "intersection of planes" :
+                bendEdge.translate(facenormal * ((unfoldLength/2) -( bendR_flip ) * math.tan(math.radians(bendA / 2.0))))
+
+##############################################################################################################################
             if not (flipped):
                 revAxisP = bendEdge.valueAt(bendEdge.FirstParameter) + normal * bendR
             else:
@@ -171,8 +189,17 @@ def smFold(
             flatsolid = flatsolid.cut(solid1)
             # Part.show(flatsolid,"flatsolid")
             flatfaces = foldface.common(flatsolid)
+############################################################################################################################################
+            if position == "intersection of planes" :
+                flatfaces.translate(facenormal * ((unfoldLength/2) -( bendR_flip ) * math.tan(math.radians(bendA / 2.0))))
+            #Part.show(flatfaces,"flatface")
+                solid0.translate(facenormal * ((unfoldLength/2) -( bendR_flip ) * math.tan(math.radians(bendA / 2.0))))
+                solid1.translate(facenormal * ((-unfoldLength/2) -( bendR_flip ) * math.tan(math.radians(bendA / 2.0))))
+#############################################################################################################################################
+            else :
+                solid1.translate(facenormal * (-unfoldLength))
             # Part.show(flatfaces,"flatface")
-            solid1.translate(facenormal * (-unfoldLength))
+            #solid1.translate(facenormal * (-unfoldLength))
             # Part.show(solid1,"solid1")
             solid1.rotate(revAxisP, revAxisV, bendA)
             # Part.show(solid1,"rotatedsolid1")
@@ -231,7 +258,7 @@ class SMFoldWall:
         _tip_ = FreeCAD.Qt.translate("App::Property", "Bend Line Position")
         obj.addProperty(
             "App::PropertyEnumeration", "Position", "Parameters", _tip_
-        ).Position = ["forward", "middle", "backward"]
+        ).Position = ["intersection of planes", "middle", "backward", "forward"]
         obj.Proxy = self
 
     def execute(self, fp):
@@ -241,7 +268,7 @@ class SMFoldWall:
             _tip_ = FreeCAD.Qt.translate("App::Property", "Bend Line Position")
             fp.addProperty(
                 "App::PropertyEnumeration", "Position", "Parameters", _tip_
-            ).Position = ["forward", "middle", "backward"]
+            ).Position = ["intersection of planes", "middle", "backward", "forward"]
         s = smFold(
             bendR=fp.radius.Value,
             bendA=fp.angle.Value,
