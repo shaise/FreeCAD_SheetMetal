@@ -28,7 +28,7 @@ import FreeCAD, Part, os, SheetMetalTools, SheetMetalKfactor
 from PySide import QtCore, QtGui
 from FreeCAD import Gui
 from engineering_mode import engineering_mode_enabled
-from SheetMetalUnfolder import SMUnfold, generateSketch
+from SheetMetalUnfolder import SMUnfold, processUnfoldSketches
 from SheetMetalLogger import SMLogger
 
 GENSKETCHCOLOR = "#000080"
@@ -108,6 +108,7 @@ class SMUnfoldVP:
     def setEdit(self, vobj, mode):
         vobj.Object.Document.openTransaction("Unfold")
         taskd = SMUnfoldTaskPanel(vobj.Object)
+        taskd.form[1].chkSketch.setChecked(False)
         Gui.Control.showDialog(taskd)
         return True
 
@@ -123,45 +124,69 @@ class SMUnfoldVP:
 class SMUnfoldTaskPanel:
     def __init__(self, object):
         path = os.path.join(panels_path,"UnfoldOptions.ui")
-        self.form = Gui.PySideUic.loadUi(path)
+        path2 = os.path.join(panels_path,"UnfoldSketchOptions.ui")
+        self.form = []
+        self.form.append(Gui.PySideUic.loadUi(path))
+        self.form.append(Gui.PySideUic.loadUi(path2))
         self.pg = FreeCAD.ParamGet("User parameter:BaseApp/Preferences/Mod/SheetMetal")
         self.object = object
         self.SelModeActive = False
         self.setupUi()
 
+    def _boolToState(self, bool):
+        return QtCore.Qt.Checked if bool else QtCore.Qt.Unchecked
+
     def _isManualKSelected(self):
-        return self.form.availableMds.currentIndex() == (
-            self.form.availableMds.count() - 1
+        return self.form[0].availableMds.currentIndex() == (
+            self.form[0].availableMds.count() - 1
         )
 
     def _isNoMdsSelected(self):
-        return self.form.availableMds.currentIndex() == 0
+        return self.form[0].availableMds.currentIndex() == 0
 
     def _getMdsIndex(self, label):
-        for i in range(self.form.availableMds.count()):
-            if self.form.availableMds.itemText(i) == label:
+        for i in range(self.form[0].availableMds.count()):
+            if self.form[0].availableMds.itemText(i) == label:
                 return i
         return -1
 
     def setupUi(self):
-        self.form.availableMds.currentIndexChanged.connect(self.availableMdsChange)
-        self.form.selectFaceButton.toggled.connect(self.toggleSelectionMode)
+        self.form[0].availableMds.currentIndexChanged.connect(self.availableMdsChange)
+        self.form[0].selectFaceButton.toggled.connect(self.toggleSelectionMode)
 
-        self.form.kfactorAnsi.setChecked(self.object.kFactorStandard == "ansi")
-        self.form.kfactorDin.setChecked(self.object.kFactorStandard == "din")
-        self.form.kFactSpin.setValue(self.object.kfactor)
-        self.form.transSpin.setValue(self.object.ViewObject.Transparency)
+        self.form[0].kfactorAnsi.setChecked(self.object.kFactorStandard == "ansi")
+        self.form[0].kfactorDin.setChecked(self.object.kFactorStandard == "din")
+        self.form[0].kFactSpin.setValue(self.object.kfactor)
+        self.form[0].transSpin.setValue(self.object.ViewObject.Transparency)
 
         self.populateMdsList()
         self.availableMdsChange()
 
-        self.form.update()
+        self.form[0].update()
+        self.form[1].chkSketch.stateChanged.connect(self.chkSketchChange)
+        self.form[1].chkSeparate.stateChanged.connect(self.chkSketchChange)
+        self.form[1].chkSketch.setCheckState(
+            self._boolToState(self.pg.GetBool("genSketch"))
+        )
+        self.form[1].chkSeparate.setCheckState(
+            self._boolToState(self.pg.GetBool("separateSketches"))
+        )
+        self.form[1].genColor.setProperty(
+            "color", self.pg.GetString("genColor", GENSKETCHCOLOR)
+        )
+        self.form[1].bendColor.setProperty(
+            "color", self.pg.GetString("bendColor", BENDSKETCHCOLOR)
+        )
+        self.form[1].internalColor.setProperty(
+            "color", self.pg.GetString("internalColor", INTSKETCHCOLOR)
+        )
+
 
     def accept(self):
         if self.SelModeActive:
             self.toggleSelectionMode()
-        self.object.kFactorStandard = "din" if self.form.kfactorDin.isChecked() else "ansi"
-        self.object.kfactor = self.form.kFactSpin.value()
+        self.object.kFactorStandard = "din" if self.form[0].kfactorDin.isChecked() else "ansi"
+        self.object.kfactor = self.form[0].kFactSpin.value()
         if self._isManualKSelected():
             self.object.useManualKFactor = True
             self.object.materialSheet = None
@@ -184,12 +209,24 @@ class SMUnfoldTaskPanel:
         else:
             self.object.useManualKFactor = False
             self.object.materialSheet = FreeCAD.ActiveDocument.getObjectsByLabel(
-                self.form.availableMds.currentText()
+                self.form[0].availableMds.currentText()
             )[0]
-        self.object.ViewObject.Transparency = self.form.transSpin.value()
+        self.object.ViewObject.Transparency = self.form[0].transSpin.value()
         FreeCAD.ActiveDocument.commitTransaction()
-        Gui.Control.closeDialog()
         FreeCAD.ActiveDocument.recompute()
+        if self.form[1].chkSketch.isChecked() and self.object.foldComp:
+            FreeCAD.ActiveDocument.openTransaction("Unfold sketch projection")
+            shape = self.object.Shape
+            foldLines = self.object.foldComp.Edges
+            norm = self.object.baseObject[0].getSubObject(self.object.baseObject[1][0]).normalAt(0,0)
+            splitSketches = self.form[1].chkSeparate.isChecked()
+            genSketchColor = self.form[1].genColor.property("color").name()
+            bendSketchColor = self.form[1].bendColor.property("color").name()
+            intSketchColor = self.form[1].internalColor.property("color").name()
+            processUnfoldSketches(shape, foldLines, norm, splitSketches, genSketchColor, bendSketchColor, intSketchColor)
+            FreeCAD.ActiveDocument.commitTransaction()
+            FreeCAD.ActiveDocument.recompute()
+        Gui.Control.closeDialog()
         Gui.ActiveDocument.resetEdit()
 
     def reject(self):
@@ -200,39 +237,45 @@ class SMUnfoldTaskPanel:
 
     def populateMdsList(self):
         sheetnames = SheetMetalKfactor.getSpreadSheetNames()
-        self.form.availableMds.clear()
+        self.form[0].availableMds.clear()
 
-        self.form.availableMds.addItem("Please select")
+        self.form[0].availableMds.addItem("Please select")
         for mds in sheetnames:
             if mds.Label.startswith("material_"):
-                self.form.availableMds.addItem(mds.Label)
-        self.form.availableMds.addItem("Manual K-Factor")
+                self.form[0].availableMds.addItem(mds.Label)
+        self.form[0].availableMds.addItem("Manual K-Factor")
 
         selMdsIndex = -1
         if self.object.materialSheet:
             selMdsIndex = self._getMdsIndex(self.object.materialSheet.Label)
         elif self.object.useManualKFactor:
-            selMdsIndex = self.form.availableMds.count()-1
+            selMdsIndex = self.form[0].availableMds.count()-1
 
         if selMdsIndex >= 0:
-            self.form.availableMds.setCurrentIndex(selMdsIndex)
+            self.form[0].availableMds.setCurrentIndex(selMdsIndex)
         elif len(sheetnames) == 1:
-            self.form.availableMds.setCurrentIndex(1)
+            self.form[0].availableMds.setCurrentIndex(1)
         elif engineering_mode_enabled():
-            self.form.availableMds.setCurrentIndex(0)
+            self.form[0].availableMds.setCurrentIndex(0)
         elif len(sheetnames) == 0:
-            self.form.availableMds.setCurrentIndex(1)
+            self.form[0].availableMds.setCurrentIndex(1)
         
+    def chkSketchChange(self):
+        self.form[1].genColor.setEnabled(self.form[1].chkSketch.isChecked())
+        self.form[1].chkSeparate.setEnabled(self.form[1].chkSketch.isChecked())
+        enabled = self.form[1].chkSketch.isChecked() and self.form[1].chkSeparate.isChecked()
+        self.form[1].bendColor.setEnabled(enabled)
+        self.form[1].internalColor.setEnabled(enabled)
 
     def availableMdsChange(self):
         isManualK = self._isManualKSelected()
-        self.form.kfactorAnsi.setEnabled(isManualK)
-        self.form.kfactorDin.setEnabled(isManualK)
-        self.form.kFactSpin.setEnabled(isManualK)
+        self.form[0].kfactorAnsi.setEnabled(isManualK)
+        self.form[0].kfactorDin.setEnabled(isManualK)
+        self.form[0].kFactSpin.setEnabled(isManualK)
         self.object.useManualKFactor = isManualK
         if not isManualK:
             self.object.materialSheet = FreeCAD.ActiveDocument.getObjectsByLabel(
-                self.form.availableMds.currentText()
+                self.form[0].availableMds.currentText()
             )[0]
         self.object.recompute()
 
@@ -243,7 +286,7 @@ class SMUnfoldTaskPanel:
             Gui.Selection.clearSelection()
             Gui.Selection.addSelection(self.object.baseObject[0],self.object.baseObject[1])
             self.SelModeActive=True
-            self.form.selectFaceButton.setText('Preview')
+            self.form[0].selectFaceButton.setText('Preview')
         else:
             sel = Gui.Selection.getSelectionEx()[0]
             self.object.baseObject = [ sel.Object, sel.SubElementNames[0] ]
@@ -251,7 +294,7 @@ class SMUnfoldTaskPanel:
             self.object.Document.recompute()
             self.object.Visibility=True
             self.SelModeActive=False
-            self.form.selectFaceButton.setText('Select Face')
+            self.form[0].selectFaceButton.setText('Select Face')
         
 ######## Commands ########
 

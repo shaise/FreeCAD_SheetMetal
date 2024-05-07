@@ -3080,6 +3080,85 @@ def generateSketch(edges, name, color):
 
     return sk
 
+def processUnfoldSketches(shape, foldLines, norm, splitSketches, genSketchColor, bendSketchColor, intSketchColor):
+    try:
+        from TechDraw import projectEx
+    except ImportError:
+        from Drawing import projectEx
+
+    # locate the projection face
+    unfoldobj = shape
+    for face in shape.Faces:
+        fnorm = face.normalAt(0, 0)
+        isSameDir = abs(fnorm.dot(norm) - 1.0) < 0.00001
+        if isSameDir:
+            unfoldobj = face
+            break
+    edges = []
+    perimEdges = projectEx(unfoldobj, norm)[0]
+    edges.append(perimEdges)
+    if len(foldLines) > 0:
+        co = Part.makeCompound(foldLines)
+        foldEdges = projectEx(co, norm)[0]
+        if not splitSketches:
+            edges.append(foldEdges)
+    unfold_sketch = generateSketch(edges, "Unfold_Sketch", genSketchColor)
+    FreeCAD.ActiveDocument.recompute()
+    if splitSketches:
+        tidy = False
+        try:
+            newface = Part.makeFace(unfold_sketch.Shape, "Part::FaceMakerBullseye")
+            try:
+                owEdgs = newface.OuterWire.Edges
+                faceEdgs = newface.Edges
+            except:
+                exc_type, exc_obj, exc_tb = sys.exc_info()
+                SMLogger.error(
+                    FreeCAD.Qt.translate(
+                        "Logger",
+                        "Exception at line {}"
+                        ": Outline Sketch failed, re-trying after tidying up",
+                    ).format(str(exc_tb.tb_lineno))
+                )
+                tidy = True
+                owEdgs = unfold_sketch.Shape.Edges
+                faceEdgs = unfold_sketch.Shape.Edges
+                FreeCAD.ActiveDocument.recompute()
+            unfold_sketch_outline = generateSketch(
+                owEdgs, "Unfold_Sketch_Outline", genSketchColor
+            )
+            if tidy:
+                SMLogger.error(
+                    FreeCAD.Qt.translate(
+                        "Logger", "tidying up Unfold_Sketch_Outline"
+                    )
+                )
+            intEdgs = []
+            idx = []
+            for i, e in enumerate(faceEdgs):
+                for oe in owEdgs:
+                    if oe.hashCode() == e.hashCode():
+                        idx.append(i)
+            for i, e in enumerate(faceEdgs):
+                if i not in idx:
+                    intEdgs.append(e)
+            if len(intEdgs) > 0:
+                unfold_sketch_internal = generateSketch(
+                    intEdgs, "Unfold_Sketch_Internal", intSketchColor
+                )
+        except Exception as e:
+            print(e)
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            SMLogger.error(
+                FreeCAD.Qt.translate(
+                    "Logger",
+                    "Exception at line {}: Outline Sketch not created",
+                ).format(str(exc_tb.tb_lineno))
+            )
+    if len(foldLines) > 0 and splitSketches:
+        unfold_sketch_bend = generateSketch(
+            foldEdges, "Unfold_Sketch_bends", bendSketchColor
+        )
 
 class SMUnfold:
     def __init__(self, obj):
@@ -3090,7 +3169,7 @@ class SMUnfold:
             "kfactor",
             translate( "App::Property", "Manual K-Factor value" ),
             (0.4, 0.0, 2.0, 0.01),
-            "Parameters"
+            "Unfold"
         )
         SheetMetalTools.smAddEnumProperty(
             obj,
@@ -3098,7 +3177,7 @@ class SMUnfold:
             translate( "App::Property", "K-Factor standard" ),
             ["ansi","din"],
             None,
-            "Parameters"
+            "Unfold"
         )
         SheetMetalTools.smAddProperty(
             obj,
@@ -3106,7 +3185,7 @@ class SMUnfold:
             "baseObject",
             translate( "App::Property", "Base Object" ),
             None,
-            "Parameters",
+            "Unfold",
         )
         SheetMetalTools.smAddProperty(
             obj,
@@ -3114,7 +3193,7 @@ class SMUnfold:
             "materialSheet",
             translate( "App::Property", "Material definition sheet" ),
             None,
-            "Parameters",
+            "Unfold",
         )
         SheetMetalTools.smAddBoolProperty(
             obj,
@@ -3122,6 +3201,16 @@ class SMUnfold:
             translate("App::Property", 
                       "Enable manually defining K-Factor value, otherwise the lookup table is used"),
             False,
+            "Unfold",
+        )
+        obj.addProperty(
+            "Part::PropertyPartShape",
+            "foldComp",
+            translate("App::Property", 
+                      "Fold lines compound"),
+            "Unfold",
+            read_only=True,
+            hidden=True
         )
         obj.Proxy = self
 
@@ -3142,4 +3231,5 @@ class SMUnfold:
             facename=fp.baseObject[1][0],
             kFactorStandard=fp.kFactorStandard)
         fp.Shape = shape
+        fp.foldComp = foldComp
 
