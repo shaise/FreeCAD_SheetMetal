@@ -222,7 +222,7 @@ class SMBendWallTaskPanel:
         return True
 
     def getStandardButtons(self):
-        return int(QtGui.QDialogButtonBox.Ok)
+        return QtGui.QDialogButtonBox.Ok
 
     def updateProperties(self):
         self.obj.BendType = self.form[0].BendType.currentIndex()
