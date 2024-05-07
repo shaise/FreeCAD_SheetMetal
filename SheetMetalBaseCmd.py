@@ -76,7 +76,7 @@ class SMBaseViewProvider:
 
     def claimChildren(self):
         objs = []
-        if hasattr(self.Object, "BendSketch"):
+        if hasattr(self, "Object") and hasattr(self.Object, "BendSketch"):
             objs.append(self.Object.BendSketch)
         return objs
 

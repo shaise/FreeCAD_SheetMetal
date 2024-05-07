@@ -98,7 +98,10 @@ Starting from FreeCAD 0.17 it can be installed via the [Addon Manager](https://g
 * Authors webpage: http://theseger.com/projects/2015/06/sheet-metal-addon-for-freecad/  
 * FreeCAD Forum announcement/discussion [thread](https://forum.freecadweb.org/viewtopic.php?f=3&t=60818) 
 
-#### Release notes: 
+#### Release notes:
+* V0.4.13 27 Apr 2024:  Hot fix: revert material preservation system. New system has issues.  
+* V0.4.12 26 Apr 2024:  Add 'intersection of planes' to fold options by [@free777cat][free777cat].  
+                      - Remove redundant casts for better compatibility by [@YakoYakoYokuYoku][YakoYakoYokuYoku].  
 * V0.4.11 07 Apr 2024:  Make material preservation system a bit more robust.  
 * V0.4.10 31 Mar 2024:  Some code refactoring and cleanup by [@sliptonic][sliptonic].  
                       - Add Flat shape to base shapes.  
@@ -229,6 +232,8 @@ Starting from FreeCAD 0.17 it can be installed via the [Addon Manager](https://g
 [RexLinz]: https://github.com/RexLinz
 [maxwxyz]: https://github.com/maxwxyz
 [pierreporte]: https://github.com/pierreporte
+[free777cat]: https://github.com/free777cat
+[YakoYakoYokuYoku]: https://github.com/YakoYakoYokuYoku
 [topic82482]: https://forum.freecad.org/viewtopic.php?t=82482
 [30]: https://github.com/shaise/FreeCAD_SheetMetal/issues/30
 [33]: https://github.com/shaise/FreeCAD_SheetMetal/issues/33
