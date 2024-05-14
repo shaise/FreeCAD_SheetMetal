@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 ###############################################################################
 #
-#  SheetMetalRelief.py
+#  SheetMetalReliefCmd.py
 #
 #  Copyright 2015 Shai Seger <shaise at gmail dot com>
 #
@@ -26,7 +26,7 @@
 import FreeCAD, Part, os, SheetMetalTools
 from PySide import QtCore, QtGui
 from FreeCAD import Gui
-from SheetMetalRelief import SMRelief
+from SheetMetalReliefObj import SMRelief
 
 icons_path = SheetMetalTools.icons_path
 

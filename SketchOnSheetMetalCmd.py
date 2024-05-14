@@ -23,9 +23,11 @@
 #
 ##############################################################################
 
-import FreeCAD, os, SheetMetalTools
+import FreeCAD, os, SheetMetalTools, SketchOnSheetMetal
 from FreeCAD import Gui
-from SketchOnSheetMetal import SMSketchOnSheet
+
+# kept around for compatibility with old files
+SMSketchOnSheet = SketchOnSheetMetal.SMSketchOnSheet
 
 icons_path = SheetMetalTools.icons_path
 

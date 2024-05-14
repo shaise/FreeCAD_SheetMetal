@@ -23,11 +23,13 @@
 #
 ###################################################################################
 
-import FreeCAD, os, SheetMetalTools
+import FreeCAD, os, SheetMetalTools, SheetMetalBaseShape
 from PySide import QtCore
 from FreeCAD import Gui
 from SheetMetalLogger import SMLogger
-from SheetMetalBaseShape import SMBaseShape
+
+# kept around for compatibility with old files
+SMBaseShape = SheetMetalBaseShape.SMBaseShape
 
 icons_path = SheetMetalTools.icons_path
 panels_path = SheetMetalTools.panels_path

@@ -76,7 +76,7 @@ def makeforming(tool, base, base_face, thk, tool_faces = None, point = FreeCAD.V
   #Part.show(base, "base")
   return base
 
-class SMBendWall:
+class SMFormingWall:
   def __init__(self, obj):
     '''"Add Forming Wall" '''
 
@@ -127,3 +127,7 @@ class SMBendWall:
     else :
       a = base
     fp.Shape = a
+
+
+# kept around for compatibility with files from ondsel-es 2024.2.0
+SMBendWall = SMFormingWall

@@ -23,9 +23,11 @@
 #
 ##############################################################################
 
-import FreeCAD, Part, os, SheetMetalTools
+import FreeCAD, Part, os, SheetMetalTools, SheetMetalFoldWall
 from FreeCAD import Gui
-from SheetMetalFoldWall import SMFoldWall
+
+# kept around for compatibility with old files
+SMFoldWall = SheetMetalFoldWall.SMFoldWall
 
 icons_path = SheetMetalTools.icons_path
 

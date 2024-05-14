@@ -23,10 +23,12 @@
 #
 ###################################################################################
 
-import FreeCAD, Part, os, SheetMetalTools
+import FreeCAD, Part, os, SheetMetalTools,SheetMetalExtend
 from FreeCAD import Gui
 from PySide import QtCore, QtGui
-from SheetMetalExtend import SMExtrudeWall
+
+# kept around for compatibility with old files
+SMExtrudeWall = SheetMetalExtend.SMExtrudeWall
 
 icons_path = SheetMetalTools.icons_path
 
@@ -95,7 +97,7 @@ class SMViewProviderTree:
     return os.path.join( icons_path , 'SheetMetal_Extrude.svg')
 
   def setEdit(self,vobj,mode):
-    taskd = SMBendWallTaskPanel()
+    taskd = SMExtendWallTaskPanel()
     taskd.obj = vobj.Object
     taskd.update()
     self.Object.ViewObject.Visibility=False
@@ -160,7 +162,7 @@ class SMViewProviderFlat:
     return os.path.join( icons_path , 'SheetMetal_Extrude.svg')
 
   def setEdit(self,vobj,mode):
-    taskd = SMBendWallTaskPanel()
+    taskd = SMExtendWallTaskPanel()
     taskd.obj = vobj.Object
     taskd.update()
     self.Object.ViewObject.Visibility=False
@@ -174,13 +176,13 @@ class SMViewProviderFlat:
     self.Object.ViewObject.Visibility=True
     return False
 
-class SMBendWallTaskPanel:
+class SMExtendWallTaskPanel:
     '''A TaskPanel for the Sheetmetal'''
     def __init__(self):
 
       self.obj = None
       self.form = QtGui.QWidget()
-      self.form.setObjectName("SMBendWallTaskPanel")
+      self.form.setObjectName("SMExtendWallTaskPanel")
       self.form.setWindowTitle("Binded faces/edges list")
       self.grid = QtGui.QGridLayout(self.form)
       self.grid.setObjectName("grid")

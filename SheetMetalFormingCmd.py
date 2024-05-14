@@ -26,7 +26,11 @@
 import FreeCAD, Part, os, SheetMetalTools
 from FreeCAD import Gui
 from PySide import QtCore, QtGui
-from SheetMetalForming import SMBendWall
+from SheetMetalForming import SMFormingWall
+
+# kept around for compatibility with old files
+SMBendWall = SMFormingWall
+
 
 icons_path = SheetMetalTools.icons_path
 
@@ -193,7 +197,7 @@ class SMFormingWallTaskPanel:
       
       self.obj = None
       self.form = QtGui.QWidget()
-      self.form.setObjectName("SMBendWallTaskPanel")
+      self.form.setObjectName("SMFormingWallTaskPanel")
       self.form.setWindowTitle("Binded faces/edges list")
       self.grid = QtGui.QGridLayout(self.form)
       self.grid.setObjectName("grid")
@@ -335,14 +339,14 @@ class AddFormingWallCommand():
     doc.openTransaction("WallForming")
     if activeBody is None or not SheetMetalTools.smIsPartDesign(selobj):
       a = doc.addObject("Part::FeaturePython","WallForming")
-      SMBendWall(a)
+      SMFormingWall(a)
       a.baseObject = (selobj, sel[0].SubElementNames)
       a.toolObject = (sel[1].Object, sel[1].SubElementNames)
       SMFormingVP(a.ViewObject)
     else:
       #FreeCAD.Console.PrintLog("found active body: " + activeBody.Name)
       a = doc.addObject("PartDesign::FeaturePython","WallForming")
-      SMBendWall(a)
+      SMFormingWall(a)
       a.baseObject = (selobj, sel[0].SubElementNames)
       a.toolObject = (sel[1].Object, sel[1].SubElementNames)
       SMFormingPDVP(a.ViewObject)

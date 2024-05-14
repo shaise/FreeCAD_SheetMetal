@@ -23,9 +23,11 @@
 #
 ###################################################################################
 
-import FreeCAD, Part, os, SheetMetalTools
+import FreeCAD, Part, os, SheetMetalTools, SheetMetalCornerRelief
 from FreeCAD import Gui
-from SheetMetalCornerRelief import SMCornerRelief
+
+# kept around for compatibility with old files
+SMCornerRelief = SheetMetalCornerRelief.SMCornerRelief
 
 icons_path = SheetMetalTools.icons_path
 

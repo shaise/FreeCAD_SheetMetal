@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 ###################################################################################
 #
-#  SheetMetalJunction.py
+#  SheetMetalJunctionCmd.py
 #
 #  Copyright 2015 Shai Seger <shaise at gmail dot com>
 #
@@ -26,7 +26,7 @@
 import FreeCAD, Part, os, SheetMetalTools
 from FreeCAD import Gui
 from PySide import QtCore, QtGui
-from SheetMetalJunction import SMJunction
+from SheetMetalJunctionObj import SMJunction
 
 icons_path = SheetMetalTools.icons_path
 

@@ -25,8 +25,10 @@
 
 import FreeCAD, os
 from FreeCAD import Gui
-import SheetMetalTools
-from SheetMetalBaseBend import SMBaseBend
+import SheetMetalTools, SheetMetalBaseBend
+
+# kept around for compatibility with old files
+SMBaseBend = SheetMetalBaseBend.SMBaseBend
 
 translate = FreeCAD.Qt.translate
 icons_path = SheetMetalTools.icons_path
