@@ -3,7 +3,7 @@
   <name>SheetMetal Workbench</name>
   <description>A simple sheet metal tools workbench for FreeCAD.</description>
   <version>0.5.0</version>
-  <date>2024-04-27</date>
+  <date>2024-05-13</date>
   <maintainer email="shaise@gmail.com">Shai Seger</maintainer>
   <license file="LICENSE">LGPL-2.1-or-later</license>
   <url type="repository" branch="master">https://github.com/shaise/FreeCAD_SheetMetal</url>

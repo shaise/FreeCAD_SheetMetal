@@ -99,6 +99,7 @@ Starting from FreeCAD 0.17 it can be installed via the [Addon Manager](https://g
 * FreeCAD Forum announcement/discussion [thread](https://forum.freecadweb.org/viewtopic.php?f=3&t=60818) 
 
 #### Release notes:
+* V0.4.14 13 May 2024:  Add Italian translations by [@robbeban][robbeban].  
 * V0.4.13 27 Apr 2024:  Hot fix: revert material preservation system. New system has issues.  
 * V0.4.12 26 Apr 2024:  Add 'intersection of planes' to fold options by [@free777cat][free777cat].  
                       - Remove redundant casts for better compatibility by [@YakoYakoYokuYoku][YakoYakoYokuYoku].  
@@ -234,6 +235,7 @@ Starting from FreeCAD 0.17 it can be installed via the [Addon Manager](https://g
 [pierreporte]: https://github.com/pierreporte
 [free777cat]: https://github.com/free777cat
 [YakoYakoYokuYoku]: https://github.com/YakoYakoYokuYoku
+[robbeban]https://github.com/robbeban/FreeCAD_SheetMetal/tree/master
 [topic82482]: https://forum.freecad.org/viewtopic.php?t=82482
 [30]: https://github.com/shaise/FreeCAD_SheetMetal/issues/30
 [33]: https://github.com/shaise/FreeCAD_SheetMetal/issues/33
