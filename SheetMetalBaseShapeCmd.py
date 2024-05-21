@@ -38,12 +38,20 @@ mw = FreeCADGui.getMainWindow()
 # changes in modeling logic
 smElementMapVersion = 'sm1.'
 
-base_shape_types = ["Flat", "L-Shape", "U-Shape", "Tub", "Hat", "Box"]
 origin_location_types = ["-X,-Y", "-X,0", "-X,+Y", "0,-Y", "0,0", "0,+Y", "+X,-Y", "+X,0", "+X,+Y"]
+base_shape_types = [
+    FreeCAD.Qt.translate("SMBaseShape", "Flat", "Base shape"),
+    FreeCAD.Qt.translate("SMBaseShape", "L-Shape", "Base shape"),
+    FreeCAD.Qt.translate("SMBaseShape", "U-Shape", "Base shape"),
+    FreeCAD.Qt.translate("SMBaseShape", "Tub", "Base shape"),
+    FreeCAD.Qt.translate("SMBaseShape", "Hat", "Base shape"),
+    FreeCAD.Qt.translate("SMBaseShape", "Box", "Base shape"),
+]
 
 ##########################################################################################################
 # Task
 ##########################################################################################################
+
 
 class BaseShapeTaskPanel:
     def __init__(self):
@@ -54,7 +62,6 @@ class BaseShapeTaskPanel:
         self.firstTime = True
         self.ShowAxisCross()
         self.setupUi()
-
 
     def _boolToState(self, bool):
         return QtCore.Qt.Checked if bool else QtCore.Qt.Unchecked
@@ -80,13 +87,13 @@ class BaseShapeTaskPanel:
         #SMLogger.log(str(self.formReady) + " <2 \n")
     def updateEnableState(self):
         type = base_shape_types[self.form.shapeType.currentIndex()]
-        self.form.bFlangeWidthSpin.setEnabled(type in ["Hat", "Box"])
-        self.form.bRadiusSpin.setEnabled(not type == "Flat")
-        self.form.bHeightSpin.setEnabled(not type == "Flat")
+        self.form.bFlangeWidthSpin.setEnabled(type in base_shape_types[4:6]) # Hat, Box
+        self.form.bRadiusSpin.setEnabled(not type == base_shape_types[0]) # ! Flat
+        self.form.bHeightSpin.setEnabled(not type == base_shape_types[0]) # ! Flat
 
     def spinValChanged(self):
         if not self.formReady:
-           return
+            return
         self.updateObj()
         self.obj.recompute()
 
@@ -133,7 +140,6 @@ class BaseShapeTaskPanel:
         doc.recompute()
         self.RevertAxisCross()
 
-
     def reject(self):
         FreeCAD.ActiveDocument.abortTransaction()
         FreeCADGui.Control.closeDialog()
@@ -171,26 +177,36 @@ def GetOriginShift(dimension, type, bendCompensation):
         return -dimension / 2.0
     return bendCompensation
 
-def smCreateBaseShape(type, thickness, radius, width, length, height, flangeWidth, fillGaps, origin):
+def smCreateBaseShape(
+    type: int,
+    thickness: float,
+    radius: float,
+    width: float,
+    length: float,
+    height: float,
+    flangeWidth: float,
+    fillGaps: bool,
+    origin: str,
+):
     bendCompensation = thickness + radius
     height -= bendCompensation
     compx = 0
     compy = 0
-    if type == "U-Shape":
+    if type == 2:  # U-Shape
         numfolds = 2
         width -= 2.0 * bendCompensation
         compy = bendCompensation
-    elif type in ["Tub", "Hat", "Box"]:
+    elif type in [3, 4, 5]:  # Tub, Hat, Box
         numfolds = 4
         width -= 2.0 * bendCompensation
         length -= 2.0 * bendCompensation
         compx = compy = bendCompensation
-    elif type == "L-Shape":
+    elif type == 1:  # L-Shape
         numfolds = 1
         width -= bendCompensation
     else:
         numfolds = 0
-    if type in ["Hat", "Box"]:
+    if type in [4, 5]:  # Hat, Box
         height -= bendCompensation
         flangeWidth -= radius
     if width < thickness: width = thickness
@@ -200,7 +216,7 @@ def smCreateBaseShape(type, thickness, radius, width, length, height, flangeWidt
     originX, originY = origin.split(',')
     offsx = GetOriginShift(length, originX, compx)
     offsy = GetOriginShift(width, originY, compy)
-    if type == "L-Shape" and originY == "+Y":
+    if type == 1 and originY == "+Y":
         offsy -= bendCompensation
     box = Part.makeBox(length, width, thickness, FreeCAD.Vector(offsx, offsy, 0))
     #box.translate(FreeCAD.Vector(offsx, offsy, 0))
@@ -217,10 +233,11 @@ def smCreateBaseShape(type, thickness, radius, width, length, height, flangeWidt
 
     shape, f = smBend(thickness, selFaceNames = faces, extLen = height, bendR = radius,
                       MainObject = box, automiter = fillGaps)
-    if type in ["Hat", "Box"]:
+    if type in [4, 5]:  # Hat, Box
         faces = []
         invertBend = False
-        if type == "Hat": invertBend = True
+        if type == 4:  # Hat
+            invertBend = True
         for i in range(len(shape.Faces)):
             v = shape.Faces[i].normalAt(0,0)
             z = shape.Faces[i].CenterOfGravity.z
@@ -349,7 +366,7 @@ class SMBaseShape:
             "shapeType",
             FreeCAD.Qt.translate("SMBaseShape", "Base shape type", "Property"),
             base_shape_types,
-            defval = "L-Shape"
+            defval = base_shape_types[1],
         )
         smAddEnumProperty(
             obj,
@@ -373,17 +390,25 @@ class SMBaseShape:
 
     def execute(self, fp):
         self._addVerifyProperties(fp)
-        s = smCreateBaseShape(type = fp.shapeType, thickness = fp.thickness.Value,
-                              radius = fp.radius.Value, width = fp.width.Value,
-                              length = fp.length.Value, height = fp.height.Value,
-                              flangeWidth = fp.flangeWidth.Value, fillGaps = fp.fillGaps,
-                              origin = fp.originLoc)
+        s = smCreateBaseShape(
+            type=base_shape_types.index(fp.shapeType),
+            thickness=fp.thickness.Value,
+            radius=fp.radius.Value,
+            width=fp.width.Value,
+            length=fp.length.Value,
+            height=fp.height.Value,
+            flangeWidth=fp.flangeWidth.Value,
+            fillGaps=fp.fillGaps,
+            origin=fp.originLoc,
+        )
 
         fp.Shape = s
+
 
 ##########################################################################################################
 # Command
 ##########################################################################################################
+
 
 class SMBaseshapeCommandClass:
     """Open Base shape task"""
@@ -421,5 +446,6 @@ class SMBaseshapeCommandClass:
 
     def IsActive(self):
         return FreeCAD.ActiveDocument is not None
+
 
 Gui.addCommand("SheetMetal_BaseShape", SMBaseshapeCommandClass())
