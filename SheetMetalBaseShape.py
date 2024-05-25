@@ -152,6 +152,14 @@ class SMBaseShape:
         if not restored:
             return smElementMapVersion + ver
 
+    def onChanged(self, fp, prop):
+        if prop == "shapeType":
+            flat = fp.shapeType == "Flat"
+            hat_box = fp.shapeType in ["Hat", "Box"]
+            fp.setEditorMode("radius", flat)
+            fp.setEditorMode("height", flat)
+            fp.setEditorMode("flangeWidth", not hat_box)
+
     def execute(self, fp):
         self._addVerifyProperties(fp)
         s = smCreateBaseShape(type = fp.shapeType, thickness = fp.thickness.Value,
