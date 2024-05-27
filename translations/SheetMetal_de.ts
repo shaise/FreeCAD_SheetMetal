@@ -1,317 +1,317 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
-<TS version="2.1" language="es-ES" sourcelanguage="en">
+<TS version="2.1" language="de" sourcelanguage="en">
   <context>
     <name>App::Property</name>
     <message>
       <location filename="../SheetMetalFoldCmd.py" line="242"/>
       <source>Bend Radius</source>
-      <translation>Radio de doblez</translation>
+      <translation>Biegeradius</translation>
     </message>
     <message>
       <location filename="../SheetMetalBend.py" line="117"/>
       <source>Thickness of sheetmetal</source>
-      <translation>Grosor de chapa metálica</translation>
+      <translation>Blechstärke</translation>
     </message>
     <message>
       <location filename="../SheetMetalBaseCmd.py" line="202"/>
       <source>Relief Type</source>
-      <translation>Tipo de alivio</translation>
+      <translation>Form des Entlastungsausschnitts</translation>
     </message>
     <message>
       <location filename="../SheetMetalBaseCmd.py" line="206"/>
       <source>Length of wall</source>
-      <translation>Longitud de pared</translation>
+      <translation>Profillänge</translation>
     </message>
     <message>
       <location filename="../SheetMetalBaseCmd.py" line="210"/>
       <source>Wall Sketch object</source>
-      <translation>Objeto croquis de pared</translation>
+      <translation>Konturskizze</translation>
     </message>
     <message>
       <location filename="../SheetMetalBaseCmd.py" line="227"/>
       <source>Extrude Symmetric to Plane</source>
-      <translation>Extruir simétrico al plano</translation>
+      <translation>Symmetrisch zur Ebene extrudieren</translation>
     </message>
     <message>
       <location filename="../SheetMetalBaseCmd.py" line="231"/>
       <source>Reverse Extrusion Direction</source>
-      <translation>Invertir dirección de la extrusión</translation>
+      <translation>Extrusionsrichtung umkehren</translation>
     </message>
     <message>
       <location filename="../SheetMetalExtendCmd.py" line="310"/>
       <source>Base object</source>
-      <translation>Objeto base</translation>
+      <translation>Basisobjekt</translation>
     </message>
     <message>
       <location filename="../SketchOnSheetMetalCmd.py" line="288"/>
       <source>Base Object</source>
-      <translation>Objeto base</translation>
+      <translation>Basisobjekt</translation>
     </message>
     <message>
       <location filename="../SheetMetalExtendCmd.py" line="304"/>
       <source>Length of Wall</source>
-      <translation>Longitud de la pared</translation>
+      <translation>Kantenhöhe</translation>
     </message>
     <message>
       <location filename="../SketchOnSheetMetalCmd.py" line="292"/>
       <source>Gap from Left Side</source>
-      <translation>Separación del lado izquierdo</translation>
+      <translation>Spalt(maß) von der linken Seite aus</translation>
     </message>
     <message>
       <location filename="../SheetMetalCmd.py" line="1300"/>
       <source>Gap from Right Side</source>
-      <translation>Separación del lado derecho</translation>
+      <translation>Spalt(maß) von der rechten Seite aus</translation>
     </message>
     <message>
       <location filename="../SheetMetalFoldCmd.py" line="254"/>
       <source>Invert Bend Direction</source>
-      <translation>Invertir dirección de doblez</translation>
+      <translation>Kehrt die Biegerichtung um</translation>
     </message>
     <message>
       <location filename="../SheetMetalFoldCmd.py" line="244"/>
       <source>Bend Angle</source>
-      <translation>Ángulo de doblez</translation>
+      <translation>Biegewinkel</translation>
     </message>
     <message>
       <location filename="../SheetMetalCmd.py" line="1315"/>
       <source>Extend from Left Side</source>
-      <translation>Extender del lado izquierdo</translation>
+      <translation>Verlängern der linken Seite</translation>
     </message>
     <message>
       <location filename="../SheetMetalCmd.py" line="1321"/>
       <source>Extend from Right Side</source>
-      <translation>Extender del lado derecho</translation>
+      <translation>Verlängern der rechten Seite</translation>
     </message>
     <message>
       <location filename="../SheetMetalCmd.py" line="1327"/>
       <source>Bend Type</source>
-      <translation>Tipo de doblez</translation>
+      <translation>Ausführung des Bogens</translation>
     </message>
     <message>
       <location filename="../SheetMetalCmd.py" line="1333"/>
       <source>Type of Length Specification</source>
-      <translation>Tipo de especificación de longitud</translation>
+      <translation>Art der Längenangabe</translation>
     </message>
     <message>
       <location filename="../SheetMetalCmd.py" line="1339"/>
       <source>Relief Width</source>
-      <translation>Ancho de alivio</translation>
+      <translation>Breite des Entlastungsausschnitts</translation>
     </message>
     <message>
       <location filename="../SheetMetalCmd.py" line="1346"/>
       <source>Relief Depth</source>
-      <translation>Profundidad de alivio</translation>
+      <translation>Tiefe des Entlastungsausschnitts</translation>
     </message>
     <message>
       <location filename="../SheetMetalCmd.py" line="1353"/>
       <source>Use Relief Factor</source>
-      <translation>Usar factor de alivio</translation>
+      <translation>Entlastungsfaktor verwenden</translation>
     </message>
     <message>
       <location filename="../SheetMetalCmd.py" line="1368"/>
       <source>Relief Factor</source>
-      <translation>Factor de alivio</translation>
+      <translation>Entlastungsfaktor</translation>
     </message>
     <message>
       <location filename="../SheetMetalCmd.py" line="1375"/>
       <source>Bend Miter Angle from Left Side</source>
-      <translation>Ángulo de inglete de doblez desde el lado izquierdo</translation>
+      <translation>Gehrungswinkel der Kante von der linken Seite</translation>
     </message>
     <message>
       <location filename="../SheetMetalCmd.py" line="1382"/>
       <source>Bend Miter Angle from Right Side</source>
-      <translation>Ángulo de inglete de doblez desde el lado derecho</translation>
+      <translation>Gehrungswinkel der Kante von der rechten Seite</translation>
     </message>
     <message>
       <location filename="../SheetMetalCmd.py" line="1389"/>
       <source>Auto Miter Minimum Gap</source>
-      <translation>Separación mínima de inglete automática</translation>
+      <translation>Kleinster Spalt für automatische Gehrung</translation>
     </message>
     <message>
       <location filename="../SheetMetalCmd.py" line="1396"/>
       <source>Auto Miter maximum Extend Distance</source>
-      <translation>Distancia máxima de extensión de inglete automático</translation>
+      <translation>Maximale Verlängerung für automatische Gehrung</translation>
     </message>
     <message>
       <location filename="../SheetMetalCmd.py" line="1403"/>
       <source>Minimum Gap to Relief Cut</source>
-      <translation>Separación mínima para corte de alivio</translation>
+      <translation>Kleinster Spalt zum Entlastungsausschnitt</translation>
     </message>
     <message>
       <location filename="../SheetMetalCmd.py" line="1410"/>
       <source>Offset Bend</source>
-      <translation>Desplazar doblez</translation>
+      <translation>Versetzt die Biegung</translation>
     </message>
     <message>
       <location filename="../SheetMetalCmd.py" line="1417"/>
       <source>Enable Auto Miter</source>
-      <translation>Habilitar inglete automático</translation>
+      <translation>Aktiviert automatische Gehrung</translation>
     </message>
     <message>
       <location filename="../SheetMetalCmd.py" line="1424"/>
       <source>Shows Unfold View of Current Bend</source>
-      <translation>Muestra la vista desplegada del doblez actual</translation>
+      <translation>Stellt die aktuelle Biegung abgewickelt dar</translation>
     </message>
     <message>
       <location filename="../SheetMetalCmd.py" line="1432"/>
       <source>Location of Neutral Line. Caution: Using ANSI standards, not DIN.</source>
-      <translation>Ubicación de la Línea Neutral. Precaución: Utilizando estándares ANSI, no DIN.</translation>
+      <translation>Lage der neutralen Faser. Achtung: Angabe entsprechend ANSI-Normen, nicht DIN.</translation>
     </message>
     <message>
       <location filename="../SheetMetalCmd.py" line="1442"/>
       <source>Flip Sketch Direction</source>
-      <translation>Invertir dirección de croquis</translation>
+      <translation>Skizzenrichtung umkehren</translation>
     </message>
     <message>
       <location filename="../SheetMetalCmd.py" line="1449"/>
       <source>Invert Sketch Start</source>
-      <translation>Invertir inicio de croquis</translation>
+      <translation type="unfinished">Invert Sketch Start</translation>
     </message>
     <message>
       <location filename="../SheetMetalCmd.py" line="1457"/>
       <source>Sketch Object</source>
-      <translation>Objeto croquis</translation>
+      <translation>Skizzenobjekt</translation>
     </message>
     <message>
       <location filename="../SheetMetalCmd.py" line="1465"/>
       <source>Length of Wall List</source>
-      <translation>Lista de longitudes de pared</translation>
+      <translation>Liste der Kantenlängen</translation>
     </message>
     <message>
       <location filename="../SheetMetalCmd.py" line="1473"/>
       <source>Bend Angle List</source>
-      <translation>Lista de ángulos de doblez</translation>
+      <translation>Liste der Biegewinkel</translation>
     </message>
     <message>
       <location filename="../SheetMetalCornerReliefCmd.py" line="434"/>
       <source>Corner Relief Type</source>
-      <translation>Tipo de alivio de esquina</translation>
+      <translation>Formen der Entlastungsausschnitte</translation>
     </message>
     <message>
       <location filename="../SheetMetalCornerReliefCmd.py" line="438"/>
       <source>Size of Shape</source>
-      <translation>Tamaño de forma</translation>
+      <translation>Größe der Form</translation>
     </message>
     <message>
       <location filename="../SheetMetalCornerReliefCmd.py" line="440"/>
       <source>Size Ratio of Shape</source>
-      <translation>Razón de tamaño de forma</translation>
+      <translation>Größenverhältnis der Form</translation>
     </message>
     <message>
       <location filename="../SheetMetalFoldCmd.py" line="252"/>
       <source>Neutral Axis Position</source>
-      <translation>Posición del eje neutral</translation>
+      <translation>Lage der neutralen Faser</translation>
     </message>
     <message>
       <location filename="../SheetMetalCornerReliefCmd.py" line="444"/>
       <source>Corner Relief Sketch</source>
-      <translation>Croquis de alivio de esquina</translation>
+      <translation>Skizze für Entlastungsausschnitt</translation>
     </message>
     <message>
       <location filename="../SheetMetalCornerReliefCmd.py" line="446"/>
       <source>Gap from side one</source>
-      <translation>Separación del lado uno</translation>
+      <translation>Spalt(maß) von der ersten Seite aus</translation>
     </message>
     <message>
       <location filename="../SheetMetalCornerReliefCmd.py" line="448"/>
       <source>Gap from side two</source>
-      <translation>Separación del lado dos</translation>
+      <translation>Spalt(maß) von der zweiten Seite aus</translation>
     </message>
     <message>
       <location filename="../SheetMetalExtendCmd.py" line="306"/>
       <source>Gap from left side</source>
-      <translation>Separación del lado izquierdo</translation>
+      <translation>Spalt auf der linken Seite</translation>
     </message>
     <message>
       <location filename="../SheetMetalExtendCmd.py" line="308"/>
       <source>Gap from right side</source>
-      <translation>Separación del lado derecho</translation>
+      <translation>Spalt auf der rechten Seite</translation>
     </message>
     <message>
       <location filename="../SheetMetalExtendCmd.py" line="328"/>
       <source>Wall Sketch</source>
-      <translation>Croquis de pared</translation>
+      <translation>Erweiterungsskizze</translation>
     </message>
     <message>
       <location filename="../SheetMetalExtendCmd.py" line="338"/>
       <source>Use Subtraction</source>
-      <translation>Usar substracción</translation>
+      <translation>Ausschneiden</translation>
     </message>
     <message>
       <location filename="../SheetMetalExtendCmd.py" line="316"/>
       <source>Offset for subtraction</source>
-      <translation>Offset para substracción</translation>
+      <translation>Abstand für Ausschnitt</translation>
     </message>
     <message>
       <location filename="../SheetMetalExtendCmd.py" line="332"/>
       <source>Use Refine</source>
-      <translation>Usar refinar</translation>
+      <translation>Aufbereiten anwenden</translation>
     </message>
     <message>
       <location filename="../SheetMetalFoldCmd.py" line="248"/>
       <source>Bend Reference Line List</source>
-      <translation>Lista de líneas de referencia de doblez</translation>
+      <translation>Liste der referenzierten Biegelinien</translation>
     </message>
     <message>
       <location filename="../SheetMetalFoldCmd.py" line="250"/>
       <source>Invert Solid Bend Direction</source>
-      <translation>Invertir dirección de doblez de sólido</translation>
+      <translation>Kehrt die Biegerichtung des Festkörpers um</translation>
     </message>
     <message>
       <location filename="../SheetMetalFoldCmd.py" line="256"/>
       <source>Unfold Bend</source>
-      <translation>Desplegar doblez</translation>
+      <translation>Biegung abwickeln</translation>
     </message>
     <message>
       <location filename="../SheetMetalFoldCmd.py" line="266"/>
       <source>Bend Line Position</source>
-      <translation>Posición de línea de doblez</translation>
+      <translation>Lage der Biegelinie</translation>
     </message>
     <message>
       <location filename="../SheetMetalFormingCmd.py" line="139"/>
       <source>Offset from Center of Face</source>
-      <translation>Offset desde el centro de la cara</translation>
+      <translation>Abstand zum Flächenmittelpunkt</translation>
     </message>
     <message>
       <location filename="../SheetMetalFormingCmd.py" line="141"/>
       <source>Suppress Forming Feature</source>
-      <translation>Eliminar característica de formado</translation>
+      <translation>Unterdrückt das Prägewerkzeug</translation>
     </message>
     <message>
       <location filename="../SheetMetalFormingCmd.py" line="143"/>
       <source>Tool Position Angle</source>
-      <translation>Ángulo de posición de herramienta</translation>
+      <translation>Richtungswinkel des Prägewerkzeugs</translation>
     </message>
     <message>
       <location filename="../SheetMetalFormingCmd.py" line="145"/>
       <source>Thickness of Sheetmetal</source>
-      <translation>Grosor de chapa metálica</translation>
+      <translation>Blechstärke</translation>
     </message>
     <message>
       <location filename="../SheetMetalFormingCmd.py" line="149"/>
       <source>Forming Tool Object</source>
-      <translation>Objeto herramienta de formado</translation>
+      <translation>Prägestempelobjekt</translation>
     </message>
     <message>
       <location filename="../SheetMetalFormingCmd.py" line="151"/>
       <source>Point Sketch on Sheetmetal</source>
-      <translation>Croquis punto en chapa metálica</translation>
+      <translation>Positionskizze auf dem Blech</translation>
     </message>
     <message>
       <location filename="../SheetMetalJunction.py" line="104"/>
       <source>Junction Gap</source>
-      <translation>Separación de unión</translation>
+      <translation>Stoßspalt</translation>
     </message>
     <message>
       <location filename="../SheetMetalRelief.py" line="151"/>
       <source>Relief Size</source>
-      <translation>Tamaño de alivio</translation>
+      <translation>Größe des Entlastungsausschnitts</translation>
     </message>
     <message>
       <location filename="../SketchOnSheetMetalCmd.py" line="290"/>
       <source>Sketch on Sheetmetal</source>
-      <translation>Croquis en chapa metálica</translation>
+      <translation>Skizze auf Blech</translation>
     </message>
   </context>
   <context>
@@ -319,45 +319,45 @@
     <message>
       <location filename="../SMprefs.ui" line="14"/>
       <source>General settings</source>
-      <translation>Configuración general</translation>
+      <translation>Allgemeine Einstellungen</translation>
     </message>
     <message>
       <location filename="../SMprefs.ui" line="26"/>
       <source>General</source>
-      <translation>General</translation>
+      <translation>Allgemein</translation>
     </message>
     <message>
       <location filename="../SMprefs.ui" line="37"/>
       <source>Engineering UX Mode</source>
-      <translation>Modo UX de ingeniería</translation>
+      <translation type="unfinished">Engineering UX Mode</translation>
     </message>
     <message>
       <location filename="../SMprefs.ui" line="60"/>
       <location filename="../SMprefs.ui" line="116"/>
       <source>Method of icon grouping</source>
-      <translation>Método de agrupamiento de iconos</translation>
+      <translation>Art der Symbolgruppierung</translation>
     </message>
     <message>
       <location filename="../SMprefs.ui" line="73"/>
       <location filename="../SMprefs.ui" line="129"/>
       <source>Disabled</source>
-      <translation>Deshabilitado</translation>
+      <translation>Deaktiviert</translation>
     </message>
     <message>
       <location filename="../SMprefs.ui" line="78"/>
       <location filename="../SMprefs.ui" line="134"/>
       <source>Enabled</source>
-      <translation>Habilitado</translation>
+      <translation>Aktiviert</translation>
     </message>
     <message>
       <location filename="../SMprefs.ui" line="93"/>
       <source>Auto Link Bend Radius</source>
-      <translation>Enlazar automáticamente radio de doblez</translation>
+      <translation>Biegeradius automatisch verknüpfen</translation>
     </message>
     <message>
       <location filename="../SMprefs.ui" line="177"/>
       <source>Preferences for the SheetMetal Workbench</source>
-      <translation>Preferencias para el entorno de trabajo SheetMetal</translation>
+      <translation>Voreinstellungen für den Arbeitsbereich SheetMetal</translation>
     </message>
   </context>
   <context>
@@ -365,7 +365,7 @@
     <message>
       <location filename="../SheetMetalBaseShapeCmd.py" line="243"/>
       <source>Base shape edit mode: </source>
-      <translation>Modo de edición de forma base: </translation>
+      <translation type="unfinished">Base shape edit mode: </translation>
     </message>
     <message>
       <location filename="../SketchOnSheetMetalCmd.py" line="88"/>
@@ -373,52 +373,52 @@
       <location filename="../SheetMetalFoldCmd.py" line="75"/>
       <location filename="../SheetMetalCornerReliefCmd.py" line="77"/>
       <source>Shape is not a real 3D-object or to small for a metal-sheet!</source>
-      <translation>¡La forma no es un objeto 3D real o es demasiado pequeña para ser una chapa metálica!</translation>
+      <translation>Die Form ist kein echtes 3D-Objekt oder zu klein für ein Blech!</translation>
     </message>
     <message>
       <location filename="../SheetMetalUnfoldCmd.py" line="62"/>
       <source>Running unattended unfold...</source>
-      <translation>Ejecutando desplegado desatendido...</translation>
+      <translation type="unfinished">Running unattended unfold...</translation>
     </message>
     <message>
       <location filename="../SheetMetalUnfolder.py" line="425"/>
       <source>k_Factor is a readonly property! Won&apos;t set to:</source>
-      <translation>¡k_Factor es una propiedad de solo lectura! No se va a establecer a:</translation>
+      <translation type="unfinished">k_Factor is a readonly property! Won&apos;t set to:</translation>
     </message>
     <message>
       <location filename="../SheetMetalUnfolder.py" line="2498"/>
       <source>at line {} got exception: </source>
-      <translation>en la línea {} ocurrió la excepción: </translation>
+      <translation type="unfinished">at line {} got exception: </translation>
     </message>
     <message>
       <location filename="../SheetMetalUnfolder.py" line="3135"/>
       <source>exception at line </source>
-      <translation>excepción en línea </translation>
+      <translation>Ausnahme in Zeile </translation>
     </message>
     <message>
       <location filename="../SheetMetalUnfolder.py" line="3180"/>
       <source>Exception at line {}: Outline Sketch failed, re-trying after tidying up</source>
-      <translation>Excepción en la línea {}: el contorno del croquis falló; volviendo a intentar después de ordenar</translation>
+      <translation type="unfinished">Exception at line {}: Outline Sketch failed, re-trying after tidying up</translation>
     </message>
     <message>
       <location filename="../SheetMetalUnfolder.py" line="3197"/>
       <source>tidying up Unfold_Sketch_Outline</source>
-      <translation>ordenando Unfold_Sketch_Outline</translation>
+      <translation type="unfinished">tidying up Unfold_Sketch_Outline</translation>
     </message>
     <message>
       <location filename="../SheetMetalUnfolder.py" line="3219"/>
       <source>Exception at line {}: Outline Sketch not created</source>
-      <translation>Excepción en la línea {}: contorno de croquis no creado</translation>
+      <translation>Ausnahmefehler in Zeile {}: Umriss-Skizze wurde nicht erstellt</translation>
     </message>
     <message>
       <location filename="../SheetMetalUnfolder.py" line="3253"/>
       <source>discretizing Sketch</source>
-      <translation>discretizando croquis</translation>
+      <translation type="unfinished">discretizing Sketch</translation>
     </message>
     <message>
       <location filename="../UnfoldGUI.py" line="126"/>
       <source>Unfold operation needs to know K-factor value(s) to be used.</source>
-      <translation>La operación de despliegue necesita conocer el(los) valor(es) de factor K que se utilizarán.</translation>
+      <translation>Der Vorgang benötigt zum Ausführen einen Wert für den K-Faktor.</translation>
     </message>
   </context>
   <context>
@@ -435,7 +435,7 @@
       <location filename="../SheetMetalBend.py" line="47"/>
       <location filename="../SheetMetalBaseCmd.py" line="43"/>
       <source>Error in macro MessageBox</source>
-      <translation>Error en macro MessageBox</translation>
+      <translation>MessageBox Fehler im Makro</translation>
     </message>
     <message>
       <location filename="../SketchOnSheetMetalCmd.py" line="68"/>
@@ -451,9 +451,8 @@
       <source>The selected geometry does not belong to the active Body.
 Please make the container of this item active by
 double clicking on it.</source>
-      <translation>La geometría seleccionada no pertenece al Cuerpo activo.
-Por favor active el contenedor de este elemento
-haciendo doble clic sobre él.</translation>
+      <translation>Die ausgewählte Geometrie gehört nicht zum aktiven Körper.
+Bitte den Behälter dieses Elements mit Doppelklick darauf aktivieren.</translation>
     </message>
     <message>
       <location filename="../UnfoldGUI.py" line="130"/>
@@ -461,15 +460,15 @@ haciendo doble clic sobre él.</translation>
 &lt;li&gt;Either select &apos;Manual K-factor&apos;&lt;/li&gt;
 &lt;li&gt;Or use a &lt;a href=&apos;{}&apos;&gt;Material Definition Sheet&lt;/a&gt;&lt;/li&gt;
 &lt;/ol&gt;</source>
-      <translation>&lt;ol&gt;
-&lt;li&gt;Seleccione &apos;Factor K manual&apos;&lt;/li&gt;
-&lt;li&gt;O use una &lt;a href=&apos;{}&apos;&gt;Hoja de definición de material&lt;/a&gt;&lt;/li&gt;
+      <translation type="unfinished">&lt;ol&gt;
+&lt;li&gt;Either select &apos;Manual K-factor&apos;&lt;/li&gt;
+&lt;li&gt;Or use a &lt;a href=&apos;{}&apos;&gt;Material Definition Sheet&lt;/a&gt;&lt;/li&gt;
 &lt;/ol&gt;</translation>
     </message>
     <message>
       <location filename="../UnfoldGUI.py" line="250"/>
       <source>Warning</source>
-      <translation>Advertencia</translation>
+      <translation>Warnung</translation>
     </message>
     <message>
       <location filename="../UnfoldGUI.py" line="240"/>
@@ -477,10 +476,10 @@ haciendo doble clic sobre él.</translation>
 Please try to select a different face to unfold your object
 
 If the opposite face also fails then switch Refine to false on feature </source>
-      <translation>El despliegue está fallando.
-Intente seleccionar una cara diferente para desplegar su objeto.
+      <translation type="unfinished">Unfold is failing.
+Please try to select a different face to unfold your object
 
-Si la cara opuesta también falla, cambie Refine a falso en la característica </translation>
+If the opposite face also fails then switch Refine to false on feature </translation>
     </message>
   </context>
   <context>
@@ -488,7 +487,7 @@ Si la cara opuesta también falla, cambie Refine a falso en la característica <
     <message>
       <location filename="../SheetMetalRelief.py" line="189"/>
       <source>Edit %1</source>
-      <translation>Editar %1</translation>
+      <translation>%1 bearbeiten</translation>
     </message>
   </context>
   <context>
@@ -497,55 +496,55 @@ Si la cara opuesta también falla, cambie Refine a falso en la característica <
       <location filename="../SheetMetalBaseShapeCmd.py" line="297"/>
       <source>Thickness of sheetmetal</source>
       <comment>Property</comment>
-      <translation>Grosor de chapa metálica</translation>
+      <translation>Blechstärke</translation>
     </message>
     <message>
       <location filename="../SheetMetalBaseShapeCmd.py" line="301"/>
       <source>Bend Radius</source>
       <comment>Property</comment>
-      <translation>Radio de doblez</translation>
+      <translation>Biegeradius</translation>
     </message>
     <message>
       <location filename="../SheetMetalBaseShapeCmd.py" line="304"/>
       <source>Shape width</source>
       <comment>Property</comment>
-      <translation>Ancho de forma</translation>
+      <translation>Breite der Form</translation>
     </message>
     <message>
       <location filename="../SheetMetalBaseShapeCmd.py" line="307"/>
       <source>Shape length</source>
       <comment>Property</comment>
-      <translation>Longitud de forma</translation>
+      <translation>Läge der Form</translation>
     </message>
     <message>
       <location filename="../SheetMetalBaseShapeCmd.py" line="310"/>
       <source>Shape height</source>
       <comment>Property</comment>
-      <translation>Altura de forma</translation>
+      <translation>Höhe der Form</translation>
     </message>
     <message>
       <location filename="../SheetMetalBaseShapeCmd.py" line="315"/>
       <source>Width of top flange</source>
       <comment>Property</comment>
-      <translation>Ancho de brida superior</translation>
+      <translation>Breite der obersten Kante</translation>
     </message>
     <message>
       <location filename="../SheetMetalBaseShapeCmd.py" line="321"/>
       <source>Base shape type</source>
       <comment>Property</comment>
-      <translation>Tipo de forma base</translation>
+      <translation>Art der Grundform</translation>
     </message>
     <message>
       <location filename="../SheetMetalBaseShapeCmd.py" line="357"/>
       <source>Location of part origin</source>
       <comment>Property</comment>
-      <translation>Ubicación del origen de la parte</translation>
+      <translation>Lage des Bauteilursprungs</translation>
     </message>
     <message>
       <location filename="../SheetMetalBaseShapeCmd.py" line="327"/>
       <source>Extend sides and flange to close all gaps</source>
       <comment>Property</comment>
-      <translation>Extender los lados y las bridas para cerras todas las separaciones</translation>
+      <translation>Ergänzt Seitenwände und Flansche, um Spalte zu schließen</translation>
     </message>
   </context>
   <context>
@@ -553,137 +552,137 @@ Si la cara opuesta también falla, cambie Refine a falso en la característica <
     <message>
       <location filename="../BaseShapeOptions.ui" line="14"/>
       <source>Generate Sheet Metal base shape</source>
-      <translation>Generar forma de chapa metálica base</translation>
+      <translation>Blech-Grundform erstellen</translation>
     </message>
     <message>
       <location filename="../BaseShapeOptions.ui" line="14"/>
       <source>Unfold sheet metal object</source>
-      <translation>Desplegar objeto de chapa metálica</translation>
+      <translation>SheetMetal-Objekt abwickeln</translation>
     </message>
     <message>
       <location filename="../BaseShapeOptions.ui" line="22"/>
       <source>Base shape type</source>
-      <translation>Tipo de forma base</translation>
+      <translation>Art der Grundform</translation>
     </message>
     <message>
       <location filename="../BaseShapeOptions.ui" line="61"/>
       <source>Flat</source>
-      <translation>Plana</translation>
+      <translation>Platine</translation>
     </message>
     <message>
       <location filename="../BaseShapeOptions.ui" line="61"/>
       <source>L-Shape</source>
-      <translation>Forma de L</translation>
+      <translation>L-förmig</translation>
     </message>
     <message>
       <location filename="../BaseShapeOptions.ui" line="66"/>
       <source>U-Shape</source>
-      <translation>Forma de U</translation>
+      <translation>U-förmig</translation>
     </message>
     <message>
       <location filename="../BaseShapeOptions.ui" line="71"/>
       <source>Tub</source>
-      <translation>Tina</translation>
+      <translation>Wanne</translation>
     </message>
     <message>
       <location filename="../BaseShapeOptions.ui" line="76"/>
       <source>Hat</source>
-      <translation>Sombrero</translation>
+      <translation>Hut</translation>
     </message>
     <message>
       <location filename="../BaseShapeOptions.ui" line="81"/>
       <source>Box</source>
-      <translation>Caja</translation>
+      <translation>Schachtel</translation>
     </message>
     <message>
       <location filename="../BaseShapeOptions.ui" line="93"/>
       <source>Thickness</source>
-      <translation>Grosor</translation>
+      <translation>Wandstärke</translation>
     </message>
     <message>
       <location filename="../BaseShapeOptions.ui" line="131"/>
       <source>Thickness of sheet</source>
-      <translation>Grosor de la hoja</translation>
+      <translation>Blechstärke</translation>
     </message>
     <message>
       <location filename="../BaseShapeOptions.ui" line="157"/>
       <source>Bend radius</source>
-      <translation>Radio de doblez</translation>
+      <translation>Biegeradius</translation>
     </message>
     <message>
       <location filename="../BaseShapeOptions.ui" line="195"/>
       <source>Inner radius of the bend</source>
-      <translation>Radio interno del doblez</translation>
+      <translation>Innenradius des Bogens</translation>
     </message>
     <message>
       <location filename="../BaseShapeOptions.ui" line="221"/>
       <source>Width</source>
-      <translation>Ancho</translation>
+      <translation>Breite</translation>
     </message>
     <message>
       <location filename="../BaseShapeOptions.ui" line="259"/>
       <source>Width of base shape</source>
-      <translation>Ancho de la forma base</translation>
+      <translation>Breite der Grundform</translation>
     </message>
     <message>
       <location filename="../BaseShapeOptions.ui" line="282"/>
       <source>Length</source>
-      <translation>Longitud</translation>
+      <translation>Länge</translation>
     </message>
     <message>
       <location filename="../BaseShapeOptions.ui" line="323"/>
       <source>Length of base shape</source>
-      <translation>Longitud de la forma base</translation>
+      <translation>Länge der Grundform</translation>
     </message>
     <message>
       <location filename="../BaseShapeOptions.ui" line="349"/>
       <source>Height</source>
-      <translation>Altura</translation>
+      <translation>Höhe</translation>
     </message>
     <message>
       <location filename="../BaseShapeOptions.ui" line="381"/>
       <source>height of base shape</source>
-      <translation>Altura de la forma base</translation>
+      <translation>Höhe der Grundform</translation>
     </message>
     <message>
       <location filename="../BaseShapeOptions.ui" line="410"/>
       <source>Flange width</source>
-      <translation>Ancho de brida</translation>
+      <translation>Flanschbreite</translation>
     </message>
     <message>
       <location filename="../BaseShapeOptions.ui" line="442"/>
       <source>Width of top flange (for Box and Hat types)</source>
-      <translation>Ancho de la brida superior (para los tipos Caja y Sombrero)</translation>
+      <translation>Breite des oberen Flansches (für Schachtel- und Hutobjekte)</translation>
     </message>
     <message>
       <location filename="../BaseShapeOptions.ui" line="482"/>
       <source>Location of part origin</source>
-      <translation>Ubicación del origen de la parte</translation>
+      <translation>Lage des Bauteilursprungs</translation>
     </message>
     <message>
       <location filename="../BaseShapeOptions.ui" line="520"/>
       <source>Top view</source>
-      <translation>Vista superior</translation>
+      <translation>Draufsicht</translation>
     </message>
     <message>
       <location filename="../BaseShapeOptions.ui" line="463"/>
       <source>Extend sides and flange to close all gaps</source>
-      <translation>Extender los lados y las bridas para cerras todas las separaciones</translation>
+      <translation>Ergänzt Seitenwände und Flansche, um Spalte zu schließen</translation>
     </message>
     <message>
       <location filename="../BaseShapeOptions.ui" line="466"/>
       <source>Fill gaps</source>
-      <translation>Llenar separaciones</translation>
+      <translation>Spalte auffüllen</translation>
     </message>
     <message>
       <location filename="../BaseShapeOptions.ui" line="473"/>
       <source>Create the base shape as a new body</source>
-      <translation>Crear la forma base como un cuerpo nuevo</translation>
+      <translation>Erstellt die Grundform in einem neuen Körper</translation>
     </message>
     <message>
       <location filename="../BaseShapeOptions.ui" line="476"/>
       <source>Embed in new Body</source>
-      <translation>Incrustar en nuevo cuerpo</translation>
+      <translation>In einen neuen Körper einbetten</translation>
     </message>
   </context>
   <context>
@@ -691,32 +690,32 @@ Si la cara opuesta también falla, cambie Refine a falso en la característica <
     <message>
       <location filename="../UnfoldOptions.ui" line="14"/>
       <source>Unfold sheet metal object</source>
-      <translation>Desplegar objeto de chapa metálica</translation>
+      <translation>SheetMetal-Objekt abwickeln</translation>
     </message>
     <message>
       <location filename="../UnfoldOptions.ui" line="22"/>
       <source>Generate projection sketch</source>
-      <translation>Generar croquis de proyección</translation>
+      <translation>Abwicklung als Skizze erstellen</translation>
     </message>
     <message>
       <location filename="../UnfoldOptions.ui" line="55"/>
       <source>Separate projection layers</source>
-      <translation>Separar capas de proyección</translation>
+      <translation>Separate Skizzen erstellen</translation>
     </message>
     <message>
       <location filename="../UnfoldOptions.ui" line="64"/>
       <source>Bend lines color</source>
-      <translation>Color de líneas de doblez</translation>
+      <translation>Farbe der Biegelinien</translation>
     </message>
     <message>
       <location filename="../UnfoldOptions.ui" line="91"/>
       <source>Internal lines color</source>
-      <translation>Color de líneas internas</translation>
+      <translation>Farbe für interne Linien</translation>
     </message>
     <message>
       <location filename="../UnfoldOptions.ui" line="121"/>
       <source>Export sketch</source>
-      <translation>Exportar croquis</translation>
+      <translation>Skizze exportieren</translation>
     </message>
     <message>
       <location filename="../UnfoldOptions.ui" line="141"/>
@@ -731,12 +730,12 @@ Si la cara opuesta también falla, cambie Refine a falso en la característica <
     <message>
       <location filename="../UnfoldOptions.ui" line="168"/>
       <source>Material Definition Sheet</source>
-      <translation>Hoja de definición de material</translation>
+      <translation type="unfinished">Material Definition Sheet</translation>
     </message>
     <message>
       <location filename="../UnfoldOptions.ui" line="185"/>
       <source>Manual K-Factor</source>
-      <translation>Factor K manual</translation>
+      <translation>Manueller K-Faktor</translation>
     </message>
     <message>
       <location filename="../UnfoldOptions.ui" line="236"/>
@@ -751,7 +750,7 @@ Si la cara opuesta también falla, cambie Refine a falso en la característica <
     <message>
       <location filename="../UnfoldOptions.ui" line="272"/>
       <source>Unfold object transparency</source>
-      <translation>Transparencia de objeto desplegado</translation>
+      <translation>Transparenz für Abwicklungen</translation>
     </message>
     <message>
       <location filename="../UnfoldOptions.ui" line="291"/>
@@ -764,93 +763,95 @@ Si la cara opuesta también falla, cambie Refine a falso en la característica <
     <message>
       <location filename="../InitGui.py" line="52"/>
       <source>Sheet Metal</source>
-      <translation>Chapa metálica</translation>
+      <translation>Sheet Metal</translation>
     </message>
     <message>
       <location filename="../InitGui.py" line="54"/>
       <source>Sheet Metal workbench allows for designing and unfolding sheet metal parts</source>
-      <translation>El entorno de trabajo de chapa metálica le permite diseñar y desplegar piezas de chapa metálica</translation>
+      <translation>Der Arbeitsbereich Sheet Metal ermöglicht das Konstruieren und Abwickeln von Blechbauteilen</translation>
     </message>
     <message>
       <location filename="../InitGui.py" line="96"/>
       <source>&amp;Sheet Metal</source>
-      <translation>Chapa me&amp;tálica</translation>
+      <translation>&amp;Sheet Metal</translation>
     </message>
     <message>
       <location filename="../InitGui.py" line="96"/>
       <source>Sheet Me&amp;tal</source>
-      <translation>Chapa me&amp;tálica</translation>
+      <translation>Sheet Me&amp;tal</translation>
     </message>
     <message>
       <location filename="../SheetMetalBaseCmd.py" line="312"/>
       <source>Make Base Wall</source>
-      <translation>Crear pared base</translation>
+      <translation>Basisobjekt erstellen</translation>
     </message>
     <message>
       <location filename="../SheetMetalBaseCmd.py" line="314"/>
       <source>Create a sheetmetal wall from a sketch
 1. Select a Skech to create bends with walls.
 2. Use Property editor to modify other parameters</source>
-      <translation>Crear una pared de chapa metálica a partir de un croquis
-1. Seleccione un croquis para crear dobleces con paredes.
-2. Use el editor de propiedades para modificar otros parámetros</translation>
+      <translation>Erstellt ein Blechprofil oder eine -platine aus einer Skizze
+1. Eine Skizze auswählen
+   - Eine offene Kontur ergibt ein Blechprofil
+   - Eine geschlossene Kontur ergibt eine Platine
+2. Im Eigenschafteneditor können weitere Parameter angepasst werden</translation>
     </message>
     <message>
       <location filename="../SheetMetalBaseShapeCmd.py" line="304"/>
       <source>Add base shape</source>
-      <translation>Agregar forma base</translation>
+      <translation>Grundform hinzufügen</translation>
     </message>
     <message>
       <location filename="../SheetMetalBaseShapeCmd.py" line="306"/>
       <source>Add basic sheet metal object.</source>
-      <translation>Agregar objeto de chapa metálica básico</translation>
+      <translation>Fügt ein Blech-Grundobjekt ein.</translation>
     </message>
     <message>
       <location filename="../SheetMetalBend.py" line="372"/>
       <source>Make Bend</source>
-      <translation>Hacer doblez</translation>
+      <translation>Bogen einfügen</translation>
     </message>
     <message>
       <location filename="../SheetMetalBend.py" line="374"/>
       <source>Create Bend where two walls come together on solids
 1. Select edge(s) to create bend on corner edge(s).
 2. Use Property editor to modify parameters</source>
-      <translation>Crear un doblez donde dos paredes se unen en sólidos
-1. Seleccione arista(s) para crear un doblez en arista(s) de esquina.
-2. Use el editor de propiedades para modificar parámetros</translation>
+      <translation>Erstellt einen Bogen, wo zwei Wände eines Festkörpers aufeinandertreffen
+1. Kante(n) auswählen an deren Stelle ein Bogen erstellt werden soll.
+2. Im Eigenschafteneditor weitere Parameter anpassen.</translation>
     </message>
     <message>
       <location filename="../SheetMetalCmd.py" line="1651"/>
       <source>Make Wall</source>
-      <translation>Crear pared</translation>
+      <translation>Kante ansetzen</translation>
     </message>
     <message>
       <location filename="../SheetMetalCmd.py" line="1653"/>
       <source>Extends one or more face, connected by a bend on existing sheet metal.
 1. Select edges or thickness side faces to create bends with walls.
 2. Use Property editor to modify other parameters</source>
-      <translation>Extender una o más caras, conectadas por un doblez en la chapa metálica existente.
-1. Seleccione aristas o caras laterales de espesor para crear dobleces con paredes.
-2. Use el editor de propiedades para modificar otros parámetros</translation>
+      <translation>Erweitert ein vorhandenes Blech um eine oder mehrere, mit Bögen angesetzte, Kanten
+1. Kanten (= Linien oder Flächen) auswählen, um dort Bögen und Kanten (= Flansche) anzusetzen.
+2. Im Eigenschafteneditor weitere Parameter anpassen.</translation>
     </message>
     <message>
       <location filename="../SheetMetalCornerReliefCmd.py" line="570"/>
       <source>Add Corner Relief</source>
-      <translation>Añadir alivio de esquina</translation>
+      <translation>Eckentlastung hinzufügen</translation>
     </message>
     <message>
       <location filename="../SheetMetalCornerReliefCmd.py" line="572"/>
       <source>Corner Relief to metal sheet corner.
 1. Select 2 Edges (on flat face that shared with bend faces) to create Relief on sheetmetal.
 2. Use Property editor to modify default parameters</source>
-      <translation>Alivio de esquina para esquina de chapa metálica.
-1. Seleccione 2 aristas(en cara plana que comparte con caras de doblez) para crear un alivio en chapa metálica.
-2. Use el editor de propiedades para modificar parámetros</translation>
+      <translation>Fügt einer Blechecke eine Eckentlastung hinzu.
+1. 2 Kanten (Linien) auswählen (auf der ebenen Fläche, an der beide Bögen beginnen), um dem Blech eine Eckentlastung hinzuzufügen.
+2. Im Eigenschafteneditor weitere Parameter anpassen.</translation>
     </message>
     <message>
       <location filename="../SheetMetalExtendCmd.py" line="588"/>
       <source>Extend Face</source>
-      <translation>Extender cara</translation>
+      <translation>Fläche erweitern</translation>
     </message>
     <message>
       <location filename="../SheetMetalExtendCmd.py" line="590"/>
@@ -858,15 +859,15 @@ Si la cara opuesta también falla, cambie Refine a falso en la característica <
 1. Select edges or thickness side faces to create walls.
 2. Select a sketch in property editor to create tabs. 
 3. Use Property editor to modify other parameters</source>
-      <translation>Extender una o más caras, en la chapa metálica existente.
-1. Seleccione las aristas o las caras laterales de grosor para crear paredes.
-2. Seleccione un croquis en el editor de propiedades para crear pestañas.
-3. Use el editor de propiedades para modificar otros parámetros</translation>
+      <translation>Erweitert eine oder mehrere Kanten (= Randflächen) eines vorhandenen Bleches.
+1. Kanten (= Linien oder Flächen) auswählen, um dort die Kanten zu extrudieren.
+2. Eine Skizze im Eigenschafteneditor hinzufügen, um eine Verzahnung zu erstellen. 
+3. Im Eigenschafteneditor weitere Parameter anpassen.</translation>
     </message>
     <message>
       <location filename="../SheetMetalFoldCmd.py" line="379"/>
       <source>Fold a Wall</source>
-      <translation>Plegar una pared</translation>
+      <translation>Abkanten</translation>
     </message>
     <message>
       <location filename="../SheetMetalFoldCmd.py" line="381"/>
@@ -874,15 +875,15 @@ Si la cara opuesta también falla, cambie Refine a falso en la característica <
 1. Select a flat face on sheet metal and
 2. Select a bend line (sketch) on same face (ends of sketch bend lines must extend beyond edges of face) to create sheetmetal fold.
 3. Use Property editor to modify other parameters</source>
-      <translation>Plegar una pared de chapa metálica
-1. Seleccione una cara plana en la chapa metálica y
-2. Seleccione una línea de doblez (croquis) en la misma cara (los extremos de la línea de doblez del croquis deben extenderse más allá de los bordes de la cara) para crear un plegado de chapa metálica.
-3. Use el editor de propiedades para modificar otros parámetros</translation>
+      <translation>Kantet einen Bereich des Bleches ab
+1. Eine ebene Fläche des Bleches auswählen und
+2. Eine Biegelinie (Skizze) auf derselben Fläche auswählen (Die Biegelinien müssen über die Flächenränder hinausragen), um das Blech abzukanten.
+3. Im Eigenschafteneditor weitere Parameter anpassen.</translation>
     </message>
     <message>
       <location filename="../SheetMetalFormingCmd.py" line="469"/>
       <source>Make Forming in Wall</source>
-      <translation>Crear formado en pared</translation>
+      <translation>Prägen</translation>
     </message>
     <message>
       <location filename="../SheetMetalFormingCmd.py" line="471"/>
@@ -891,72 +892,74 @@ Si la cara opuesta también falla, cambie Refine a falso en la característica <
 2. Select face(s) on forming tool Shape to create Formed sheetmetal.
 3. Use Suppress in Property editor to disable during unfolding
 4. Use Property editor to modify other parameters</source>
-      <translation>Crear un formado usando la herramienta en la chapa metálica
-1. Seleccione una cara plana en la chapa metálica y
-2. Seleccione cara(s) en la herramienta de formado para crear chapa metálica formada.
-3. Use eliminar en el editor de propiedades para deshabilitar durante el desplegado
-4. Use el editor de propiedades para modificar otros parámetros</translation>
+      <translation>Erstellt eine Prägung im Blech
+1. Eine ebene Fläche des Bleches auswählen und
+2. Flächen der prägenden Form auswählen, um eine Prägung im Blech zu erstellen.
+3. Im Eigenschafteneditor Formelement unterdrücken umschalten, um sie während des Abwickelns zu deaktivieren.
+4. Im Eigenschafteneditor weitere Parameter anpassen.</translation>
     </message>
     <message>
       <location filename="../SheetMetalJunction.py" line="356"/>
       <source>Make Junction</source>
-      <translation>Crear unión</translation>
+      <translation>Stoß hinzufügen</translation>
     </message>
     <message>
       <location filename="../SheetMetalJunction.py" line="358"/>
       <source>Create a rip where two walls come together on solids.
 1. Select edge(s) to create rip on corner edge(s).
 2. Use Property editor to modify parameters</source>
-      <translation>Crear un rasgado donde dos paredes se unen en sólidos.
-1. Seleccione arista(s) para crear un rasgado en arista(s) de esquina.
-3. Use el editor de propiedades para modificar otros parámetros</translation>
+      <translation>Erstellt einen Stoß, wo zwei Wände eines Festkörpers aufeinandertreffen
+1. Kante(n) auswählen an deren Stelle ein Stoß erstellt werden soll.
+2. Im Eigenschafteneditor weitere Parameter anpassen.</translation>
     </message>
     <message>
       <location filename="../SheetMetalRelief.py" line="404"/>
       <source>Make Relief</source>
-      <translation>Crear alivio</translation>
+      <translation>Entlastungsausschnitt hinzufügen</translation>
     </message>
     <message>
       <location filename="../SheetMetalRelief.py" line="406"/>
       <source>Modify an Individual solid corner to create Relief.
 1. Select Vertex(es) to create Relief on Solid corner Vertex(es).
 2. Use Property editor to modify default parameters</source>
-      <translation>Modificar una esquina sólida individual para crear un alivio.
-1. Seleccione vértice(s) para crear un alivio en vértice(s) de esquinas sólidas.
-2. Use el editor de propiedades para modificar otros parámetros</translation>
+      <translation>Fügt an einer Ecke eines Festkörpers einen Entlastungsausschnitt ein.
+1. Ecke(n) auswählen, an denen Entlastungsausschnitte eingefügt werden sollen.
+2. Im Eigenschafteneditor weitere Parameter anpassen.</translation>
     </message>
     <message>
       <location filename="../SheetMetalUnfoldCmd.py" line="51"/>
       <source>Unattended Unfold</source>
-      <translation>Desplegado sin atender</translation>
+      <translation>Abwickeln ohne Eingaben</translation>
     </message>
     <message>
       <location filename="../SheetMetalUnfoldCmd.py" line="53"/>
       <source>Flatten folded sheet metal object with default options
 1. Select flat face on sheetmetal shape.
 2. Change parameters from task Panel to create unfold Shape &amp; Flatten drawing.</source>
-      <translation>Aplanar objeto de chapa metálica plegada con opciones predeterminadas.
-1. Seleccione la cara plana sobre la forma de chapa metálica.
-2. Cambie los parámetros del panel de tareas para crear la forma plana y el dibujo aplanado.</translation>
+      <translation>Wickelt ein gekantetes Blechobjekt mit voreingestellten Eigenschaften ab.
+1. Eine ebene Fläche der Blechform auswählen.
+2. Parameter im Aufgaben-Dialog anpassen, um ein Abwicklungsobjekt
+   und eine Skizze der Abwicklung zu erstellen.</translation>
     </message>
     <message>
       <location filename="../SheetMetalUnfoldCmd.py" line="113"/>
       <source>Unfold</source>
-      <translation>Desplegar</translation>
+      <translation>Abwickeln</translation>
     </message>
     <message>
       <location filename="../SheetMetalUnfoldCmd.py" line="115"/>
       <source>Flatten folded sheet metal object.
 1. Select flat face on sheetmetal shape.
 2. Change parameters from task Panel to create unfold Shape &amp; Flatten drawing.</source>
-      <translation>Aplanar objeto de chapa metálica plegada.
-1. Seleccione la cara plana sobre la forma de chapa metálica.
-2. Cambie los parámetros del panel de tareas para crear la forma plana y el dibujo aplanado.</translation>
+      <translation>Wickelt ein gekantetes Blechobjekt ab.
+1. Eine ebene Fläche der Blechform auswählen.
+2. Parameter im Aufgaben-Dialog anpassen, um
+   ein Abwicklungsobjekt und eine Skizze der Abwicklung zu erstellen.</translation>
     </message>
     <message>
       <location filename="../SketchOnSheetMetalCmd.py" line="408"/>
       <source>Sketch On Sheet metal</source>
-      <translation>Croquis en chapa metálica</translation>
+      <translation>Skizze auf Blech</translation>
     </message>
     <message>
       <location filename="../SketchOnSheetMetalCmd.py" line="410"/>
@@ -964,10 +967,12 @@ Si la cara opuesta también falla, cambie Refine a falso en la característica <
 1. Select a flat face on sheet metal and
 2. Select a sketch on same face to create sheetmetal extruded cut.
 3. Use Property editor to modify other parameters</source>
-      <translation>Corte extruido de croquis en caras de chapa metálica
-1. Seleccione una cara plana en la chapa metálica y
-2. Seleccione un croquis en la misma cara para crear un corte extruido en chapa metálica.
-3. Use el editor de propiedades para modificar otros parámetros</translation>
+      <translation>Erstellt einen Ausschnitt, der den Flächen folgt,
+ausgehend von einer Skizze auf einer Blechfläche
+1. Eine ebene Fläche auf dem Blech auswählen und
+2. Eine Skizze auf derselben Fläche auswählen,
+   um einen "sheetmetal extruded cut" zu erstellen.
+3. Im Eigenschafteneditor weitere Parameter anpassen</translation>
     </message>
     <message>
       <location filename="../SketchOnSheetMetalCmd.py" line="410"/>
@@ -975,10 +980,12 @@ Si la cara opuesta también falla, cambie Refine a falso en la característica <
 1. Select a flat face on sheet metal and
 2. Select a sketch on same face to create sheetmetal extruded cut.
 3. Use Property editor to modify other parameters</source>
-      <translation> Corte extruido de croquis en caras de chapa metálica
-1. Seleccione una cara plana en la chapa metálica y
-2. Seleccione un croquis en la misma cara para crear un corte extruido en chapa metálica.
-3. Use el editor de propiedades para modificar otros parámetros</translation>
+      <translation> Erstellt einen Ausschnitt, der den Flächen folgt,
+ ausgehend von einer Skizze auf einer Blechfläche
+1. Eine ebene Fläche auf dem Blech auswählen und
+2. Eine Skizze auf derselben Fläche auswählen,
+   um einen "sheetmetal extruded cut" zu erstellen.
+3. Im Eigenschafteneditor weitere Parameter anpassen</translation>
     </message>
   </context>
   <context>
@@ -986,7 +993,7 @@ Si la cara opuesta también falla, cambie Refine a falso en la característica <
     <message>
       <location filename="../SheetMetalRelief.py" line="396"/>
       <source>Update</source>
-      <translation>Actualizar</translation>
+      <translation type="unfinished">Update</translation>
     </message>
   </context>
   <context>
@@ -994,7 +1001,7 @@ Si la cara opuesta también falla, cambie Refine a falso en la característica <
     <message>
       <location filename="../InitGui.py" line="96"/>
       <source>Sheet Metal</source>
-      <translation>Chapa metálica</translation>
+      <translation>Sheet Metal</translation>
     </message>
   </context>
 </TS>
