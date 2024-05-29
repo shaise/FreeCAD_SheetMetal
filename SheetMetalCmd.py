@@ -1925,8 +1925,9 @@ class AddWallCommandClass:
         ):
             return False
         selobj = Gui.Selection.getSelection()[0]
-        if selobj.isDerivedFrom("Sketcher::SketchObject"):
-            return False
+        for selobj in Gui.Selection.getSelection():
+            if selobj.isDerivedFrom("Sketcher::SketchObject"):
+                return False
         for selFace in Gui.Selection.getSelectionEx()[0].SubObjects:
             if type(selFace) == Part.Vertex:
                 return False

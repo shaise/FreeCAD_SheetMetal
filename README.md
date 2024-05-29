@@ -99,6 +99,8 @@ Starting from FreeCAD 0.17 it can be installed via the [Addon Manager](https://g
 * FreeCAD Forum announcement/discussion [thread](https://forum.freecadweb.org/viewtopic.php?f=3&t=60818) 
 
 #### Release notes:
+* V0.4.15 29 May 2024:  Disable fold and extend icons when a sketch is selected.
+  
 * V0.4.14 13 May 2024:  Add Italian translations by [@robbeban][robbeban].  
 * V0.4.13 27 Apr 2024:  Hot fix: revert material preservation system. New system has issues.  
 * V0.4.12 26 Apr 2024:  Add 'intersection of planes' to fold options by [@free777cat][free777cat].  
