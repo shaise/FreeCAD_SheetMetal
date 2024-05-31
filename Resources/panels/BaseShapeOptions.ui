@@ -624,19 +624,6 @@
     </widget>
    </item>
    <item>
-    <widget class="QCheckBox" name="chkNewBody">
-     <property name="toolTip">
-      <string>Create the base shape as a new body</string>
-     </property>
-     <property name="text">
-      <string>Embed in new Body</string>
-     </property>
-     <property name="checked">
-      <bool>true</bool>
-     </property>
-    </widget>
-   </item>
-   <item>
     <spacer name="verticalSpacer">
      <property name="orientation">
       <enum>Qt::Vertical</enum>

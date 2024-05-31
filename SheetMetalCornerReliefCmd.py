@@ -23,64 +23,10 @@
 #
 ###################################################################################
 
-from FreeCAD import Gui
-from PySide import QtCore, QtGui
+import FreeCAD, Part, math, os, SheetMetalTools, SheetMetalBendSolid
+from SheetMetalLogger import SMLogger
 
-import FreeCAD, Part, os, math
-
-__dir__ = os.path.dirname(__file__)
-iconPath = os.path.join(__dir__, "Resources", "icons")
-smEpsilon = 0.0000001
-
-# add translations path
-LanguagePath = os.path.join(__dir__, "translations")
-Gui.addLanguagePath(LanguagePath)
-Gui.updateLocale()
-
-import BOPTools.SplitFeatures, BOPTools.JoinFeatures
-import SheetMetalBendSolid
-import SheetMetalBaseCmd
-
-from SheetMetalLogger import SMLogger, UnfoldException, BendException, TreeException
-
-
-def smWarnDialog(msg):
-    diag = QtGui.QMessageBox(
-        QtGui.QMessageBox.Warning,
-        FreeCAD.Qt.translate("QMessageBox", "Error in macro MessageBox"),
-        msg,
-    )
-    diag.setWindowModality(QtCore.Qt.ApplicationModal)
-    diag.exec_()
-
-
-def smBelongToBody(item, body):
-    if body is None:
-        return False
-    for obj in body.Group:
-        if obj.Name == item.Name:
-            return True
-    return False
-
-
-def smIsPartDesign(obj):
-    return str(obj).find("<PartDesign::") == 0
-
-
-def smIsOperationLegal(body, selobj):
-    # FreeCAD.Console.PrintLog(str(selobj) + " " + str(body) + " " + str(smBelongToBody(selobj, body)) + "\n")
-    if smIsPartDesign(selobj) and not smBelongToBody(selobj, body):
-        smWarnDialog(
-            FreeCAD.Qt.translate(
-                "QMessageBox",
-                "The selected geometry does not belong to the active Body.\n"
-                "Please make the container of this item active by\n"
-                "double clicking on it.",
-            )
-        )
-        return False
-    return True
-
+smEpsilon = SheetMetalTools.smEpsilon
 
 def smthk(obj, foldface):
     normal = foldface.normalAt(0, 0)
@@ -222,6 +168,7 @@ def LineExtend(edge, distance):
 
 
 def getBendDetail(obj, edge1, edge2, kfactor):
+    import BOPTools.JoinFeatures
     # To get adjacent face list from edges
     facelist1 = obj.ancestorsOfType(edge1, Part.Face)
     #  facelist2 = obj.ancestorsOfType(edge2, Part.Face)
@@ -308,6 +255,7 @@ def smCornerR(
     MainObject=None,
 ):
 
+    import BOPTools.SplitAPI
     resultSolid = MainObject.Shape.copy()
     REdgelist = []
     for selEdgeName in selEdgeNames:
@@ -487,8 +435,6 @@ def smCornerR(
 class SMCornerRelief:
     def __init__(self, obj):
         '''"Add Corner Relief to Sheetmetal Bends"'''
-        selobj = Gui.Selection.getSelectionEx()
-
         _tip_ = FreeCAD.Qt.translate("App::Property", "Corner Relief Type")
         obj.addProperty(
             "App::PropertyEnumeration", "ReliefSketch", "Parameters", _tip_
@@ -502,7 +448,7 @@ class SMCornerRelief:
         _tip_ = FreeCAD.Qt.translate("App::Property", "Base object")
         obj.addProperty(
             "App::PropertyLinkSub", "baseObject", "Parameters", _tip_
-        ).baseObject = (selobj[0].Object, selobj[0].SubElementNames)
+        )
         _tip_ = FreeCAD.Qt.translate("App::Property", "Size of Shape")
         obj.addProperty("App::PropertyLength", "Size", "Parameters", _tip_).Size = 3.0
         _tip_ = FreeCAD.Qt.translate("App::Property", "Size Ratio of Shape")
@@ -541,171 +487,180 @@ class SMCornerRelief:
         )
         fp.Shape = s
 
-        Gui.ActiveDocument.getObject(fp.baseObject[0].Name).Visibility = False
-        if fp.Sketch:
-            Gui.ActiveDocument.getObject(fp.Sketch.Name).Visibility = False
 
+##########################################################################################################
+# Gui code
+##########################################################################################################
 
-class SMCornerReliefVP:
-    "A View provider that nests children objects under the created one"
+if SheetMetalTools.isGuiLoaded():
+    from FreeCAD import Gui
+    icons_path = SheetMetalTools.icons_path
 
-    def __init__(self, obj):
-        obj.Proxy = self
-        self.Object = obj.Object
+    # add translations path
+    Gui.addLanguagePath(SheetMetalTools.language_path)
+    Gui.updateLocale()
+    class SMCornerReliefVP:
+        "A View provider that nests children objects under the created one"
 
-    def attach(self, obj):
-        self.Object = obj.Object
-        return
+        def __init__(self, obj):
+            obj.Proxy = self
+            self.Object = obj.Object
 
-    def updateData(self, fp, prop):
-        return
-
-    def getDisplayModes(self, obj):
-        modes = []
-        return modes
-
-    def setDisplayMode(self, mode):
-        return mode
-
-    def onChanged(self, vp, prop):
-        return
-
-    def __getstate__(self):
-        #        return {'ObjectName' : self.Object.Name}
-        return None
-
-    def __setstate__(self, state):
-        self.loads(state)
-
-    # dumps and loads replace __getstate__ and __setstate__ post v. 0.21.2
-    def dumps(self):
-        return None
-
-    def loads(self, state):
-        if state is not None:
-            import FreeCAD
-
-            doc = FreeCAD.ActiveDocument  # crap
-            self.Object = doc.getObject(state["ObjectName"])
-
-    def claimChildren(self):
-        objs = []
-        if hasattr(self.Object, "baseObject"):
-            objs.append(self.Object.baseObject[0])
-            objs.append(self.Object.Sketch)
-        return objs
-
-    def getIcon(self):
-        return os.path.join(iconPath, "SheetMetal_AddCornerRelief.svg")
-
-
-class SMCornerReliefPDVP:
-    "A View provider that nests children objects under the created one"
-
-    def __init__(self, obj):
-        obj.Proxy = self
-        self.Object = obj.Object
-
-    def attach(self, obj):
-        self.Object = obj.Object
-        return
-
-    def updateData(self, fp, prop):
-        return
-
-    def getDisplayModes(self, obj):
-        modes = []
-        return modes
-
-    def setDisplayMode(self, mode):
-        return mode
-
-    def onChanged(self, vp, prop):
-        return
-
-    def __getstate__(self):
-        #        return {'ObjectName' : self.Object.Name}
-        return None
-
-    def __setstate__(self, state):
-        self.loads(state)
-
-    # dumps and loads replace __getstate__ and __setstate__ post v. 0.21.2
-    def dumps(self):
-        return None
-
-    def loads(self, state):
-        if state is not None:
-            import FreeCAD
-
-            doc = FreeCAD.ActiveDocument  # crap
-            self.Object = doc.getObject(state["ObjectName"])
-
-    def claimChildren(self):
-        objs = []
-        if hasattr(self.Object, "Sketch"):
-            objs.append(self.Object.Sketch)
-        return objs
-
-    def getIcon(self):
-        return os.path.join(iconPath, "SheetMetal_AddCornerRelief.svg")
-
-
-class AddCornerReliefCommandClass:
-    """Add Corner Relief command"""
-
-    def GetResources(self):
-        return {
-            "Pixmap": os.path.join(
-                iconPath, "SheetMetal_AddCornerRelief.svg"
-            ),  # the name of a svg file available in the resources
-            "MenuText": FreeCAD.Qt.translate("SheetMetal", "Add Corner Relief"),
-            "Accel": "C, R",
-            "ToolTip": FreeCAD.Qt.translate(
-                "SheetMetal",
-                "Corner Relief to metal sheet corner.\n"
-                "1. Select 2 Edges (on flat face that shared with bend faces) to create Relief on sheetmetal.\n"
-                "2. Use Property editor to modify default parameters",
-            ),
-        }
-
-    def Activated(self):
-        doc = FreeCAD.ActiveDocument
-        view = Gui.ActiveDocument.ActiveView
-        activeBody = None
-        selobj = Gui.Selection.getSelectionEx()[0].Object
-        viewConf = SheetMetalBaseCmd.GetViewConfig(selobj)
-        if hasattr(view, "getActiveObject"):
-            activeBody = view.getActiveObject("pdbody")
-        if not smIsOperationLegal(activeBody, selobj):
+        def attach(self, obj):
+            self.Object = obj.Object
             return
-        doc.openTransaction("Corner Relief")
-        if activeBody is None or not smIsPartDesign(selobj):
-            a = doc.addObject("Part::FeaturePython", "CornerRelief")
-            SMCornerRelief(a)
-            SMCornerReliefVP(a.ViewObject)
-        else:
-            # FreeCAD.Console.PrintLog("found active body: " + activeBody.Name)
-            a = doc.addObject("PartDesign::FeaturePython", "CornerRelief")
-            SMCornerRelief(a)
-            SMCornerReliefPDVP(a.ViewObject)
-            activeBody.addObject(a)
-        SheetMetalBaseCmd.SetViewConfig(a, viewConf)
-        doc.recompute()
-        doc.commitTransaction()
-        return
 
-    def IsActive(self):
-        if (
-            len(Gui.Selection.getSelection()) < 1
-            or len(Gui.Selection.getSelectionEx()[0].SubElementNames) < 2
-        ):
-            return False
-        #    selobj = Gui.Selection.getSelection()[0]
-        for selVertex in Gui.Selection.getSelectionEx()[0].SubObjects:
-            if type(selVertex) != Part.Edge:
+        def updateData(self, fp, prop):
+            return
+
+        def getDisplayModes(self, obj):
+            modes = []
+            return modes
+
+        def setDisplayMode(self, mode):
+            return mode
+
+        def onChanged(self, vp, prop):
+            return
+
+        def __getstate__(self):
+            #        return {'ObjectName' : self.Object.Name}
+            return None
+
+        def __setstate__(self, state):
+            self.loads(state)
+
+        # dumps and loads replace __getstate__ and __setstate__ post v. 0.21.2
+        def dumps(self):
+            return None
+
+        def loads(self, state):
+            if state is not None:
+                import FreeCAD
+
+                doc = FreeCAD.ActiveDocument  # crap
+                self.Object = doc.getObject(state["ObjectName"])
+
+        def claimChildren(self):
+            objs = []
+            if hasattr(self.Object, "baseObject"):
+                objs.append(self.Object.baseObject[0])
+                objs.append(self.Object.Sketch)
+            return objs
+
+        def getIcon(self):
+            return os.path.join(icons_path, "SheetMetal_AddCornerRelief.svg")
+
+
+    class SMCornerReliefPDVP:
+        "A View provider that nests children objects under the created one"
+
+        def __init__(self, obj):
+            obj.Proxy = self
+            self.Object = obj.Object
+
+        def attach(self, obj):
+            self.Object = obj.Object
+            return
+
+        def updateData(self, fp, prop):
+            return
+
+        def getDisplayModes(self, obj):
+            modes = []
+            return modes
+
+        def setDisplayMode(self, mode):
+            return mode
+
+        def onChanged(self, vp, prop):
+            return
+
+        def __getstate__(self):
+            #        return {'ObjectName' : self.Object.Name}
+            return None
+
+        def __setstate__(self, state):
+            self.loads(state)
+
+        # dumps and loads replace __getstate__ and __setstate__ post v. 0.21.2
+        def dumps(self):
+            return None
+
+        def loads(self, state):
+            if state is not None:
+                import FreeCAD
+
+                doc = FreeCAD.ActiveDocument  # crap
+                self.Object = doc.getObject(state["ObjectName"])
+
+        def claimChildren(self):
+            objs = []
+            if hasattr(self.Object, "Sketch"):
+                objs.append(self.Object.Sketch)
+            return objs
+
+        def getIcon(self):
+            return os.path.join(icons_path, "SheetMetal_AddCornerRelief.svg")
+
+
+    class AddCornerReliefCommandClass:
+        """Add Corner Relief command"""
+
+        def GetResources(self):
+            return {
+                "Pixmap": os.path.join(
+                    icons_path, "SheetMetal_AddCornerRelief.svg"
+                ),  # the name of a svg file available in the resources
+                "MenuText": FreeCAD.Qt.translate("SheetMetal", "Add Corner Relief"),
+                "Accel": "C, R",
+                "ToolTip": FreeCAD.Qt.translate(
+                    "SheetMetal",
+                    "Corner Relief to metal sheet corner.\n"
+                    "1. Select 2 Edges (on flat face that shared with bend faces) to create Relief on sheetmetal.\n"
+                    "2. Use Property editor to modify default parameters",
+                ),
+            }
+
+        def Activated(self):
+            doc = FreeCAD.ActiveDocument
+            view = Gui.ActiveDocument.ActiveView
+            activeBody = None
+            sel = Gui.Selection.getSelectionEx()[0]
+            selobj = Gui.Selection.getSelectionEx()[0].Object
+            viewConf = SheetMetalTools.GetViewConfig(selobj)
+            if hasattr(view, "getActiveObject"):
+                activeBody = view.getActiveObject("pdbody")
+            if not SheetMetalTools.smIsOperationLegal(activeBody, selobj):
+                return
+            doc.openTransaction("Corner Relief")
+            if activeBody is None or not SheetMetalTools.smIsPartDesign(selobj):
+                a = doc.addObject("Part::FeaturePython", "CornerRelief")
+                SMCornerRelief(a)
+                a.baseObject = (selobj, sel.SubElementNames)
+                SMCornerReliefVP(a.ViewObject)
+            else:
+                # FreeCAD.Console.PrintLog("found active body: " + activeBody.Name)
+                a = doc.addObject("PartDesign::FeaturePython", "CornerRelief")
+                SMCornerRelief(a)
+                SMCornerReliefPDVP(a.ViewObject)
+                activeBody.addObject(a)
+            SheetMetalTools.SetViewConfig(a, viewConf)
+            doc.recompute()
+            doc.commitTransaction()
+            return
+
+        def IsActive(self):
+            if (
+                len(Gui.Selection.getSelection()) < 1
+                or len(Gui.Selection.getSelectionEx()[0].SubElementNames) < 2
+            ):
                 return False
-        return True
+            #    selobj = Gui.Selection.getSelection()[0]
+            for selVertex in Gui.Selection.getSelectionEx()[0].SubObjects:
+                if type(selVertex) != Part.Edge:
+                    return False
+            return True
 
 
-Gui.addCommand("SheetMetal_AddCornerRelief", AddCornerReliefCommandClass())
+    Gui.addCommand("SheetMetal_AddCornerRelief", AddCornerReliefCommandClass())

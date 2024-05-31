@@ -76,7 +76,7 @@ def getSpreadSheetNames():
     availableMdsObjects = []
     for candidate in candidateSpreadSheets:
         try:
-            KFactorLookupTable(candidate.Label)
+            KFactorLookupTable(candidate)
             availableMdsObjects.append(candidate)
         except ValueError as e:
             FreeCAD.Console.PrintWarning(
@@ -90,16 +90,7 @@ def getSpreadSheetNames():
 class KFactorLookupTable:
     cell_regex = re.compile("^([A-Z]+)([0-9]+)$")
 
-    def __init__(self, material_sheet):
-        lookup_sheet = FreeCAD.ActiveDocument.getObjectsByLabel(material_sheet)
-        if len(lookup_sheet) >= 1:
-            lookup_sheet = lookup_sheet[0]
-        else:
-            raise ValueError(
-                "No spreadsheet found containing material definition: %s"
-                % material_sheet
-            )
-
+    def __init__(self, lookup_sheet):
         key_cell = self.find_cell_by_label(lookup_sheet, "Radius / Thickness")
         value_cell, k_factor_standard = self.find_k_factor_cell(lookup_sheet)
 
@@ -175,7 +166,7 @@ class KFactorLookupTable:
 
     def get_k_factor_standard(self, sheet, options_cell, k_factor_standard):
         if options_cell is not None:
-            opt_col, opt_row = get_cell_tuple(options_cell)
+            opt_col, opt_row = self.get_cell_tuple(options_cell)
             i = 1
             while True:
                 opt_key_cell = "%s%i" % (opt_col, opt_row + i)
