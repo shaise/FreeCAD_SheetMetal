@@ -59,14 +59,14 @@ class SMWorkbench(Workbench):
 
     def Initialize(self):
         "This function is executed when FreeCAD starts"
-        import SheetMetalBendWallCmd  # import here all the needed files that create your FreeCAD commands
+        import SheetMetalCmd  # import here all the needed files that create your FreeCAD commands
         import SheetMetalExtendCmd
         import SheetMetalUnfolder
         import SheetMetalBaseCmd
         import SheetMetalFoldCmd
-        import SheetMetalReliefCmd
-        import SheetMetalJunctionCmd
-        import SheetMetalSolidBendCmd
+        import SheetMetalRelief
+        import SheetMetalJunction
+        import SheetMetalBend
         import SketchOnSheetMetalCmd
         import SheetMetalCornerReliefCmd
         import SheetMetalFormingCmd
