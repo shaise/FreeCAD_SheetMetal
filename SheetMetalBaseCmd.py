@@ -60,6 +60,11 @@ def smIsSketchObject(obj):
     return str(obj).find("<Sketcher::") == 0
 
 
+def getElementFromTNP(tnpName):
+    names = tnpName.split('.')
+    return names[len(names) - 1]
+
+
 def smIsOperationLegal(body, selobj):
     # FreeCAD.Console.PrintLog(str(selobj) + " " + str(body) + " " + str(smBelongToBody(selobj, body)) + "\n")
     if smIsSketchObject(selobj) and not smBelongToBody(selobj, body):

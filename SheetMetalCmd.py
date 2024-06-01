@@ -434,7 +434,7 @@ def check_parallel(edge1, edge2):
     return False, None
 
 def sheet_thk(MainObject, selFaceName):
-    selItem = MainObject.getElement(selFaceName)
+    selItem = MainObject.getElement(SheetMetalBaseCmd.getElementFromTNP(selFaceName))
     selFace = smFace(selItem, MainObject)
     # find the narrow edge
     thk = 999999.0
@@ -461,7 +461,7 @@ def sheet_thk(MainObject, selFaceName):
 
 def smEdge(selFaceName, MainObject):
     # find Edge, if Face Selected
-    selItem = MainObject.getElement(selFaceName)
+    selItem = MainObject.getElement(SheetMetalBaseCmd.getElementFromTNP(selFaceName))
     thkDir = None
     if type(selItem) == Part.Face:
         # find the narrow edge
@@ -529,7 +529,7 @@ def getBendetail(selItemNames, MainObject, bendR, bendA, isflipped, offset, gap1
             bendA = -bendA
             flipped = not flipped
 
-        if type(MainObject.getElement(selItemName)) == Part.Edge:
+        if type(MainObject.getElement(SheetMetalBaseCmd.getElementFromTNP(selItemName))) == Part.Edge:
             flipped = not flipped
 
         if not (flipped):
@@ -1329,6 +1329,7 @@ class SMBendWall:
         obj.addProperty(
             "App::PropertyLinkSub", "baseObject", "Parameters", _tip_
         ).baseObject = (selobj.Object, selobj.SubElementNames)
+        # print (selobj.SubElementNames)
         obj.Proxy = self
 
     def _addProperties(self, obj):
@@ -1546,6 +1547,7 @@ class SMBendWall:
         # pass selected object shape
         Main_Object = fp.baseObject[0].Shape.copy()
         face = fp.baseObject[1]
+        #print(face)
         thk, thkDir = sheet_thk(Main_Object, face[0])
 
         if fp.Sketch:
