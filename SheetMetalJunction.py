@@ -80,7 +80,7 @@ def smJunction(gap = 2.0, selEdgeNames = '', MainObject = None):
 
   resultSolid = MainObject
   for selEdgeName in selEdgeNames:
-    edge = MainObject.getElement(selEdgeName)
+    edge = MainObject.getElement(SheetMetalBaseCmd.getElementFromTNP(selEdgeName))
 
     facelist = MainObject.ancestorsOfType(edge, Part.Face)
     #for face in facelist :

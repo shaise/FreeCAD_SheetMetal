@@ -132,7 +132,7 @@ def smRelief(relief = 2.0, selVertexNames = ' ', MainObject = None):
 
   resultSolid = MainObject
   for selVertexName in selVertexNames:
-    vertex = MainObject.getElement(selVertexName)
+    vertex = MainObject.getElement(SheetMetalBaseCmd.getElementFromTNP(selVertexName))
     facelist = MainObject.ancestorsOfType(vertex, Part.Face)
 
     extsolidlist = []

@@ -311,7 +311,7 @@ def smCornerR(
     resultSolid = MainObject.Shape.copy()
     REdgelist = []
     for selEdgeName in selEdgeNames:
-        REdge = resultSolid.getElement(selEdgeName)
+        REdge = resultSolid.getElement(SheetMetalBaseCmd.getElementFromTNP(selEdgeName))
         REdgelist.append(REdge)
     DetailList = getBendDetail(resultSolid, REdgelist[0], REdgelist[1], kfactor)
     cornerPoint, centerPoint, LargeFace, thk, unfoldLength, neutralRadius = DetailList

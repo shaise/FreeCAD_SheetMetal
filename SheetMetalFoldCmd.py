@@ -133,7 +133,7 @@ def smFold(
         flipped = not flipped
     if not (unfold):
         if bendlinesketch and bendA > 0.0:
-            foldface = FoldShape.getElement(selFaceNames[0])
+            foldface = FoldShape.getElement(SheetMetalBaseCmd.getElementFromTNP(selFaceNames[0]))
             tool = bendlinesketch.Shape.copy()
             normal = foldface.normalAt(0, 0)
             thk = smthk(FoldShape, foldface)

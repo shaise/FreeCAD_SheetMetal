@@ -194,7 +194,7 @@ def smExtrude(extLength = 10.0, gap1 = 0.0, gap2 = 0.0, subtraction = False, off
 
   finalShape = selObject
   for selFaceName in selFaceNames:
-    selItem = selObject.getElement(selFaceName)
+    selItem = selObject.getElement(SheetMetalBaseCmd.getElementFromTNP(selFaceName))
     selFace = smFace(selItem, selObject)
 
     # find the narrow edge

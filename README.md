@@ -99,6 +99,7 @@ Starting from FreeCAD 0.17 it can be installed via the [Addon Manager](https://g
 * FreeCAD Forum announcement/discussion [thread](https://forum.freecadweb.org/viewtopic.php?f=3&t=60818) 
 
 #### Release notes:
+* V0.4.17 04 Jun 2024:  Temporary bypass TNP problem for other commands.
 * V0.4.16 01 Jun 2024:  Temporary bypass TNP problem.
 * V0.4.15 29 May 2024:  Disable fold and extend icons when a sketch is selected.
                       - Make unused parameters readonly when are not used by [@hasecilu][hasecilu].  
