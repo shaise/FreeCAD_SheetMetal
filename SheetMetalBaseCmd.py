@@ -62,7 +62,7 @@ def smIsSketchObject(obj):
 
 def getElementFromTNP(tnpName):
     names = tnpName.split('.')
-    return names[len(names) - 1]
+    return names[len(names) - 1].lstrip('?')
 
 
 def smIsOperationLegal(body, selobj):

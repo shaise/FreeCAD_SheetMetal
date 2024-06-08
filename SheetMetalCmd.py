@@ -434,7 +434,9 @@ def check_parallel(edge1, edge2):
     return False, None
 
 def sheet_thk(MainObject, selFaceName):
-    selItem = MainObject.getElement(SheetMetalBaseCmd.getElementFromTNP(selFaceName))
+    elementName = SheetMetalBaseCmd.getElementFromTNP(selFaceName)
+    # print(selFaceName, " => ", elementName)
+    selItem = MainObject.getElement(elementName)
     selFace = smFace(selItem, MainObject)
     # find the narrow edge
     thk = 999999.0
