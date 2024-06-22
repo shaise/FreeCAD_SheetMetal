@@ -429,7 +429,7 @@ def check_parallel(edge1, edge2):
     v2 = edge2.Vertexes[0].Point - edge2.Vertexes[1].Point
     if v1.isEqual(v2,0.00001):
         return  True, edge2.Vertexes[0].Point - edge1.Vertexes[0].Point
-    if v1.isEqual(v2,0.00001) or v1.isEqual(-v2,0.00001):
+    if v1.isEqual(-v2,0.00001):
         return  True, edge2.Vertexes[0].Point - edge1.Vertexes[1].Point
     return False, None
 
