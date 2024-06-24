@@ -497,119 +497,281 @@
       </spacer>
      </item>
      <item>
-      <widget class="QComboBox" name="originLoc">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="minimumSize">
-        <size>
-         <width>0</width>
-         <height>40</height>
-        </size>
-       </property>
-       <property name="maximumSize">
-        <size>
-         <width>100</width>
-         <height>40</height>
-        </size>
-       </property>
-       <property name="toolTip">
-        <string>Top view</string>
-       </property>
-       <property name="currentIndex">
+      <layout class="QVBoxLayout" name="verticalLayout_2">
+       <property name="spacing">
         <number>0</number>
        </property>
-       <property name="iconSize">
-        <size>
-         <width>64</width>
-         <height>32</height>
-        </size>
-       </property>
        <item>
-        <property name="text">
-         <string/>
-        </property>
-        <property name="icon">
-         <iconset>
-          <normaloff>Icons:BaseShape_BL.svg</normaloff>Icons:BaseShape_BL.svg</iconset>
-        </property>
+        <layout class="QHBoxLayout" name="horizontalLayout_10">
+         <property name="spacing">
+          <number>0</number>
+         </property>
+         <item>
+          <widget class="QPushButton" name="pushTL">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>28</width>
+             <height>21</height>
+            </size>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">QPushButton {
+  border-image: url('Icons:BaseShape_TL.svg') 0 0 0 0 stretch stretch;
+}
+</string>
+           </property>
+           <property name="text">
+            <string notr="true" extracomment="TL"/>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>24</width>
+             <height>17</height>
+            </size>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="pushTC">
+           <property name="maximumSize">
+            <size>
+             <width>28</width>
+             <height>21</height>
+            </size>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">QPushButton {
+  border-image: url('Icons:BaseShape_TC.svg') 0 0 0 0 stretch stretch;
+}
+</string>
+           </property>
+           <property name="text">
+            <string notr="true" extracomment="TC"/>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>24</width>
+             <height>17</height>
+            </size>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="pushTR">
+           <property name="maximumSize">
+            <size>
+             <width>28</width>
+             <height>21</height>
+            </size>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">QPushButton {
+  border-image: url('Icons:BaseShape_TR.svg') 0 0 0 0 stretch stretch;
+}
+</string>
+           </property>
+           <property name="text">
+            <string extracomment="TR"/>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>24</width>
+             <height>17</height>
+            </size>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </item>
        <item>
-        <property name="text">
-         <string/>
-        </property>
-        <property name="icon">
-         <iconset>
-          <normaloff>Icons:BaseShape_CL.svg</normaloff>Icons:BaseShape_CL.svg</iconset>
-        </property>
+        <layout class="QHBoxLayout" name="horizontalLayout_11">
+         <property name="spacing">
+          <number>0</number>
+         </property>
+         <item>
+          <widget class="QPushButton" name="pushCL">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>28</width>
+             <height>21</height>
+            </size>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">QPushButton {
+  border-image: url('Icons:BaseShape_CL.svg') 0 0 0 0 stretch stretch;
+}
+</string>
+           </property>
+           <property name="text">
+            <string notr="true" extracomment="CL"/>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>24</width>
+             <height>17</height>
+            </size>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="pushCC">
+           <property name="maximumSize">
+            <size>
+             <width>28</width>
+             <height>21</height>
+            </size>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">QPushButton {
+  border-image: url('Icons:BaseShape_CC.svg') 0 0 0 0 stretch stretch;
+}
+</string>
+           </property>
+           <property name="text">
+            <string notr="true" extracomment="CC"/>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>24</width>
+             <height>17</height>
+            </size>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="pushCR">
+           <property name="maximumSize">
+            <size>
+             <width>28</width>
+             <height>21</height>
+            </size>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">QPushButton {
+  border-image: url('Icons:BaseShape_CR.svg') 0 0 0 0 stretch stretch;
+}
+</string>
+           </property>
+           <property name="text">
+            <string notr="true" extracomment="CR"/>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>24</width>
+             <height>17</height>
+            </size>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </item>
        <item>
-        <property name="text">
-         <string/>
-        </property>
-        <property name="icon">
-         <iconset>
-          <normaloff>Icons:BaseShape_TL.svg</normaloff>Icons:BaseShape_TL.svg</iconset>
-        </property>
+        <layout class="QHBoxLayout" name="horizontalLayout_9">
+         <property name="spacing">
+          <number>0</number>
+         </property>
+         <item>
+          <widget class="QPushButton" name="pushBL">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>28</width>
+             <height>21</height>
+            </size>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">QPushButton {
+  border-image: url('Icons:BaseShape_BL.svg') 0 0 0 0 stretch stretch;
+}
+</string>
+           </property>
+           <property name="text">
+            <string notr="true" extracomment="BL"/>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>24</width>
+             <height>17</height>
+            </size>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="pushBC">
+           <property name="maximumSize">
+            <size>
+             <width>28</width>
+             <height>21</height>
+            </size>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">QPushButton {
+  border-image: url('Icons:BaseShape_BC.svg') 0 0 0 0 stretch stretch;
+}
+</string>
+           </property>
+           <property name="text">
+            <string notr="true" extracomment="BC"/>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>24</width>
+             <height>17</height>
+            </size>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="pushBR">
+           <property name="maximumSize">
+            <size>
+             <width>28</width>
+             <height>21</height>
+            </size>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">QPushButton {
+  border-image: url('Icons:BaseShape_BR.svg') 0 0 0 0 stretch stretch;
+}
+</string>
+           </property>
+           <property name="text">
+            <string notr="true" extracomment="BR"/>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>24</width>
+             <height>17</height>
+            </size>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </item>
-       <item>
-        <property name="text">
-         <string/>
-        </property>
-        <property name="icon">
-         <iconset>
-          <normaloff>Icons:BaseShape_BC.svg</normaloff>Icons:BaseShape_BC.svg</iconset>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string/>
-        </property>
-        <property name="icon">
-         <iconset>
-          <normaloff>Icons:BaseShape_CC.svg</normaloff>Icons:BaseShape_CC.svg</iconset>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string/>
-        </property>
-        <property name="icon">
-         <iconset>
-          <normaloff>Icons:BaseShape_TC.svg</normaloff>Icons:BaseShape_TC.svg</iconset>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string/>
-        </property>
-        <property name="icon">
-         <iconset>
-          <normaloff>Icons:BaseShape_BR.svg</normaloff>Icons:BaseShape_BR.svg</iconset>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string/>
-        </property>
-        <property name="icon">
-         <iconset>
-          <normaloff>Icons:BaseShape_CR.svg</normaloff>Icons:BaseShape_CR.svg</iconset>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string/>
-        </property>
-        <property name="icon">
-         <iconset>
-          <normaloff>Icons:BaseShape_TR.svg</normaloff>Icons:BaseShape_TR.svg</iconset>
-        </property>
-       </item>
-      </widget>
+      </layout>
      </item>
     </layout>
    </item>

@@ -40,6 +40,7 @@ smElementMapVersion = 'sm1.'
 
 base_shape_types = ["Flat", "L-Shape", "U-Shape", "Tub", "Hat", "Box"]
 origin_location_types = ["-X,-Y", "-X,0", "-X,+Y", "0,-Y", "0,0", "0,+Y", "+X,-Y", "+X,0", "+X,+Y"]
+origin_location_buttons = ["BL", "CL", "TL", "BC", "CC", "TC", "BR", "CR", "TR"]
 
 ##########################################################################################################
 # Task
@@ -52,6 +53,7 @@ class BaseShapeTaskPanel:
         self.form = FreeCADGui.PySideUic.loadUi(path)
         self.formReady = False
         self.firstTime = True
+        self.selOrigButton = None
         self.ShowAxisCross()
         self.setupUi()
 
@@ -73,8 +75,12 @@ class BaseShapeTaskPanel:
         self.form.bFlangeWidthSpin.valueChanged.connect(self.spinValChanged)
         self.form.bLengthSpin.valueChanged.connect(self.spinValChanged)
         self.form.shapeType.currentIndexChanged.connect(self.typeChanged)
-        self.form.originLoc.currentIndexChanged.connect(self.spinValChanged)
         self.form.chkFillGaps.stateChanged.connect(self.checkChanged)
+        for origloc in origin_location_buttons:
+            buttname = 'push' + origloc
+            butt = self.form.findChild(QtGui.QPushButton, buttname)
+            butt.pressed.connect(lambda b = butt: self.origButtPressed(b))
+            print(buttname)
         self.form.update()
 
         #SMLogger.log(str(self.formReady) + " <2 \n")
@@ -84,6 +90,24 @@ class BaseShapeTaskPanel:
         self.form.bRadiusSpin.setEnabled(not type == "Flat")
         self.form.bHeightSpin.setEnabled(not type == "Flat")
 
+    def buttonToOriginType(self, butt):
+        if butt is None:
+            name = 'pushCC'
+        else:
+            name = butt.objectName()
+        return origin_location_types[origin_location_buttons.index(name[-2:])]
+    
+    def originTypeToButton(self, type):
+        name = "push" + origin_location_buttons[origin_location_types.index(type)]
+        return self.form.findChild(QtGui.QPushButton, name)
+    
+    def setSelectedOrigButton(self, butt):
+        if self.selOrigButton is not None:
+            self.selOrigButton.setIcon(QtGui.QIcon())
+        if butt is not None:
+            butt.setIcon(QtGui.QIcon('Icons:BaseShape_Sel.svg'))
+        self.selOrigButton = butt
+
     def spinValChanged(self):
         if not self.formReady:
            return
@@ -92,6 +116,11 @@ class BaseShapeTaskPanel:
 
     def typeChanged(self):
         self.updateEnableState()
+        self.spinValChanged()
+
+    def origButtPressed(self, butt):
+        print(butt.objectName())
+        self.setSelectedOrigButton(butt)
         self.spinValChanged()
 
     def checkChanged(self):
@@ -117,7 +146,7 @@ class BaseShapeTaskPanel:
         if selected_type not in base_shape_types:
             selected_type = base_shape_types[self.form.shapeType.currentIndex()]
         self.obj.shapeType = selected_type
-        self.obj.originLoc = origin_location_types[self.form.originLoc.currentIndex()]
+        self.obj.originLoc = self.buttonToOriginType(self.selOrigButton)
         self.obj.fillGaps = self._stateToBool(self.form.chkFillGaps.checkState())
 
     def accept(self):
@@ -153,7 +182,7 @@ class BaseShapeTaskPanel:
         self.updateSpin(self.form.bFlangeWidthSpin, 'flangeWidth')
         self.updateSpin(self.form.bLengthSpin, 'length')
         self.form.shapeType.setCurrentText(self.obj.shapeType)
-        self.form.originLoc.setCurrentIndex(origin_location_types.index(self.obj.originLoc))
+        self.setSelectedOrigButton(self.originTypeToButton(self.obj.originLoc))
         self.form.chkFillGaps.setCheckState(self._boolToState(self.obj.fillGaps))
         self.form.chkNewBody.setVisible(self.firstTime)
         self.formReady = True
