@@ -526,6 +526,12 @@
              <height>21</height>
             </size>
            </property>
+           <property name="sizeIncrement">
+            <size>
+             <width>28</width>
+             <height>21</height>
+            </size>
+           </property>
            <property name="styleSheet">
             <string notr="true">QPushButton {
   border-image: url('Icons:BaseShape_TL.svg') 0 0 0 0 stretch stretch;
@@ -551,6 +557,12 @@
              <height>21</height>
             </size>
            </property>
+           <property name="sizeIncrement">
+            <size>
+             <width>28</width>
+             <height>211</height>
+            </size>
+           </property>
            <property name="styleSheet">
             <string notr="true">QPushButton {
   border-image: url('Icons:BaseShape_TC.svg') 0 0 0 0 stretch stretch;
@@ -571,6 +583,12 @@
          <item>
           <widget class="QPushButton" name="pushTR">
            <property name="maximumSize">
+            <size>
+             <width>28</width>
+             <height>21</height>
+            </size>
+           </property>
+           <property name="sizeIncrement">
             <size>
              <width>28</width>
              <height>21</height>
@@ -614,6 +632,12 @@
              <height>21</height>
             </size>
            </property>
+           <property name="sizeIncrement">
+            <size>
+             <width>28</width>
+             <height>21</height>
+            </size>
+           </property>
            <property name="styleSheet">
             <string notr="true">QPushButton {
   border-image: url('Icons:BaseShape_CL.svg') 0 0 0 0 stretch stretch;
@@ -639,6 +663,12 @@
              <height>21</height>
             </size>
            </property>
+           <property name="sizeIncrement">
+            <size>
+             <width>28</width>
+             <height>21</height>
+            </size>
+           </property>
            <property name="styleSheet">
             <string notr="true">QPushButton {
   border-image: url('Icons:BaseShape_CC.svg') 0 0 0 0 stretch stretch;
@@ -659,6 +689,12 @@
          <item>
           <widget class="QPushButton" name="pushCR">
            <property name="maximumSize">
+            <size>
+             <width>28</width>
+             <height>21</height>
+            </size>
+           </property>
+           <property name="sizeIncrement">
             <size>
              <width>28</width>
              <height>21</height>
@@ -702,6 +738,12 @@
              <height>21</height>
             </size>
            </property>
+           <property name="sizeIncrement">
+            <size>
+             <width>28</width>
+             <height>21</height>
+            </size>
+           </property>
            <property name="styleSheet">
             <string notr="true">QPushButton {
   border-image: url('Icons:BaseShape_BL.svg') 0 0 0 0 stretch stretch;
@@ -727,6 +769,12 @@
              <height>21</height>
             </size>
            </property>
+           <property name="sizeIncrement">
+            <size>
+             <width>28</width>
+             <height>21</height>
+            </size>
+           </property>
            <property name="styleSheet">
             <string notr="true">QPushButton {
   border-image: url('Icons:BaseShape_BC.svg') 0 0 0 0 stretch stretch;
@@ -747,6 +795,12 @@
          <item>
           <widget class="QPushButton" name="pushBR">
            <property name="maximumSize">
+            <size>
+             <width>28</width>
+             <height>21</height>
+            </size>
+           </property>
+           <property name="sizeIncrement">
             <size>
              <width>28</width>
              <height>21</height>
