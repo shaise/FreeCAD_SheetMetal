@@ -80,7 +80,6 @@ class BaseShapeTaskPanel:
             buttname = 'push' + origloc
             butt = self.form.findChild(QtGui.QPushButton, buttname)
             butt.pressed.connect(lambda b = butt: self.origButtPressed(b))
-            print(buttname)
         self.form.update()
 
         #SMLogger.log(str(self.formReady) + " <2 \n")

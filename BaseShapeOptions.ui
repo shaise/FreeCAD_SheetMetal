@@ -501,6 +501,9 @@
        <property name="spacing">
         <number>0</number>
        </property>
+       <property name="sizeConstraint">
+        <enum>QLayout::SetMinimumSize</enum>
+       </property>
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout_10">
          <property name="spacing">
