@@ -118,11 +118,12 @@ def transform_tool(tool, base_face, tool_face, point = FreeCAD.Vector(0, 0, 0), 
   # Find angle between faces, axis of rotation & center of axis
   rot_angle = angleBetween(direction1, direction2)
   rot_axis = direction1.cross(direction2)
-  if rot_axis == FreeCAD.Vector (0.0, 0.0, 0.0):
+  if rot_axis.isEqual(FreeCAD.Vector (0.0, 0.0, 0.0), 0.001):
       rot_axis = FreeCAD.Vector(0, 1, 0).cross(direction2)
   rot_center = yL2
   #print([rot_center, rot_axis, rot_angle])
-  tool.rotate(rot_center, rot_axis, -rot_angle)
+  if not rot_axis.isEqual(FreeCAD.Vector (0.0, 0.0, 0.0), 0.001):
+      tool.rotate(rot_center, rot_axis, -rot_angle)
   tool.translate(-yL2 + yL1)
   #Part.show(tool, "tool")
 
@@ -137,9 +138,11 @@ def makeforming(tool, base, base_face, thk, tool_faces = None, point = FreeCAD.V
 #  tool_shell = Part.makeShell(faces)
 #  offsetshell = tool_shell.makeOffsetShape(thk, 0.0, inter = False, self_inter = False, offsetMode = 0, join = 2, fill = True)
   offsetshell = tool.makeThickness(tool_faces, thk, 0.0001, False, False, 0, 0)
+  #Part.show(offsetshell, "offsetshell")
   cutSolid = tool.fuse(offsetshell)
+  #Part.show(cutSolid, "cutSolid")
   offsetshell_tran = transform_tool(offsetshell, base_face, tool_faces[0], point, angle)
-  #Part.show(offsetshell1, "offsetshell1")
+  Part.show(offsetshell_tran, "offsetshell_tran")
   cutSolid_trans = transform_tool(cutSolid, base_face, tool_faces[0], point, angle)
   base = base.cut(cutSolid_trans)
   base = base.fuse(offsetshell_tran)
@@ -172,11 +175,11 @@ class SMBendWall:
     '''"Print a short message when doing a recomputation, this method is mandatory" '''
 
     base = fp.baseObject[0].Shape
-    base_face = base.getElement(fp.baseObject[1][0])
+    base_face = base.getElement(SheetMetalBaseCmd.getElementFromTNP(fp.baseObject[1][0]))
     thk = smthk(base, base_face)
     fp.thickness = thk
     tool = fp.toolObject[0].Shape
-    tool_faces = [tool.getElement(fp.toolObject[1][i]) for i in range(len(fp.toolObject[1]))]
+    tool_faces = [tool.getElement(SheetMetalBaseCmd.getElementFromTNP(fp.toolObject[1][i])) for i in range(len(fp.toolObject[1]))]
 
     offsetlist = []
     if fp.Sketch:
