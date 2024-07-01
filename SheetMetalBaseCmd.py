@@ -62,6 +62,8 @@ def smIsSketchObject(obj):
 
 def getElementFromTNP(tnpName):
     names = tnpName.split('.')
+    if len(names) > 1:
+        FreeCAD.Console.PrintWarning("Warning: Tnp Name still visible: " + tnpName + "\n")
     return names[len(names) - 1].lstrip('?')
 
 
