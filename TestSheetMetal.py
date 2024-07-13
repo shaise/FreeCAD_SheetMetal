@@ -23,5 +23,5 @@
 
 import TestApp
 
-from Tests.testFolder import TestFolder
-from Tests.testKfactor import TestKFactor
+from SheetMetalTests.testFolder import TestFolder
+from SheetMetalTests.testKfactor import TestKFactor
