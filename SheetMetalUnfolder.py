@@ -3142,7 +3142,12 @@ def processUnfold(
     if shape is None:
         raise UnfoldException()
 
-    unfoldShape = FreeCAD.ActiveDocument.addObject("Part::Feature", "Unfold")
+    try:
+        unfoldBaseName = object.Parents[0][0].Label + "_Unfolded"
+    except:
+        unfoldBaseName = "Unfolded"
+
+    unfoldShape = FreeCAD.ActiveDocument.addObject("Part::Feature", unfoldBaseName)
     unfoldShape.Shape = shape
 
     if genSketch:
@@ -3163,7 +3168,7 @@ def processUnfold(
 
             if not splitSketches:
                 edges.append(foldEdges)
-        unfold_sketch = generateSketch(edges, "Unfold_Sketch", sketchColor)
+        unfold_sketch = generateSketch(edges, unfoldBaseName + "_Sketch", sketchColor)
         FreeCAD.ActiveDocument.recompute()
 
         if splitSketches:
@@ -3189,7 +3194,7 @@ def processUnfold(
                     FreeCAD.ActiveDocument.recompute()
 
                 unfold_sketch_outline = generateSketch(
-                    owEdgs, "Unfold_Sketch_Outline", sketchColor
+                    owEdgs, unfoldBaseName + "_Sketch_Outline", sketchColor
                 )
 
                 if tidy:
@@ -3209,7 +3214,7 @@ def processUnfold(
                         intEdgs.append(e)
                 if len(intEdgs) > 0:
                     unfold_sketch_internal = generateSketch(
-                        intEdgs, "Unfold_Sketch_Internal", internalSketchColor
+                        intEdgs, unfoldBaseName + "_Sketch_Internal", internalSketchColor
                     )
 
             except Exception as e:
@@ -3224,7 +3229,7 @@ def processUnfold(
 
         if len(foldLines) > 0 and splitSketches:
             unfold_sketch_bend = generateSketch(
-                foldEdges, "Unfold_Sketch_bends", bendSketchColor
+                foldEdges, unfoldBaseName + "_Sketch_bends", bendSketchColor
             )
 
     if FreeCAD.GuiUp:
