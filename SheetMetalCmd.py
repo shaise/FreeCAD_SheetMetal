@@ -1252,7 +1252,7 @@ def smBend(
         else:
             revAxisP = lenEdge.valueAt(lenEdge.FirstParameter) + thkDir * -bendR
 
-        # wallSolid = None
+        wallSolid = None
         if sketches:
             Wall_face = Part.makeFace(sketch.Shape.Wires, "Part::FaceMakerBullseye")
             if inside:

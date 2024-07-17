@@ -99,6 +99,7 @@ Starting from FreeCAD 0.17 it can be installed via the [Addon Manager](https://g
 * FreeCAD Forum announcement/discussion [thread](https://forum.freecadweb.org/viewtopic.php?f=3&t=60818) 
 
 #### Release notes:
+* V0.4.23 17 Jul 2024:  Fix bug with zero length walls.
 * V0.4.22 08 Jul 2024:  Eliminate temporary errors when base shape fields are edited.
 * V0.4.21 30 Jun 2024:  Fix Form tool not working.
 * V0.4.20 24 Jun 2024:  Change origin selection methos in base shape gui.
