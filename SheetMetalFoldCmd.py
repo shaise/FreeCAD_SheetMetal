@@ -570,6 +570,10 @@ class AddFoldWallCommandClass:
         if type(selFace) != Part.Face:
             return False
         selobj = Gui.Selection.getSelection()[1]
+        if selobj.isDerivedFrom("App::Link"):
+            selobj = selobj.LinkedObject
+        elif selobj.isDerivedFrom("Part::Part2DObject"):
+            selobj = selobj.Objects[0]
         if not (selobj.isDerivedFrom("Sketcher::SketchObject")):
             return False
         return True
