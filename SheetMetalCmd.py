@@ -287,9 +287,12 @@ def smGetFace(Faces, obj):
 
 def LineExtend(edge, distance1, distance2):
     # Extend a ine by given distances
-    return edge.Curve.toShape(
+    result = edge.Curve.toShape(
         edge.FirstParameter - distance1, edge.LastParameter + distance2
     )
+    if hasattr(result, "mapShapes"):
+        result.mapShapes([(edge, result)], [])
+    return result
 
 
 def getParallel(edge1, edge2):
