@@ -917,6 +917,11 @@ def smBend(
     sketch=None,
     extendType="Simple",
     LengthSpec="Leg",
+    perforate=False,
+    perforationWidth=5.0,
+    perforationInitialLength=5.0,
+    perforationMaxLength=5.0,
+    nonperforationMaxLength=5.0,
 ):
     # if sketch is as wall
     sketches = False
@@ -1530,6 +1535,48 @@ class SMBendWall:
             None,
             "ParametersEx3",
         )
+        smAddBoolProperty(
+            obj,
+            "Perforate",
+            FreeCAD.Qt.translate("App::Property", "Enable Perforation"),
+            False,
+            "ParametersPerforation",
+        )
+        smAddBoolProperty(
+            obj,
+            "Perforate",
+            FreeCAD.Qt.translate("App::Property", "Enable Perforation"),
+            False,
+            "ParametersPerforation",
+        )
+        smAddLengthProperty( #DUMMY Not sure if this is needed or useful, should probably match radius, maybe
+            obj,
+            "perforationWidth",
+            FreeCAD.Qt.translate("App::Property", "Perforation Width"),
+            5.0, # Shouldn't this have like, units or st?
+            "ParametersPerforation",
+        )
+        smAddLengthProperty(
+            obj,
+            "perforationInitialLength",
+            FreeCAD.Qt.translate("App::Property", "Initial Perforation Length"),
+            5.0,
+            "ParametersPerforation",
+        )
+        smAddLengthProperty(
+            obj,
+            "perforationMaxLength",
+            FreeCAD.Qt.translate("App::Property", "Perforation Max Length"),
+            5.0,
+            "ParametersPerforation",
+        )
+        smAddLengthProperty(
+            obj,
+            "nonperforationMaxLength",
+            FreeCAD.Qt.translate("App::Property", "Non-Perforation Max Length"),
+            5.0,
+            "ParametersPerforation",
+        )
 
     def getElementMapVersion(self, _fp, ver, _prop, restored):
         if not restored:
@@ -1613,6 +1660,11 @@ class SMBendWall:
                 mingap=fp.minGap.Value,
                 maxExtendGap=fp.maxExtendDist.Value,
                 LengthSpec=fp.LengthSpec,
+                perforate=fp.Perforate,
+                perforationWidth=fp.perforationWidth,
+                perforationInitialLength=fp.perforationInitialLength,
+                perforationMaxLength=fp.perforationMaxLength,
+                nonperforationMaxLength=fp.nonperforationMaxLength,
             )
             faces = smGetFace(f, s)
             face = faces
