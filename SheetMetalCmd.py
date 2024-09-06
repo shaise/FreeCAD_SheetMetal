@@ -176,6 +176,49 @@ def smMakeReliefFace(edge, dir, gap, reliefW, reliefD, reliefType, op=""):
     return face
 
 
+def smMakePerforationFace(edge, dir, extLen, gap1, gap2, lenIPerf1, lenIPerf2, lenPerf, lenNPerf, op=""):
+    L0 = (edge.LastParameter - gap2 - lenIPerf2) - (edge.FirstParameter + gap1 + lenIPerf1)
+    Lp = lenPerf
+    Ln = lenNPerf
+    P0 = (L0-Ln) / (Lp+Ln)
+    P = math.ceil(P0)
+    N = P+1
+    F = L0 / (math.ceil(P0)*Lp + math.ceil(P0)*Ln + Ln)
+
+    # Initial perf, near
+    p1 = edge.valueAt(edge.FirstParameter + gap1)
+    p2 = edge.valueAt(edge.FirstParameter + gap1 + lenIPerf1)
+    p3 = edge.valueAt(edge.FirstParameter + gap1 + lenIPerf1) + dir.normalize() * extLen
+    p4 = edge.valueAt(edge.FirstParameter + gap1) + dir.normalize() * extLen
+    w = Part.makePolygon([p1, p2, p3, p4, p1])
+    face = Part.Face(w)
+    totalFace = face
+
+    # Initial perf, far
+    p1 = edge.valueAt(edge.LastParameter - gap2 - lenIPerf2)
+    p2 = edge.valueAt(edge.LastParameter - gap2)
+    p3 = edge.valueAt(edge.LastParameter - gap2) + dir.normalize() * extLen
+    p4 = edge.valueAt(edge.LastParameter - gap2 - lenIPerf2) + dir.normalize() * extLen
+    w = Part.makePolygon([p1, p2, p3, p4, p1])
+    face = Part.Face(w)
+    totalFace = totalFace.fuse(face)
+
+    # Perforations, inner
+    for i in range(P):
+        x = (edge.FirstParameter + gap1 + lenIPerf1) + (Ln * F * (i+1)) + (Lp * F * i)
+        p1 = edge.valueAt(x)
+        p2 = edge.valueAt(x + Lp*F)
+        p3 = edge.valueAt(x + Lp*F) + dir.normalize() * extLen
+        p4 = edge.valueAt(x) + dir.normalize() * extLen
+        w = Part.makePolygon([p1, p2, p3, p4, p1])
+        face = Part.Face(w)
+        totalFace = totalFace.fuse(face)
+
+    if hasattr(totalFace, "mapShapes"):
+        totalFace.mapShapes([(edge, totalFace)], None, op)
+    return totalFace
+
+
 def smMakeFace(edge, dir, extLen, gap1=0.0, gap2=0.0, angle1=0.0, angle2=0.0, op=""):
     len1 = extLen * math.tan(math.radians(angle1))
     len2 = extLen * math.tan(math.radians(angle2))
@@ -1292,8 +1335,8 @@ def smBend(
             # Part.show(wallSolid.Faces[2])
             thk_faceList.append(wallSolid.Faces[2])
 
-        # Produce bend Solid
         if not (unfold):
+            # Produce bend Solid
             if bendA > 0.0:
                 # create bend
                 # narrow the wall if we have gaps
@@ -1306,6 +1349,17 @@ def smBend(
             if wallSolid:
                 resultSolid = resultSolid.fuse(wallSolid)
                 # Part.show(resultSolid,"resultSolid")
+
+            # Remove perforation
+            if perforate:
+                perfFace = smMakePerforationFace(lenEdge, thkDir, thk, gap1, gap2, perforationInitialLength, perforationInitialLength, perforationMaxLength, nonperforationMaxLength, op="SMR")
+                #CHECK 'Part.Compound' object has no attribute 'normalAt' ; might need it
+                # if perfFace.normalAt(0, 0) != FaceDir:
+                #     perfFace.reverse()
+                #DUMMY Permit custom thickness
+                perfSolid = perfFace.revolve(revAxisP, revAxisV, bendA)
+                # Part.show(perfSolid)
+                resultSolid = resultSolid.cut(perfSolid)
 
         # Produce unfold Solid
         else:
@@ -1321,10 +1375,23 @@ def smBend(
                 resultSolid = resultSolid.fuse(unfoldSolid)
 
             if extLen > 0.0:
+                # Flatten the wall back out
                 wallSolid.rotate(revAxisP, revAxisV, -bendA)
                 # Part.show(wallSolid, "wallSolid")
                 wallSolid.translate(FaceDir * unfoldLength)
                 resultSolid = resultSolid.fuse(wallSolid)
+
+            # Remove perforation
+            if perforate:
+                perfFace = smMakePerforationFace(lenEdge, thkDir, thk, gap1, gap2, perforationInitialLength, perforationInitialLength, perforationMaxLength, nonperforationMaxLength, op="SMR")
+                #CHECK 'Part.Compound' object has no attribute 'normalAt' ; might need it
+                # if perfFace.normalAt(0, 0) != FaceDir:
+                #     perfFace.reverse()
+                #DUMMY Permit custom thickness
+                perfSolid = perfFace.extrude(FaceDir * unfoldLength)
+                # Part.show(perfSolid)
+                resultSolid = resultSolid.cut(perfSolid)
+            
     # Part.show(resultSolid, "resultSolid")
     return resultSolid, thk_faceList
 
