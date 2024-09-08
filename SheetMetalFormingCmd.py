@@ -142,7 +142,7 @@ def makeforming(tool, base, base_face, thk, tool_faces = None, point = FreeCAD.V
   cutSolid = tool.fuse(offsetshell)
   #Part.show(cutSolid, "cutSolid")
   offsetshell_tran = transform_tool(offsetshell, base_face, tool_faces[0], point, angle)
-  Part.show(offsetshell_tran, "offsetshell_tran")
+  #Part.show(offsetshell_tran, "offsetshell_tran")
   cutSolid_trans = transform_tool(cutSolid, base_face, tool_faces[0], point, angle)
   base = base.cut(cutSolid_trans)
   base = base.fuse(offsetshell_tran)
