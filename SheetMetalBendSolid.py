@@ -256,9 +256,9 @@ def bend_solid(sel_face, sel_edge, bend_r, thickness, neutral_radius, axis, flip
         OuterFace = OuterFace.cut(InnerFace)
 
     if not(flipped) :
-        bendsolid = OuterFace.makeOffsetShape(thickness, 0.0, fill = True)
+        bent_solid = OuterFace.makeOffsetShape(thickness, 0.0, fill = True)
     else:
-        bendsolid = OuterFace.makeOffsetShape(-thickness, 0.0, fill = True)
+        bent_solid = OuterFace.makeOffsetShape(-thickness, 0.0, fill = True)
     #Part.show(bendsolid, "bendsolid")
 
     return bent_solid
