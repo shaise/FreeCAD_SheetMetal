@@ -231,7 +231,7 @@ def bend_solid(sel_face, sel_edge, bend_r, thickness, neutral_radius, axis, flip
 
     outWire = sel_face.OuterWire
     #Part.show(outWire, "outWire")    
-    wrap_wire = WrapFace(outWire, neutral_radius, axis, normal, zero_vert, center, zero_vert_normal)
+    wrap_wire = wrap_face(outWire, neutral_radius, axis, normal, zero_vert, center, zero_vert_normal)
     edge_list = Part.__sortEdges__(wrap_wire)
     wire = Part.Wire(edge_list)
     #Part.show(myWire, "myWire")
@@ -243,7 +243,7 @@ def bend_solid(sel_face, sel_edge, bend_r, thickness, neutral_radius, axis, flip
     #Part.show(OuterFace, "OuterFace")
     for fWire in sel_face.Wires :
       if not(outWire.isEqual(fWire)) :
-        wrap_wire = WrapFace(fWire, neutral_radius, axis, normal, zero_vert, center, zero_vert_normal)
+        wrap_wire = wrap_face(fWire, neutral_radius, axis, normal, zero_vert, center, zero_vert_normal)
         edge_list = Part.__sortEdges__(wrap_wire)
         wire = Part.Wire(edge_list)
         #Part.show(myWire, "myWire")
