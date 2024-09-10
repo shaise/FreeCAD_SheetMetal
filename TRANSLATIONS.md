@@ -1,13 +1,16 @@
-# Workbench translation guide
+# SheetMetal Workbench Translation Guide
 
-# Update!
+# Update! (as of June 2024)
 From now on, all translations should be done via Crowdin:  
 (https://crowdin.com/project/freecad-addons)
 
 Please do not submit your translations via PR.
   
+## Deprecated approach (for reference)
 
-## Old system - for reference
+<details>
+  <summary>Expand to view</summary>
+
 ### Table of contents:
 
 * [How to make a translation](#how-to-make-a-translation)
@@ -79,4 +82,4 @@ After changing the code of workbench (make new strings translatable etc.), do th
 2. Enter to **/translations** folder and run update.sh as execute file
 3. After executing the script, new strings will be added to all *.ts files whose languages are listed in language variable in the script, *.qm files will also be updated.
 
-
+</details>
