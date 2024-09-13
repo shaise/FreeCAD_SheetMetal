@@ -961,7 +961,7 @@ def smBend(
     extendType="Simple",
     LengthSpec="Leg",
     perforate=False,
-    perforationWidth=5.0,
+    perforationAngle=0.0,
     perforationInitialLength=5.0,
     perforationMaxLength=5.0,
     nonperforationMaxLength=5.0,
@@ -1356,8 +1356,11 @@ def smBend(
                 #CHECK 'Part.Compound' object has no attribute 'normalAt' ; might need it
                 # if perfFace.normalAt(0, 0) != FaceDir:
                 #     perfFace.reverse()
-                #DUMMY Permit custom thickness
-                perfSolid = perfFace.revolve(revAxisP, revAxisV, bendA)
+                if perforationAngle > 0.0:
+                    perfFace = perfFace.rotate(revAxisP, revAxisV, (bendA/2)-(perforationAngle/2))
+                    perfSolid = perfFace.revolve(revAxisP, revAxisV, perforationAngle)
+                else:
+                    perfSolid = perfFace.revolve(revAxisP, revAxisV, bendA)
                 # Part.show(perfSolid)
                 resultSolid = resultSolid.cut(perfSolid)
 
@@ -1387,8 +1390,12 @@ def smBend(
                 #CHECK 'Part.Compound' object has no attribute 'normalAt' ; might need it
                 # if perfFace.normalAt(0, 0) != FaceDir:
                 #     perfFace.reverse()
-                #DUMMY Permit custom thickness
-                perfSolid = perfFace.extrude(FaceDir * unfoldLength)
+                if perforationAngle > 0.0:
+                    perfUnfoldLength = (bendR + kfactor * thk) * perforationAngle * math.pi / 180.0
+                    perfFace = perfFace.translate(FaceDir * ((unfoldLength/2)-(perfUnfoldLength/2)))
+                    perfSolid = perfFace.extrude(FaceDir * perfUnfoldLength)
+                else:
+                    perfSolid = perfFace.extrude(FaceDir * unfoldLength)
                 # Part.show(perfSolid)
                 resultSolid = resultSolid.cut(perfSolid)
             
@@ -1616,11 +1623,11 @@ class SMBendWall:
             False,
             "ParametersPerforation",
         )
-        smAddLengthProperty( #DUMMY Not sure if this is needed or useful, should probably match radius, maybe
+        smAddAngleProperty( #THINK I initially tried for width, but that was hard, and its merits vs angle is debatable in view of bend angle rather than length.
             obj,
-            "perforationWidth",
-            FreeCAD.Qt.translate("App::Property", "Perforation Width"),
-            5.0, # Shouldn't this have like, units or st?
+            "perforationAngle",
+            FreeCAD.Qt.translate("App::Property", "Perforation Angle"),
+            0.0,
             "ParametersPerforation",
         )
         smAddLengthProperty(
@@ -1728,7 +1735,7 @@ class SMBendWall:
                 maxExtendGap=fp.maxExtendDist.Value,
                 LengthSpec=fp.LengthSpec,
                 perforate=fp.Perforate,
-                perforationWidth=fp.perforationWidth,
+                perforationAngle=fp.perforationAngle,
                 perforationInitialLength=fp.perforationInitialLength,
                 perforationMaxLength=fp.perforationMaxLength,
                 nonperforationMaxLength=fp.nonperforationMaxLength,
