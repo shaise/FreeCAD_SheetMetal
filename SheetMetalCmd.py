@@ -176,7 +176,7 @@ def smMakeReliefFace(edge, dir, gap, reliefW, reliefD, reliefType, op=""):
     return face
 
 
-def smMakePerforationFace(edge, dir, extLen, gap1, gap2, lenIPerf1, lenIPerf2, lenPerf, lenNPerf, op=""):
+def smMakePerforationFace(edge, dir, bendR, bendA, perforationAngle, flipped, extLen, gap1, gap2, lenIPerf1, lenIPerf2, lenPerf, lenNPerf, op=""):
     L0 = (edge.LastParameter - gap2 - lenIPerf2) - (edge.FirstParameter + gap1 + lenIPerf1)
     Lp = lenPerf
     Ln = lenNPerf
@@ -185,20 +185,25 @@ def smMakePerforationFace(edge, dir, extLen, gap1, gap2, lenIPerf1, lenIPerf2, l
     N = P+1
     F = L0 / (math.ceil(P0)*Lp + math.ceil(P0)*Ln + Ln)
 
+    if perforationAngle == 0:
+        perforationAngle = bendA
+    extAngle = (perforationAngle - bendA) / 2;
+    S = (1 / math.cos(extAngle * (2*math.pi/360)))
+
     # Initial perf, near
-    p1 = edge.valueAt(edge.FirstParameter + gap1)
-    p2 = edge.valueAt(edge.FirstParameter + gap1 + lenIPerf1)
-    p3 = edge.valueAt(edge.FirstParameter + gap1 + lenIPerf1) + dir.normalize() * extLen
-    p4 = edge.valueAt(edge.FirstParameter + gap1) + dir.normalize() * extLen
+    p1 = edge.valueAt(edge.FirstParameter + gap1) + dir.normalize() * -bendR
+    p2 = edge.valueAt(edge.FirstParameter + gap1 + lenIPerf1) + dir.normalize() * -bendR
+    p3 = edge.valueAt(edge.FirstParameter + gap1 + lenIPerf1) + dir.normalize() * (extLen + (S-1)*(bendR+extLen))
+    p4 = edge.valueAt(edge.FirstParameter + gap1) + dir.normalize() * (extLen + (S-1)*(bendR+extLen))
     w = Part.makePolygon([p1, p2, p3, p4, p1])
     face = Part.Face(w)
     totalFace = face
 
     # Initial perf, far
-    p1 = edge.valueAt(edge.LastParameter - gap2 - lenIPerf2)
-    p2 = edge.valueAt(edge.LastParameter - gap2)
-    p3 = edge.valueAt(edge.LastParameter - gap2) + dir.normalize() * extLen
-    p4 = edge.valueAt(edge.LastParameter - gap2 - lenIPerf2) + dir.normalize() * extLen
+    p1 = edge.valueAt(edge.LastParameter - gap2 - lenIPerf2) + dir.normalize() * -bendR
+    p2 = edge.valueAt(edge.LastParameter - gap2) + dir.normalize() * -bendR
+    p3 = edge.valueAt(edge.LastParameter - gap2) + dir.normalize() * (extLen + (S-1)*(bendR+extLen))
+    p4 = edge.valueAt(edge.LastParameter - gap2 - lenIPerf2) + dir.normalize() * (extLen + (S-1)*(bendR+extLen))
     w = Part.makePolygon([p1, p2, p3, p4, p1])
     face = Part.Face(w)
     totalFace = totalFace.fuse(face)
@@ -206,10 +211,10 @@ def smMakePerforationFace(edge, dir, extLen, gap1, gap2, lenIPerf1, lenIPerf2, l
     # Perforations, inner
     for i in range(P):
         x = (edge.FirstParameter + gap1 + lenIPerf1) + (Ln * F * (i+1)) + (Lp * F * i)
-        p1 = edge.valueAt(x)
-        p2 = edge.valueAt(x + Lp*F)
-        p3 = edge.valueAt(x + Lp*F) + dir.normalize() * extLen
-        p4 = edge.valueAt(x) + dir.normalize() * extLen
+        p1 = edge.valueAt(x) + dir.normalize() * -bendR
+        p2 = edge.valueAt(x + Lp*F) + dir.normalize() * -bendR
+        p3 = edge.valueAt(x + Lp*F) + dir.normalize() * (extLen + (S-1)*(bendR+extLen))
+        p4 = edge.valueAt(x) + dir.normalize() * (extLen + (S-1)*(bendR+extLen))
         w = Part.makePolygon([p1, p2, p3, p4, p1])
         face = Part.Face(w)
         totalFace = totalFace.fuse(face)
@@ -1352,7 +1357,8 @@ def smBend(
 
             # Remove perforation
             if perforate:
-                perfFace = smMakePerforationFace(lenEdge, thkDir, thk, gap1, gap2, perforationInitialLength, perforationInitialLength, perforationMaxLength, nonperforationMaxLength, op="SMR")
+                perfFace = smMakePerforationFace(lenEdge, thkDir, bendR, bendA, perforationAngle, flipped, thk, gap1, gap2, perforationInitialLength, perforationInitialLength, perforationMaxLength, nonperforationMaxLength, op="SMR")
+                Part.show(perfFace)
                 #CHECK 'Part.Compound' object has no attribute 'normalAt' ; might need it
                 # if perfFace.normalAt(0, 0) != FaceDir:
                 #     perfFace.reverse()
@@ -1361,7 +1367,7 @@ def smBend(
                     perfSolid = perfFace.revolve(revAxisP, revAxisV, perforationAngle)
                 else:
                     perfSolid = perfFace.revolve(revAxisP, revAxisV, bendA)
-                # Part.show(perfSolid)
+                Part.show(perfSolid)
                 resultSolid = resultSolid.cut(perfSolid)
 
         # Produce unfold Solid
@@ -1386,7 +1392,7 @@ def smBend(
 
             # Remove perforation
             if perforate:
-                perfFace = smMakePerforationFace(lenEdge, thkDir, thk, gap1, gap2, perforationInitialLength, perforationInitialLength, perforationMaxLength, nonperforationMaxLength, op="SMR")
+                perfFace = smMakePerforationFace(lenEdge, thkDir, bendR, bendA, perforationAngle, flipped, thk, gap1, gap2, perforationInitialLength, perforationInitialLength, perforationMaxLength, nonperforationMaxLength, op="SMR")
                 #CHECK 'Part.Compound' object has no attribute 'normalAt' ; might need it
                 # if perfFace.normalAt(0, 0) != FaceDir:
                 #     perfFace.reverse()
