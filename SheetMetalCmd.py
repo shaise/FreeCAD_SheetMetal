@@ -176,7 +176,22 @@ def smMakeReliefFace(edge, dir, gap, reliefW, reliefD, reliefType, op=""):
     return face
 
 
-def smMakePerforationFace(edge, dir, bendR, bendA, perforationAngle, flipped, extLen, gap1, gap2, lenIPerf1, lenIPerf2, lenPerf, lenNPerf, op=""):
+def smMakePerforationFace(
+        edge,
+        dir,
+        bendR,
+        bendA,
+        perforationAngle,
+        flipped,
+        extLen,
+        gap1,
+        gap2,
+        lenIPerf1,
+        lenIPerf2,
+        lenPerf,
+        lenNPerf,
+        op="",
+):
     L0 = (edge.LastParameter - gap2 - lenIPerf2) - (edge.FirstParameter + gap1 + lenIPerf1)
     Lp = lenPerf
     Ln = lenNPerf
@@ -1364,13 +1379,32 @@ def smBend(
             # Remove perforation
             if perforate:
                 #CHECK I'm not sure about flipped - the main one gets overwritten for each sublist item
-                perfFace = smMakePerforationFace(lenEdge, thkDir, bendR, bendA, perforationAngle, flipped, thk, gap1, gap2, perforationInitialLength, perforationInitialLength, perforationMaxLength, nonperforationMaxLength, op="SMR")
+                perfFace = smMakePerforationFace(
+                    lenEdge,
+                    thkDir,
+                    bendR,
+                    bendA,
+                    perforationAngle,
+                    flipped,
+                    thk,
+                    gap1,
+                    gap2,
+                    perforationInitialLength,
+                    perforationInitialLength,
+                    perforationMaxLength,
+                    nonperforationMaxLength,
+                    op="SMR",
+                )
                 # Part.show(perfFace)
                 #CHECK 'Part.Compound' object has no attribute 'normalAt' ; might need it
                 # if perfFace.normalAt(0, 0) != FaceDir:
                 #     perfFace.reverse()
                 if perforationAngle > 0.0:
-                    perfFace = perfFace.rotate(revAxisP, revAxisV, (bendA/2)-(perforationAngle/2))
+                    perfFace = perfFace.rotate(
+                        revAxisP,
+                        revAxisV,
+                        (bendA/2)-(perforationAngle/2)
+                    )
                     perfSolid = perfFace.revolve(revAxisP, revAxisV, perforationAngle)
                 else:
                     perfSolid = perfFace.revolve(revAxisP, revAxisV, bendA)
@@ -1399,7 +1433,22 @@ def smBend(
 
             # Remove perforation
             if perforate:
-                perfFace = smMakePerforationFace(lenEdge, thkDir, bendR, bendA, perforationAngle, flipped, thk, gap1, gap2, perforationInitialLength, perforationInitialLength, perforationMaxLength, nonperforationMaxLength, op="SMR")
+                perfFace = smMakePerforationFace(
+                    lenEdge,
+                    thkDir,
+                    bendR,
+                    bendA,
+                    perforationAngle,
+                    flipped,
+                    thk,
+                    gap1,
+                    gap2,
+                    perforationInitialLength,
+                    perforationInitialLength,
+                    perforationMaxLength,
+                    nonperforationMaxLength,
+                    op="SMR",
+                )
                 #CHECK 'Part.Compound' object has no attribute 'normalAt' ; might need it
                 # if perfFace.normalAt(0, 0) != FaceDir:
                 #     perfFace.reverse()
@@ -1636,7 +1685,7 @@ class SMBendWall:
             False,
             "ParametersPerforation",
         )
-        smAddAngleProperty( #THINK I initially tried for width, but that was hard, and its merits vs angle is debatable in view of bend angle rather than length.
+        smAddAngleProperty(
             obj,
             "perforationAngle",
             FreeCAD.Qt.translate("App::Property", "Perforation Angle"),
