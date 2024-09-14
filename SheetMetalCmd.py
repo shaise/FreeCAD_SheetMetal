@@ -190,20 +190,26 @@ def smMakePerforationFace(edge, dir, bendR, bendA, perforationAngle, flipped, ex
     extAngle = (perforationAngle - bendA) / 2;
     S = (1 / math.cos(extAngle * (2*math.pi/360)))
 
+    pivotL = -bendR
+    swingL = extLen + (S-1)*(bendR+extLen)
+    if not flipped:
+        pivotL = extLen - pivotL
+        swingL = extLen - swingL
+
     # Initial perf, near
-    p1 = edge.valueAt(edge.FirstParameter + gap1) + dir.normalize() * -bendR
-    p2 = edge.valueAt(edge.FirstParameter + gap1 + lenIPerf1) + dir.normalize() * -bendR
-    p3 = edge.valueAt(edge.FirstParameter + gap1 + lenIPerf1) + dir.normalize() * (extLen + (S-1)*(bendR+extLen))
-    p4 = edge.valueAt(edge.FirstParameter + gap1) + dir.normalize() * (extLen + (S-1)*(bendR+extLen))
+    p1 = edge.valueAt(edge.FirstParameter + gap1) + dir.normalize() * pivotL
+    p2 = edge.valueAt(edge.FirstParameter + gap1 + lenIPerf1) + dir.normalize() * pivotL
+    p3 = edge.valueAt(edge.FirstParameter + gap1 + lenIPerf1) + dir.normalize() * swingL
+    p4 = edge.valueAt(edge.FirstParameter + gap1) + dir.normalize() * swingL
     w = Part.makePolygon([p1, p2, p3, p4, p1])
     face = Part.Face(w)
     totalFace = face
 
     # Initial perf, far
-    p1 = edge.valueAt(edge.LastParameter - gap2 - lenIPerf2) + dir.normalize() * -bendR
-    p2 = edge.valueAt(edge.LastParameter - gap2) + dir.normalize() * -bendR
-    p3 = edge.valueAt(edge.LastParameter - gap2) + dir.normalize() * (extLen + (S-1)*(bendR+extLen))
-    p4 = edge.valueAt(edge.LastParameter - gap2 - lenIPerf2) + dir.normalize() * (extLen + (S-1)*(bendR+extLen))
+    p1 = edge.valueAt(edge.LastParameter - gap2 - lenIPerf2) + dir.normalize() * pivotL
+    p2 = edge.valueAt(edge.LastParameter - gap2) + dir.normalize() * pivotL
+    p3 = edge.valueAt(edge.LastParameter - gap2) + dir.normalize() * swingL
+    p4 = edge.valueAt(edge.LastParameter - gap2 - lenIPerf2) + dir.normalize() * swingL
     w = Part.makePolygon([p1, p2, p3, p4, p1])
     face = Part.Face(w)
     totalFace = totalFace.fuse(face)
@@ -211,10 +217,10 @@ def smMakePerforationFace(edge, dir, bendR, bendA, perforationAngle, flipped, ex
     # Perforations, inner
     for i in range(P):
         x = (edge.FirstParameter + gap1 + lenIPerf1) + (Ln * F * (i+1)) + (Lp * F * i)
-        p1 = edge.valueAt(x) + dir.normalize() * -bendR
-        p2 = edge.valueAt(x + Lp*F) + dir.normalize() * -bendR
-        p3 = edge.valueAt(x + Lp*F) + dir.normalize() * (extLen + (S-1)*(bendR+extLen))
-        p4 = edge.valueAt(x) + dir.normalize() * (extLen + (S-1)*(bendR+extLen))
+        p1 = edge.valueAt(x) + dir.normalize() * pivotL
+        p2 = edge.valueAt(x + Lp*F) + dir.normalize() * pivotL
+        p3 = edge.valueAt(x + Lp*F) + dir.normalize() * swingL
+        p4 = edge.valueAt(x) + dir.normalize() * swingL
         w = Part.makePolygon([p1, p2, p3, p4, p1])
         face = Part.Face(w)
         totalFace = totalFace.fuse(face)
@@ -1357,8 +1363,9 @@ def smBend(
 
             # Remove perforation
             if perforate:
+                #CHECK I'm not sure about flipped - the main one gets overwritten for each sublist item
                 perfFace = smMakePerforationFace(lenEdge, thkDir, bendR, bendA, perforationAngle, flipped, thk, gap1, gap2, perforationInitialLength, perforationInitialLength, perforationMaxLength, nonperforationMaxLength, op="SMR")
-                Part.show(perfFace)
+                # Part.show(perfFace)
                 #CHECK 'Part.Compound' object has no attribute 'normalAt' ; might need it
                 # if perfFace.normalAt(0, 0) != FaceDir:
                 #     perfFace.reverse()
@@ -1367,7 +1374,7 @@ def smBend(
                     perfSolid = perfFace.revolve(revAxisP, revAxisV, perforationAngle)
                 else:
                     perfSolid = perfFace.revolve(revAxisP, revAxisV, bendA)
-                Part.show(perfSolid)
+                # Part.show(perfSolid)
                 resultSolid = resultSolid.cut(perfSolid)
 
         # Produce unfold Solid
