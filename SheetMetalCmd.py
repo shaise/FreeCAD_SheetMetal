@@ -1797,10 +1797,10 @@ class SMBendWall:
                 maxExtendGap=fp.maxExtendDist.Value,
                 LengthSpec=fp.LengthSpec,
                 perforate=fp.Perforate,
-                perforationAngle=fp.perforationAngle,
-                perforationInitialLength=fp.perforationInitialLength,
-                perforationMaxLength=fp.perforationMaxLength,
-                nonperforationMaxLength=fp.nonperforationMaxLength,
+                perforationAngle=fp.perforationAngle.Value,
+                perforationInitialLength=fp.perforationInitialLength.Value,
+                perforationMaxLength=fp.perforationMaxLength.Value,
+                nonperforationMaxLength=fp.nonperforationMaxLength.Value,
             )
             faces = smGetFace(f, s)
             face = faces
