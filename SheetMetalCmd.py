@@ -986,11 +986,11 @@ def smBend(
     sketch=None,
     extendType="Simple",
     LengthSpec="Leg",
-    perforate=False,
-    perforationAngle=0.0,
-    perforationInitialLength=5.0,
-    perforationMaxLength=5.0,
-    nonperforationMaxLength=5.0,
+    Perforate=False,
+    PerforationAngle=0.0,
+    PerforationInitialLength=5.0,
+    PerforationMaxLength=5.0,
+    NonperforationMaxLength=5.0,
 ):
     # if sketch is as wall
     sketches = False
@@ -1377,35 +1377,35 @@ def smBend(
                 # Part.show(resultSolid,"resultSolid")
 
             # Remove perforation
-            if perforate:
+            if Perforate:
                 #CHECK I'm not sure about flipped - the main one gets overwritten for each sublist item
                 perfFace = smMakePerforationFace(
                     lenEdge,
                     thkDir,
                     bendR,
                     bendA,
-                    perforationAngle,
+                    PerforationAngle,
                     flipped,
                     thk,
                     gap1,
                     gap2,
-                    perforationInitialLength,
-                    perforationInitialLength,
-                    perforationMaxLength,
-                    nonperforationMaxLength,
+                    PerforationInitialLength,
+                    PerforationInitialLength,
+                    PerforationMaxLength,
+                    NonperforationMaxLength,
                     op="SMR",
                 )
                 # Part.show(perfFace)
                 #CHECK 'Part.Compound' object has no attribute 'normalAt' ; might need it
                 # if perfFace.normalAt(0, 0) != FaceDir:
                 #     perfFace.reverse()
-                if perforationAngle > 0.0:
+                if PerforationAngle > 0.0:
                     perfFace = perfFace.rotate(
                         revAxisP,
                         revAxisV,
-                        (bendA/2)-(perforationAngle/2)
+                        (bendA/2)-(PerforationAngle/2)
                     )
-                    perfSolid = perfFace.revolve(revAxisP, revAxisV, perforationAngle)
+                    perfSolid = perfFace.revolve(revAxisP, revAxisV, PerforationAngle)
                 else:
                     perfSolid = perfFace.revolve(revAxisP, revAxisV, bendA)
                 # Part.show(perfSolid)
@@ -1432,28 +1432,28 @@ def smBend(
                 resultSolid = resultSolid.fuse(wallSolid)
 
             # Remove perforation
-            if perforate:
+            if Perforate:
                 perfFace = smMakePerforationFace(
                     lenEdge,
                     thkDir,
                     bendR,
                     bendA,
-                    perforationAngle,
+                    PerforationAngle,
                     flipped,
                     thk,
                     gap1,
                     gap2,
-                    perforationInitialLength,
-                    perforationInitialLength,
-                    perforationMaxLength,
-                    nonperforationMaxLength,
+                    PerforationInitialLength,
+                    PerforationInitialLength,
+                    PerforationMaxLength,
+                    NonperforationMaxLength,
                     op="SMR",
                 )
                 #CHECK 'Part.Compound' object has no attribute 'normalAt' ; might need it
                 # if perfFace.normalAt(0, 0) != FaceDir:
                 #     perfFace.reverse()
-                if perforationAngle > 0.0:
-                    perfUnfoldLength = (bendR + kfactor * thk) * perforationAngle * math.pi / 180.0
+                if PerforationAngle > 0.0:
+                    perfUnfoldLength = (bendR + kfactor * thk) * PerforationAngle * math.pi / 180.0
                     perfFace = perfFace.translate(FaceDir * ((unfoldLength/2)-(perfUnfoldLength/2)))
                     perfSolid = perfFace.extrude(FaceDir * perfUnfoldLength)
                 else:
@@ -1678,37 +1678,30 @@ class SMBendWall:
             False,
             "ParametersPerforation",
         )
-        smAddBoolProperty(
-            obj,
-            "Perforate",
-            FreeCAD.Qt.translate("App::Property", "Enable Perforation"),
-            False,
-            "ParametersPerforation",
-        )
         smAddAngleProperty(
             obj,
-            "perforationAngle",
+            "PerforationAngle",
             FreeCAD.Qt.translate("App::Property", "Perforation Angle"),
             0.0,
             "ParametersPerforation",
         )
         smAddLengthProperty(
             obj,
-            "perforationInitialLength",
+            "PerforationInitialLength",
             FreeCAD.Qt.translate("App::Property", "Initial Perforation Length"),
             5.0,
             "ParametersPerforation",
         )
         smAddLengthProperty(
             obj,
-            "perforationMaxLength",
+            "PerforationMaxLength",
             FreeCAD.Qt.translate("App::Property", "Perforation Max Length"),
             5.0,
             "ParametersPerforation",
         )
         smAddLengthProperty(
             obj,
-            "nonperforationMaxLength",
+            "NonperforationMaxLength",
             FreeCAD.Qt.translate("App::Property", "Non-Perforation Max Length"),
             5.0,
             "ParametersPerforation",
@@ -1796,11 +1789,11 @@ class SMBendWall:
                 mingap=fp.minGap.Value,
                 maxExtendGap=fp.maxExtendDist.Value,
                 LengthSpec=fp.LengthSpec,
-                perforate=fp.Perforate,
-                perforationAngle=fp.perforationAngle.Value,
-                perforationInitialLength=fp.perforationInitialLength.Value,
-                perforationMaxLength=fp.perforationMaxLength.Value,
-                nonperforationMaxLength=fp.nonperforationMaxLength.Value,
+                Perforate=fp.Perforate,
+                PerforationAngle=fp.PerforationAngle.Value,
+                PerforationInitialLength=fp.PerforationInitialLength.Value,
+                PerforationMaxLength=fp.PerforationMaxLength.Value,
+                NonperforationMaxLength=fp.NonperforationMaxLength.Value,
             )
             faces = smGetFace(f, s)
             face = faces
