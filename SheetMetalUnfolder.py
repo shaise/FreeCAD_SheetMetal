@@ -3255,6 +3255,9 @@ def generateSketch(edges, name, color):
 
     if FreeCAD.GuiUp:
         rgb_color = tuple(int(color[i : i + 2], 16) for i in (1, 3, 5))
+        v = FreeCAD.Version()
+        if v[0] == '0' and int(v[1]) < 21:
+            rgb_color = tuple(i / 255 for i in rgb_color)
         sk.ViewObject.LineColor = rgb_color
         sk.ViewObject.PointColor = rgb_color
 
