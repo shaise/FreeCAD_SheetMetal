@@ -34,7 +34,7 @@ smWBpath = os.path.dirname(smwb_locator.__file__)
 smWB_icons_path = os.path.join(smWBpath, "Resources", "icons")
 
 # add translations path
-LanguagePath = os.path.join(smWBpath, "translations")
+LanguagePath = os.path.join(smWBpath, "Resources", "translations")
 Gui.addLanguagePath(LanguagePath)
 Gui.updateLocale()
 
