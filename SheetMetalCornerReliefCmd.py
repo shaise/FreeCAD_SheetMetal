@@ -259,7 +259,7 @@ def smCornerR(
     resultSolid = MainObject.Shape.copy()
     REdgelist = []
     for selEdgeName in selEdgeNames:
-        REdge = resultSolid.getElement(SheetMetalBaseCmd.getElementFromTNP(selEdgeName))
+        REdge = resultSolid.getElement(SheetMetalTools.getElementFromTNP(selEdgeName))
         REdgelist.append(REdge)
     DetailList = getBendDetail(resultSolid, REdgelist[0], REdgelist[1], kfactor)
     cornerPoint, centerPoint, LargeFace, thk, unfoldLength, neutralRadius = DetailList
@@ -435,6 +435,7 @@ def smCornerR(
 class SMCornerRelief:
     def __init__(self, obj):
         '''"Add Corner Relief to Sheetmetal Bends"'''
+        selobj = Gui.Selection.getSelectionEx()
         _tip_ = FreeCAD.Qt.translate("App::Property", "Corner Relief Type")
         obj.addProperty(
             "App::PropertyEnumeration", "ReliefSketch", "Parameters", _tip_
@@ -448,7 +449,7 @@ class SMCornerRelief:
         _tip_ = FreeCAD.Qt.translate("App::Property", "Base object")
         obj.addProperty(
             "App::PropertyLinkSub", "baseObject", "Parameters", _tip_
-        )
+        ).baseObject = (selobj[0].Object, selobj[0].SubElementNames)
         _tip_ = FreeCAD.Qt.translate("App::Property", "Size of Shape")
         obj.addProperty("App::PropertyLength", "Size", "Parameters", _tip_).Size = 3.0
         _tip_ = FreeCAD.Qt.translate("App::Property", "Size Ratio of Shape")
@@ -487,6 +488,9 @@ class SMCornerRelief:
         )
         fp.Shape = s
 
+        Gui.ActiveDocument.getObject(fp.baseObject[0].Name).Visibility = False
+        if fp.Sketch:
+            Gui.ActiveDocument.getObject(fp.Sketch.Name).Visibility = False
 
 ##########################################################################################################
 # Gui code

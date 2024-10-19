@@ -86,7 +86,7 @@ def smRelief(relief = 2.0, selVertexNames = ' ', MainObject = None):
 
   resultSolid = MainObject
   for selVertexName in selVertexNames:
-    vertex = MainObject.getElement(selVertexName)
+    vertex = MainObject.getElement(SheetMetalTools.getElementFromTNP(selVertexName))
     facelist = MainObject.ancestorsOfType(vertex, Part.Face)
 
     extsolidlist = []
@@ -112,10 +112,11 @@ def smRelief(relief = 2.0, selVertexNames = ' ', MainObject = None):
 class SMRelief:
   def __init__(self, obj):
     '''"Add Relief to Solid" '''
+    selobj = Gui.Selection.getSelectionEx()[0]
     _tip_ = FreeCAD.Qt.translate("App::Property","Relief Size")
     obj.addProperty("App::PropertyLength","relief","Parameters",_tip_).relief = 2.0
     _tip_ = FreeCAD.Qt.translate("App::Property","Base Object")
-    obj.addProperty("App::PropertyLinkSub", "baseObject", "Parameters",_tip_)
+    obj.addProperty("App::PropertyLinkSub", "baseObject", "Parameters",_tip_).baseObject = (selobj.Object, selobj.SubElementNames)
     obj.Proxy = self
 
   def getElementMapVersion(self, _fp, ver, _prop, restored):
@@ -128,6 +129,7 @@ class SMRelief:
     Main_Object = fp.baseObject[0].Shape.copy()
     s = smRelief(relief = fp.relief.Value, selVertexNames = fp.baseObject[1], MainObject = Main_Object)
     fp.Shape = s
+    fp.baseObject[0].ViewObject.Visibility = False
 
 
 ##########################################################################################################

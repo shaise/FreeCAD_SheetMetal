@@ -128,11 +128,11 @@ class SMBendWall:
     '''"Print a short message when doing a recomputation, this method is mandatory" '''
 
     base = fp.baseObject[0].Shape
-    base_face = base.getElement(SheetMetalBaseCmd.getElementFromTNP(fp.baseObject[1][0]))
+    base_face = base.getElement(SheetMetalTools.getElementFromTNP(fp.baseObject[1][0]))
     thk = smthk(base, base_face)
     fp.thickness = thk
     tool = fp.toolObject[0].Shape
-    tool_faces = [tool.getElement(SheetMetalBaseCmd.getElementFromTNP(fp.toolObject[1][i])) for i in range(len(fp.toolObject[1]))]
+    tool_faces = [tool.getElement(SheetMetalTools.getElementFromTNP(fp.toolObject[1][i])) for i in range(len(fp.toolObject[1]))]
 
     offsetlist = []
     if fp.Sketch:

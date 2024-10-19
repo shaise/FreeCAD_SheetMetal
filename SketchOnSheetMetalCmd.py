@@ -128,7 +128,7 @@ def smSketchOnSheetMetal(
     kfactor=0.5, sketch="", flipped=False, selFaceNames="", MainObject=None
 ):
     resultSolid = MainObject.Shape.copy()
-    selElement = resultSolid.getElement(SheetMetalBaseCmd.getElementFromTNP(selFaceNames[0]))
+    selElement = resultSolid.getElement(SheetMetalTools.getElementFromTNP(selFaceNames[0]))
     LargeFace = smFace(selElement, resultSolid)
     sketch_face = Part.makeFace(sketch.Shape.Wires, "Part::FaceMakerBullseye")
 

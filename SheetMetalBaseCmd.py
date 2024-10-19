@@ -255,8 +255,8 @@ if SheetMetalTools.isGuiLoaded():
             selobj = Gui.Selection.getSelectionEx()[0].Object
             if hasattr(view, "getActiveObject"):
                 activeBody = view.getActiveObject("pdbody")
-            #    if not SheetMetalTools.smIsOperationLegal(activeBody, selobj):
-            #        return
+            # if not SheetMetalTools.smIsOperationLegal(activeBody, selobj):
+            #     return
             doc.openTransaction("BaseBend")
             if activeBody is None:
                 a = doc.addObject("Part::FeaturePython", "BaseBend")

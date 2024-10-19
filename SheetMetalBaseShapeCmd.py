@@ -32,6 +32,7 @@ language_path = SheetMetalTools.language_path
 
 base_shape_types = ["Flat", "L-Shape", "U-Shape", "Tub", "Hat", "Box"]
 origin_location_types = ["-X,-Y", "-X,0", "-X,+Y", "0,-Y", "0,0", "0,+Y", "+X,-Y", "+X,0", "+X,+Y"]
+origin_location_buttons = ["BL", "CL", "TL", "BC", "CC", "TC", "BR", "CR", "TR"]
 
 # IMPORTANT: please remember to change the element map version in case of any
 # changes in modeling logic
@@ -211,7 +212,7 @@ class SMBaseShape:
 ##########################################################################################################
 
 if SheetMetalTools.isGuiLoaded():
-    from PySide import QtCore
+    from PySide import QtCore, QtGui
     from FreeCAD import Gui
     from SheetMetalLogger import SMLogger
 
@@ -222,11 +223,15 @@ if SheetMetalTools.isGuiLoaded():
     ##########################################################################################################
 
     class BaseShapeTaskPanel:
-        def __init__(self):
+        def __init__(self, baseObj):
+            self.obj = baseObj
             QtCore.QDir.addSearchPath('Icons', icons_path)
             path = os.path.join(panels_path, 'BaseShapeOptions.ui')
             self.form = Gui.PySideUic.loadUi(path)
             self.formReady = False
+            self.firstTime = True
+            self.selOrigButton = None
+            self.spinPairs = []
             self.ShowAxisCross()
             self.setupUi()
 
@@ -237,19 +242,25 @@ if SheetMetalTools.isGuiLoaded():
         def _stateToBool(self, state):
             return True if state == QtCore.Qt.Checked else False
 
+        def connectSpin(self, formvar, objvar):
+            formvar.valueChanged.connect(self.spinValChanged)
+            Gui.ExpressionBinding(formvar).bind(self.obj, objvar)
+            self.spinPairs.append((formvar, objvar))
+
         def setupUi(self):
-            #box = FreeCAD.ActiveDocument.addObject("Part::Box", "Box")
-            #bind = Gui.ExpressionBinding(self.form.bHeightSpin).bind(box,"Length")
-            #FreeCAD.ActiveDocument.openTransaction("BaseShape")
-            self.form.bRadiusSpin.valueChanged.connect(self.spinValChanged)
-            self.form.bThicknessSpin.valueChanged.connect(self.spinValChanged)
-            self.form.bWidthSpin.valueChanged.connect(self.spinValChanged)
-            self.form.bHeightSpin.valueChanged.connect(self.spinValChanged)
-            self.form.bFlangeWidthSpin.valueChanged.connect(self.spinValChanged)
-            self.form.bLengthSpin.valueChanged.connect(self.spinValChanged)
+            self.connectSpin(self.form.bRadiusSpin, "radius")
+            self.connectSpin(self.form.bThicknessSpin, "thickness")
+            self.connectSpin(self.form.bWidthSpin, "width")
+            self.connectSpin(self.form.bHeightSpin, "height")
+            self.connectSpin(self.form.bFlangeWidthSpin, "flangeWidth")
+            self.connectSpin(self.form.bLengthSpin, "length")
+
             self.form.shapeType.currentIndexChanged.connect(self.typeChanged)
-            self.form.originLoc.currentIndexChanged.connect(self.spinValChanged)
             self.form.chkFillGaps.stateChanged.connect(self.checkChanged)
+            for origloc in origin_location_buttons:
+                buttname = 'push' + origloc
+                butt = self.form.findChild(QtGui.QPushButton, buttname)
+                butt.pressed.connect(lambda b = butt: self.origButtPressed(b))
             self.form.update()
 
             #SMLogger.log(str(self.formReady) + " <2 \n")
@@ -259,14 +270,37 @@ if SheetMetalTools.isGuiLoaded():
             self.form.bRadiusSpin.setEnabled(not type == "Flat")
             self.form.bHeightSpin.setEnabled(not type == "Flat")
 
+        def buttonToOriginType(self, butt):
+            if butt is None:
+                name = 'pushCC'
+            else:
+                name = butt.objectName()
+            return origin_location_types[origin_location_buttons.index(name[-2:])]
+        
+        def originTypeToButton(self, type):
+            name = "push" + origin_location_buttons[origin_location_types.index(type)]
+            return self.form.findChild(QtGui.QPushButton, name)
+        
+        def setSelectedOrigButton(self, butt):
+            if self.selOrigButton is not None:
+                self.selOrigButton.setIcon(QtGui.QIcon())
+            if butt is not None:
+                butt.setIcon(QtGui.QIcon('Icons:BaseShape_Sel.svg'))
+            self.selOrigButton = butt
+
         def spinValChanged(self):
             if not self.formReady:
-               return
+                return
             self.updateObj()
             self.obj.recompute()
 
         def typeChanged(self):
             self.updateEnableState()
+            self.spinValChanged()
+
+        def origButtPressed(self, butt):
+            print(butt.objectName())
+            self.setSelectedOrigButton(butt)
             self.spinValChanged()
 
         def checkChanged(self):
@@ -282,26 +316,27 @@ if SheetMetalTools.isGuiLoaded():
         def updateObj(self):
             #spin = Gui.UiLoader().createWidget("Gui::QuantitySpinBox")
             #SMLogger.log(str(self.form.bRadiusSpin.property('rawValue')))
-            self.obj.radius = self.form.bRadiusSpin.property('value')
-            self.obj.thickness = self.form.bThicknessSpin.property('value')
-            self.obj.width = self.form.bWidthSpin.property('value')
-            self.obj.height = self.form.bHeightSpin.property('value')
-            self.obj.flangeWidth = self.form.bFlangeWidthSpin.property('value')
-            self.obj.length = self.form.bLengthSpin.property('value')
+            for formvar, objvar in self.spinPairs:
+                setattr(self.obj, objvar, formvar.property("value"))
+            
             selected_type = self.form.shapeType.currentText()
             if selected_type not in base_shape_types:
                 selected_type = base_shape_types[self.form.shapeType.currentIndex()]
             self.obj.shapeType = selected_type
-            self.obj.originLoc = origin_location_types[self.form.originLoc.currentIndex()]
+            self.obj.originLoc = self.buttonToOriginType(self.selOrigButton)
             self.obj.fillGaps = self._stateToBool(self.form.chkFillGaps.checkState())
 
         def accept(self):
             doc = FreeCAD.ActiveDocument
             self.updateObj()
+            if self.firstTime  and self._stateToBool(self.form.chkNewBody.checkState()):
+                body = FreeCAD.activeDocument().addObject('PartDesign::Body','Body')
+                body.Label = 'Body'
+                body.addObject(self.obj)
+                Gui.ActiveDocument.ActiveView.setActiveObject('pdbody', body)
             doc.commitTransaction()
             Gui.Control.closeDialog()
             doc.recompute()
-            Gui.ActiveDocument.resetEdit()
             self.RevertAxisCross()
 
 
@@ -324,8 +359,9 @@ if SheetMetalTools.isGuiLoaded():
             self.updateSpin(self.form.bFlangeWidthSpin, 'flangeWidth')
             self.updateSpin(self.form.bLengthSpin, 'length')
             self.form.shapeType.setCurrentText(self.obj.shapeType)
-            self.form.originLoc.setCurrentIndex(origin_location_types.index(self.obj.originLoc))
+            self.setSelectedOrigButton(self.originTypeToButton(self.obj.originLoc))
             self.form.chkFillGaps.setCheckState(self._boolToState(self.obj.fillGaps))
+            self.form.chkNewBody.setVisible(self.firstTime)
             self.formReady = True
 
 
@@ -385,8 +421,7 @@ if SheetMetalTools.isGuiLoaded():
             if mode != 0:
                 return None
                 return super.setEdit(vobj, mode)
-            taskd = BaseShapeTaskPanel()
-            taskd.obj = vobj.Object
+            taskd = BaseShapeTaskPanel(vobj.Object)
             taskd.update()
             #self.Object.ViewObject.Visibility=False
             Gui.Selection.clearSelection()
@@ -440,8 +475,7 @@ if SheetMetalTools.isGuiLoaded():
             activeBody.addObject(a)
             doc.recompute()
 
-            dialog = BaseShapeTaskPanel()
-            dialog.obj = a
+            dialog = BaseShapeTaskPanel(a)
             dialog.update()
             Gui.Control.showDialog(dialog)
 

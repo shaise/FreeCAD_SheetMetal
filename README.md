@@ -99,6 +99,7 @@ Starting from FreeCAD 0.17 it can be installed via the [Addon Manager](https://g
 * FreeCAD Forum announcement/discussion [thread](https://forum.freecadweb.org/viewtopic.php?f=3&t=60818) 
 
 #### Release notes:
+* V0.5.00 19 Oct 2024:  Merge Ondsel changes made by [@adrianinsaval][adrianinsaval].  
 * V0.4.26 18 Sep 2024:  Add bend perforation support [@Erhannis][Erhannis].  
                       - Make TRANSLATION.md clearer by [@luzpaz]luzpaz.  
 * V0.4.25 09 Sep 2024:  Comment-out debug line by [@Roy-043][Roy-043].  
@@ -252,6 +253,7 @@ Starting from FreeCAD 0.17 it can be installed via the [Addon Manager](https://g
 [free777cat]: https://github.com/free777cat
 [YakoYakoYokuYoku]: https://github.com/YakoYakoYokuYoku
 [Erhannis]: https://github.com/Erhannis
+[adrianinsaval]https://github.com/adrianinsaval
 [robbeban]https://github.com/robbeban/FreeCAD_SheetMetal/tree/master
 [topic82482]: https://forum.freecad.org/viewtopic.php?t=82482
 [30]: https://github.com/shaise/FreeCAD_SheetMetal/issues/30

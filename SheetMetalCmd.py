@@ -79,6 +79,73 @@ def smMakeReliefFace(edge, dir, gap, reliefW, reliefD, reliefType, op=""):
         face.mapShapes([(edge, face)], [], op)
     return face
 
+def smMakePerforationFace(
+        edge,
+        dir,
+        bendR,
+        bendA,
+        perforationAngle,
+        flipped,
+        extLen,
+        gap1,
+        gap2,
+        lenIPerf1,
+        lenIPerf2,
+        lenPerf,
+        lenNPerf,
+        op="",
+):
+    L0 = (edge.LastParameter - gap2 - lenIPerf2) - (edge.FirstParameter + gap1 + lenIPerf1)
+    Lp = lenPerf
+    Ln = lenNPerf
+    P0 = (L0-Ln) / (Lp+Ln)
+    P = math.ceil(P0)
+    N = P+1
+    F = L0 / (math.ceil(P0)*Lp + math.ceil(P0)*Ln + Ln)
+
+    if perforationAngle == 0:
+        perforationAngle = bendA
+    extAngle = (perforationAngle - bendA) / 2;
+    S = (1 / math.cos(extAngle * (2*math.pi/360)))
+
+    pivotL = -bendR
+    swingL = extLen + (S-1)*(bendR+extLen)
+    if not flipped:
+        pivotL = extLen - pivotL
+        swingL = extLen - swingL
+
+    # Initial perf, near
+    p1 = edge.valueAt(edge.FirstParameter + gap1) + dir.normalize() * pivotL
+    p2 = edge.valueAt(edge.FirstParameter + gap1 + lenIPerf1) + dir.normalize() * pivotL
+    p3 = edge.valueAt(edge.FirstParameter + gap1 + lenIPerf1) + dir.normalize() * swingL
+    p4 = edge.valueAt(edge.FirstParameter + gap1) + dir.normalize() * swingL
+    w = Part.makePolygon([p1, p2, p3, p4, p1])
+    face = Part.Face(w)
+    totalFace = face
+
+    # Initial perf, far
+    p1 = edge.valueAt(edge.LastParameter - gap2 - lenIPerf2) + dir.normalize() * pivotL
+    p2 = edge.valueAt(edge.LastParameter - gap2) + dir.normalize() * pivotL
+    p3 = edge.valueAt(edge.LastParameter - gap2) + dir.normalize() * swingL
+    p4 = edge.valueAt(edge.LastParameter - gap2 - lenIPerf2) + dir.normalize() * swingL
+    w = Part.makePolygon([p1, p2, p3, p4, p1])
+    face = Part.Face(w)
+    totalFace = totalFace.fuse(face)
+
+    # Perforations, inner
+    for i in range(P):
+        x = (edge.FirstParameter + gap1 + lenIPerf1) + (Ln * F * (i+1)) + (Lp * F * i)
+        p1 = edge.valueAt(x) + dir.normalize() * pivotL
+        p2 = edge.valueAt(x + Lp*F) + dir.normalize() * pivotL
+        p3 = edge.valueAt(x + Lp*F) + dir.normalize() * swingL
+        p4 = edge.valueAt(x) + dir.normalize() * swingL
+        w = Part.makePolygon([p1, p2, p3, p4, p1])
+        face = Part.Face(w)
+        totalFace = totalFace.fuse(face)
+
+    if hasattr(totalFace, "mapShapes"):
+        totalFace.mapShapes([(edge, totalFace)], None, op)
+    return totalFace
 
 def smMakeFace(edge, dir, extLen, gap1=0.0,
                gap2=0.0, angle1=0.0, angle2=0.0, op=""):
@@ -192,9 +259,12 @@ def smGetFace(Faces, obj):
 
 def LineExtend(edge, distance1, distance2):
     # Extend a ine by given distances
-    return edge.Curve.toShape(
+    result = edge.Curve.toShape(
         edge.FirstParameter - distance1, edge.LastParameter + distance2
     )
+    if hasattr(result, "mapShapes"):
+        result.mapShapes([(edge, result)], [])
+    return result
 
 
 def getParallel(edge1, edge2):
@@ -334,12 +404,12 @@ def check_parallel(edge1, edge2):
     v2 = edge2.Vertexes[0].Point - edge2.Vertexes[1].Point
     if v1.isEqual(v2,0.00001):
         return  True, edge2.Vertexes[0].Point - edge1.Vertexes[0].Point
-    if v1.isEqual(v2,0.00001) or v1.isEqual(-v2,0.00001):
+    if v1.isEqual(-v2,0.00001):
         return  True, edge2.Vertexes[0].Point - edge1.Vertexes[1].Point
     return False, None
 
 def sheet_thk(MainObject, selFaceName):
-    selItem = MainObject.getElement(selFaceName)
+    selItem = MainObject.getElement(SheetMetalTools.getElementFromTNP(selFaceName))
     selFace = smFace(selItem, MainObject)
     # find the narrow edge
     thk = 999999.0
@@ -366,7 +436,7 @@ def sheet_thk(MainObject, selFaceName):
 
 def smEdge(selFaceName, MainObject):
     # find Edge, if Face Selected
-    selItem = MainObject.getElement(selFaceName)
+    selItem = MainObject.getElement(SheetMetalTools.getElementFromTNP(selFaceName))
     thkDir = None
     if type(selItem) == Part.Face:
         # find the narrow edge
@@ -434,7 +504,7 @@ def getBendetail(selItemNames, MainObject, bendR, bendA, isflipped, offset, gap1
             bendA = -bendA
             flipped = not flipped
 
-        if type(MainObject.getElement(selItemName)) == Part.Edge:
+        if type(MainObject.getElement(SheetMetalTools.getElementFromTNP(selItemName))) == Part.Edge:
             flipped = not flipped
 
         if not (flipped):
@@ -817,6 +887,11 @@ def smBend(
     sketch=None,
     extendType="Simple",
     LengthSpec="Leg",
+    Perforate=False,
+    PerforationAngle=0.0,
+    PerforationInitialLength=5.0,
+    PerforationMaxLength=5.0,
+    NonperforationMaxLength=5.0,
 ):
     # if sketch is as wall
     sketches = False
@@ -1155,7 +1230,7 @@ def smBend(
         else:
             revAxisP = lenEdge.valueAt(lenEdge.FirstParameter) + thkDir * -bendR
 
-        # wallSolid = None
+        wallSolid = None
         if sketches:
             Wall_face = Part.makeFace(sketch.Shape.Wires, "Part::FaceMakerBullseye")
             if inside:
@@ -1187,8 +1262,8 @@ def smBend(
             # Part.show(wallSolid.Faces[2])
             thk_faceList.append(wallSolid.Faces[2])
 
-        # Produce bend Solid
         if not (unfold):
+            # Produce bend Solid
             if bendA > 0.0:
                 # create bend
                 # narrow the wall if we have gaps
@@ -1202,8 +1277,43 @@ def smBend(
                 resultSolid = resultSolid.fuse(wallSolid)
                 # Part.show(resultSolid,"resultSolid")
 
-        # Produce unfold Solid
+            # Remove perforation
+            if Perforate:
+                #CHECK I'm not sure about flipped - the main one gets overwritten for each sublist item
+                perfFace = smMakePerforationFace(
+                    lenEdge,
+                    thkDir,
+                    bendR,
+                    bendA,
+                    PerforationAngle,
+                    flipped,
+                    thk,
+                    gap1,
+                    gap2,
+                    PerforationInitialLength,
+                    PerforationInitialLength,
+                    PerforationMaxLength,
+                    NonperforationMaxLength,
+                    op="SMR",
+                )
+                # Part.show(perfFace)
+                #CHECK 'Part.Compound' object has no attribute 'normalAt' ; might need it
+                # if perfFace.normalAt(0, 0) != FaceDir:
+                #     perfFace.reverse()
+                if PerforationAngle > 0.0:
+                    perfFace = perfFace.rotate(
+                        revAxisP,
+                        revAxisV,
+                        (bendA/2)-(PerforationAngle/2)
+                    )
+                    perfSolid = perfFace.revolve(revAxisP, revAxisV, PerforationAngle)
+                else:
+                    perfSolid = perfFace.revolve(revAxisP, revAxisV, bendA)
+                # Part.show(perfSolid)
+                resultSolid = resultSolid.cut(perfSolid)
+
         else:
+            # Produce unfold Solid
             if bendA > 0.0:
                 # create bend
                 unfoldLength = (bendR + kfactor * thk) * bendA * math.pi / 180.0
@@ -1216,10 +1326,42 @@ def smBend(
                 resultSolid = resultSolid.fuse(unfoldSolid)
 
             if extLen > 0.0:
+                # Flatten the wall back out
                 wallSolid.rotate(revAxisP, revAxisV, -bendA)
                 # Part.show(wallSolid, "wallSolid")
                 wallSolid.translate(FaceDir * unfoldLength)
                 resultSolid = resultSolid.fuse(wallSolid)
+
+            # Remove perforation
+            if Perforate:
+                perfFace = smMakePerforationFace(
+                    lenEdge,
+                    thkDir,
+                    bendR,
+                    bendA,
+                    PerforationAngle,
+                    flipped,
+                    thk,
+                    gap1,
+                    gap2,
+                    PerforationInitialLength,
+                    PerforationInitialLength,
+                    PerforationMaxLength,
+                    NonperforationMaxLength,
+                    op="SMR",
+                )
+                #CHECK 'Part.Compound' object has no attribute 'normalAt' ; might need it
+                # if perfFace.normalAt(0, 0) != FaceDir:
+                #     perfFace.reverse()
+                if PerforationAngle > 0.0:
+                    perfUnfoldLength = (bendR + kfactor * thk) * PerforationAngle * math.pi / 180.0
+                    perfFace = perfFace.translate(FaceDir * ((unfoldLength/2)-(perfUnfoldLength/2)))
+                    perfSolid = perfFace.extrude(FaceDir * perfUnfoldLength)
+                else:
+                    perfSolid = perfFace.extrude(FaceDir * unfoldLength)
+                # Part.show(perfSolid)
+                resultSolid = resultSolid.cut(perfSolid)
+            
     # Part.show(resultSolid, "resultSolid")
     return resultSolid, thk_faceList
 
@@ -1428,6 +1570,41 @@ class SMBendWall:
             None,
             "ParametersEx3",
         )
+        SheetMetalTools.smAddBoolProperty(
+            obj,
+            "Perforate",
+            FreeCAD.Qt.translate("App::Property", "Enable Perforation"),
+            False,
+            "ParametersPerforation",
+        )
+        SheetMetalTools.smAddAngleProperty(
+            obj,
+            "PerforationAngle",
+            FreeCAD.Qt.translate("App::Property", "Perforation Angle"),
+            0.0,
+            "ParametersPerforation",
+        )
+        SheetMetalTools.smAddLengthProperty(
+            obj,
+            "PerforationInitialLength",
+            FreeCAD.Qt.translate("App::Property", "Initial Perforation Length"),
+            5.0,
+            "ParametersPerforation",
+        )
+        SheetMetalTools.smAddLengthProperty(
+            obj,
+            "PerforationMaxLength",
+            FreeCAD.Qt.translate("App::Property", "Perforation Max Length"),
+            5.0,
+            "ParametersPerforation",
+        )
+        SheetMetalTools.smAddLengthProperty(
+            obj,
+            "NonperforationMaxLength",
+            FreeCAD.Qt.translate("App::Property", "Non-Perforation Max Length"),
+            5.0,
+            "ParametersPerforation",
+        )
 
     def getElementMapVersion(self, _fp, ver, _prop, restored):
         if not restored:
@@ -1510,6 +1687,11 @@ class SMBendWall:
                 mingap=fp.minGap.Value,
                 maxExtendGap=fp.maxExtendDist.Value,
                 LengthSpec=fp.LengthSpec,
+                Perforate=fp.Perforate,
+                PerforationAngle=fp.PerforationAngle.Value,
+                PerforationInitialLength=fp.PerforationInitialLength.Value,
+                PerforationMaxLength=fp.PerforationMaxLength.Value,
+                NonperforationMaxLength=fp.NonperforationMaxLength.Value,
             )
             faces = smGetFace(f, s)
             face = faces
@@ -1684,6 +1866,7 @@ if SheetMetalTools.isGuiLoaded():
 
         def __init__(self, obj):
             self.obj = obj
+            self.spinPairs = []
             path = os.path.join(panels_path, "FlangeParameters.ui")
             path2 = os.path.join(panels_path, "FlangeAdvancedParameters.ui")
             self.SelModeActive = False
@@ -1694,24 +1877,29 @@ if SheetMetalTools.isGuiLoaded():
             # flange parameters connects
             self.form[0].AddRemove.toggled.connect(self.toggleSelectionMode)
             self.form[0].BendType.currentIndexChanged.connect(self.updateProperties)
-            self.form[0].Offset.valueChanged.connect(self.updateProperties)
-            self.form[0].Radius.valueChanged.connect(self.updateProperties)
-            self.form[0].Angle.valueChanged.connect(self.updateProperties)
-            self.form[0].Length.valueChanged.connect(self.updateProperties)
+            self.connectSpin(self.form[0].Offset, "offset")
+            self.connectSpin(self.form[0].Radius, "radius")
+            self.connectSpin(self.form[0].Angle, "angle")
+            self.connectSpin(self.form[0].Length, "length")
             self.form[0].LengthSpec.currentIndexChanged.connect(self.updateProperties)
             self.form[0].UnfoldCheckbox.toggled.connect(self.updateProperties)
             self.form[0].ReversedCheckbox.toggled.connect(self.updateProperties)
-            self.form[0].extend1.valueChanged.connect(self.updateProperties)
-            self.form[0].extend2.valueChanged.connect(self.updateProperties)
+            self.connectSpin(self.form[0].extend1, "extend1")
+            self.connectSpin(self.form[0].extend2, "extend2")
             # advanced flange parameters connects
             self.form[1].reliefTypeButtonGroup.buttonToggled.connect(self.updateProperties)
-            self.form[1].reliefWidth.valueChanged.connect(self.updateProperties)
-            self.form[1].reliefDepth.valueChanged.connect(self.updateProperties)
+            self.connectSpin(self.form[1].reliefWidth, "reliefw")
+            self.connectSpin(self.form[1].reliefDepth, "reliefd")
             self.form[1].autoMiterCheckbox.toggled.connect(self.updateProperties)
-            self.form[1].minGap.valueChanged.connect(self.updateProperties)
-            self.form[1].maxExDist.valueChanged.connect(self.updateProperties)
-            self.form[1].miterAngle1.valueChanged.connect(self.updateProperties)
-            self.form[1].miterAngle2.valueChanged.connect(self.updateProperties)
+            self.connectSpin(self.form[1].minGap, "minGap")
+            self.connectSpin(self.form[1].maxExDist, "maxExtendDist")
+            self.connectSpin(self.form[1].miterAngle1, "miterangle1")
+            self.connectSpin(self.form[1].miterAngle2, "miterangle2")
+
+        def connectSpin(self, formvar, objvar):
+            formvar.valueChanged.connect(self.updateProperties)
+            Gui.ExpressionBinding(formvar).bind(self.obj, objvar)
+            self.spinPairs.append((formvar, objvar))
 
         def isAllowedAlterSelection(self):
             return True
@@ -1728,25 +1916,17 @@ if SheetMetalTools.isGuiLoaded():
                 self.form[0].Offset.setEnabled(True)
             else:
                 self.form[0].Offset.setEnabled(False)
-            self.obj.offset = self.form[0].Offset.property("value")
-            self.obj.radius = self.form[0].Radius.property("value")
-            self.obj.angle = self.form[0].Angle.property("value")
-            self.obj.length = self.form[0].Length.property("value")
+            
+            for formvar, objvar in self.spinPairs:
+                setattr(self.obj, objvar, formvar.property("value"))
+                
             self.obj.LengthSpec = self.form[0].LengthSpec.currentIndex()
             self.obj.unfold = self.form[0].UnfoldCheckbox.isChecked()
             self.obj.invert = self.form[0].ReversedCheckbox.isChecked()
-            self.obj.extend1 = self.form[0].extend1.property("value")
-            self.obj.extend2 = self.form[0].extend2.property("value")
             self.obj.reliefType = (
                 "Rectangle" if self.form[1].reliefRectangle.isChecked() else "Round"
             )
-            self.obj.reliefw = self.form[1].reliefWidth.property("value")
-            self.obj.reliefd = self.form[1].reliefDepth.property("value")
             self.obj.AutoMiter = self.form[1].autoMiterCheckbox.isChecked()
-            self.obj.minGap = self.form[1].minGap.property("value")
-            self.obj.maxExtendDist = self.form[1].maxExDist.property("value")
-            self.obj.miterangle1 = self.form[1].miterAngle1.property("value")
-            self.obj.miterangle2 = self.form[1].miterAngle2.property("value")
             self.obj.Document.recompute()
 
         def update(self):

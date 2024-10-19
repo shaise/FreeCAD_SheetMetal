@@ -15,6 +15,20 @@ def isGuiLoaded():
         return FreeCAD.GuiUp
     except:
         return False
+    
+if isGuiLoaded():
+    from PySide import QtCore, QtGui
+    def smWarnDialog(msg):
+        diag = QtGui.QMessageBox(
+            QtGui.QMessageBox.Warning,
+            FreeCAD.Qt.translate("QMessageBox", "Error in macro MessageBox"),
+            msg,
+        )
+        diag.setWindowModality(QtCore.Qt.ApplicationModal)
+        diag.exec_()
+else:
+    def smWarnDialog(msg):
+        SMLogger.warning(msg)
 
 def smBelongToBody(item, body):
     if body is None:
@@ -32,8 +46,8 @@ def smIsSketchObject(obj):
 
 def smIsOperationLegal(body, selobj):
     # FreeCAD.Console.PrintLog(str(selobj) + " " + str(body) + " " + str(smBelongToBody(selobj, body)) + "\n")
-    if smIsSketchObject(selobj) and not smBelongToBody(selobj, body):
-        SMLogger.warning(
+    if smIsPartDesign(selobj) and not smBelongToBody(selobj, body):
+        smWarnDialog(
             translate(
             "QMessageBox",
             "The selected geometry does not belong to the active Body.\n"
@@ -79,6 +93,11 @@ def getOriginalBendObject(obj):
                     return item
     return None
 
+def getElementFromTNP(tnpName):
+    names = tnpName.split('.')
+    if len(names) > 1:
+        FreeCAD.Console.PrintWarning("Warning: Tnp Name still visible: " + tnpName + "\n")
+    return names[len(names) - 1].lstrip('?')
 
 def smAddProperty(obj, proptype, name, proptip, defval=None, paramgroup="Parameters"):
     """

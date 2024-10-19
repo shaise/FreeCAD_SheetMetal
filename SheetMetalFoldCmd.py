@@ -82,7 +82,7 @@ def smFold(
         flipped = not flipped
     if not (unfold):
         if bendlinesketch and bendA > 0.0:
-            foldface = FoldShape.getElement(SheetMetalBaseCmd.getElementFromTNP(selFaceNames[0]))
+            foldface = FoldShape.getElement(SheetMetalTools.getElementFromTNP(selFaceNames[0]))
             tool = bendlinesketch.Shape.copy()
             normal = foldface.normalAt(0, 0)
             thk = smthk(FoldShape, foldface)
@@ -486,6 +486,13 @@ if SheetMetalTools.isGuiLoaded():
             if type(selFace) != Part.Face:
                 return False
             selobj = Gui.Selection.getSelection()[1]
+            if selobj.isDerivedFrom("Sketcher::SketchObject"):
+                return True
+            # handle cases where object is a link or clone
+            if selobj.isDerivedFrom("App::Link"):
+                selobj = selobj.LinkedObject
+            elif selobj.isDerivedFrom("Part::Part2DObject"):
+                selobj = selobj.Objects[0]
             if not (selobj.isDerivedFrom("Sketcher::SketchObject")):
                 return False
             return True

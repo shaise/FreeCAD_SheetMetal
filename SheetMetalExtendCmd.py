@@ -149,7 +149,7 @@ def smExtrude(extLength = 10.0, gap1 = 0.0, gap2 = 0.0, subtraction = False, off
   import BOPTools.SplitFeatures
   finalShape = selObject
   for selFaceName in selFaceNames:
-    selItem = selObject.getElement(SheetMetalBaseCmd.getElementFromTNP(selFaceName))
+    selItem = selObject.getElement(SheetMetalTools.getElementFromTNP(selFaceName))
     selFace = smFace(selItem, selObject)
 
     # find the narrow edge
