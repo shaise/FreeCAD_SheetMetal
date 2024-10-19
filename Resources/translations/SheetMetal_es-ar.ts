@@ -2,7 +2,7 @@
 <!DOCTYPE TS>
 <TS version="2.1" language="es_AR" sourcelanguage="en">
 <context>
-    <name>Gui::Dialog::DlgSettingsDraft</name>
+    <name>Gui::Dialog::DlgSettingsSheetMetal</name>
     <message>
         <location filename="../SMprefs.ui" line="14"/>
         <source>General settings</source>

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>SMBendWallTaskPanel</class>
- <widget class="QDialog" name="SMBendWallTaskPanel">
+ <class>SMFlangeAdvancedTaskPanel</class>
+ <widget class="QDialog" name="SMFlangeAdvancedTaskPanel">
   <property name="geometry">
    <rect>
     <x>0</x>

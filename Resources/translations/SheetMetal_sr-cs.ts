@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
-<TS version="2.1" language="sr-CS" sourcelanguage="en">
+<TS version="2.1" language="sr_CS" sourcelanguage="en">
   <context>
     <name>App::Property</name>
     <message>
@@ -315,7 +315,7 @@
     </message>
   </context>
   <context>
-    <name>Gui::Dialog::DlgSettingsDraft</name>
+    <name>Gui::Dialog::DlgSettingsSheetMetal</name>
     <message>
       <location filename="../SMprefs.ui" line="14"/>
       <source>General settings</source>
