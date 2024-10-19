@@ -23,62 +23,10 @@
 #
 ##############################################################################
 
-from FreeCAD import Gui
-from PySide import QtCore, QtGui
+import FreeCAD, Part, math, os, SheetMetalTools, SheetMetalBendSolid
+from SheetMetalLogger import SMLogger
 
-import FreeCAD, Part, os, math
-import SheetMetalBaseCmd
-
-__dir__ = os.path.dirname(__file__)
-iconPath = os.path.join(__dir__, "Resources", "icons")
-smEpsilon = 0.0000001
-
-# add translations path
-LanguagePath = os.path.join(__dir__, "translations")
-Gui.addLanguagePath(LanguagePath)
-Gui.updateLocale()
-
-import SheetMetalBendSolid
-from SheetMetalLogger import SMLogger, UnfoldException, BendException, TreeException
-
-
-def smWarnDialog(msg):
-    diag = QtGui.QMessageBox(
-        QtGui.QMessageBox.Warning,
-        FreeCAD.Qt.translate("QMessageBox", "Error in macro MessageBox"),
-        msg,
-    )
-    diag.setWindowModality(QtCore.Qt.ApplicationModal)
-    diag.exec_()
-
-
-def smBelongToBody(item, body):
-    if body is None:
-        return False
-    for obj in body.Group:
-        if obj.Name == item.Name:
-            return True
-    return False
-
-
-def smIsPartDesign(obj):
-    return str(obj).find("<PartDesign::") == 0
-
-
-def smIsOperationLegal(body, selobj):
-    # FreeCAD.Console.PrintLog(str(selobj) + " " + str(body) + " " + str(smBelongToBody(selobj, body)) + "\n")
-    if smIsPartDesign(selobj) and not smBelongToBody(selobj, body):
-        smWarnDialog(
-            FreeCAD.Qt.translate(
-                "QMessageBox",
-                "The selected geometry does not belong to the active Body.\n"
-                "Please make the container of this item active by\n"
-                "double clicking on it.",
-            )
-        )
-        return False
-    return True
-
+smEpsilon = SheetMetalTools.smEpsilon
 
 def smFace(sel_item, obj):
     # find face if Edge Selected
@@ -308,24 +256,20 @@ def smSketchOnSheetMetal(
     # Part.show(SMSolid,"SMSolid")
     resultSolid = resultSolid.cut(SMSolid)
 
-    Gui.ActiveDocument.getObject(MainObject.Name).Visibility = False
-    Gui.ActiveDocument.getObject(sketch.Name).Visibility = False
     return resultSolid
 
 
 class SMSketchOnSheet:
     def __init__(self, obj):
         '''"Add Sketch based cut On Sheet metal"'''
-        selobj = Gui.Selection.getSelectionEx()
-
         _tip_ = FreeCAD.Qt.translate("App::Property", "Base Object")
         obj.addProperty(
             "App::PropertyLinkSub", "baseObject", "Parameters", _tip_
-        ).baseObject = (selobj[0].Object, selobj[0].SubElementNames)
+        ).baseObject
         _tip_ = FreeCAD.Qt.translate("App::Property", "Sketch on Sheetmetal")
         obj.addProperty(
             "App::PropertyLink", "Sketch", "Parameters", _tip_
-        ).Sketch = selobj[1].Object
+        )
         _tip_ = FreeCAD.Qt.translate("App::Property", "Gap from Left Side")
         obj.addProperty(
             "App::PropertyFloatConstraint", "kfactor", "Parameters", _tip_
@@ -344,163 +288,178 @@ class SMSketchOnSheet:
         fp.Shape = s
 
 
-class SMSketchOnSheetVP:
-    "A View provider that nests children objects under the created one"
+##########################################################################################################
+# Gui code
+##########################################################################################################
 
-    def __init__(self, obj):
-        obj.Proxy = self
-        self.Object = obj.Object
+if SheetMetalTools.isGuiLoaded():
+    from FreeCAD import Gui
 
-    def attach(self, obj):
-        self.Object = obj.Object
-        return
-
-    def updateData(self, fp, prop):
-        return
-
-    def getDisplayModes(self, obj):
-        modes = []
-        return modes
-
-    def setDisplayMode(self, mode):
-        return mode
-
-    def onChanged(self, vp, prop):
-        return
-
-    def __getstate__(self):
-        #        return {'ObjectName' : self.Object.Name}
-        return None
-
-    def __setstate__(self, state):
-        self.loads(state)
-
-    # dumps and loads replace __getstate__ and __setstate__ post v. 0.21.2
-    def dumps(self):
-        return None
-
-    def loads(self, state):
-        if state is not None:
-            import FreeCAD
-
-            doc = FreeCAD.ActiveDocument  # crap
-            self.Object = doc.getObject(state["ObjectName"])
-
-    def claimChildren(self):
-        objs = []
-        if hasattr(self.Object, "baseObject"):
-            objs.append(self.Object.baseObject[0])
-            objs.append(self.Object.Sketch)
-        return objs
-
-    def getIcon(self):
-        return os.path.join(iconPath, "SheetMetal_SketchOnSheet.svg")
+    icons_path = SheetMetalTools.icons_path
 
 
-class SMSketchOnSheetPDVP:
-    "A View provider that nests children objects under the created one"
+    class SMSketchOnSheetVP:
+        "A View provider that nests children objects under the created one"
 
-    def __init__(self, obj):
-        obj.Proxy = self
-        self.Object = obj.Object
+        def __init__(self, obj):
+            obj.Proxy = self
+            self.Object = obj.Object
 
-    def attach(self, obj):
-        self.Object = obj.Object
-        return
-
-    def updateData(self, fp, prop):
-        return
-
-    def getDisplayModes(self, obj):
-        modes = []
-        return modes
-
-    def setDisplayMode(self, mode):
-        return mode
-
-    def onChanged(self, vp, prop):
-        return
-
-    def __getstate__(self):
-        #        return {'ObjectName' : self.Object.Name}
-        return None
-
-    def __setstate__(self, state):
-        self.loads(state)
-
-    # dumps and loads replace __getstate__ and __setstate__ post v. 0.21.2
-    def dumps(self):
-        return None
-
-    def loads(self, state):
-        if state is not None:
-            import FreeCAD
-
-            doc = FreeCAD.ActiveDocument  # crap
-            self.Object = doc.getObject(state["ObjectName"])
-
-    def claimChildren(self):
-        objs = []
-        if hasattr(self.Object, "Sketch"):
-            objs.append(self.Object.Sketch)
-        return objs
-
-    def getIcon(self):
-        return os.path.join(iconPath, "SheetMetal_SketchOnSheet.svg")
-
-
-class AddSketchOnSheetCommandClass:
-    """Add Sketch On Sheet metal command"""
-
-    def GetResources(self):
-        return {
-            "Pixmap": os.path.join(
-                iconPath, "SheetMetal_SketchOnSheet.svg"
-            ),  # the name of a svg file available in the resources
-            "MenuText": FreeCAD.Qt.translate("SheetMetal", "Sketch On Sheet metal"),
-            "Accel": "M, S",
-            "ToolTip": FreeCAD.Qt.translate(
-                "SheetMetal",
-                "Extruded cut from Sketch On Sheet metal faces\n"
-                "1. Select a flat face on sheet metal and\n"
-                "2. Select a sketch on same face to create sheetmetal extruded cut.\n"
-                "3. Use Property editor to modify other parameters",
-            ),
-        }
-
-    def Activated(self):
-        doc = FreeCAD.ActiveDocument
-        view = Gui.ActiveDocument.ActiveView
-        activeBody = None
-        selobj = Gui.Selection.getSelectionEx()[0].Object
-        viewConf = SheetMetalBaseCmd.GetViewConfig(selobj)
-        if hasattr(view, "getActiveObject"):
-            activeBody = view.getActiveObject("pdbody")
-        if not smIsOperationLegal(activeBody, selobj):
+        def attach(self, obj):
+            self.Object = obj.Object
             return
-        doc.openTransaction("SketchOnSheet")
-        if activeBody is None or not smIsPartDesign(selobj):
-            a = doc.addObject("Part::FeaturePython", "SketchOnSheet")
-            SMSketchOnSheet(a)
-            SMSketchOnSheetVP(a.ViewObject)
-        else:
-            # FreeCAD.Console.PrintLog("found active body: " + activeBody.Name)
-            a = doc.addObject("PartDesign::FeaturePython", "SketchOnSheet")
-            SMSketchOnSheet(a)
-            SMSketchOnSheetPDVP(a.ViewObject)
-            activeBody.addObject(a)
-        SheetMetalBaseCmd.SetViewConfig(a, viewConf)
-        doc.recompute()
-        doc.commitTransaction()
-        return
 
-    def IsActive(self):
-        if len(Gui.Selection.getSelection()) < 2:
-            return False
-        #    selobj = Gui.Selection.getSelection()[1]
-        #    if str(type(selobj)) != "<type 'Sketcher.SketchObject'>" :
-        #      return False
-        return True
+        def updateData(self, fp, prop):
+            return
+
+        def getDisplayModes(self, obj):
+            modes = []
+            return modes
+
+        def setDisplayMode(self, mode):
+            return mode
+
+        def onChanged(self, vp, prop):
+            return
+
+        def __getstate__(self):
+            #        return {'ObjectName' : self.Object.Name}
+            return None
+
+        def __setstate__(self, state):
+            self.loads(state)
+
+        # dumps and loads replace __getstate__ and __setstate__ post v. 0.21.2
+        def dumps(self):
+            return None
+
+        def loads(self, state):
+            if state is not None:
+                import FreeCAD
+
+                doc = FreeCAD.ActiveDocument  # crap
+                self.Object = doc.getObject(state["ObjectName"])
+
+        def claimChildren(self):
+            objs = []
+            if hasattr(self.Object, "baseObject"):
+                objs.append(self.Object.baseObject[0])
+                objs.append(self.Object.Sketch)
+            return objs
+
+        def getIcon(self):
+            return os.path.join(icons_path, "SheetMetal_SketchOnSheet.svg")
 
 
-Gui.addCommand("SheetMetal_SketchOnSheet", AddSketchOnSheetCommandClass())
+    class SMSketchOnSheetPDVP:
+        "A View provider that nests children objects under the created one"
+
+        def __init__(self, obj):
+            obj.Proxy = self
+            self.Object = obj.Object
+
+        def attach(self, obj):
+            self.Object = obj.Object
+            return
+
+        def updateData(self, fp, prop):
+            return
+
+        def getDisplayModes(self, obj):
+            modes = []
+            return modes
+
+        def setDisplayMode(self, mode):
+            return mode
+
+        def onChanged(self, vp, prop):
+            return
+
+        def __getstate__(self):
+            #        return {'ObjectName' : self.Object.Name}
+            return None
+
+        def __setstate__(self, state):
+            self.loads(state)
+
+        # dumps and loads replace __getstate__ and __setstate__ post v. 0.21.2
+        def dumps(self):
+            return None
+
+        def loads(self, state):
+            if state is not None:
+                import FreeCAD
+
+                doc = FreeCAD.ActiveDocument  # crap
+                self.Object = doc.getObject(state["ObjectName"])
+
+        def claimChildren(self):
+            objs = []
+            if hasattr(self.Object, "Sketch"):
+                objs.append(self.Object.Sketch)
+            return objs
+
+        def getIcon(self):
+            return os.path.join(icons_path, "SheetMetal_SketchOnSheet.svg")
+
+
+    class AddSketchOnSheetCommandClass:
+        """Add Sketch On Sheet metal command"""
+
+        def GetResources(self):
+            return {
+                "Pixmap": os.path.join(
+                    icons_path, "SheetMetal_SketchOnSheet.svg"
+                ),  # the name of a svg file available in the resources
+                "MenuText": FreeCAD.Qt.translate("SheetMetal", "Sketch On Sheet metal"),
+                "Accel": "M, S",
+                "ToolTip": FreeCAD.Qt.translate(
+                    "SheetMetal",
+                    "Extruded cut from Sketch On Sheet metal faces\n"
+                    "1. Select a flat face on sheet metal and\n"
+                    "2. Select a sketch on same face to create sheetmetal extruded cut.\n"
+                    "3. Use Property editor to modify other parameters",
+                ),
+            }
+
+        def Activated(self):
+            doc = FreeCAD.ActiveDocument
+            view = Gui.ActiveDocument.ActiveView
+            activeBody = None
+            sel = Gui.Selection.getSelectionEx()
+            selobj = Gui.Selection.getSelectionEx()[0].Object
+            viewConf = SheetMetalTools.GetViewConfig(selobj)
+            if hasattr(view, "getActiveObject"):
+                activeBody = view.getActiveObject("pdbody")
+            if not SheetMetalTools.smIsOperationLegal(activeBody, selobj):
+                return
+            doc.openTransaction("SketchOnSheet")
+            if activeBody is None or not SheetMetalTools.smIsPartDesign(selobj):
+                a = doc.addObject("Part::FeaturePython", "SketchOnSheet")
+                SMSketchOnSheet(a)
+                a.baseObject = (selobj, sel[0].SubElementNames)
+                a.Sketch = sel[1].Object
+                SMSketchOnSheetVP(a.ViewObject)
+            else:
+                # FreeCAD.Console.PrintLog("found active body: " + activeBody.Name)
+                a = doc.addObject("PartDesign::FeaturePython", "SketchOnSheet")
+                SMSketchOnSheet(a)
+                a.baseObject = (selobj, sel[0].SubElementNames)
+                a.Sketch = sel[1].Object
+                SMSketchOnSheetPDVP(a.ViewObject)
+                activeBody.addObject(a)
+            SheetMetalTools.SetViewConfig(a, viewConf)
+            doc.recompute()
+            doc.commitTransaction()
+            return
+
+        def IsActive(self):
+            if len(Gui.Selection.getSelection()) < 2:
+                return False
+            #    selobj = Gui.Selection.getSelection()[1]
+            #    if str(type(selobj)) != "<type 'Sketcher.SketchObject'>" :
+            #      return False
+            return True
+
+
+    Gui.addCommand("SheetMetal_SketchOnSheet", AddSketchOnSheetCommandClass())

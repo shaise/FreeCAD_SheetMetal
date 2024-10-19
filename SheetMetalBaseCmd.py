@@ -23,106 +23,12 @@
 #
 ###################################################################################
 
-from FreeCAD import Gui
-from PySide import QtCore, QtGui
-
 import FreeCAD, Part, os
+import SheetMetalTools
 
-__dir__ = os.path.dirname(__file__)
-iconPath = os.path.join(__dir__, "Resources", "icons")
-
-# add translations path
-LanguagePath = os.path.join(__dir__, "translations")
-Gui.addLanguagePath(LanguagePath)
-Gui.updateLocale()
-
-
-def smWarnDialog(msg):
-    diag = QtGui.QMessageBox(
-        QtGui.QMessageBox.Warning,
-        FreeCAD.Qt.translate("QMessageBox", "Error in macro MessageBox"),
-        msg,
-    )
-    diag.setWindowModality(QtCore.Qt.ApplicationModal)
-    diag.exec_()
-
-
-def smBelongToBody(item, body):
-    if body is None:
-        return False
-    for obj in body.Group:
-        if obj.Name == item.Name:
-            return True
-    return False
-
-
-def smIsSketchObject(obj):
-    return str(obj).find("<Sketcher::") == 0
-
-
-def getElementFromTNP(tnpName):
-    names = tnpName.split('.')
-    if len(names) > 1:
-        FreeCAD.Console.PrintWarning("Warning: Tnp Name still visible: " + tnpName + "\n")
-    return names[len(names) - 1].lstrip('?')
-
-
-def smIsOperationLegal(body, selobj):
-    # FreeCAD.Console.PrintLog(str(selobj) + " " + str(body) + " " + str(smBelongToBody(selobj, body)) + "\n")
-    if smIsSketchObject(selobj) and not smBelongToBody(selobj, body):
-        smWarnDialog(
-            FreeCAD.Qt.translate(
-                "QMessageBox",
-                "The selected geometry does not belong to the active Body.\n"
-                "Please make the container of this item active by\n"
-                "double clicking on it.",
-            )
-        )
-        return False
-    return True
-
-
-def GetViewConfig(obj):
-    viewconf = {}
-    if hasattr(obj.ViewObject, "ShapeColor"):
-        viewconf["objShapeCol"] = obj.ViewObject.ShapeColor
-        viewconf["objShapeTsp"] = obj.ViewObject.Transparency
-        viewconf["objDiffuseCol"] = obj.ViewObject.DiffuseColor
-        # TODO: Make the individual face colors be retained
-        # needDiffuseColorExtension = ( len(selobj.ViewObject.DiffuseColor) < len(selobj.Shape.Faces) )
-    return viewconf
-    #return obj.ViewObject.dumpContent()
-
-
-def SetViewConfig(obj, viewconf):
-    if hasattr(obj.ViewObject, "ShapeColor"):
-        obj.ViewObject.ShapeColor = viewconf["objShapeCol"]
-        obj.ViewObject.Transparency = viewconf["objShapeTsp"]
-        obj.ViewObject.DiffuseColor = viewconf["objDiffuseCol"]
-    #obj.ViewObject.restoreContent(viewconf)
-
-
-
-def getOriginalBendObject(obj):
-    from SheetMetalCmd import SMBendWall
-    from SheetMetalBend import SMSolidBend
-    from SheetMetalFoldCmd import SMFoldWall
-
-    for item in obj.OutListRecursive:
-        if hasattr(item, "Proxy") and (
-            isinstance(item.Proxy, SMBaseBend)
-            or isinstance(item.Proxy, SMBendWall)
-            or isinstance(item.Proxy, SMSolidBend)
-            or isinstance(item.Proxy, SMFoldWall)
-        ):
-            if not getOriginalBendObject(item):
-                return item
-    return None
-
-
-def autolink_enabled():
-    FSParam = FreeCAD.ParamGet("User parameter:BaseApp/Preferences/Mod/SheetMetal")
-    return FSParam.GetInt("AutoLinkBendRadius", 0)
+translate = FreeCAD.Qt.translate
+icons_path = SheetMetalTools.icons_path
+panels_path = SheetMetalTools.panels_path
 
 
 def modifiedWire(WireList, radius, thk, length, normal, Side, sign):
@@ -147,7 +53,6 @@ def modifiedWire(WireList, radius, thk, length, normal, Side, sign):
     )
     # Part.show(filleted_extr,"filleted_extr")
     return filleted_extr
-
 
 def smBase(
     thk=2.0,
@@ -188,7 +93,6 @@ def smBase(
             traj.translate(normal * -length / 2.0)
         elif reverse:
             traj.translate(normal * -length)
-
         traj_extr = traj.extrude(normal * length)
         # Part.show(traj_extr,"traj_extr")
         solidlist = []
@@ -200,41 +104,37 @@ def smBase(
         else:
             wallSolid = solidlist[0]
         # Part.show(wallSolid,"wallSolid")
-
     # Part.show(wallSolid,"wallSolid")
     return wallSolid
-
 
 class SMBaseBend:
     def __init__(self, obj):
         '''"Add wall or Wall with radius bend"'''
-        selobj = Gui.Selection.getSelectionEx()[0]
-
-        _tip_ = FreeCAD.Qt.translate("App::Property", "Bend Radius")
+        _tip_ = translate("App::Property", "Bend Radius")
         obj.addProperty(
             "App::PropertyLength", "radius", "Parameters", _tip_
         ).radius = 1.0
-        _tip_ = FreeCAD.Qt.translate("App::Property", "Thickness of sheetmetal")
+        _tip_ = translate("App::Property", "Thickness of sheetmetal")
         obj.addProperty(
             "App::PropertyLength", "thickness", "Parameters", _tip_
         ).thickness = 1.0
-        _tip_ = FreeCAD.Qt.translate("App::Property", "Relief Type")
+        _tip_ = translate("App::Property", "Relief Type")
         obj.addProperty(
             "App::PropertyEnumeration", "BendSide", "Parameters", _tip_
         ).BendSide = ["Outside", "Inside", "Middle"]
-        _tip_ = FreeCAD.Qt.translate("App::Property", "Length of wall")
+        _tip_ = translate("App::Property", "Length of wall")
         obj.addProperty(
             "App::PropertyLength", "length", "Parameters", _tip_
         ).length = 100.0
-        _tip_ = FreeCAD.Qt.translate("App::Property", "Wall Sketch object")
+        _tip_ = translate("App::Property", "Wall Sketch object")
         obj.addProperty(
             "App::PropertyLink", "BendSketch", "Parameters", _tip_
-        ).BendSketch = selobj.Object
-        _tip_ = FreeCAD.Qt.translate("App::Property", "Extrude Symmetric to Plane")
+        ).BendSketch = None
+        _tip_ = translate("App::Property", "Extrude Symmetric to Plane")
         obj.addProperty(
             "App::PropertyBool", "MidPlane", "Parameters", _tip_
         ).MidPlane = False
-        _tip_ = FreeCAD.Qt.translate("App::Property", "Reverse Extrusion Direction")
+        _tip_ = translate("App::Property", "Reverse Extrusion Direction")
         obj.addProperty(
             "App::PropertyBool", "Reverse", "Parameters", _tip_
         ).Reverse = False
@@ -243,15 +143,14 @@ class SMBaseBend:
     def execute(self, fp):
         '''"Print a short message when doing a recomputation, this method is mandatory"'''
         if not hasattr(fp, "MidPlane"):
-            _tip_ = FreeCAD.Qt.translate("App::Property", "Extrude Symmetric to Plane")
+            _tip_ = translate("App::Property", "Extrude Symmetric to Plane")
             fp.addProperty(
                 "App::PropertyBool", "MidPlane", "Parameters", _tip_
             ).MidPlane = False
-            _tip_ = FreeCAD.Qt.translate("App::Property", "Reverse Extrusion Direction")
+            _tip_ = translate("App::Property", "Reverse Extrusion Direction")
             fp.addProperty(
                 "App::PropertyBool", "Reverse", "Parameters", _tip_
             ).Reverse = False
-
         s = smBase(
             thk=fp.thickness.Value,
             length=fp.length.Value,
@@ -263,116 +162,129 @@ class SMBaseBend:
         )
 
         fp.Shape = s
-        obj = Gui.ActiveDocument.getObject(fp.BendSketch.Name)
-        if obj:
-            obj.Visibility = False
 
 
-class SMBaseViewProvider:
-    "A View provider that nests children objects under the created one"
+##########################################################################################################
+# Gui code
+##########################################################################################################
 
-    def __init__(self, obj):
-        obj.Proxy = self
-        self.Object = obj.Object
+if SheetMetalTools.isGuiLoaded():
+    from FreeCAD import Gui
 
-    def attach(self, obj):
-        self.Object = obj.Object
-        return
+    ##########################################################################################################
+    # View Provider
+    ##########################################################################################################
 
-    def updateData(self, fp, prop):
-        return
+    class SMBaseViewProvider:
+        "A View provider that nests children objects under the created one"
 
-    def getDisplayModes(self, obj):
-        modes = []
-        return modes
+        def __init__(self, obj):
+            obj.Proxy = self
+            self.Object = obj.Object
 
-    def setDisplayMode(self, mode):
-        return mode
+        def attach(self, obj):
+            self.Object = obj.Object
+            return
 
-    def onChanged(self, vp, prop):
-        return
+        def updateData(self, fp, prop):
+            return
 
-    def __getstate__(self):
-        #    return {'ObjectName' : self.Object.Name}
-        return None
+        def getDisplayModes(self, obj):
+            modes = []
+            return modes
 
-    def __setstate__(self, state):
-        self.loads(state)
+        def setDisplayMode(self, mode):
+            return mode
 
-    # dumps and loads replace __getstate__ and __setstate__ post v. 0.21.2
-    def dumps(self):
-        return None
+        def onChanged(self, vp, prop):
+            return
 
-    def loads(self, state):
-        if state is not None:
-            import FreeCAD
+        def __getstate__(self):
+            #    return {'ObjectName' : self.Object.Name}
+            return None
 
-            doc = FreeCAD.ActiveDocument  # crap
-            self.Object = doc.getObject(state["ObjectName"])
+        def __setstate__(self, state):
+            self.loads(state)
 
-    def claimChildren(self):
-        objs = []
-        if hasattr(self, "Object") and hasattr(self.Object, "BendSketch"):
-            objs.append(self.Object.BendSketch)
-        return objs
+        # dumps and loads replace __getstate__ and __setstate__ post v. 0.21.2
+        def dumps(self):
+            return None
 
-    def getIcon(self):
-        return os.path.join(iconPath, "SheetMetal_AddBase.svg")
+        def loads(self, state):
+            if state is not None:
+                import FreeCAD
+
+                doc = FreeCAD.ActiveDocument  # crap
+                self.Object = doc.getObject(state["ObjectName"])
+
+        def claimChildren(self):
+            objs = []
+            if hasattr(self, "Object") and hasattr(self.Object, "BendSketch"):
+                objs.append(self.Object.BendSketch)
+            return objs
+
+        def getIcon(self):
+            return os.path.join(icons_path, "SheetMetal_AddBase.svg")
+
+    ##########################################################################################################
+    # Command
+    ##########################################################################################################
+
+    class AddBaseCommandClass:
+        """Add Base Wall command"""
+
+        def GetResources(self):
+            return {
+                "Pixmap": os.path.join(
+                    icons_path, "SheetMetal_AddBase.svg"
+                ),  # the name of a svg file available in the resources
+                "MenuText": translate("SheetMetal", "Make Base Wall"),
+                "Accel": "C, B",
+                "ToolTip": translate(
+                    "SheetMetal",
+                    "Create a sheetmetal wall from a sketch\n"
+                    "1. Select a Skech to create bends with walls.\n"
+                    "2. Use Property editor to modify other parameters",
+                ),
+            }
+
+        def Activated(self):
+            doc = FreeCAD.ActiveDocument
+            view = Gui.ActiveDocument.ActiveView
+            activeBody = None
+            selobj = Gui.Selection.getSelectionEx()[0].Object
+            if hasattr(view, "getActiveObject"):
+                activeBody = view.getActiveObject("pdbody")
+            #    if not SheetMetalTools.smIsOperationLegal(activeBody, selobj):
+            #        return
+            doc.openTransaction("BaseBend")
+            if activeBody is None:
+                a = doc.addObject("Part::FeaturePython", "BaseBend")
+                SMBaseBend(a)
+                SMBaseViewProvider(a.ViewObject)
+                a.BendSketch = selobj
+            else:
+                # FreeCAD.Console.PrintLog("found active body: " + activeBody.Name)
+                a = doc.addObject("PartDesign::FeaturePython", "BaseBend")
+                SMBaseBend(a)
+                SMBaseViewProvider(a.ViewObject)
+                a.BendSketch = selobj
+                activeBody.addObject(a)
+            doc.recompute()
+            doc.commitTransaction()
+            return
+
+        def IsActive(self):
+            if len(Gui.Selection.getSelection()) != 1:
+                return False
+            selobj = Gui.Selection.getSelection()[0]
+            if not (
+                selobj.isDerivedFrom("Sketcher::SketchObject")
+                or selobj.isDerivedFrom("PartDesign::ShapeBinder")
+                or selobj.isDerivedFrom("PartDesign::SubShapeBinder")
+            ):
+                return False
+            return True
 
 
-class AddBaseCommandClass:
-    """Add Base Wall command"""
-
-    def GetResources(self):
-        return {
-            "Pixmap": os.path.join(
-                iconPath, "SheetMetal_AddBase.svg"
-            ),  # the name of a svg file available in the resources
-            "MenuText": FreeCAD.Qt.translate("SheetMetal", "Make Base Wall"),
-            "Accel": "C, B",
-            "ToolTip": FreeCAD.Qt.translate(
-                "SheetMetal",
-                "Create a sheetmetal wall from a sketch\n"
-                "1. Select a Skech to create bends with walls.\n"
-                "2. Use Property editor to modify other parameters",
-            ),
-        }
-
-    def Activated(self):
-        doc = FreeCAD.ActiveDocument
-        view = Gui.ActiveDocument.ActiveView
-        activeBody = None
-        #    selobj = Gui.Selection.getSelectionEx()[0].Object
-        if hasattr(view, "getActiveObject"):
-            activeBody = view.getActiveObject("pdbody")
-        #    if not smIsOperationLegal(activeBody, selobj):
-        #        return
-        doc.openTransaction("BaseBend")
-        if activeBody is None:
-            a = doc.addObject("Part::FeaturePython", "BaseBend")
-            SMBaseBend(a)
-            SMBaseViewProvider(a.ViewObject)
-        else:
-            # FreeCAD.Console.PrintLog("found active body: " + activeBody.Name)
-            a = doc.addObject("PartDesign::FeaturePython", "BaseBend")
-            SMBaseBend(a)
-            SMBaseViewProvider(a.ViewObject)
-            activeBody.addObject(a)
-        doc.recompute()
-        doc.commitTransaction()
-        return
-
-    def IsActive(self):
-        if len(Gui.Selection.getSelection()) != 1:
-            return False
-        selobj = Gui.Selection.getSelection()[0]
-        if not (
-            selobj.isDerivedFrom("Sketcher::SketchObject")
-            or selobj.isDerivedFrom("PartDesign::ShapeBinder")
-            or selobj.isDerivedFrom("PartDesign::SubShapeBinder")
-        ):
-            return False
-        return True
-
-
-Gui.addCommand("SheetMetal_AddBase", AddBaseCommandClass())
+    Gui.addCommand("SheetMetal_AddBase", AddBaseCommandClass())

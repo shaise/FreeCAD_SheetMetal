@@ -99,8 +99,8 @@ class SMWorkbench(Workbench):
             FreeCAD.Qt.translate("SheetMetal", "&Sheet Metal"), self.list
         )  # creates a new menu
         # self.appendMenu(["An existing Menu","My submenu"],self.list) # appends a submenu to an existing menu
-        FreeCADGui.addPreferencePage(os.path.join(smWBpath, "SMprefs.ui"), "SheetMetal")
-        FreeCADGui.addIconPath(smWB_icons_path)
+        Gui.addPreferencePage(os.path.join(smWBpath, "Resources/panels/SMprefs.ui"), "SheetMetal")
+        Gui.addIconPath(smWB_icons_path)
 
     def Activated(self):
         "This function is executed when the workbench is activated"

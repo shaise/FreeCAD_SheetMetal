@@ -23,112 +23,16 @@
 #
 ###################################################################################
 
-from FreeCAD import Gui
-from PySide import QtCore, QtGui
-
-import FreeCAD, FreeCADGui, Part, os, math
-import SheetMetalBaseCmd
-
-__dir__ = os.path.dirname(__file__)
-iconPath = os.path.join(__dir__, "Resources", "icons")
-smEpsilon = 0.0000001
-
-# add translations path
-LanguagePath = os.path.join(__dir__, "translations")
-Gui.addLanguagePath(LanguagePath)
-Gui.updateLocale()
+import FreeCAD, Part, math
+import SheetMetalTools
 
 # IMPORTANT: please remember to change the element map version in case of any
 # changes in modeling logic
 smElementMapVersion = "sm1."
 
+smEpsilon = SheetMetalTools.smEpsilon
 
-def smAddProperty(obj, proptype, name, proptip, defval=None, paramgroup="Parameters"):
-    """
-    Add a property to a given object.
-
-    Args:
-    - obj: The object to which the property should be added.
-    - proptype: The type of the property (e.g., "App::PropertyLength", "App::PropertyBool").
-    - name: The name of the property. Non-translatable.
-    - proptip: The tooltip for the property. Need to be translated from outside.
-    - defval: The default value for the property (optional).
-    - paramgroup: The parameter group to which the property should belong (default is "Parameters").
-    """
-    if not hasattr(obj, name):
-        obj.addProperty(proptype, name, paramgroup, proptip)
-        if defval is not None:
-            setattr(obj, name, defval)
-
-
-def smAddLengthProperty(obj, name, proptip, defval, paramgroup="Parameters"):
-    smAddProperty(obj, "App::PropertyLength", name, proptip, defval, paramgroup)
-
-
-def smAddBoolProperty(obj, name, proptip, defval, paramgroup="Parameters"):
-    smAddProperty(obj, "App::PropertyBool", name, proptip, defval, paramgroup)
-
-
-def smAddDistanceProperty(obj, name, proptip, defval, paramgroup="Parameters"):
-    smAddProperty(obj, "App::PropertyDistance", name, proptip, defval, paramgroup)
-
-
-def smAddAngleProperty(obj, name, proptip, defval, paramgroup="Parameters"):
-    smAddProperty(obj, "App::PropertyAngle", name, proptip, defval, paramgroup)
-
-
-def smAddFloatProperty(obj, name, proptip, defval, paramgroup="Parameters"):
-    smAddProperty(obj, "App::PropertyFloat", name, proptip, defval, paramgroup)
-
-
-def smAddEnumProperty(
-    obj, name, proptip, enumlist, defval=None, paramgroup="Parameters"
-):
-    if not hasattr(obj, name):
-        _tip_ = FreeCAD.Qt.translate("App::Property", proptip)
-        obj.addProperty("App::PropertyEnumeration", name, paramgroup, _tip_)
-        setattr(obj, name, enumlist)
-        if defval is not None:
-            setattr(obj, name, defval)
-
-
-def smWarnDialog(msg):
-    diag = QtGui.QMessageBox(
-        QtGui.QMessageBox.Warning,
-        FreeCAD.Qt.translate("QMessageBox", "Error in macro MessageBox"),
-        msg
-    )
-    diag.setWindowModality(QtCore.Qt.ApplicationModal)
-    diag.exec_()
-
-
-def smBelongToBody(item, body):
-    if body is None:
-        return False
-    for obj in body.Group:
-        if obj.Name == item.Name:
-            return True
-    return False
-
-
-def smIsPartDesign(obj):
-    return str(obj).find("<PartDesign::") == 0
-
-
-def smIsOperationLegal(body, selobj):
-    # FreeCAD.Console.PrintLog(str(selobj) + " " + str(body) + " " + str(smBelongToBody(selobj, body)) + "\n")
-    if smIsPartDesign(selobj) and not smBelongToBody(selobj, body):
-        smWarnDialog(
-            FreeCAD.Qt.translate(
-                "QMessageBox",
-                "The selected geometry does not belong to the active Body.\n"
-                "Please make the container of this item active by\n"
-                "double clicking on it.",
-            )
-        )
-        return False
-    return True
-
+translate = FreeCAD.Qt.translate
 
 def smStrEdge(e):
     return (
@@ -176,86 +80,8 @@ def smMakeReliefFace(edge, dir, gap, reliefW, reliefD, reliefType, op=""):
     return face
 
 
-def smMakePerforationFace(
-        edge,
-        dir,
-        bendR,
-        bendA,
-        perforationAngle,
-        flipped,
-        extLen,
-        gap1,
-        gap2,
-        lenIPerf1,
-        lenIPerf2,
-        lenPerf,
-        lenNPerf,
-        op="",
-):
-    L0 = (edge.LastParameter - gap2 - lenIPerf2) - (edge.FirstParameter + gap1 + lenIPerf1)
-    Lp = lenPerf
-    Ln = lenNPerf
-    P0 = (L0-Ln) / (Lp+Ln)
-    P = math.ceil(P0)
-    N = P+1
-    F = L0 / (math.ceil(P0)*Lp + math.ceil(P0)*Ln + Ln)
-
-    if perforationAngle == 0:
-        perforationAngle = bendA
-    extAngle = (perforationAngle - bendA) / 2;
-    S = (1 / math.cos(extAngle * (2*math.pi/360)))
-
-    pivotL = -bendR
-    swingL = extLen + (S-1)*(bendR+extLen)
-    if not flipped:
-        pivotL = extLen - pivotL
-        swingL = extLen - swingL
-
-    totalFace = None
-
-    # Initial perf, near
-    if lenIPerf1 > 0:
-        p1 = edge.valueAt(edge.FirstParameter + gap1) + dir.normalize() * pivotL
-        p2 = edge.valueAt(edge.FirstParameter + gap1 + lenIPerf1) + dir.normalize() * pivotL
-        p3 = edge.valueAt(edge.FirstParameter + gap1 + lenIPerf1) + dir.normalize() * swingL
-        p4 = edge.valueAt(edge.FirstParameter + gap1) + dir.normalize() * swingL
-        w = Part.makePolygon([p1, p2, p3, p4, p1])
-        face = Part.Face(w)
-        totalFace = face
-
-    # Initial perf, far
-    if lenIPerf2 > 0:
-        p1 = edge.valueAt(edge.LastParameter - gap2 - lenIPerf2) + dir.normalize() * pivotL
-        p2 = edge.valueAt(edge.LastParameter - gap2) + dir.normalize() * pivotL
-        p3 = edge.valueAt(edge.LastParameter - gap2) + dir.normalize() * swingL
-        p4 = edge.valueAt(edge.LastParameter - gap2 - lenIPerf2) + dir.normalize() * swingL
-        w = Part.makePolygon([p1, p2, p3, p4, p1])
-        face = Part.Face(w)
-        if totalFace == None:
-            totalFace = face
-        else:
-            totalFace = totalFace.fuse(face)
-
-    # Perforations, inner
-    for i in range(P):
-        x = (edge.FirstParameter + gap1 + lenIPerf1) + (Ln * F * (i+1)) + (Lp * F * i)
-        p1 = edge.valueAt(x) + dir.normalize() * pivotL
-        p2 = edge.valueAt(x + Lp*F) + dir.normalize() * pivotL
-        p3 = edge.valueAt(x + Lp*F) + dir.normalize() * swingL
-        p4 = edge.valueAt(x) + dir.normalize() * swingL
-        w = Part.makePolygon([p1, p2, p3, p4, p1])
-        face = Part.Face(w)
-        if totalFace == None:
-            totalFace = face
-        else:
-            totalFace = totalFace.fuse(face)
-
-    if hasattr(totalFace, "mapShapes"):
-        totalFace.mapShapes([(edge, totalFace)], None, op)
-    return totalFace
-
-
-def smMakeFace(edge, dir, extLen, gap1=0.0, gap2=0.0, angle1=0.0, angle2=0.0, op=""):
+def smMakeFace(edge, dir, extLen, gap1=0.0,
+               gap2=0.0, angle1=0.0, angle2=0.0, op=""):
     len1 = extLen * math.tan(math.radians(angle1))
     len2 = extLen * math.tan(math.radians(angle2))
 
@@ -366,12 +192,9 @@ def smGetFace(Faces, obj):
 
 def LineExtend(edge, distance1, distance2):
     # Extend a ine by given distances
-    result = edge.Curve.toShape(
+    return edge.Curve.toShape(
         edge.FirstParameter - distance1, edge.LastParameter + distance2
     )
-    if hasattr(result, "mapShapes"):
-        result.mapShapes([(edge, result)], [])
-    return result
 
 
 def getParallel(edge1, edge2):
@@ -511,14 +334,12 @@ def check_parallel(edge1, edge2):
     v2 = edge2.Vertexes[0].Point - edge2.Vertexes[1].Point
     if v1.isEqual(v2,0.00001):
         return  True, edge2.Vertexes[0].Point - edge1.Vertexes[0].Point
-    if v1.isEqual(-v2,0.00001):
+    if v1.isEqual(v2,0.00001) or v1.isEqual(-v2,0.00001):
         return  True, edge2.Vertexes[0].Point - edge1.Vertexes[1].Point
     return False, None
 
 def sheet_thk(MainObject, selFaceName):
-    elementName = SheetMetalBaseCmd.getElementFromTNP(selFaceName)
-    # print(selFaceName, " => ", elementName)
-    selItem = MainObject.getElement(elementName)
+    selItem = MainObject.getElement(selFaceName)
     selFace = smFace(selItem, MainObject)
     # find the narrow edge
     thk = 999999.0
@@ -545,7 +366,7 @@ def sheet_thk(MainObject, selFaceName):
 
 def smEdge(selFaceName, MainObject):
     # find Edge, if Face Selected
-    selItem = MainObject.getElement(SheetMetalBaseCmd.getElementFromTNP(selFaceName))
+    selItem = MainObject.getElement(selFaceName)
     thkDir = None
     if type(selItem) == Part.Face:
         # find the narrow edge
@@ -613,7 +434,7 @@ def getBendetail(selItemNames, MainObject, bendR, bendA, isflipped, offset, gap1
             bendA = -bendA
             flipped = not flipped
 
-        if type(MainObject.getElement(SheetMetalBaseCmd.getElementFromTNP(selItemName))) == Part.Edge:
+        if type(MainObject.getElement(selItemName)) == Part.Edge:
             flipped = not flipped
 
         if not (flipped):
@@ -996,11 +817,6 @@ def smBend(
     sketch=None,
     extendType="Simple",
     LengthSpec="Leg",
-    Perforate=False,
-    PerforationAngle=0.0,
-    PerforationInitialLength=5.0,
-    PerforationMaxLength=5.0,
-    NonperforationMaxLength=5.0,
 ):
     # if sketch is as wall
     sketches = False
@@ -1339,7 +1155,7 @@ def smBend(
         else:
             revAxisP = lenEdge.valueAt(lenEdge.FirstParameter) + thkDir * -bendR
 
-        wallSolid = None
+        # wallSolid = None
         if sketches:
             Wall_face = Part.makeFace(sketch.Shape.Wires, "Part::FaceMakerBullseye")
             if inside:
@@ -1371,8 +1187,8 @@ def smBend(
             # Part.show(wallSolid.Faces[2])
             thk_faceList.append(wallSolid.Faces[2])
 
+        # Produce bend Solid
         if not (unfold):
-            # Produce bend Solid
             if bendA > 0.0:
                 # create bend
                 # narrow the wall if we have gaps
@@ -1385,41 +1201,6 @@ def smBend(
             if wallSolid:
                 resultSolid = resultSolid.fuse(wallSolid)
                 # Part.show(resultSolid,"resultSolid")
-
-            # Remove perforation
-            if Perforate:
-                #CHECK I'm not sure about flipped - the main one gets overwritten for each sublist item
-                perfFace = smMakePerforationFace(
-                    lenEdge,
-                    thkDir,
-                    bendR,
-                    bendA,
-                    PerforationAngle,
-                    flipped,
-                    thk,
-                    gap1,
-                    gap2,
-                    PerforationInitialLength,
-                    PerforationInitialLength,
-                    PerforationMaxLength,
-                    NonperforationMaxLength,
-                    op="SMR",
-                )
-                # Part.show(perfFace)
-                #CHECK 'Part.Compound' object has no attribute 'normalAt' ; might need it
-                # if perfFace.normalAt(0, 0) != FaceDir:
-                #     perfFace.reverse()
-                if PerforationAngle > 0.0:
-                    perfFace = perfFace.rotate(
-                        revAxisP,
-                        revAxisV,
-                        (bendA/2)-(PerforationAngle/2)
-                    )
-                    perfSolid = perfFace.revolve(revAxisP, revAxisV, PerforationAngle)
-                else:
-                    perfSolid = perfFace.revolve(revAxisP, revAxisV, bendA)
-                # Part.show(perfSolid)
-                resultSolid = resultSolid.cut(perfSolid)
 
         # Produce unfold Solid
         else:
@@ -1435,42 +1216,10 @@ def smBend(
                 resultSolid = resultSolid.fuse(unfoldSolid)
 
             if extLen > 0.0:
-                # Flatten the wall back out
                 wallSolid.rotate(revAxisP, revAxisV, -bendA)
                 # Part.show(wallSolid, "wallSolid")
                 wallSolid.translate(FaceDir * unfoldLength)
                 resultSolid = resultSolid.fuse(wallSolid)
-
-            # Remove perforation
-            if Perforate:
-                perfFace = smMakePerforationFace(
-                    lenEdge,
-                    thkDir,
-                    bendR,
-                    bendA,
-                    PerforationAngle,
-                    flipped,
-                    thk,
-                    gap1,
-                    gap2,
-                    PerforationInitialLength,
-                    PerforationInitialLength,
-                    PerforationMaxLength,
-                    NonperforationMaxLength,
-                    op="SMR",
-                )
-                #CHECK 'Part.Compound' object has no attribute 'normalAt' ; might need it
-                # if perfFace.normalAt(0, 0) != FaceDir:
-                #     perfFace.reverse()
-                if PerforationAngle > 0.0:
-                    perfUnfoldLength = (bendR + kfactor * thk) * PerforationAngle * math.pi / 180.0
-                    perfFace = perfFace.translate(FaceDir * ((unfoldLength/2)-(perfUnfoldLength/2)))
-                    perfSolid = perfFace.extrude(FaceDir * perfUnfoldLength)
-                else:
-                    perfSolid = perfFace.extrude(FaceDir * unfoldLength)
-                # Part.show(perfSolid)
-                resultSolid = resultSolid.cut(perfSolid)
-            
     # Part.show(resultSolid, "resultSolid")
     return resultSolid, thk_faceList
 
@@ -1478,243 +1227,206 @@ def smBend(
 class SMBendWall:
     def __init__(self, obj):
         '''"Add Wall with radius bend"'''
-        selobj = Gui.Selection.getSelectionEx()[0]
         self._addProperties(obj)
 
-        _tip_ = FreeCAD.Qt.translate("App::Property", "Base Object")
+        _tip_ = translate("App::Property", "Base Object")
         obj.addProperty(
             "App::PropertyLinkSub", "baseObject", "Parameters", _tip_
-        ).baseObject = (selobj.Object, selobj.SubElementNames)
-        # print (selobj.SubElementNames)
+        )
         obj.Proxy = self
 
     def _addProperties(self, obj):
-        smAddLengthProperty(
-            obj, "radius", FreeCAD.Qt.translate("App::Property", "Bend Radius"), 1.0
+        SheetMetalTools.smAddLengthProperty(
+            obj, "radius", translate("App::Property", "Bend Radius"), 1.0
         )
-        smAddLengthProperty(
-            obj, "length", FreeCAD.Qt.translate("App::Property", "Length of Wall"), 10.0
+        SheetMetalTools.smAddLengthProperty(
+            obj, "length", translate("App::Property", "Length of Wall"), 10.0
         )
-        smAddDistanceProperty(
+        SheetMetalTools.smAddDistanceProperty(
             obj,
             "gap1",
-            FreeCAD.Qt.translate("App::Property", "Gap from Left Side"),
+            translate("App::Property", "Gap from Left Side"),
             0.0,
         )
-        smAddDistanceProperty(
+        SheetMetalTools.smAddDistanceProperty(
             obj,
             "gap2",
-            FreeCAD.Qt.translate("App::Property", "Gap from Right Side"),
+            translate("App::Property", "Gap from Right Side"),
             0.0,
         )
-        smAddBoolProperty(
+        SheetMetalTools.smAddBoolProperty(
             obj,
             "invert",
-            FreeCAD.Qt.translate("App::Property", "Invert Bend Direction"),
+            translate("App::Property", "Invert Bend Direction"),
             False,
         )
-        smAddAngleProperty(
-            obj, "angle", FreeCAD.Qt.translate("App::Property", "Bend Angle"), 90.0
+        SheetMetalTools.smAddAngleProperty(
+            obj, "angle", translate("App::Property", "Bend Angle"), 90.0
         )
-        smAddDistanceProperty(
+        SheetMetalTools.smAddDistanceProperty(
             obj,
             "extend1",
-            FreeCAD.Qt.translate("App::Property", "Extend from Left Side"),
+            translate("App::Property", "Extend from Left Side"),
             0.0,
         )
-        smAddDistanceProperty(
+        SheetMetalTools.smAddDistanceProperty(
             obj,
             "extend2",
-            FreeCAD.Qt.translate("App::Property", "Extend from Right Side"),
+            translate("App::Property", "Extend from Right Side"),
             0.0,
         )
-        smAddEnumProperty(
+        SheetMetalTools.smAddEnumProperty(
             obj,
             "BendType",
-            FreeCAD.Qt.translate("App::Property", "Bend Type"),
+            translate("App::Property", "Bend Type"),
             ["Material Outside", "Material Inside", "Thickness Outside", "Offset"],
         )
-        smAddEnumProperty(
+        SheetMetalTools.smAddEnumProperty(
             obj,
             "LengthSpec",
-            FreeCAD.Qt.translate("App::Property", "Type of Length Specification"),
+            translate("App::Property", "Type of Length Specification"),
             ["Leg", "Outer Sharp", "Inner Sharp", "Tangential"],
         )
-        smAddLengthProperty(
+        SheetMetalTools.smAddLengthProperty(
             obj,
             "reliefw",
-            FreeCAD.Qt.translate("App::Property", "Relief Width"),
+            translate("App::Property", "Relief Width"),
             0.8,
             "ParametersRelief",
         )
-        smAddLengthProperty(
+        SheetMetalTools.smAddLengthProperty(
             obj,
             "reliefd",
-            FreeCAD.Qt.translate("App::Property", "Relief Depth"),
+            translate("App::Property", "Relief Depth"),
             1.0,
             "ParametersRelief",
         )
-        smAddBoolProperty(
+        SheetMetalTools.smAddBoolProperty(
             obj,
             "UseReliefFactor",
-            FreeCAD.Qt.translate("App::Property", "Use Relief Factor"),
+            translate("App::Property", "Use Relief Factor"),
             False,
             "ParametersRelief",
         )
-        smAddEnumProperty(
+        SheetMetalTools.smAddEnumProperty(
             obj,
             "reliefType",
-            FreeCAD.Qt.translate("App::Property", "Relief Type"),
+            translate("App::Property", "Relief Type"),
             ["Rectangle", "Round"],
             None,
             "ParametersRelief",
         )
-        smAddFloatProperty(
+        SheetMetalTools.smAddFloatProperty(
             obj,
             "ReliefFactor",
-            FreeCAD.Qt.translate("App::Property", "Relief Factor"),
+            translate("App::Property", "Relief Factor"),
             0.7,
             "ParametersRelief",
         )
-        smAddAngleProperty(
+        SheetMetalTools.smAddAngleProperty(
             obj,
             "miterangle1",
-            FreeCAD.Qt.translate("App::Property", "Bend Miter Angle from Left Side"),
+            translate("App::Property", "Bend Miter Angle from Left Side"),
             0.0,
             "ParametersMiterangle",
         )
-        smAddAngleProperty(
+        SheetMetalTools.smAddAngleProperty(
             obj,
             "miterangle2",
-            FreeCAD.Qt.translate("App::Property", "Bend Miter Angle from Right Side"),
+            translate("App::Property", "Bend Miter Angle from Right Side"),
             0.0,
             "ParametersMiterangle",
         )
-        smAddLengthProperty(
+        SheetMetalTools.smAddLengthProperty(
             obj,
             "minGap",
-            FreeCAD.Qt.translate("App::Property", "Auto Miter Minimum Gap"),
+            translate("App::Property", "Auto Miter Minimum Gap"),
             0.2,
             "ParametersEx",
         )
-        smAddLengthProperty(
+        SheetMetalTools.smAddLengthProperty(
             obj,
             "maxExtendDist",
-            FreeCAD.Qt.translate("App::Property", "Auto Miter maximum Extend Distance"),
+            translate("App::Property", "Auto Miter maximum Extend Distance"),
             5.0,
             "ParametersEx",
         )
-        smAddLengthProperty(
+        SheetMetalTools.smAddLengthProperty(
             obj,
             "minReliefGap",
-            FreeCAD.Qt.translate("App::Property", "Minimum Gap to Relief Cut"),
+            translate("App::Property", "Minimum Gap to Relief Cut"),
             1.0,
             "ParametersEx",
         )
-        smAddDistanceProperty(
+        SheetMetalTools.smAddDistanceProperty(
             obj,
             "offset",
-            FreeCAD.Qt.translate("App::Property", "Offset Bend"),
+            translate("App::Property", "Offset Bend"),
             0.0,
             "ParametersEx",
         )
-        smAddBoolProperty(
+        SheetMetalTools.smAddBoolProperty(
             obj,
             "AutoMiter",
-            FreeCAD.Qt.translate("App::Property", "Enable Auto Miter"),
+            translate("App::Property", "Enable Auto Miter"),
             True,
             "ParametersEx",
         )
-        smAddBoolProperty(
+        SheetMetalTools.smAddBoolProperty(
             obj,
             "unfold",
-            FreeCAD.Qt.translate("App::Property", "Shows Unfold View of Current Bend"),
+            translate("App::Property", "Shows Unfold View of Current Bend"),
             False,
             "ParametersEx",
         )
-        smAddProperty(
+        SheetMetalTools.smAddProperty(
             obj,
             "App::PropertyFloatConstraint",
             "kfactor",
-            FreeCAD.Qt.translate(
+            translate(
                 "App::Property",
                 "Location of Neutral Line. Caution: Using ANSI standards, not DIN.",
             ),
             (0.5, 0.0, 1.0, 0.01),
             "ParametersEx",
         )
-        smAddBoolProperty(
+        SheetMetalTools.smAddBoolProperty(
             obj,
             "sketchflip",
-            FreeCAD.Qt.translate("App::Property", "Flip Sketch Direction"),
+            translate("App::Property", "Flip Sketch Direction"),
             False,
             "ParametersEx2",
         )
-        smAddBoolProperty(
+        SheetMetalTools.smAddBoolProperty(
             obj,
             "sketchinvert",
-            FreeCAD.Qt.translate("App::Property", "Invert Sketch Start"),
+            translate("App::Property", "Invert Sketch Start"),
             False,
             "ParametersEx2",
         )
-        smAddProperty(
+        SheetMetalTools.smAddProperty(
             obj,
             "App::PropertyLink",
             "Sketch",
-            FreeCAD.Qt.translate("App::Property", "Sketch Object"),
+            translate("App::Property", "Sketch Object"),
             None,
             "ParametersEx2",
         )
-        smAddProperty(
+        SheetMetalTools.smAddProperty(
             obj,
             "App::PropertyFloatList",
             "LengthList",
-            FreeCAD.Qt.translate("App::Property", "Length of Wall List"),
+            translate("App::Property", "Length of Wall List"),
             None,
             "ParametersEx3",
         )
-        smAddProperty(
+        SheetMetalTools.smAddProperty(
             obj,
             "App::PropertyFloatList",
             "bendAList",
-            FreeCAD.Qt.translate("App::Property", "Bend Angle List"),
+            translate("App::Property", "Bend Angle List"),
             None,
             "ParametersEx3",
-        )
-        smAddBoolProperty(
-            obj,
-            "Perforate",
-            FreeCAD.Qt.translate("App::Property", "Enable Perforation"),
-            False,
-            "ParametersPerforation",
-        )
-        smAddAngleProperty(
-            obj,
-            "PerforationAngle",
-            FreeCAD.Qt.translate("App::Property", "Perforation Angle"),
-            0.0,
-            "ParametersPerforation",
-        )
-        smAddLengthProperty(
-            obj,
-            "PerforationInitialLength",
-            FreeCAD.Qt.translate("App::Property", "Initial Perforation Length"),
-            5.0,
-            "ParametersPerforation",
-        )
-        smAddLengthProperty(
-            obj,
-            "PerforationMaxLength",
-            FreeCAD.Qt.translate("App::Property", "Perforation Max Length"),
-            5.0,
-            "ParametersPerforation",
-        )
-        smAddLengthProperty(
-            obj,
-            "NonperforationMaxLength",
-            FreeCAD.Qt.translate("App::Property", "Non-Perforation Max Length"),
-            5.0,
-            "ParametersPerforation",
         )
 
     def getElementMapVersion(self, _fp, ver, _prop, restored):
@@ -1738,7 +1450,6 @@ class SMBendWall:
         # pass selected object shape
         Main_Object = fp.baseObject[0].Shape.copy()
         face = fp.baseObject[1]
-        #print(face)
         thk, thkDir = sheet_thk(Main_Object, face[0])
 
         if fp.Sketch:
@@ -1799,337 +1510,417 @@ class SMBendWall:
                 mingap=fp.minGap.Value,
                 maxExtendGap=fp.maxExtendDist.Value,
                 LengthSpec=fp.LengthSpec,
-                Perforate=fp.Perforate,
-                PerforationAngle=fp.PerforationAngle.Value,
-                PerforationInitialLength=fp.PerforationInitialLength.Value,
-                PerforationMaxLength=fp.PerforationMaxLength.Value,
-                NonperforationMaxLength=fp.NonperforationMaxLength.Value,
             )
             faces = smGetFace(f, s)
             face = faces
             Main_Object = s
 
         fp.Shape = s
-        fp.baseObject[0].ViewObject.Visibility = False
-        if fp.Sketch:
-            fp.Sketch.ViewObject.Visibility = False
 
 
-class SMViewProviderTree:
-    "A View provider that nests children objects under the created one"
+##########################################################################################################
+# Gui code
+##########################################################################################################
 
-    def __init__(self, obj):
-        obj.Proxy = self
-        self.Object = obj.Object
+if SheetMetalTools.isGuiLoaded():
+    import os
+    from FreeCAD import Gui
+    from PySide import QtGui
 
-    def attach(self, obj):
-        self.Object = obj.Object
-        return
+    icons_path = SheetMetalTools.icons_path
+    panels_path = SheetMetalTools.panels_path
+    smEpsilon = SheetMetalTools.smEpsilon
 
-    def updateData(self, fp, prop):
-        return
+    class SMViewProviderTree:
+        "A View provider that nests children objects under the created one"
 
-    def getDisplayModes(self, obj):
-        modes = []
-        return modes
+        def __init__(self, obj):
+            obj.Proxy = self
+            self.Object = obj.Object
 
-    def setDisplayMode(self, mode):
-        return mode
+        def attach(self, obj):
+            self.Object = obj.Object
+            return
 
-    def onChanged(self, vp, prop):
-        return
+        def updateData(self, fp, prop):
+            return
 
-    def __getstate__(self):
-        #        return {'ObjectName' : self.Object.Name}
-        return None
+        def getDisplayModes(self, obj):
+            modes = []
+            return modes
 
-    def __setstate__(self, state):
-        self.loads(state)
+        def setDisplayMode(self, mode):
+            return mode
 
-    # dumps and loads replace __getstate__ and __setstate__ post v. 0.21.2
-    def dumps(self):
-        return None
+        def onChanged(self, vp, prop):
+            return
 
-    def loads(self, state):
-        if state is not None:
-            import FreeCAD
+        def __getstate__(self):
+            #        return {'ObjectName' : self.Object.Name}
+            return None
 
-            doc = FreeCAD.ActiveDocument  # crap
-            self.Object = doc.getObject(state["ObjectName"])
+        def __setstate__(self, state):
+            self.loads(state)
 
-    def claimChildren(self):
-        objs = []
-        if hasattr(self.Object, "baseObject"):
-            objs.append(self.Object.baseObject[0])
-        if hasattr(self.Object, "Sketch"):
-            objs.append(self.Object.Sketch)
-        return objs
+        # dumps and loads replace __getstate__ and __setstate__ post v. 0.21.2
+        def dumps(self):
+            return None
 
-    def getIcon(self):
-        return os.path.join(iconPath, "SheetMetal_AddWall.svg")
+        def loads(self, state):
+            if state is not None:
+                import FreeCAD
 
-    def setEdit(self, vobj, mode):
-        taskd = SMBendWallTaskPanel()
-        taskd.obj = vobj.Object
-        taskd.update()
-        self.Object.ViewObject.Visibility = False
-        self.Object.baseObject[0].ViewObject.Visibility = True
-        FreeCADGui.Control.showDialog(taskd)
-        return True
+                doc = FreeCAD.ActiveDocument  # crap
+                self.Object = doc.getObject(state["ObjectName"])
 
-    def unsetEdit(self, vobj, mode):
-        FreeCADGui.Control.closeDialog()
-        self.Object.baseObject[0].ViewObject.Visibility = False
-        self.Object.ViewObject.Visibility = True
-        return False
+        def claimChildren(self):
+            objs = []
+            if hasattr(self.Object, "baseObject"):
+                objs.append(self.Object.baseObject[0])
+            if hasattr(self.Object, "Sketch"):
+                objs.append(self.Object.Sketch)
+            return objs
+
+        def getIcon(self):
+            return os.path.join(icons_path, "SheetMetal_AddWall.svg")
+
+        def setEdit(self, vobj, mode):
+            taskd = SMBendWallTaskPanel(vobj.Object)
+            Gui.Control.showDialog(taskd)
+            return True
+
+        def unsetEdit(self, vobj, mode):
+            Gui.Control.closeDialog()
+            Gui.Selection.setSelectionStyle(Gui.Selection.SelectionStyle.NormalSelection)
+            self.Object.baseObject[0].ViewObject.Visibility = False
+            self.Object.ViewObject.Visibility = True
+            return False
 
 
-class SMViewProviderFlat:
-    "A View provider that places objects flat under base object"
+    class SMViewProviderFlat:
+        "A View provider that places objects flat under base object"
 
-    def __init__(self, obj):
-        obj.Proxy = self
-        self.Object = obj.Object
+        def __init__(self, obj):
+            obj.Proxy = self
+            self.Object = obj.Object
 
-    def attach(self, obj):
-        self.Object = obj.Object
-        return
+        def attach(self, obj):
+            self.Object = obj.Object
+            return
 
-    def setupContextMenu(self, viewObject, menu):
-        action = menu.addAction(
-            FreeCAD.Qt.translate("QObject", "Edit %1").replace(
-                "%1", viewObject.Object.Label
+        def setupContextMenu(self, viewObject, menu):
+            action = menu.addAction(
+                FreeCAD.Qt.translate("QObject", "Edit %1").replace(
+                    "%1", viewObject.Object.Label
+                )
             )
-        )
-        action.triggered.connect(lambda: self.startDefaultEditMode(viewObject))
-        return False
+            action.triggered.connect(lambda: self.startDefaultEditMode(viewObject))
+            return False
 
-    def startDefaultEditMode(self, viewObject):
-        document = viewObject.Document.Document
-        if not document.HasPendingTransaction:
-            text = FreeCAD.Qt.translate("QObject", "Edit %1").replace(
-                "%1", viewObject.Object.Label
+        def startDefaultEditMode(self, viewObject):
+            document = viewObject.Document.Document
+            if not document.HasPendingTransaction:
+                text = FreeCAD.Qt.translate("QObject", "Edit %1").replace(
+                    "%1", viewObject.Object.Label
+                )
+                document.openTransaction(text)
+            viewObject.Document.setEdit(viewObject.Object, 0)
+
+        def updateData(self, fp, prop):
+            return
+
+        def getDisplayModes(self, obj):
+            modes = []
+            return modes
+
+        def setDisplayMode(self, mode):
+            return mode
+
+        def onChanged(self, vp, prop):
+            return
+
+        def __getstate__(self):
+            #        return {'ObjectName' : self.Object.Name}
+            return None
+
+        def __setstate__(self, state):
+            self.loads(state)
+
+        # dumps and loads replace __getstate__ and __setstate__ post v. 0.21.2
+        def dumps(self):
+            return None
+
+        def loads(self, state):
+            if state is not None:
+                import FreeCAD
+
+                doc = FreeCAD.ActiveDocument  # crap
+                self.Object = doc.getObject(state["ObjectName"])
+
+        def claimChildren(self):
+            objs = []
+            if hasattr(self.Object, "Sketch"):
+                objs.append(self.Object.Sketch)
+            return objs
+
+        def getIcon(self):
+            return os.path.join(icons_path, "SheetMetal_AddWall.svg")
+
+        def setEdit(self, vobj, mode):
+            taskd = SMBendWallTaskPanel(vobj.Object)
+            Gui.Control.showDialog(taskd)
+            return True
+
+        def unsetEdit(self, vobj, mode):
+            Gui.Control.closeDialog()
+            Gui.Selection.setSelectionStyle(Gui.Selection.SelectionStyle.NormalSelection)
+            self.Object.baseObject[0].ViewObject.Visibility = False
+            self.Object.ViewObject.Visibility = True
+            return False
+
+
+    class SMBendWallTaskPanel:
+        """A TaskPanel for the Sheetmetal"""
+
+        def __init__(self, obj):
+            self.obj = obj
+            path = os.path.join(panels_path, "FlangeParameters.ui")
+            path2 = os.path.join(panels_path, "FlangeAdvancedParameters.ui")
+            self.SelModeActive = False
+            self.form = []
+            self.form.append(Gui.PySideUic.loadUi(path))
+            self.form.append(Gui.PySideUic.loadUi(path2))
+            self.update()
+            # flange parameters connects
+            self.form[0].AddRemove.toggled.connect(self.toggleSelectionMode)
+            self.form[0].BendType.currentIndexChanged.connect(self.updateProperties)
+            self.form[0].Offset.valueChanged.connect(self.updateProperties)
+            self.form[0].Radius.valueChanged.connect(self.updateProperties)
+            self.form[0].Angle.valueChanged.connect(self.updateProperties)
+            self.form[0].Length.valueChanged.connect(self.updateProperties)
+            self.form[0].LengthSpec.currentIndexChanged.connect(self.updateProperties)
+            self.form[0].UnfoldCheckbox.toggled.connect(self.updateProperties)
+            self.form[0].ReversedCheckbox.toggled.connect(self.updateProperties)
+            self.form[0].extend1.valueChanged.connect(self.updateProperties)
+            self.form[0].extend2.valueChanged.connect(self.updateProperties)
+            # advanced flange parameters connects
+            self.form[1].reliefTypeButtonGroup.buttonToggled.connect(self.updateProperties)
+            self.form[1].reliefWidth.valueChanged.connect(self.updateProperties)
+            self.form[1].reliefDepth.valueChanged.connect(self.updateProperties)
+            self.form[1].autoMiterCheckbox.toggled.connect(self.updateProperties)
+            self.form[1].minGap.valueChanged.connect(self.updateProperties)
+            self.form[1].maxExDist.valueChanged.connect(self.updateProperties)
+            self.form[1].miterAngle1.valueChanged.connect(self.updateProperties)
+            self.form[1].miterAngle2.valueChanged.connect(self.updateProperties)
+
+        def isAllowedAlterSelection(self):
+            return True
+
+        def isAllowedAlterView(self):
+            return True
+
+        def getStandardButtons(self):
+            return QtGui.QDialogButtonBox.Ok
+
+        def updateProperties(self):
+            self.obj.BendType = self.form[0].BendType.currentIndex()
+            if self.obj.BendType == "Offset":
+                self.form[0].Offset.setEnabled(True)
+            else:
+                self.form[0].Offset.setEnabled(False)
+            self.obj.offset = self.form[0].Offset.property("value")
+            self.obj.radius = self.form[0].Radius.property("value")
+            self.obj.angle = self.form[0].Angle.property("value")
+            self.obj.length = self.form[0].Length.property("value")
+            self.obj.LengthSpec = self.form[0].LengthSpec.currentIndex()
+            self.obj.unfold = self.form[0].UnfoldCheckbox.isChecked()
+            self.obj.invert = self.form[0].ReversedCheckbox.isChecked()
+            self.obj.extend1 = self.form[0].extend1.property("value")
+            self.obj.extend2 = self.form[0].extend2.property("value")
+            self.obj.reliefType = (
+                "Rectangle" if self.form[1].reliefRectangle.isChecked() else "Round"
             )
-            document.openTransaction(text)
-        viewObject.Document.setEdit(viewObject.Object, 0)
+            self.obj.reliefw = self.form[1].reliefWidth.property("value")
+            self.obj.reliefd = self.form[1].reliefDepth.property("value")
+            self.obj.AutoMiter = self.form[1].autoMiterCheckbox.isChecked()
+            self.obj.minGap = self.form[1].minGap.property("value")
+            self.obj.maxExtendDist = self.form[1].maxExDist.property("value")
+            self.obj.miterangle1 = self.form[1].miterAngle1.property("value")
+            self.obj.miterangle2 = self.form[1].miterAngle2.property("value")
+            self.obj.Document.recompute()
 
-    def updateData(self, fp, prop):
-        return
-
-    def getDisplayModes(self, obj):
-        modes = []
-        return modes
-
-    def setDisplayMode(self, mode):
-        return mode
-
-    def onChanged(self, vp, prop):
-        return
-
-    def __getstate__(self):
-        #        return {'ObjectName' : self.Object.Name}
-        return None
-
-    def __setstate__(self, state):
-        self.loads(state)
-
-    # dumps and loads replace __getstate__ and __setstate__ post v. 0.21.2
-    def dumps(self):
-        return None
-
-    def loads(self, state):
-        if state is not None:
-            import FreeCAD
-
-            doc = FreeCAD.ActiveDocument  # crap
-            self.Object = doc.getObject(state["ObjectName"])
-
-    def claimChildren(self):
-        objs = []
-        if hasattr(self.Object, "Sketch"):
-            objs.append(self.Object.Sketch)
-        return objs
-
-    def getIcon(self):
-        return os.path.join(iconPath, "SheetMetal_AddWall.svg")
-
-    def setEdit(self, vobj, mode):
-        taskd = SMBendWallTaskPanel()
-        taskd.obj = vobj.Object
-        taskd.update()
-        self.Object.ViewObject.Visibility = False
-        self.Object.baseObject[0].ViewObject.Visibility = True
-        FreeCADGui.Control.showDialog(taskd)
-        return True
-
-    def unsetEdit(self, vobj, mode):
-        FreeCADGui.Control.closeDialog()
-        self.Object.baseObject[0].ViewObject.Visibility = False
-        self.Object.ViewObject.Visibility = True
-        return False
-
-
-class SMBendWallTaskPanel:
-    """A TaskPanel for the Sheetmetal"""
-
-    def __init__(self):
-        self.obj = None
-        self.form = QtGui.QWidget()
-        self.form.setObjectName("SMBendWallTaskPanel")
-        self.form.setWindowTitle("Binded faces/edges list")
-        self.grid = QtGui.QGridLayout(self.form)
-        self.grid.setObjectName("grid")
-        self.title = QtGui.QLabel(self.form)
-        self.grid.addWidget(self.title, 0, 0, 1, 2)
-        self.title.setText("Select new face(s)/Edge(s) and press Update")
-
-        # tree
-        self.tree = QtGui.QTreeWidget(self.form)
-        self.grid.addWidget(self.tree, 1, 0, 1, 2)
-        self.tree.setColumnCount(2)
-        self.tree.setHeaderLabels(["Name", "Subelement"])
-
-        # buttons
-        self.addButton = QtGui.QPushButton(self.form)
-        self.addButton.setObjectName("addButton")
-        self.addButton.setIcon(
-            QtGui.QIcon(os.path.join(iconPath, "SheetMetal_Update.svg"))
-        )
-        self.grid.addWidget(self.addButton, 3, 0, 1, 2)
-
-        QtCore.QObject.connect(
-            self.addButton, QtCore.SIGNAL("clicked()"), self.updateElement
-        )
-        self.update()
-
-    def isAllowedAlterSelection(self):
-        return True
-
-    def isAllowedAlterView(self):
-        return True
-
-    def getStandardButtons(self):
-        return QtGui.QDialogButtonBox.Ok
-
-    def update(self):
-        "fills the treewidget"
-        self.tree.clear()
-        if self.obj:
+        def update(self):
+            # load property values
+            typeList = ["Material Outside","Material Inside","Thickness Outside","Offset"]
+            lSpecList = ["Leg","Outer Sharp","Inner Sharp","Tangential"]
+            self.form[0].BendType.setProperty("currentIndex", typeList.index(self.obj.BendType))
+            if self.obj.BendType == "Offset":
+                self.form[0].Offset.setEnabled(True)
+            else:
+                self.form[0].Offset.setEnabled(False)
+            self.form[0].Offset.setProperty("value", self.obj.offset)
+            self.form[0].Radius.setProperty("value", self.obj.radius)
+            self.form[0].Angle.setProperty("value", self.obj.angle)
+            self.form[0].Length.setProperty("value", self.obj.length)
+            self.form[0].LengthSpec.setProperty("currentIndex", lSpecList.index(self.obj.LengthSpec))
+            self.form[0].UnfoldCheckbox.setChecked(self.obj.unfold)
+            self.form[0].ReversedCheckbox.setChecked(self.obj.invert)
+            self.form[0].extend1.setProperty("value", self.obj.extend1)
+            self.form[0].extend2.setProperty("value", self.obj.extend2)
+            # fill the treewidget
+            self.form[0].tree.clear()
             f = self.obj.baseObject
             if isinstance(f[1], list):
                 for subf in f[1]:
                     # FreeCAD.Console.PrintLog("item: " + subf + "\n")
-                    item = QtGui.QTreeWidgetItem(self.tree)
+                    item = QtGui.QTreeWidgetItem(self.form[0].tree)
                     item.setText(0, f[0].Name)
                     item.setIcon(0, QtGui.QIcon(":/icons/Tree_Part.svg"))
                     item.setText(1, subf)
             else:
-                item = QtGui.QTreeWidgetItem(self.tree)
+                item = QtGui.QTreeWidgetItem(self.form[0].tree)
                 item.setText(0, f[0].Name)
                 item.setIcon(0, QtGui.QIcon(":/icons/Tree_Part.svg"))
                 item.setText(1, f[1][0])
-        self.retranslateUi(self.form)
+            # Advanced parameters update
+            if self.obj.reliefType == "Rectangle":
+                self.form[1].reliefRectangle.setChecked(True)
+            else:
+                self.form[1].reliefRound.setChecked(True)
+            self.form[1].reliefDepth.setProperty("value", self.obj.reliefd)
+            self.form[1].reliefWidth.setProperty("value", self.obj.reliefw)
+            self.form[1].autoMiterCheckbox.setChecked(self.obj.AutoMiter)
+            self.form[1].minGap.setProperty("value", self.obj.minGap)
+            self.form[1].maxExDist.setProperty("value", self.obj.maxExtendDist)
+            self.form[1].miterAngle1.setProperty("value", self.obj.miterangle1)
+            self.form[1].miterAngle2.setProperty("value", self.obj.miterangle2)
 
-    def updateElement(self):
-        if not self.obj:
-            return
+        def toggleSelectionMode(self):
+            if not self.SelModeActive:
+                self.obj.Visibility=False
+                self.obj.baseObject[0].Visibility=True
+                Gui.Selection.clearSelection()
+                Gui.Selection.addSelection(self.obj.baseObject[0],self.obj.baseObject[1])
+                Gui.Selection.setSelectionStyle(Gui.Selection.SelectionStyle.GreedySelection)
+                self.SelModeActive=True
+                self.form[0].AddRemove.setText('Preview')
+            else:
+                self.updateElement()
+                Gui.Selection.clearSelection()
+                Gui.Selection.setSelectionStyle(Gui.Selection.SelectionStyle.NormalSelection)
+                self.obj.Document.recompute()
+                self.obj.baseObject[0].Visibility=False
+                self.obj.Visibility=True
+                self.SelModeActive=False
+                self.form[0].AddRemove.setText('Select')
 
-        sel = FreeCADGui.Selection.getSelectionEx()[0]
-        if not sel.HasSubObjects:
-            self.update()
-            return
+        def updateElement(self):
+            if not self.obj:
+                return
 
-        obj = sel.Object
-        for elt in sel.SubElementNames:
-            if "Face" in elt or "Edge" in elt:
-                face = self.obj.baseObject
-                found = False
-                if face[0] == obj.Name:
-                    if isinstance(face[1], tuple):
-                        for subf in face[1]:
-                            if subf == elt:
+            sel = Gui.Selection.getSelectionEx()[0]
+            if not sel.HasSubObjects:
+                self.update()
+                return
+
+            obj = sel.Object
+            for elt in sel.SubElementNames:
+                if "Face" in elt or "Edge" in elt:
+                    face = self.obj.baseObject
+                    found = False
+                    if face[0] == obj.Name:
+                        if isinstance(face[1], tuple):
+                            for subf in face[1]:
+                                if subf == elt:
+                                    found = True
+                        else:
+                            if face[1][0] == elt:
                                 found = True
-                    else:
-                        if face[1][0] == elt:
-                            found = True
-                if not found:
-                    self.obj.baseObject = (sel.Object, sel.SubElementNames)
-        self.update()
+                    if not found:
+                        self.obj.baseObject = (sel.Object, sel.SubElementNames)
+            self.update()
 
-    def accept(self):
-        FreeCAD.ActiveDocument.recompute()
-        FreeCADGui.ActiveDocument.resetEdit()
-        # self.obj.ViewObject.Visibility=True
-        return True
+        def accept(self):
+            FreeCAD.ActiveDocument.recompute()
+            Gui.Selection.setSelectionStyle(Gui.Selection.SelectionStyle.NormalSelection)
+            self.obj.Document.commitTransaction()
+            Gui.Control.closeDialog()
+            Gui.ActiveDocument.resetEdit()
+            # self.obj.ViewObject.Visibility=True
+            return True
 
-    def retranslateUi(self, TaskPanel):
-        # TaskPanel.setWindowTitle(QtGui.QApplication.translate("draft", "Faces", None))
-        self.addButton.setText(QtGui.QApplication.translate("draft", "Update", None))
+        def reject(self):
+            FreeCAD.ActiveDocument.abortTransaction()
+            Gui.Control.closeDialog()
+            FreeCAD.ActiveDocument.recompute()
 
+    class AddWallCommandClass:
+        """Add Wall command"""
 
-class AddWallCommandClass:
-    """Add Wall command"""
+        def GetResources(self):
+            return {
+                "Pixmap": os.path.join(
+                    icons_path, "SheetMetal_AddWall.svg"
+                ),  # the name of a svg file available in the resources
+                "MenuText": FreeCAD.Qt.translate("SheetMetal", "Make Wall"),
+                "Accel": "W",
+                "ToolTip": FreeCAD.Qt.translate(
+                    "SheetMetal",
+                    "Extends one or more face, connected by a bend on existing sheet metal.\n"
+                    "1. Select edges or thickness side faces to create bends with walls.\n"
+                    "2. Use Property editor to modify other parameters",
+                ),
+            }
 
-    def GetResources(self):
-        return {
-            "Pixmap": os.path.join(
-                iconPath, "SheetMetal_AddWall.svg"
-            ),  # the name of a svg file available in the resources
-            "MenuText": FreeCAD.Qt.translate("SheetMetal", "Make Wall"),
-            "Accel": "W",
-            "ToolTip": FreeCAD.Qt.translate(
-                "SheetMetal",
-                "Extends one or more face, connected by a bend on existing sheet metal.\n"
-                "1. Select edges or thickness side faces to create bends with walls.\n"
-                "2. Use Property editor to modify other parameters",
-            ),
-        }
-
-    def Activated(self):
-        doc = FreeCAD.ActiveDocument
-        view = Gui.ActiveDocument.ActiveView
-        activeBody = None
-        selobj = Gui.Selection.getSelectionEx()[0].Object
-        viewConf = SheetMetalBaseCmd.GetViewConfig(selobj)
-        if hasattr(view, "getActiveObject"):
-            activeBody = view.getActiveObject("pdbody")
-        if not smIsOperationLegal(activeBody, selobj):
+        def Activated(self):
+            doc = FreeCAD.ActiveDocument
+            view = Gui.ActiveDocument.ActiveView
+            activeBody = None
+            sel = Gui.Selection.getSelectionEx()[0]
+            selobj = sel.Object
+            viewConf = SheetMetalTools.GetViewConfig(selobj)
+            if hasattr(view, "getActiveObject"):
+                activeBody = view.getActiveObject("pdbody")
+            if not SheetMetalTools.smIsOperationLegal(activeBody, selobj):
+                return
+            doc.openTransaction("Bend")
+            if activeBody is None or not SheetMetalTools.smIsPartDesign(selobj):
+                a = doc.addObject("Part::FeaturePython", "Bend")
+                SMBendWall(a)
+                a.baseObject = (selobj, sel.SubElementNames)
+                SMViewProviderTree(a.ViewObject)
+            else:
+                # FreeCAD.Console.PrintLog("found active body: " + activeBody.Name)
+                a = doc.addObject("PartDesign::FeaturePython", "Bend")
+                SMBendWall(a)
+                a.baseObject = (selobj, sel.SubElementNames)
+                SMViewProviderFlat(a.ViewObject)
+                activeBody.addObject(a)
+            SheetMetalTools.SetViewConfig(a, viewConf)
+            Gui.Selection.clearSelection()
+            if SheetMetalTools.is_autolink_enabled():
+                root = SheetMetalTools.getOriginalBendObject(a)
+                if root:
+                    a.setExpression("radius", root.Label + ".radius")
+            dialog = SMBendWallTaskPanel(a)
+            doc.recompute()
+            Gui.Control.showDialog(dialog)
             return
-        doc.openTransaction("Bend")
-        if activeBody is None or not smIsPartDesign(selobj):
-            a = doc.addObject("Part::FeaturePython", "Bend")
-            SMBendWall(a)
-            SMViewProviderTree(a.ViewObject)
-        else:
-            # FreeCAD.Console.PrintLog("found active body: " + activeBody.Name)
-            a = doc.addObject("PartDesign::FeaturePython", "Bend")
-            SMBendWall(a)
-            SMViewProviderFlat(a.ViewObject)
-            activeBody.addObject(a)
-        SheetMetalBaseCmd.SetViewConfig(a, viewConf)
-        FreeCADGui.Selection.clearSelection()
-        if SheetMetalBaseCmd.autolink_enabled():
-            root = SheetMetalBaseCmd.getOriginalBendObject(a)
-            if root:
-                a.setExpression("radius", root.Label + ".radius")
-        doc.recompute()
-        doc.commitTransaction()
-        return
 
-    def IsActive(self):
-        if (
-            len(Gui.Selection.getSelection()) < 1
-            or len(Gui.Selection.getSelectionEx()[0].SubElementNames) < 1
-        ):
-            return False
-        selobj = Gui.Selection.getSelection()[0]
-        for selobj in Gui.Selection.getSelection():
-            if selobj.isDerivedFrom("Sketcher::SketchObject"):
+        def IsActive(self):
+            if (
+                len(Gui.Selection.getSelection()) < 1
+                or len(Gui.Selection.getSelectionEx()[0].SubElementNames) < 1
+            ):
                 return False
-        for selFace in Gui.Selection.getSelectionEx()[0].SubObjects:
-            if type(selFace) == Part.Vertex:
-                return False
-        return True
+            selobj = Gui.Selection.getSelection()[0]
+            for selobj in Gui.Selection.getSelection():
+                if selobj.isDerivedFrom("Sketcher::SketchObject"):
+                    return False
+            for selFace in Gui.Selection.getSelectionEx()[0].SubObjects:
+                if type(selFace) == Part.Vertex:
+                    return False
+            return True
 
 
-Gui.addCommand("SheetMetal_AddWall", AddWallCommandClass())
+    Gui.addCommand("SheetMetal_AddWall", AddWallCommandClass())

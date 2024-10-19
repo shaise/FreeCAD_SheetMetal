@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 ###################################################################################
 #
-#  SheetMetalCmd.py
+#  SheetMetalFormingCmd.py
 #  
 #  Copyright 2015 Shai Seger <shaise at gmail dot com>
 #  
@@ -23,57 +23,11 @@
 #  
 ###################################################################################
 
-from FreeCAD import Gui
-from PySide import QtCore, QtGui
+import FreeCAD, Part, math, os, SheetMetalTools
+from SheetMetalLogger import SMLogger
 
-import FreeCAD, FreeCADGui, Part, os, math
-import SheetMetalBaseCmd
+smEpsilon = SheetMetalTools.smEpsilon
 
-from SheetMetalLogger import SMLogger, UnfoldException, BendException, TreeException
-
-__dir__ = os.path.dirname(__file__)
-iconPath = os.path.join( __dir__, 'Resources', 'icons' )
-smEpsilon = 0.0000001
-
-# add translations path
-LanguagePath = os.path.join( __dir__, 'translations')
-Gui.addLanguagePath(LanguagePath)
-Gui.updateLocale()
-
-def smWarnDialog(msg):
-    diag = QtGui.QMessageBox(
-        QtGui.QMessageBox.Warning,
-        FreeCAD.Qt.translate("QMessageBox", "Error in macro MessageBox"),
-        msg,
-    )
-    diag.setWindowModality(QtCore.Qt.ApplicationModal)
-    diag.exec_()
-
-def smBelongToBody(item, body):
-    if (body is None):
-        return False
-    for obj in body.Group:
-        if obj.Name == item.Name:
-            return True
-    return False
-
-def smIsPartDesign(obj):
-    return str(obj).find("<PartDesign::") == 0
-        
-def smIsOperationLegal(body, selobj):
-    #FreeCAD.Console.PrintLog(str(selobj) + " " + str(body) + " " + str(smBelongToBody(selobj, body)) + "\n")
-    if smIsPartDesign(selobj) and not smBelongToBody(selobj, body):
-        smWarnDialog(
-            FreeCAD.Qt.translate(
-                "QMessageBox",
-                "The selected geometry does not belong to the active Body.\n"
-                "Please make the container of this item active by\n"
-                "double clicking on it.",
-            )
-        )
-        return False
-    return True
- 
 def smthk(obj, foldface) :
   normal = foldface.normalAt(0,0)
   theVol = obj.Volume
@@ -153,7 +107,6 @@ def makeforming(tool, base, base_face, thk, tool_faces = None, point = FreeCAD.V
 class SMBendWall:
   def __init__(self, obj):
     '''"Add Forming Wall" '''
-    selobj = Gui.Selection.getSelectionEx()
 
     _tip_ = FreeCAD.Qt.translate("App::Property","Offset from Center of Face")
     obj.addProperty("App::PropertyVectorDistance","offset","Parameters",_tip_)
@@ -164,9 +117,9 @@ class SMBendWall:
     _tip_ = FreeCAD.Qt.translate("App::Property","Thickness of Sheetmetal")
     obj.addProperty("App::PropertyDistance","thickness","Parameters",_tip_)
     _tip_ = FreeCAD.Qt.translate("App::Property","Base Object")
-    obj.addProperty("App::PropertyLinkSub", "baseObject", "Parameters",_tip_).baseObject = (selobj[0].Object, selobj[0].SubElementNames)
+    obj.addProperty("App::PropertyLinkSub", "baseObject", "Parameters",_tip_)
     _tip_ = FreeCAD.Qt.translate("App::Property","Forming Tool Object")
-    obj.addProperty("App::PropertyLinkSub", "toolObject", "Parameters",_tip_).toolObject = (selobj[1].Object, selobj[1].SubElementNames)
+    obj.addProperty("App::PropertyLinkSub", "toolObject", "Parameters",_tip_)
     _tip_ = FreeCAD.Qt.translate("App::Property","Point Sketch on Sheetmetal")
     obj.addProperty("App::PropertyLink","Sketch","Parameters1",_tip_)
     obj.Proxy = self
@@ -202,333 +155,350 @@ class SMBendWall:
     else :
       a = base
     fp.Shape = a
-    Gui.ActiveDocument.getObject(fp.baseObject[0].Name).Visibility = False
-    Gui.ActiveDocument.getObject(fp.toolObject[0].Name).Visibility = False
-    if fp.Sketch:
-     Gui.ActiveDocument.getObject(fp.Sketch.Name).Visibility = False
 
-class SMFormingVP:
-  "A View provider that nests children objects under the created one"
 
-  def __init__(self, obj):
-    obj.Proxy = self
-    self.Object = obj.Object
+##########################################################################################################
+# Gui code
+##########################################################################################################
 
-  def attach(self, obj):
-    self.Object = obj.Object
-    return
+if SheetMetalTools.isGuiLoaded():
+  from FreeCAD import Gui
+  from PySide import QtCore, QtGui
 
-  def setupContextMenu(self, viewObject, menu):
-    action = menu.addAction(FreeCAD.Qt.translate("QObject", "Edit %1").replace("%1", viewObject.Object.Label))
-    action.triggered.connect(lambda: self.startDefaultEditMode(viewObject))
-    return False
+  icons_path = SheetMetalTools.icons_path
 
-  def startDefaultEditMode(self, viewObject):
-    document = viewObject.Document.Document
-    if not document.HasPendingTransaction:
-      text = FreeCAD.Qt.translate("QObject", "Edit %1").replace("%1", viewObject.Object.Label)
-      document.openTransaction(text)
-    viewObject.Document.setEdit(viewObject.Object, 0)
+  # add translations path
+  Gui.addLanguagePath(SheetMetalTools.language_path)
+  Gui.updateLocale()
 
-  def updateData(self, fp, prop):
-    return
 
-  def getDisplayModes(self,obj):
-    modes=[]
-    return modes
+  class SMFormingVP:
+    "A View provider that nests children objects under the created one"
 
-  def setDisplayMode(self,mode):
-    return mode
+    def __init__(self, obj):
+      obj.Proxy = self
+      self.Object = obj.Object
 
-  def onChanged(self, vp, prop):
-    return
+    def attach(self, obj):
+      self.Object = obj.Object
+      return
 
-  def __getstate__(self):
-    #        return {'ObjectName' : self.Object.Name}
-    return None
+    def setupContextMenu(self, viewObject, menu):
+      action = menu.addAction(FreeCAD.Qt.translate("QObject", "Edit %1").replace("%1", viewObject.Object.Label))
+      action.triggered.connect(lambda: self.startDefaultEditMode(viewObject))
+      return False
 
-  def __setstate__(self, state):
-    self.loads(state)
+    def startDefaultEditMode(self, viewObject):
+      document = viewObject.Document.Document
+      if not document.HasPendingTransaction:
+        text = FreeCAD.Qt.translate("QObject", "Edit %1").replace("%1", viewObject.Object.Label)
+        document.openTransaction(text)
+      viewObject.Document.setEdit(viewObject.Object, 0)
 
-  # dumps and loads replace __getstate__ and __setstate__ post v. 0.21.2
-  def dumps(self):
-    return None
+    def updateData(self, fp, prop):
+      return
 
-  def loads(self, state):
-    if state is not None:
-      import FreeCAD
-      doc = FreeCAD.ActiveDocument #crap
-      self.Object = doc.getObject(state['ObjectName'])
+    def getDisplayModes(self,obj):
+      modes=[]
+      return modes
 
-  def claimChildren(self):
-    objs = []
-    if hasattr(self.Object,"baseObject"):
-      objs.append(self.Object.baseObject[0])
-    if hasattr(self.Object,"toolObject"):
-      objs.append(self.Object.toolObject[0])
-    if hasattr(self.Object,"Sketch"):
-      objs.append(self.Object.Sketch)
-    return objs
+    def setDisplayMode(self,mode):
+      return mode
 
-  def getIcon(self):
-    return os.path.join( iconPath , 'SheetMetal_Forming.svg')
+    def onChanged(self, vp, prop):
+      return
 
-  def setEdit(self,vobj,mode):
-    taskd = SMFormingWallTaskPanel()
-    taskd.obj = vobj.Object
-    taskd.update()
-    self.Object.ViewObject.Visibility=False
-    self.Object.baseObject[0].ViewObject.Visibility=True
-    self.Object.toolObject[0].ViewObject.Visibility=True
-    FreeCADGui.Control.showDialog(taskd)
-    return True
+    def __getstate__(self):
+      #        return {'ObjectName' : self.Object.Name}
+      return None
 
-  def unsetEdit(self,vobj,mode):
-    FreeCADGui.Control.closeDialog()
-    self.Object.baseObject[0].ViewObject.Visibility=False
-    self.Object.toolObject[0].ViewObject.Visibility=False
-    self.Object.ViewObject.Visibility=True
-    return False
+    def __setstate__(self, state):
+      self.loads(state)
 
-class SMFormingPDVP:
-  "A View provider that nests children objects under the created one"
+    # dumps and loads replace __getstate__ and __setstate__ post v. 0.21.2
+    def dumps(self):
+      return None
 
-  def __init__(self, obj):
-    obj.Proxy = self
-    self.Object = obj.Object
+    def loads(self, state):
+      if state is not None:
+        import FreeCAD
+        doc = FreeCAD.ActiveDocument #crap
+        self.Object = doc.getObject(state['ObjectName'])
 
-  def attach(self, obj):
-    self.Object = obj.Object
-    return
+    def claimChildren(self):
+      objs = []
+      if hasattr(self.Object,"baseObject"):
+        objs.append(self.Object.baseObject[0])
+      if hasattr(self.Object,"toolObject"):
+        objs.append(self.Object.toolObject[0])
+      if hasattr(self.Object,"Sketch"):
+        objs.append(self.Object.Sketch)
+      return objs
 
-  def updateData(self, fp, prop):
-    return
+    def getIcon(self):
+      return os.path.join( icons_path , 'SheetMetal_Forming.svg')
 
-  def getDisplayModes(self,obj):
-    modes=[]
-    return modes
-
-  def setDisplayMode(self,mode):
-    return mode
-
-  def onChanged(self, vp, prop):
-    return
-
-  def __getstate__(self):
-    #        return {'ObjectName' : self.Object.Name}
-    return None
-
-  def __setstate__(self, state):
-    self.loads(state)
-
-  # dumps and loads replace __getstate__ and __setstate__ post v. 0.21.2
-  def dumps(self):
-    return None
-
-  def loads(self, state):
-    if state is not None:
-      import FreeCAD
-      doc = FreeCAD.ActiveDocument #crap
-      self.Object = doc.getObject(state['ObjectName'])
-
-  def claimChildren(self):
-    objs = []
-    if hasattr(self.Object,"toolObject"):
-      objs.append(self.Object.toolObject[0])
-    if hasattr(self.Object,"Sketch"):
-      objs.append(self.Object.Sketch)
-    return objs
-
-  def getIcon(self):
-    return os.path.join( iconPath , 'SheetMetal_Forming.svg')
-
-  def setEdit(self,vobj,mode):
-    taskd = SMFormingWallTaskPanel()
-    taskd.obj = vobj.Object
-    taskd.update()
-    self.Object.ViewObject.Visibility=False
-    self.Object.baseObject[0].ViewObject.Visibility=True
-    self.Object.toolObject[0].ViewObject.Visibility=False
-    FreeCADGui.Control.showDialog(taskd)
-    return True
-
-  def unsetEdit(self,vobj,mode):
-    FreeCADGui.Control.closeDialog()
-    self.Object.baseObject[0].ViewObject.Visibility=False
-    self.Object.toolObject[0].ViewObject.Visibility=False
-    self.Object.ViewObject.Visibility=True
-    return False
-
-class SMFormingWallTaskPanel:
-    '''A TaskPanel for the Sheetmetal'''
-    def __init__(self):
-      
-      self.obj = None
-      self.form = QtGui.QWidget()
-      self.form.setObjectName("SMBendWallTaskPanel")
-      self.form.setWindowTitle("Binded faces/edges list")
-      self.grid = QtGui.QGridLayout(self.form)
-      self.grid.setObjectName("grid")
-      self.title = QtGui.QLabel(self.form)
-      self.grid.addWidget(self.title, 0, 0, 1, 2)
-      self.title.setText("Select new face(s)/Edge(s) and press Update")
-
-      # tree
-      self.tree = QtGui.QTreeWidget(self.form)
-      self.grid.addWidget(self.tree, 1, 0, 1, 2)
-      self.tree.setColumnCount(2)
-      self.tree.setHeaderLabels(["Name","Subelement"])
-
-      # buttons
-      self.addButton = QtGui.QPushButton(self.form)
-      self.addButton.setObjectName("addButton")
-      self.addButton.setIcon(QtGui.QIcon(os.path.join( iconPath , 'SheetMetal_Update.svg')))
-      self.grid.addWidget(self.addButton, 3, 0, 1, 2)
-
-      QtCore.QObject.connect(self.addButton, QtCore.SIGNAL("clicked()"), self.updateElement)
-      self.update()
-
-    def isAllowedAlterSelection(self):
+    def setEdit(self,vobj,mode):
+      taskd = SMFormingWallTaskPanel()
+      taskd.obj = vobj.Object
+      taskd.update()
+      self.Object.ViewObject.Visibility=False
+      self.Object.baseObject[0].ViewObject.Visibility=True
+      self.Object.toolObject[0].ViewObject.Visibility=True
+      Gui.Control.showDialog(taskd)
       return True
 
-    def isAllowedAlterView(self):
+    def unsetEdit(self,vobj,mode):
+      Gui.Control.closeDialog()
+      self.Object.baseObject[0].ViewObject.Visibility=False
+      self.Object.toolObject[0].ViewObject.Visibility=False
+      self.Object.ViewObject.Visibility=True
+      return False
+
+  class SMFormingPDVP:
+    "A View provider that nests children objects under the created one"
+
+    def __init__(self, obj):
+      obj.Proxy = self
+      self.Object = obj.Object
+
+    def attach(self, obj):
+      self.Object = obj.Object
+      return
+
+    def updateData(self, fp, prop):
+      return
+
+    def getDisplayModes(self,obj):
+      modes=[]
+      return modes
+
+    def setDisplayMode(self,mode):
+      return mode
+
+    def onChanged(self, vp, prop):
+      return
+
+    def __getstate__(self):
+      #        return {'ObjectName' : self.Object.Name}
+      return None
+
+    def __setstate__(self, state):
+      self.loads(state)
+
+    # dumps and loads replace __getstate__ and __setstate__ post v. 0.21.2
+    def dumps(self):
+      return None
+
+    def loads(self, state):
+      if state is not None:
+        import FreeCAD
+        doc = FreeCAD.ActiveDocument #crap
+        self.Object = doc.getObject(state['ObjectName'])
+
+    def claimChildren(self):
+      objs = []
+      if hasattr(self.Object,"toolObject"):
+        objs.append(self.Object.toolObject[0])
+      if hasattr(self.Object,"Sketch"):
+        objs.append(self.Object.Sketch)
+      return objs
+
+    def getIcon(self):
+      return os.path.join( icons_path , 'SheetMetal_Forming.svg')
+
+    def setEdit(self,vobj,mode):
+      taskd = SMFormingWallTaskPanel()
+      taskd.obj = vobj.Object
+      taskd.update()
+      self.Object.ViewObject.Visibility=False
+      self.Object.baseObject[0].ViewObject.Visibility=True
+      self.Object.toolObject[0].ViewObject.Visibility=False
+      Gui.Control.showDialog(taskd)
       return True
 
-    def getStandardButtons(self):
-      return QtGui.QDialogButtonBox.Ok
+    def unsetEdit(self,vobj,mode):
+      Gui.Control.closeDialog()
+      self.Object.baseObject[0].ViewObject.Visibility=False
+      self.Object.toolObject[0].ViewObject.Visibility=False
+      self.Object.ViewObject.Visibility=True
+      return False
 
-    def update(self):
-      'fills the treewidget'
-      self.tree.clear()
-      if self.obj:
-        f = self.obj.baseObject
-        if isinstance(f[1],list):
-          for subf in f[1]:
-            #FreeCAD.Console.PrintLog("item: " + subf + "\n")
-            item = QtGui.QTreeWidgetItem(self.tree)
-            item.setText(0,f[0].Name)
-            item.setIcon(0,QtGui.QIcon(":/icons/Tree_Part.svg"))
-            item.setText(1,subf)  
-        else:
-          item = QtGui.QTreeWidgetItem(self.tree)
-          item.setText(0,f[0].Name)
-          item.setIcon(0,QtGui.QIcon(":/icons/Tree_Part.svg"))
-          item.setText(1,f[1][0])
+  class SMFormingWallTaskPanel:
+      '''A TaskPanel for the Sheetmetal'''
+      def __init__(self):
 
-        f = self.obj.toolObject
-        if isinstance(f[1],list):
-          for subf in f[1]:
-            #FreeCAD.Console.PrintLog("item: " + subf + "\n")
-            item = QtGui.QTreeWidgetItem(self.tree)
-            item.setText(0,f[0].Name)
-            item.setIcon(0,QtGui.QIcon(":/icons/Tree_Part.svg"))
-            item.setText(1,subf)  
-        else:
-          item = QtGui.QTreeWidgetItem(self.tree)
-          item.setText(0,f[0].Name)
-          item.setIcon(0,QtGui.QIcon(":/icons/Tree_Part.svg"))
-          item.setText(1,f[1][0])
-      self.retranslateUi(self.form)
+        self.obj = None
+        self.form = QtGui.QWidget()
+        self.form.setObjectName("SMFormingWallTaskPanel")
+        self.form.setWindowTitle("Binded faces/edges list")
+        self.grid = QtGui.QGridLayout(self.form)
+        self.grid.setObjectName("grid")
+        self.title = QtGui.QLabel(self.form)
+        self.grid.addWidget(self.title, 0, 0, 1, 2)
+        self.title.setText("Select new face(s)/Edge(s) and press Update")
 
-    def updateElement(self):
-      if self.obj:
-        sel = FreeCADGui.Selection.getSelectionEx()[0]
-        if sel.HasSubObjects:
-          obj = sel.Object
-          for elt in sel.SubElementNames:
-            if "Face" in elt:
-              face = self.obj.baseObject
-              found = False
-              if (face[0] == obj.Name):
-                if isinstance(face[1],tuple):
-                  for subf in face[1]:
-                    if subf == elt:
-                      found = True
-                else:
-                  if (face[1][0] == elt):
-                    found = True
-              if not found:
-                self.obj.baseObject = (sel.Object, sel.SubElementNames)
+        # tree
+        self.tree = QtGui.QTreeWidget(self.form)
+        self.grid.addWidget(self.tree, 1, 0, 1, 2)
+        self.tree.setColumnCount(2)
+        self.tree.setHeaderLabels(["Name","Subelement"])
 
-        sel = FreeCADGui.Selection.getSelectionEx()[1]
-        if sel.HasSubObjects:
-          obj = sel.Object
-          for elt in sel.SubElementNames:
-            if "Face" in elt:
-              face = self.obj.toolObject
-              found = False
-              if (face[0] == obj.Name):
-                if isinstance(face[1],tuple):
-                  for subf in face[1]:
-                    if subf == elt:
-                      found = True
-                else:
-                  if (face[1][0] == elt):
-                    found = True
-              if not found:
-                self.obj.toolObject = (sel.Object, sel.SubElementNames)
+        # buttons
+        self.addButton = QtGui.QPushButton(self.form)
+        self.addButton.setObjectName("addButton")
+        self.addButton.setIcon(QtGui.QIcon(os.path.join( icons_path , 'SheetMetal_Update.svg')))
+        self.grid.addWidget(self.addButton, 3, 0, 1, 2)
+
+        QtCore.QObject.connect(self.addButton, QtCore.SIGNAL("clicked()"), self.updateElement)
         self.update()
 
-    def accept(self):
-      FreeCAD.ActiveDocument.recompute()
-      FreeCADGui.ActiveDocument.resetEdit()
-      #self.obj.ViewObject.Visibility=True
+      def isAllowedAlterSelection(self):
+        return True
+
+      def isAllowedAlterView(self):
+        return True
+
+      def getStandardButtons(self):
+        return QtGui.QDialogButtonBox.Ok
+
+      def update(self):
+        'fills the treewidget'
+        self.tree.clear()
+        if self.obj:
+          f = self.obj.baseObject
+          if isinstance(f[1],list):
+            for subf in f[1]:
+              #FreeCAD.Console.PrintLog("item: " + subf + "\n")
+              item = QtGui.QTreeWidgetItem(self.tree)
+              item.setText(0,f[0].Name)
+              item.setIcon(0,QtGui.QIcon(":/icons/Tree_Part.svg"))
+              item.setText(1,subf)  
+          else:
+            item = QtGui.QTreeWidgetItem(self.tree)
+            item.setText(0,f[0].Name)
+            item.setIcon(0,QtGui.QIcon(":/icons/Tree_Part.svg"))
+            item.setText(1,f[1][0])
+
+          f = self.obj.toolObject
+          if isinstance(f[1],list):
+            for subf in f[1]:
+              #FreeCAD.Console.PrintLog("item: " + subf + "\n")
+              item = QtGui.QTreeWidgetItem(self.tree)
+              item.setText(0,f[0].Name)
+              item.setIcon(0,QtGui.QIcon(":/icons/Tree_Part.svg"))
+              item.setText(1,subf)  
+          else:
+            item = QtGui.QTreeWidgetItem(self.tree)
+            item.setText(0,f[0].Name)
+            item.setIcon(0,QtGui.QIcon(":/icons/Tree_Part.svg"))
+            item.setText(1,f[1][0])
+        self.retranslateUi(self.form)
+
+      def updateElement(self):
+        if self.obj:
+          sel = Gui.Selection.getSelectionEx()[0]
+          if sel.HasSubObjects:
+            obj = sel.Object
+            for elt in sel.SubElementNames:
+              if "Face" in elt:
+                face = self.obj.baseObject
+                found = False
+                if (face[0] == obj.Name):
+                  if isinstance(face[1],tuple):
+                    for subf in face[1]:
+                      if subf == elt:
+                        found = True
+                  else:
+                    if (face[1][0] == elt):
+                      found = True
+                if not found:
+                  self.obj.baseObject = (sel.Object, sel.SubElementNames)
+
+          sel = Gui.Selection.getSelectionEx()[1]
+          if sel.HasSubObjects:
+            obj = sel.Object
+            for elt in sel.SubElementNames:
+              if "Face" in elt:
+                face = self.obj.toolObject
+                found = False
+                if (face[0] == obj.Name):
+                  if isinstance(face[1],tuple):
+                    for subf in face[1]:
+                      if subf == elt:
+                        found = True
+                  else:
+                    if (face[1][0] == elt):
+                      found = True
+                if not found:
+                  self.obj.toolObject = (sel.Object, sel.SubElementNames)
+          self.update()
+
+      def accept(self):
+        FreeCAD.ActiveDocument.recompute()
+        Gui.ActiveDocument.resetEdit()
+        #self.obj.ViewObject.Visibility=True
+        return True
+
+      def retranslateUi(self, TaskPanel):
+        #TaskPanel.setWindowTitle(QtGui.QApplication.translate("draft", "Faces", None))
+        self.addButton.setText(QtGui.QApplication.translate("draft", "Update", None))
+
+
+  class AddFormingWallCommand():
+    """Add Forming Wall command"""
+
+    def GetResources(self):
+      return {'Pixmap'  : os.path.join( icons_path , 'SheetMetal_Forming.svg') , # the name of a svg file available in the resources
+              'MenuText': FreeCAD.Qt.translate('SheetMetal','Make Forming in Wall') ,
+              'Accel': "M, F",
+              'ToolTip' : FreeCAD.Qt.translate('SheetMetal','Make a forming using tool in metal sheet\n'
+              '1. Select a flat face on sheet metal and\n'
+              '2. Select face(s) on forming tool Shape to create Formed sheetmetal.\n'
+              '3. Use Suppress in Property editor to disable during unfolding\n'
+              '4. Use Property editor to modify other parameters')}
+
+    def Activated(self):
+      doc = FreeCAD.ActiveDocument
+      view = Gui.ActiveDocument.ActiveView
+      activeBody = None
+      sel = Gui.Selection.getSelectionEx()
+      selobj = Gui.Selection.getSelectionEx()[0].Object
+      viewConf = SheetMetalTools.GetViewConfig(selobj)
+      if hasattr(view,'getActiveObject'):
+        activeBody = view.getActiveObject('pdbody')
+      if not SheetMetalTools.smIsOperationLegal(activeBody, selobj):
+          return
+      doc.openTransaction("WallForming")
+      if activeBody is None or not SheetMetalTools.smIsPartDesign(selobj):
+        a = doc.addObject("Part::FeaturePython","WallForming")
+        SMBendWall(a)
+        a.baseObject = (selobj, sel[0].SubElementNames)
+        a.toolObject = (sel[1].Object, sel[1].SubElementNames)
+        SMFormingVP(a.ViewObject)
+      else:
+        #FreeCAD.Console.PrintLog("found active body: " + activeBody.Name)
+        a = doc.addObject("PartDesign::FeaturePython","WallForming")
+        SMBendWall(a)
+        a.baseObject = (selobj, sel[0].SubElementNames)
+        a.toolObject = (sel[1].Object, sel[1].SubElementNames)
+        SMFormingPDVP(a.ViewObject)
+        activeBody.addObject(a)
+      SheetMetalTools.SetViewConfig(a, viewConf)
+      doc.recompute()
+      doc.commitTransaction()
+      return
+
+    def IsActive(self):
+      if len(Gui.Selection.getSelection()) < 2 or len(Gui.Selection.getSelectionEx()[0].SubElementNames) < 1:
+        return False
+      selobj = Gui.Selection.getSelection()[0]
+      if str(type(selobj)) == "<type 'Sketcher.SketchObject'>":
+        return False
+      for selFace in Gui.Selection.getSelectionEx()[0].SubObjects:
+        if type(selFace) != Part.Face :
+          return False
       return True
 
-    def retranslateUi(self, TaskPanel):
-      #TaskPanel.setWindowTitle(QtGui.QApplication.translate("draft", "Faces", None))
-      self.addButton.setText(QtGui.QApplication.translate("draft", "Update", None))
-
-
-class AddFormingWallCommand():
-  """Add Forming Wall command"""
-
-  def GetResources(self):
-    return {'Pixmap'  : os.path.join( iconPath , 'SheetMetal_Forming.svg') , # the name of a svg file available in the resources
-            'MenuText': FreeCAD.Qt.translate('SheetMetal','Make Forming in Wall') ,
-            'Accel': "M, F",
-            'ToolTip' : FreeCAD.Qt.translate('SheetMetal','Make a forming using tool in metal sheet\n'
-            '1. Select a flat face on sheet metal and\n'
-            '2. Select face(s) on forming tool Shape to create Formed sheetmetal.\n'
-            '3. Use Suppress in Property editor to disable during unfolding\n'
-            '4. Use Property editor to modify other parameters')}
-
-  def Activated(self):
-    doc = FreeCAD.ActiveDocument
-    view = Gui.ActiveDocument.ActiveView
-    activeBody = None
-    selobj = Gui.Selection.getSelectionEx()[0].Object
-    viewConf = SheetMetalBaseCmd.GetViewConfig(selobj)
-    if hasattr(view,'getActiveObject'):
-      activeBody = view.getActiveObject('pdbody')
-    if not smIsOperationLegal(activeBody, selobj):
-        return
-    doc.openTransaction("WallForming")
-    if activeBody is None or not smIsPartDesign(selobj):
-      a = doc.addObject("Part::FeaturePython","WallForming")
-      SMBendWall(a)
-      SMFormingVP(a.ViewObject)
-    else:
-      #FreeCAD.Console.PrintLog("found active body: " + activeBody.Name)
-      a = doc.addObject("PartDesign::FeaturePython","WallForming")
-      SMBendWall(a)
-      SMFormingPDVP(a.ViewObject)
-      activeBody.addObject(a)
-    SheetMetalBaseCmd.SetViewConfig(a, viewConf)
-    doc.recompute()
-    doc.commitTransaction()
-    return
-
-  def IsActive(self):
-    if len(Gui.Selection.getSelection()) < 2 or len(Gui.Selection.getSelectionEx()[0].SubElementNames) < 1:
-      return False
-    selobj = Gui.Selection.getSelection()[0]
-    if str(type(selobj)) == "<type 'Sketcher.SketchObject'>":
-      return False
-    for selFace in Gui.Selection.getSelectionEx()[0].SubObjects:
-      if type(selFace) != Part.Face :
-        return False
-    return True
-
-Gui.addCommand("SheetMetal_Forming", AddFormingWallCommand())
+  Gui.addCommand("SheetMetal_Forming", AddFormingWallCommand())
 

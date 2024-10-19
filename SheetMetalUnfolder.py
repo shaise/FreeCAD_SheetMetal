@@ -103,19 +103,13 @@ if __name__ == '__main__':
 """
 
 
-import Part, FreeCAD, FreeCADGui, os, sys
+import FreeCAD, Part, sys, SheetMetalTools, SheetMetalKfactor
 from FreeCAD import Base
-import DraftVecUtils, math, time
-import Draft
+import math, time
 
 # import traceback
 
 # traceback.print_exc()
-
-try:
-    from TechDraw import projectEx
-except ImportError:
-    from Drawing import projectEx
 
 from lookup import get_val_from_range
 
@@ -125,7 +119,13 @@ from math import sqrt
 from SheetMetalLogger import SMLogger, UnfoldException, BendException, TreeException
 
 
+# IMPORTANT: please remember to change the element map version in case of any
+# changes in modeling logic
+smElementMapVersion = "sm1."
+
 KFACTORSTANDARD = None
+
+translate = FreeCAD.Qt.translate
 
 # TODO: Error Codes
 # - Put error numbers into the text
@@ -422,7 +422,7 @@ class Simple_node(object):
     @k_Factor.setter
     def k_Factor(self, val):
         SMLogger.error(
-            FreeCAD.Qt.translate(
+            translate(
                 "Logger", "k_Factor is a readonly property! Won't set to:"
             ),
             val,
@@ -465,11 +465,12 @@ class SheetTree(object):
         print("index Unfold list:")
         print(self.index_unfold_list)
 
-    def __init__(self, TheShape, f_idx, k_factor_lookup):
+    def __init__(self, TheShape, f_idx, k_factor_lookup, obj):
         self.cFaceTol = 0.002  # tolerance to detect counter-face vertices
         # this high tolerance was needed for more real parts
         self.root = None  # make_new_face_node adds the root node if parent_node == None
         self.__Shape = TheShape.copy()
+        self.obj = obj
         self.error_code = None
         self.failed_face_idx = None
         self.k_factor_lookup = k_factor_lookup
@@ -1152,8 +1153,8 @@ class SheetTree(object):
                         counter_found = False
 
                 if counter_found:
-                    if hasattr(FreeCADGui.Selection.getSelection()[0], "Refine"):
-                        if FreeCADGui.Selection.getSelection()[0].Refine is True:
+                    if hasattr(self.obj, "Refine"):
+                        if self.obj.Refine is True:
                             distance = self.__Shape.Faces[i].distToShape(
                                 self.__Shape.Faces[face_idx]
                             )[0]
@@ -1572,8 +1573,8 @@ class SheetTree(object):
                     if not self.handle_hole(
                         parent_node, face_idx, edge, child_face, child_index
                     ):
-                        if hasattr(FreeCADGui.Selection.getSelection()[0], "Refine"):
-                            if FreeCADGui.Selection.getSelection()[0].Refine is True:
+                        if hasattr(self.obj, "Refine"):
+                            if self.obj.Refine is True:
                                 if not self.handle_chamfer(
                                     face_idx, edge, child_face, child_face_idx
                                 ):
@@ -2495,7 +2496,7 @@ class SheetTree(object):
                 # theFace = Part.makeFilledFace(wires)
                 theFace = faces[0]
                 SMLogger.error(
-                    FreeCAD.Qt.translate("Logger", "at line {} got exception: ").format(
+                    translate("Logger", "at line {} got exception: ").format(
                         str(exc_tb.tb_lineno),
                     ),
                     str(e),
@@ -2880,71 +2881,19 @@ class SheetTree(object):
         return wire.copy(), False
 
 
-#  from Defeaturing WB: Export to Step
-def sew_Shape():
+def sew_Shape(obj):
     """checking Shape"""
-
-    doc = FreeCAD.ActiveDocument
-    docG = FreeCADGui.ActiveDocument
-
-    sel = FreeCADGui.Selection.getSelection()
-    if len(sel) == 1:
-        o = sel[0]
-        if hasattr(o, "Shape"):
-            sh = o.Shape.copy()
-            sh.sewShape()
-            sl = Part.Solid(sh)
-            docG.getObject(o.Name).Visibility = False
-            Part.show(sl)
-            ao = FreeCAD.ActiveDocument.ActiveObject
-            ao.Label = "Solid"
-            docG.ActiveObject.ShapeColor = docG.getObject(o.Name).ShapeColor
-            docG.ActiveObject.LineColor = docG.getObject(o.Name).LineColor
-            docG.ActiveObject.PointColor = docG.getObject(o.Name).PointColor
-            docG.ActiveObject.DiffuseColor = docG.getObject(o.Name).DiffuseColor
-            docG.ActiveObject.Transparency = docG.getObject(o.Name).Transparency
-    else:
-        FreeCAD.Console.PrintError("select only one object")
+    if hasattr(obj, "Shape"):
+        sh = obj.Shape.copy()
+        sh.sewShape()
+        sl = Part.Solid(sh)
+        return sl
 
 
-def makeSolidExpSTEP():
-    doc = FreeCAD.ActiveDocument
-    docG = FreeCADGui.ActiveDocument
-    if doc is not None:
-        fname = doc.FileName
-        if len(fname) == 0:
-            fileNm = "untitled"
-        else:
-            fileNm = os.path.basename(fname)
-            fileNm = os.path.splitext(fileNm)[0]
-        tempdir = tempfile.gettempdir()  # get the current temporary directory
-        # print(tempdir)
-        # fileNm = os.path.basename(fname)
-        # tempfilepath = os.path.join(tempdir,fname.rstrip(".fcstd").rstrip(".FCStd") + u'_cp.stp')
-        tempfilepath = os.path.join(tempdir, fileNm + "_cp.stp")
-        print(tempfilepath)
-        sel = FreeCADGui.Selection.getSelection()
-        if len(sel) == 1:
-            __objs__ = []
-            __objs__.append(sel[0])
-            import ImportGui
+def getUnfold(k_factor_lookup, solid, subelement, facename, kFactorStandard):
+    global KFACTORSTANDARD
+    KFACTORSTANDARD = kFactorStandard
 
-            stop
-            ImportGui.export(__objs__, tempfilepath)
-            del __objs__
-            # docG.getObject(sel[0].Name).Visibility = False
-            ImportGui.insert(tempfilepath, doc.Name)
-            FreeCADGui.SendMsgToActiveView("ViewFit")
-        else:
-            FreeCAD.Console.PrintError("Select only one object")
-    else:
-        FreeCAD.Console.PrintError("Select only one object")
-
-
-##
-
-
-def getUnfold(k_factor_lookup, solid, subelement, facename):
     resPart = None
     normalVect = None
     folds = None
@@ -2960,7 +2909,7 @@ def getUnfold(k_factor_lookup, solid, subelement, facename):
     startzeit = time.process_time()
 
     TheTree = SheetTree(
-        solid.Shape, f_number, k_factor_lookup
+        solid.Shape, f_number, k_factor_lookup, solid
     )  # initializes the tree-structure
     if TheTree.error_code is None:
         TheTree.Bend_analysis(
@@ -3038,11 +2987,18 @@ def getUnfold(k_factor_lookup, solid, subelement, facename):
                 "Trying to repeat the unfold process again with the Sewed copied Shape\n"
             )
             FreeCAD.ActiveDocument.openTransaction("sanitize")
-            sew_Shape()
-            FreeCAD.ActiveDocument.commitTransaction()
-            ob = FreeCAD.ActiveDocument.ActiveObject
-            ob_Name = ob.Name
+            sewedShape = sew_Shape(solid)
+            solid.Visibility = False
+            ob = Part.show(sewedShape,"Solid")
             ob.Label = solid.Label + "_copy"
+            if SheetMetalTools.isGuiLoaded():
+                ob.ViewObject.ShapeColor = solid.ViewObject.ShapeColor 
+                ob.ViewObject.LineColor = solid.ViewObject.LineColor 
+                ob.ViewObject.PointColor = solid.ViewObject.PointColor 
+                ob.ViewObject.DiffuseColor = solid.ViewObject.DiffuseColor 
+                ob.ViewObject.Transparency = solid.ViewObject.Transparency 
+            FreeCAD.ActiveDocument.commitTransaction()
+            ob_Name = ob.Name
             faceSel = facename
             err_code = TheTree.error_code
         else:
@@ -3102,144 +3058,8 @@ def SMmakeSketchfromEdges(edges, name):
     return usk
 
 
-def processUnfold(
-    k_factor_lookup,
-    object,
-    referenceFace,
-    faceName,
-    genSketch=True,
-    splitSketches=False,
-    sketchColor="#000080",
-    bendSketchColor="#c00000",
-    internalSketchColor="#ff5733",
-    transparency=0.7,
-    kFactorStandard="ansi",
-):
-    global KFACTORSTANDARD
-    KFACTORSTANDARD = kFactorStandard
-
-    unfoldShape = None
-    unfold_sketch = None
-    unfold_sketch_outline = None
-    unfold_sketch_bend = None
-    unfold_sketch_internal = None
-
-    try:
-        shape, foldComp, norm, thename, err_cd, fSel, obN = getUnfold(
-            k_factor_lookup, object, referenceFace, faceName
-        )
-        foldLines = foldComp.Edges
-    except Exception as e:
-        exc_type, exc_obj, exc_tb = sys.exc_info()
-        SMLogger.error(
-            FreeCAD.Qt.translate("Logger", "exception at line ")
-            + str(exc_tb.tb_lineno),
-            e.args,
-        )
-        SMLogger.error(e.args)
-        raise UnfoldException()
-
-    if shape is None:
-        raise UnfoldException()
-
-    unfoldShape = FreeCAD.ActiveDocument.addObject("Part::Feature", "Unfold")
-    unfoldShape.Shape = shape
-
-    if genSketch:
-        # locate the projection face
-        unfoldobj = shape
-        for face in shape.Faces:
-            fnorm = face.normalAt(0, 0)
-            isSameDir = abs(fnorm.dot(norm) - 1.0) < 0.00001
-            if isSameDir:
-                unfoldobj = face
-                break
-        edges = []
-        perimEdges = projectEx(unfoldobj, norm)[0]
-        edges.append(perimEdges)
-        if len(foldLines) > 0:
-            co = Part.makeCompound(foldLines)
-            foldEdges = projectEx(co, norm)[0]
-
-            if not splitSketches:
-                edges.append(foldEdges)
-        unfold_sketch = generateSketch(edges, "Unfold_Sketch", sketchColor)
-        FreeCAD.ActiveDocument.recompute()
-
-        if splitSketches:
-            tidy = False
-            try:
-                newface = Part.makeFace(unfold_sketch.Shape, "Part::FaceMakerBullseye")
-
-                try:
-                    owEdgs = newface.OuterWire.Edges
-                    faceEdgs = newface.Edges
-                except:
-                    exc_type, exc_obj, exc_tb = sys.exc_info()
-                    SMLogger.error(
-                        FreeCAD.Qt.translate(
-                            "Logger",
-                            "Exception at line {}"
-                            ": Outline Sketch failed, re-trying after tidying up",
-                        ).format(str(exc_tb.tb_lineno))
-                    )
-                    tidy = True
-                    owEdgs = unfold_sketch.Shape.Edges
-                    faceEdgs = unfold_sketch.Shape.Edges
-                    FreeCAD.ActiveDocument.recompute()
-
-                unfold_sketch_outline = generateSketch(
-                    owEdgs, "Unfold_Sketch_Outline", sketchColor
-                )
-
-                if tidy:
-                    SMLogger.error(
-                        FreeCAD.Qt.translate(
-                            "Logger", "tidying up Unfold_Sketch_Outline"
-                        )
-                    )
-                intEdgs = []
-                idx = []
-                for i, e in enumerate(faceEdgs):
-                    for oe in owEdgs:
-                        if oe.hashCode() == e.hashCode():
-                            idx.append(i)
-                for i, e in enumerate(faceEdgs):
-                    if i not in idx:
-                        intEdgs.append(e)
-                if len(intEdgs) > 0:
-                    unfold_sketch_internal = generateSketch(
-                        intEdgs, "Unfold_Sketch_Internal", internalSketchColor
-                    )
-
-            except Exception as e:
-                print(e)
-                exc_type, exc_obj, exc_tb = sys.exc_info()
-                SMLogger.error(
-                    FreeCAD.Qt.translate(
-                        "Logger",
-                        "Exception at line {}: Outline Sketch not created",
-                    ).format(str(exc_tb.tb_lineno))
-                )
-
-        if len(foldLines) > 0 and splitSketches:
-            unfold_sketch_bend = generateSketch(
-                foldEdges, "Unfold_Sketch_bends", bendSketchColor
-            )
-
-    if FreeCAD.GuiUp:
-        unfoldShape.ViewObject.Transparency = transparency
-
-    return (
-        unfoldShape,
-        unfold_sketch,
-        unfold_sketch_outline,
-        unfold_sketch_bend,
-        unfold_sketch_internal,
-    )
-
-
 def generateSketch(edges, name, color):
+    import Draft
     p = Part.makeCompound(edges)
     try:
         sk = Draft.makeSketch(
@@ -3253,7 +3073,7 @@ def generateSketch(edges, name, color):
         SMLogger.warning(FreeCAD.Qt.translate("Logger", "discretizing Sketch"))
         sk = SMmakeSketchfromEdges(p.Edges, name)
 
-    if FreeCAD.GuiUp:
+    if SheetMetalTools.isGuiLoaded():
         rgb_color = tuple(int(color[i : i + 2], 16) for i in (1, 3, 5))
         v = FreeCAD.Version()
         if v[0] == '0' and int(v[1]) < 21:
@@ -3262,3 +3082,157 @@ def generateSketch(edges, name, color):
         sk.ViewObject.PointColor = rgb_color
 
     return sk
+
+def processUnfoldSketches(shape, foldLines, norm, splitSketches, genSketchColor, bendSketchColor, intSketchColor):
+    try:
+        from TechDraw import projectEx
+    except ImportError:
+        from Drawing import projectEx
+
+    # locate the projection face
+    unfoldobj = shape
+    for face in shape.Faces:
+        fnorm = face.normalAt(0, 0)
+        isSameDir = abs(fnorm.dot(norm) - 1.0) < 0.00001
+        if isSameDir:
+            unfoldobj = face
+            break
+    edges = []
+    perimEdges = projectEx(unfoldobj, norm)[0]
+    edges.append(perimEdges)
+    if len(foldLines) > 0:
+        co = Part.makeCompound(foldLines)
+        foldEdges = projectEx(co, norm)[0]
+        if not splitSketches:
+            edges.append(foldEdges)
+    unfold_sketch = generateSketch(edges, "Unfold_Sketch", genSketchColor)
+    FreeCAD.ActiveDocument.recompute()
+    if splitSketches:
+        tidy = False
+        try:
+            newface = Part.makeFace(unfold_sketch.Shape, "Part::FaceMakerBullseye")
+            try:
+                owEdgs = newface.OuterWire.Edges
+                faceEdgs = newface.Edges
+            except:
+                exc_type, exc_obj, exc_tb = sys.exc_info()
+                SMLogger.error(
+                    FreeCAD.Qt.translate(
+                        "Logger",
+                        "Exception at line {}"
+                        ": Outline Sketch failed, re-trying after tidying up",
+                    ).format(str(exc_tb.tb_lineno))
+                )
+                tidy = True
+                owEdgs = unfold_sketch.Shape.Edges
+                faceEdgs = unfold_sketch.Shape.Edges
+                FreeCAD.ActiveDocument.recompute()
+            unfold_sketch_outline = generateSketch(
+                owEdgs, "Unfold_Sketch_Outline", genSketchColor
+            )
+            if tidy:
+                SMLogger.error(
+                    FreeCAD.Qt.translate(
+                        "Logger", "tidying up Unfold_Sketch_Outline"
+                    )
+                )
+            intEdgs = []
+            idx = []
+            for i, e in enumerate(faceEdgs):
+                for oe in owEdgs:
+                    if oe.hashCode() == e.hashCode():
+                        idx.append(i)
+            for i, e in enumerate(faceEdgs):
+                if i not in idx:
+                    intEdgs.append(e)
+            if len(intEdgs) > 0:
+                unfold_sketch_internal = generateSketch(
+                    intEdgs, "Unfold_Sketch_Internal", intSketchColor
+                )
+        except Exception as e:
+            print(e)
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            SMLogger.error(
+                FreeCAD.Qt.translate(
+                    "Logger",
+                    "Exception at line {}: Outline Sketch not created",
+                ).format(str(exc_tb.tb_lineno))
+            )
+    if len(foldLines) > 0 and splitSketches:
+        unfold_sketch_bend = generateSketch(
+            foldEdges, "Unfold_Sketch_bends", bendSketchColor
+        )
+
+class SMUnfold:
+    def __init__(self, obj):
+        '''"Add wall or Wall with radius bend"'''
+        SheetMetalTools.smAddProperty(
+            obj,
+            "App::PropertyFloatConstraint",
+            "kfactor",
+            translate( "App::Property", "Manual K-Factor value" ),
+            (0.4, 0.0, 2.0, 0.01),
+            "Unfold"
+        )
+        SheetMetalTools.smAddEnumProperty(
+            obj,
+            "kFactorStandard",
+            translate( "App::Property", "K-Factor standard" ),
+            ["ansi","din"],
+            None,
+            "Unfold"
+        )
+        SheetMetalTools.smAddProperty(
+            obj,
+            "App::PropertyLinkSub",
+            "baseObject",
+            translate( "App::Property", "Base Object" ),
+            None,
+            "Unfold",
+        )
+        SheetMetalTools.smAddProperty(
+            obj,
+            "App::PropertyLink",
+            "materialSheet",
+            translate( "App::Property", "Material definition sheet" ),
+            None,
+            "Unfold",
+        )
+        SheetMetalTools.smAddBoolProperty(
+            obj,
+            "useManualKFactor",
+            translate("App::Property", 
+                      "Enable manually defining K-Factor value, otherwise the lookup table is used"),
+            False,
+            "Unfold",
+        )
+        obj.addProperty(
+            "Part::PropertyPartShape",
+            "foldComp",
+            translate("App::Property", 
+                      "Fold lines compound"),
+            "Unfold",
+            read_only=True,
+            hidden=True
+        )
+        obj.Proxy = self
+
+    def getElementMapVersion(self, _fp, ver, _prop, restored):
+        if not restored:
+            return smElementMapVersion + ver
+
+    def execute(self, fp):
+        '''"Print a short message when doing a recomputation, this method is mandatory"'''
+        kf_lookup = {1: fp.kfactor}
+        if fp.materialSheet and fp.useManualKFactor:
+            lookupTable = SheetMetalKfactor.KFactorLookupTable(fp.materialSheet)
+            kf_lookup = lookupTable.k_factor_lookup
+        shape, foldComp, norm, thename, err_cd, fSel, obN = getUnfold(
+            k_factor_lookup=kf_lookup,
+            solid=fp.baseObject[0],
+            subelement=fp.baseObject[0].getSubObject(fp.baseObject[1][0]),
+            facename=fp.baseObject[1][0],
+            kFactorStandard=fp.kFactorStandard)
+        fp.Shape = shape
+        fp.foldComp = foldComp
+

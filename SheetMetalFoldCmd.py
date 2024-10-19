@@ -23,62 +23,11 @@
 #
 ##############################################################################
 
-from FreeCAD import Gui
-from PySide import QtCore, QtGui
-
-import FreeCAD, Part, os, math
-
-__dir__ = os.path.dirname(__file__)
-iconPath = os.path.join(__dir__, "Resources", "icons")
-smEpsilon = 0.0000001
-
-# add translations path
-LanguagePath = os.path.join(__dir__, "translations")
-Gui.addLanguagePath(LanguagePath)
-Gui.updateLocale()
-
+import FreeCAD, Part, math, os, SheetMetalTools
 import SheetMetalBendSolid
-import SheetMetalBaseCmd
-from SheetMetalLogger import SMLogger, UnfoldException, BendException, TreeException
+from SheetMetalLogger import SMLogger
 
-
-def smWarnDialog(msg):
-    diag = QtGui.QMessageBox(
-        QtGui.QMessageBox.Warning,
-        FreeCAD.Qt.translate("QMessageBox", "Error in macro MessageBox"),
-        msg,
-    )
-    diag.setWindowModality(QtCore.Qt.ApplicationModal)
-    diag.exec_()
-
-
-def smBelongToBody(item, body):
-    if body is None:
-        return False
-    for obj in body.Group:
-        if obj.Name == item.Name:
-            return True
-    return False
-
-
-def smIsPartDesign(obj):
-    return str(obj).find("<PartDesign::") == 0
-
-
-def smIsOperationLegal(body, selobj):
-    # FreeCAD.Console.PrintLog(str(selobj) + " " + str(body) + " " + str(smBelongToBody(selobj, body)) + "\n")
-    if smIsPartDesign(selobj) and not smBelongToBody(selobj, body):
-        smWarnDialog(
-            FreeCAD.Qt.translate(
-                "QMessageBox",
-                "The selected geometry does not belong to the active Body.\n"
-                "Please make the container of this item active by\n"
-                "double clicking on it.",
-            )
-        )
-        return False
-    return True
-
+smEpsilon = SheetMetalTools.smEpsilon
 
 def smthk(obj, foldface):
     normal = foldface.normalAt(0, 0)
@@ -147,6 +96,7 @@ def smFold(
             if position == "intersection of planes" :
                 kfactor = (( bendR ) * math.tan(math.radians(bendA / 2.0)) * 180 / (bendA / 2.0) / math.pi - bendR ) / thk
                 print (kfactor)
+
             unfoldLength = (bendR + kfactor * thk) * bendA * math.pi / 180.0
             neutralRadius = bendR + kfactor * thk
             # neutralLength =  ( bendR + kfactor * thk ) * math.tan(math.radians(bendA / 2.0)) * 2.0
@@ -169,29 +119,14 @@ def smFold(
             cutFaceDir = smCutFace(toolFaces.Faces[0], solid0)
             # Part.show(cutFaceDir,"cutFaceDir")
             facenormal = cutFaceDir.Faces[0].normalAt(0, 0)
-            #print(Position)
+            # print(facenormal)
 
-            if position == "middle" or position == "intersection of planes":
+            if position == "middle":
                 tool.translate(facenormal * -unfoldLength / 2.0)
                 toolFaces = tool.extrude(normal * -thk)
-                #print ("middle")
             elif position == "backward":
                 tool.translate(facenormal * -unfoldLength)
                 toolFaces = tool.extrude(normal * -thk)
-                #print ("backward")
-
-            #elif position == "intersection of planes":
-                #tool.translate(facenormal * -unfoldLength / 2.0)
-                #toolFaces = tool.extrude(normal * -thk)
-                #print ("intersection of planes")
-
-
-
-
-
-
-
-
             # To get split solid
             solidlist = []
             toolExtr = toolFaces.extrude(facenormal * unfoldLength)
@@ -229,11 +164,8 @@ def smFold(
             # Part.show(bendEdges,"bendEdges")
             bendEdge = bendEdges.Edges[0]
 
+
 ###########################################################################################################################
-
-
-
-
 
             if not (flipped):
 
@@ -244,23 +176,13 @@ def smFold(
             if position == "intersection of planes" :
                 bendEdge.translate(facenormal * ((unfoldLength/2) -( bendR_flip ) * math.tan(math.radians(bendA / 2.0))))
 
-
-
-
 ##############################################################################################################################
             if not (flipped):
                 revAxisP = bendEdge.valueAt(bendEdge.FirstParameter) + normal * bendR
-
-                #print ("not flipped")
-
             else:
                 revAxisP = bendEdge.valueAt(bendEdge.FirstParameter) - normal * (
                     thk + bendR
                 )
-
-                #print ("flipped")
-
-
             revAxisV = bendEdge.valueAt(bendEdge.LastParameter) - bendEdge.valueAt(
                 bendEdge.FirstParameter
             )
@@ -290,7 +212,6 @@ def smFold(
             # To get bend solid
             flatsolid = FoldShape.cut(solid0)
             flatsolid = flatsolid.cut(solid1)
-
             # Part.show(flatsolid,"flatsolid")
             flatfaces = foldface.common(flatsolid)
 ############################################################################################################################################
@@ -299,28 +220,11 @@ def smFold(
             #Part.show(flatfaces,"flatface")
                 solid0.translate(facenormal * ((unfoldLength/2) -( bendR_flip ) * math.tan(math.radians(bendA / 2.0))))
                 solid1.translate(facenormal * ((-unfoldLength/2) -( bendR_flip ) * math.tan(math.radians(bendA / 2.0))))
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 #############################################################################################################################################
             else :
                 solid1.translate(facenormal * (-unfoldLength))
-
             # Part.show(flatfaces,"flatface")
-   #solid1.translate(facenormal * (-unfoldLength))
+            #solid1.translate(facenormal * (-unfoldLength))
             # Part.show(solid1,"solid1")
             solid1.rotate(revAxisP, revAxisV, bendA)
             # Part.show(solid1,"rotatedsolid1")
@@ -339,15 +243,12 @@ def smFold(
     else:
         if bendlinesketch and bendA > 0.0:
             resultsolid = FoldShape
-    Gui.ActiveDocument.getObject(MainObject.Name).Visibility = False
-    Gui.ActiveDocument.getObject(bendlinesketch.Name).Visibility = False
     return resultsolid
 
 
 class SMFoldWall:
     def __init__(self, obj):
         '''"Fold / Bend a Sheetmetal with given Bend Radius"'''
-        selobj = Gui.Selection.getSelectionEx()
 
         _tip_ = FreeCAD.Qt.translate("App::Property", "Bend Radius")
         obj.addProperty(
@@ -358,11 +259,11 @@ class SMFoldWall:
         _tip_ = FreeCAD.Qt.translate("App::Property", "Base Object")
         obj.addProperty(
             "App::PropertyLinkSub", "baseObject", "Parameters", _tip_
-        ).baseObject = (selobj[0].Object, selobj[0].SubElementNames)
+        )
         _tip_ = FreeCAD.Qt.translate("App::Property", "Bend Reference Line List")
         obj.addProperty(
             "App::PropertyLink", "BendLine", "Parameters", _tip_
-        ).BendLine = selobj[1].Object
+        )
         _tip_ = FreeCAD.Qt.translate("App::Property", "Invert Solid Bend Direction")
         obj.addProperty(
             "App::PropertyBool", "invertbend", "Parameters", _tip_
@@ -408,178 +309,186 @@ class SMFoldWall:
         fp.Shape = s
 
 
-class SMFoldViewProvider:
-    "A View provider that nests children objects under the created one"
+##########################################################################################################
+# Gui code
+##########################################################################################################
 
-    def __init__(self, obj):
-        obj.Proxy = self
-        self.Object = obj.Object
+if SheetMetalTools.isGuiLoaded():
+    from FreeCAD import Gui
 
-    def attach(self, obj):
-        self.Object = obj.Object
-        return
-
-    def updateData(self, fp, prop):
-        return
-
-    def getDisplayModes(self, obj):
-        modes = []
-        return modes
-
-    def setDisplayMode(self, mode):
-        return mode
-
-    def onChanged(self, vp, prop):
-        return
-
-    def __getstate__(self):
-        #        return {'ObjectName' : self.Object.Name}
-        return None
-
-    def __setstate__(self, state):
-        self.loads(state)
-
-    # dumps and loads replace __getstate__ and __setstate__ post v. 0.21.2
-    def dumps(self):
-        return None
-
-    def loads(self, state):
-        if state is not None:
-            import FreeCAD
-
-            doc = FreeCAD.ActiveDocument  # crap
-            self.Object = doc.getObject(state["ObjectName"])
-
-    def claimChildren(self):
-        objs = []
-        if hasattr(self.Object, "baseObject"):
-            objs.append(self.Object.baseObject[0])
-            objs.append(self.Object.BendLine)
-        return objs
-
-    def getIcon(self):
-        return os.path.join(iconPath, "SheetMetal_AddFoldWall.svg")
+    icons_path = SheetMetalTools.icons_path
 
 
-class SMFoldPDViewProvider:
-    "A View provider that nests children objects under the created one"
+    class SMFoldViewProvider:
+        "A View provider that nests children objects under the created one"
 
-    def __init__(self, obj):
-        obj.Proxy = self
-        self.Object = obj.Object
+        def __init__(self, obj):
+            obj.Proxy = self
+            self.Object = obj.Object
 
-    def attach(self, obj):
-        self.Object = obj.Object
-        return
-
-    def updateData(self, fp, prop):
-        return
-
-    def getDisplayModes(self, obj):
-        modes = []
-        return modes
-
-    def setDisplayMode(self, mode):
-        return mode
-
-    def onChanged(self, vp, prop):
-        return
-
-    def __getstate__(self):
-        #        return {'ObjectName' : self.Object.Name}
-        return None
-
-    def __setstate__(self, state):
-        self.loads(state)
-
-    # dumps and loads replace __getstate__ and __setstate__ post v. 0.21.2
-    def dumps(self):
-        return None
-
-    def loads(self, state):
-        if state is not None:
-            import FreeCAD
-
-            doc = FreeCAD.ActiveDocument  # crap
-            self.Object = doc.getObject(state["ObjectName"])
-
-    def claimChildren(self):
-        objs = []
-        if hasattr(self.Object, "BendLine"):
-            objs.append(self.Object.BendLine)
-        return objs
-
-    def getIcon(self):
-        return os.path.join(iconPath, "SheetMetal_AddFoldWall.svg")
-
-
-class AddFoldWallCommandClass:
-    """Add Fold Wall command"""
-
-    def GetResources(self):
-        return {
-            "Pixmap": os.path.join(
-                iconPath, "SheetMetal_AddFoldWall.svg"
-            ),  # the name of a svg file available in the resources
-            "MenuText": FreeCAD.Qt.translate("SheetMetal", "Fold a Wall"),
-            "Accel": "C, F",
-            "ToolTip": FreeCAD.Qt.translate(
-                "SheetMetal",
-                "Fold a wall of metal sheet\n"
-                "1. Select a flat face on sheet metal and\n"
-                "2. Select a bend line (sketch) on same face (ends of sketch bend lines must"
-                " extend beyond edges of face) to create sheetmetal fold.\n"
-                "3. Use Property editor to modify other parameters",
-            ),
-        }
-
-    def Activated(self):
-        doc = FreeCAD.ActiveDocument
-        view = Gui.ActiveDocument.ActiveView
-        activeBody = None
-        selobj = Gui.Selection.getSelectionEx()[0].Object
-        viewConf = SheetMetalBaseCmd.GetViewConfig(selobj)
-        if hasattr(view, "getActiveObject"):
-            activeBody = view.getActiveObject("pdbody")
-        if not smIsOperationLegal(activeBody, selobj):
+        def attach(self, obj):
+            self.Object = obj.Object
             return
-        doc.openTransaction("Bend")
-        if activeBody is None or not smIsPartDesign(selobj):
-            a = doc.addObject("Part::FeaturePython", "Fold")
-            SMFoldWall(a)
-            SMFoldViewProvider(a.ViewObject)
-        else:
-            # FreeCAD.Console.PrintLog("found active body: " + activeBody.Name)
-            a = doc.addObject("PartDesign::FeaturePython", "Fold")
-            SMFoldWall(a)
-            SMFoldPDViewProvider(a.ViewObject)
-            activeBody.addObject(a)
-        SheetMetalBaseCmd.SetViewConfig(a, viewConf)
-        if SheetMetalBaseCmd.autolink_enabled():
-            root = SheetMetalBaseCmd.getOriginalBendObject(a)
-            if root:
-                a.setExpression("radius", root.Label + ".radius")
-        doc.recompute()
-        doc.commitTransaction()
-        return
 
-    def IsActive(self):
-        if len(Gui.Selection.getSelection()) < 2:
-            return False
-        selFace = Gui.Selection.getSelectionEx()[0].SubObjects[0]
-        if type(selFace) != Part.Face:
-            return False
-        selobj = Gui.Selection.getSelection()[1]
-        if selobj.isDerivedFrom("Sketcher::SketchObject"):
+        def updateData(self, fp, prop):
+            return
+
+        def getDisplayModes(self, obj):
+            modes = []
+            return modes
+
+        def setDisplayMode(self, mode):
+            return mode
+
+        def onChanged(self, vp, prop):
+            return
+
+        def __getstate__(self):
+            #        return {'ObjectName' : self.Object.Name}
+            return None
+
+        def __setstate__(self, state):
+            self.loads(state)
+
+        # dumps and loads replace __getstate__ and __setstate__ post v. 0.21.2
+        def dumps(self):
+            return None
+
+        def loads(self, state):
+            if state is not None:
+                import FreeCAD
+
+                doc = FreeCAD.ActiveDocument  # crap
+                self.Object = doc.getObject(state["ObjectName"])
+
+        def claimChildren(self):
+            objs = []
+            if hasattr(self.Object, "baseObject"):
+                objs.append(self.Object.baseObject[0])
+                objs.append(self.Object.BendLine)
+            return objs
+
+        def getIcon(self):
+            return os.path.join(icons_path, "SheetMetal_AddFoldWall.svg")
+
+
+    class SMFoldPDViewProvider:
+        "A View provider that nests children objects under the created one"
+
+        def __init__(self, obj):
+            obj.Proxy = self
+            self.Object = obj.Object
+
+        def attach(self, obj):
+            self.Object = obj.Object
+            return
+
+        def updateData(self, fp, prop):
+            return
+
+        def getDisplayModes(self, obj):
+            modes = []
+            return modes
+
+        def setDisplayMode(self, mode):
+            return mode
+
+        def onChanged(self, vp, prop):
+            return
+
+        def __getstate__(self):
+            #        return {'ObjectName' : self.Object.Name}
+            return None
+
+        def __setstate__(self, state):
+            self.loads(state)
+
+        # dumps and loads replace __getstate__ and __setstate__ post v. 0.21.2
+        def dumps(self):
+            return None
+
+        def loads(self, state):
+            if state is not None:
+                import FreeCAD
+
+                doc = FreeCAD.ActiveDocument  # crap
+                self.Object = doc.getObject(state["ObjectName"])
+
+        def claimChildren(self):
+            objs = []
+            if hasattr(self.Object, "BendLine"):
+                objs.append(self.Object.BendLine)
+            return objs
+
+        def getIcon(self):
+            return os.path.join(icons_path, "SheetMetal_AddFoldWall.svg")
+
+
+    class AddFoldWallCommandClass:
+        """Add Fold Wall command"""
+
+        def GetResources(self):
+            return {
+                "Pixmap": os.path.join(
+                    icons_path, "SheetMetal_AddFoldWall.svg"
+                ),  # the name of a svg file available in the resources
+                "MenuText": FreeCAD.Qt.translate("SheetMetal", "Fold a Wall"),
+                "Accel": "C, F",
+                "ToolTip": FreeCAD.Qt.translate(
+                    "SheetMetal",
+                    "Fold a wall of metal sheet\n"
+                    "1. Select a flat face on sheet metal and\n"
+                    "2. Select a bend line (sketch) on same face (ends of sketch bend lines must"
+                    " extend beyond edges of face) to create sheetmetal fold.\n"
+                    "3. Use Property editor to modify other parameters",
+                ),
+            }
+
+        def Activated(self):
+            doc = FreeCAD.ActiveDocument
+            view = Gui.ActiveDocument.ActiveView
+            activeBody = None
+            sel = Gui.Selection.getSelectionEx()
+            selobj = Gui.Selection.getSelectionEx()[0].Object
+            viewConf = SheetMetalTools.GetViewConfig(selobj)
+            if hasattr(view, "getActiveObject"):
+                activeBody = view.getActiveObject("pdbody")
+            if not SheetMetalTools.smIsOperationLegal(activeBody, selobj):
+                return
+            doc.openTransaction("Bend")
+            if activeBody is None or not SheetMetalTools.smIsPartDesign(selobj):
+                a = doc.addObject("Part::FeaturePython", "Fold")
+                SMFoldWall(a)
+                a.baseObject = (selobj, sel[0].SubElementNames)
+                a.BendLine = sel[1].Object
+                SMFoldViewProvider(a.ViewObject)
+            else:
+                # FreeCAD.Console.PrintLog("found active body: " + activeBody.Name)
+                a = doc.addObject("PartDesign::FeaturePython", "Fold")
+                SMFoldWall(a)
+                a.baseObject = (selobj, sel[0].SubElementNames)
+                a.BendLine = sel[1].Object
+                SMFoldPDViewProvider(a.ViewObject)
+                activeBody.addObject(a)
+            SheetMetalTools.SetViewConfig(a, viewConf)
+            if SheetMetalTools.is_autolink_enabled():
+                root = SheetMetalTools.getOriginalBendObject(a)
+                if root:
+                    a.setExpression("radius", root.Label + ".radius")
+            doc.recompute()
+            doc.commitTransaction()
+            return
+
+        def IsActive(self):
+            if len(Gui.Selection.getSelection()) < 2:
+                return False
+            selFace = Gui.Selection.getSelectionEx()[0].SubObjects[0]
+            if type(selFace) != Part.Face:
+                return False
+            selobj = Gui.Selection.getSelection()[1]
+            if not (selobj.isDerivedFrom("Sketcher::SketchObject")):
+                return False
             return True
-        # handle cases where object is a link or clone
-        if selobj.isDerivedFrom("App::Link"):
-            selobj = selobj.LinkedObject
-        elif selobj.isDerivedFrom("Part::Part2DObject"):
-            selobj = selobj.Objects[0]
-        if not (selobj.isDerivedFrom("Sketcher::SketchObject")):
-            return False
-        return True
 
 
-Gui.addCommand("SheetMetal_AddFoldWall", AddFoldWallCommandClass())
+    Gui.addCommand("SheetMetal_AddFoldWall", AddFoldWallCommandClass())

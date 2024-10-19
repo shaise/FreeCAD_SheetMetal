@@ -25,7 +25,6 @@
 ###################################################################################
 
 import FreeCAD
-from PySide import QtCore, QtGui
 
 class SMLogger:
     @classmethod

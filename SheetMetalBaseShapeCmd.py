@@ -23,168 +23,19 @@
 #
 ###################################################################################
 
-import Part, FreeCAD, FreeCADGui, os
-from PySide import QtGui, QtCore
-from FreeCAD import Gui
-from SheetMetalCmd import smBend, smAddLengthProperty, smAddBoolProperty, smAddEnumProperty
-from SheetMetalLogger import SMLogger
+import FreeCAD, Part, os, SheetMetalTools
+from SheetMetalCmd import smBend
 
-modPath = os.path.dirname(__file__)
-iconPath = os.path.join(modPath, "Resources", "icons")
+icons_path = SheetMetalTools.icons_path
+panels_path = SheetMetalTools.panels_path
+language_path = SheetMetalTools.language_path
 
-mw = FreeCADGui.getMainWindow()
+base_shape_types = ["Flat", "L-Shape", "U-Shape", "Tub", "Hat", "Box"]
+origin_location_types = ["-X,-Y", "-X,0", "-X,+Y", "0,-Y", "0,0", "0,+Y", "+X,-Y", "+X,0", "+X,+Y"]
 
 # IMPORTANT: please remember to change the element map version in case of any
 # changes in modeling logic
 smElementMapVersion = 'sm1.'
-
-base_shape_types = ["Flat", "L-Shape", "U-Shape", "Tub", "Hat", "Box"]
-origin_location_types = ["-X,-Y", "-X,0", "-X,+Y", "0,-Y", "0,0", "0,+Y", "+X,-Y", "+X,0", "+X,+Y"]
-origin_location_buttons = ["BL", "CL", "TL", "BC", "CC", "TC", "BR", "CR", "TR"]
-
-##########################################################################################################
-# Task
-##########################################################################################################
-
-class BaseShapeTaskPanel:
-    def __init__(self):
-        QtCore.QDir.addSearchPath('Icons', iconPath)
-        path = f"{modPath}/BaseShapeOptions.ui"
-        self.form = FreeCADGui.PySideUic.loadUi(path)
-        self.formReady = False
-        self.firstTime = True
-        self.selOrigButton = None
-        self.ShowAxisCross()
-        self.setupUi()
-
-
-    def _boolToState(self, bool):
-        return QtCore.Qt.Checked if bool else QtCore.Qt.Unchecked
-
-    def _stateToBool(self, state):
-        return True if state == QtCore.Qt.Checked else False
-
-    def setupUi(self):
-        #box = FreeCAD.ActiveDocument.addObject("Part::Box", "Box")
-        #bind = Gui.ExpressionBinding(self.form.bHeightSpin).bind(box,"Length")
-        #FreeCAD.ActiveDocument.openTransaction("BaseShape")
-        self.form.bRadiusSpin.valueChanged.connect(self.spinValChanged)
-        self.form.bThicknessSpin.valueChanged.connect(self.spinValChanged)
-        self.form.bWidthSpin.valueChanged.connect(self.spinValChanged)
-        self.form.bHeightSpin.valueChanged.connect(self.spinValChanged)
-        self.form.bFlangeWidthSpin.valueChanged.connect(self.spinValChanged)
-        self.form.bLengthSpin.valueChanged.connect(self.spinValChanged)
-        self.form.shapeType.currentIndexChanged.connect(self.typeChanged)
-        self.form.chkFillGaps.stateChanged.connect(self.checkChanged)
-        for origloc in origin_location_buttons:
-            buttname = 'push' + origloc
-            butt = self.form.findChild(QtGui.QPushButton, buttname)
-            butt.pressed.connect(lambda b = butt: self.origButtPressed(b))
-        self.form.update()
-
-        #SMLogger.log(str(self.formReady) + " <2 \n")
-    def updateEnableState(self):
-        type = base_shape_types[self.form.shapeType.currentIndex()]
-        self.form.bFlangeWidthSpin.setEnabled(type in ["Hat", "Box"])
-        self.form.bRadiusSpin.setEnabled(not type == "Flat")
-        self.form.bHeightSpin.setEnabled(not type == "Flat")
-
-    def buttonToOriginType(self, butt):
-        if butt is None:
-            name = 'pushCC'
-        else:
-            name = butt.objectName()
-        return origin_location_types[origin_location_buttons.index(name[-2:])]
-    
-    def originTypeToButton(self, type):
-        name = "push" + origin_location_buttons[origin_location_types.index(type)]
-        return self.form.findChild(QtGui.QPushButton, name)
-    
-    def setSelectedOrigButton(self, butt):
-        if self.selOrigButton is not None:
-            self.selOrigButton.setIcon(QtGui.QIcon())
-        if butt is not None:
-            butt.setIcon(QtGui.QIcon('Icons:BaseShape_Sel.svg'))
-        self.selOrigButton = butt
-
-    def spinValChanged(self):
-        if not self.formReady:
-           return
-        self.updateObj()
-        self.obj.recompute()
-
-    def typeChanged(self):
-        self.updateEnableState()
-        self.spinValChanged()
-
-    def origButtPressed(self, butt):
-        print(butt.objectName())
-        self.setSelectedOrigButton(butt)
-        self.spinValChanged()
-
-    def checkChanged(self):
-        self.spinValChanged()
-
-    def ShowAxisCross(self):
-        self.hasAxisCross = FreeCADGui.ActiveDocument.ActiveView.hasAxisCross()
-        FreeCADGui.ActiveDocument.ActiveView.setAxisCross(True)
-
-    def RevertAxisCross(self):
-        FreeCADGui.ActiveDocument.ActiveView.setAxisCross(self.hasAxisCross)
-
-    def updateObj(self):
-        #spin = Gui.UiLoader().createWidget("Gui::QuantitySpinBox")
-        #SMLogger.log(str(self.form.bRadiusSpin.property('rawValue')))
-        self.obj.radius = self.form.bRadiusSpin.property('value')
-        self.obj.thickness = self.form.bThicknessSpin.property('value')
-        self.obj.width = self.form.bWidthSpin.property('value')
-        self.obj.height = self.form.bHeightSpin.property('value')
-        self.obj.flangeWidth = self.form.bFlangeWidthSpin.property('value')
-        self.obj.length = self.form.bLengthSpin.property('value')
-        selected_type = self.form.shapeType.currentText()
-        if selected_type not in base_shape_types:
-            selected_type = base_shape_types[self.form.shapeType.currentIndex()]
-        self.obj.shapeType = selected_type
-        self.obj.originLoc = self.buttonToOriginType(self.selOrigButton)
-        self.obj.fillGaps = self._stateToBool(self.form.chkFillGaps.checkState())
-
-    def accept(self):
-        doc = FreeCAD.ActiveDocument
-        self.updateObj()
-        if self.firstTime  and self._stateToBool(self.form.chkNewBody.checkState()):
-            body = FreeCAD.activeDocument().addObject('PartDesign::Body','Body')
-            body.Label = 'Body'
-            body.addObject(self.obj)
-            FreeCADGui.ActiveDocument.ActiveView.setActiveObject('pdbody', body)
-        doc.commitTransaction()
-        FreeCADGui.Control.closeDialog()
-        doc.recompute()
-        self.RevertAxisCross()
-
-
-    def reject(self):
-        FreeCAD.ActiveDocument.abortTransaction()
-        FreeCADGui.Control.closeDialog()
-        FreeCAD.ActiveDocument.recompute()
-        self.RevertAxisCross()
-
-    def updateSpin(self, spin, property):
-        Gui.ExpressionBinding(spin).bind(self.obj, property)
-        spin.setProperty('value', getattr(self.obj, property))
-        pass
-
-    def update(self):
-        self.updateSpin(self.form.bRadiusSpin, 'radius')
-        self.updateSpin(self.form.bThicknessSpin, 'thickness')
-        self.updateSpin(self.form.bWidthSpin, 'width')
-        self.updateSpin(self.form.bHeightSpin, 'height')
-        self.updateSpin(self.form.bFlangeWidthSpin, 'flangeWidth')
-        self.updateSpin(self.form.bLengthSpin, 'length')
-        self.form.shapeType.setCurrentText(self.obj.shapeType)
-        self.setSelectedOrigButton(self.originTypeToButton(self.obj.originLoc))
-        self.form.chkFillGaps.setCheckState(self._boolToState(self.obj.fillGaps))
-        self.form.chkNewBody.setVisible(self.firstTime)
-        self.formReady = True
 
 
 ##########################################################################################################
@@ -260,74 +111,6 @@ def smCreateBaseShape(type, thickness, radius, width, length, height, flangeWidt
     #SMLogger.message(str(faces))
     return shape
 
-class SMBaseShapeViewProviderFlat:
-    "A View provider that nests children objects under the created one"
-
-    def __init__(self, obj):
-        obj.Proxy = self
-        self.Object = obj.Object
-
-    def attach(self, obj):
-        self.Object = obj.Object
-        return
-
-    def updateData(self, fp, prop):
-        return
-
-    def getDisplayModes(self,obj):
-        modes=[]
-        return modes
-
-    def setDisplayMode(self,mode):
-        return mode
-
-    def onChanged(self, vp, prop):
-        return
-
-    def __getstate__(self):
-        #        return {'ObjectName' : self.Object.Name}
-        return None
-
-    def __setstate__(self, state):
-        self.loads(state)
-
-    # dumps and loads replace __getstate__ and __setstate__ post v. 0.21.2
-    def dumps(self):
-        return None
-
-    def loads(self, state):
-        if state is not None:
-            self.Object = FreeCAD.ActiveDocument.getObject(state['ObjectName'])
-
-    def claimChildren(self):
-        return []
-
-    def getIcon(self):
-        return os.path.join( iconPath , 'SheetMetal_AddBaseShape.svg')
-
-    def setEdit(self, vobj, mode):
-        SMLogger.log(
-            FreeCAD.Qt.translate("Logger", "Base shape edit mode: ") + str(mode)
-        )
-        if mode != 0:
-            return None
-            return super.setEdit(vobj, mode)
-        taskd = BaseShapeTaskPanel()
-        taskd.obj = vobj.Object
-        taskd.firstTime = False
-        taskd.update()
-        #self.Object.ViewObject.Visibility=False
-        Gui.Selection.clearSelection()
-        FreeCAD.ActiveDocument.openTransaction("BaseShape")
-        FreeCADGui.Control.showDialog(taskd)
-        #Gui.ActiveDocument.resetEdit()
-        return False
-
-    def unsetEdit(self,vobj,mode):
-        FreeCADGui.Control.closeDialog()
-        self.Object.ViewObject.Visibility=True
-        return False
-
 
 class SMBaseShape:
     def __init__(self, obj):
@@ -336,57 +119,57 @@ class SMBaseShape:
         obj.Proxy = self
 
     def _addVerifyProperties(self, obj):
-        smAddLengthProperty(
+        SheetMetalTools.smAddLengthProperty(
             obj,
             "thickness",
             FreeCAD.Qt.translate("SMBaseShape", "Thickness of sheetmetal", "Property"),
             1.0,
         )
-        smAddLengthProperty(
+        SheetMetalTools.smAddLengthProperty(
             obj,
             "radius",
             FreeCAD.Qt.translate("SMBaseShape", "Bend Radius", "Property"),
             1.0,
         )
-        smAddLengthProperty(
+        SheetMetalTools.smAddLengthProperty(
             obj,
             "width",
             FreeCAD.Qt.translate("SMBaseShape", "Shape width", "Property"),
             20.0,
         )
-        smAddLengthProperty(
+        SheetMetalTools.smAddLengthProperty(
             obj,
             "length",
             FreeCAD.Qt.translate("SMBaseShape", "Shape length", "Property"),
             30.0,
         )
-        smAddLengthProperty(
+        SheetMetalTools.smAddLengthProperty(
             obj,
             "height",
             FreeCAD.Qt.translate("SMBaseShape", "Shape height", "Property"),
             10.0,
         )
-        smAddLengthProperty(
+        SheetMetalTools.smAddLengthProperty(
             obj,
             "flangeWidth",
             FreeCAD.Qt.translate("SMBaseShape", "Width of top flange", "Property"),
             5.0,
         )
-        smAddEnumProperty(
+        SheetMetalTools.smAddEnumProperty(
             obj,
             "shapeType",
             FreeCAD.Qt.translate("SMBaseShape", "Base shape type", "Property"),
             base_shape_types,
             defval = "L-Shape"
         )
-        smAddEnumProperty(
+        SheetMetalTools.smAddEnumProperty(
             obj,
             "originLoc",
             FreeCAD.Qt.translate("SMBaseShape", "Location of part origin", "Property"),
             origin_location_types,
             defval = "0,0"
         )
-        smAddBoolProperty(
+        SheetMetalTools.smAddBoolProperty(
             obj,
             "fillGaps",
             FreeCAD.Qt.translate(
@@ -417,45 +200,252 @@ class SMBaseShape:
 
         fp.Shape = s
 
+    def getBaseShapeTypes():
+        return base_shape_types
+    
+    def getOriginLocationTypes():
+        return origin_location_types
+
 ##########################################################################################################
-# Command
+# Gui code
 ##########################################################################################################
 
-class SMBaseshapeCommandClass:
-    """Open Base shape task"""
+if SheetMetalTools.isGuiLoaded():
+    from PySide import QtCore
+    from FreeCAD import Gui
+    from SheetMetalLogger import SMLogger
 
-    def GetResources(self):
-        # add translations path
-        LanguagePath = os.path.join(modPath, "translations")
-        Gui.addLanguagePath(LanguagePath)
-        Gui.updateLocale()
-        return {
-            "Pixmap": os.path.join(
-                iconPath, "SheetMetal_AddBaseShape.svg"
-            ),  # the name of a svg file available in the resources
-            "MenuText": FreeCAD.Qt.translate("SheetMetal", "Add base shape"),
-            "Accel": "H",
-            "ToolTip": FreeCAD.Qt.translate(
-                "SheetMetal",
-                "Add basic sheet metal object."
-            ),
-        }
+    mw = Gui.getMainWindow()
 
-    def Activated(self):
-        doc = FreeCAD.ActiveDocument
-        doc.openTransaction("BaseShape")
-        a = doc.addObject("PartDesign::FeaturePython","BaseShape")
-        SMBaseShape(a)
-        SMBaseShapeViewProviderFlat(a.ViewObject)
-        doc.recompute()
+    ##########################################################################################################
+    # Task
+    ##########################################################################################################
 
-        dialog = BaseShapeTaskPanel()
-        dialog.obj = a
-        dialog.firstTime = True
-        dialog.update()
-        FreeCADGui.Control.showDialog(dialog)
+    class BaseShapeTaskPanel:
+        def __init__(self):
+            QtCore.QDir.addSearchPath('Icons', icons_path)
+            path = os.path.join(panels_path, 'BaseShapeOptions.ui')
+            self.form = Gui.PySideUic.loadUi(path)
+            self.formReady = False
+            self.ShowAxisCross()
+            self.setupUi()
 
-    def IsActive(self):
-        return FreeCAD.ActiveDocument is not None
 
-Gui.addCommand("SheetMetal_BaseShape", SMBaseshapeCommandClass())
+        def _boolToState(self, bool):
+            return QtCore.Qt.Checked if bool else QtCore.Qt.Unchecked
+
+        def _stateToBool(self, state):
+            return True if state == QtCore.Qt.Checked else False
+
+        def setupUi(self):
+            #box = FreeCAD.ActiveDocument.addObject("Part::Box", "Box")
+            #bind = Gui.ExpressionBinding(self.form.bHeightSpin).bind(box,"Length")
+            #FreeCAD.ActiveDocument.openTransaction("BaseShape")
+            self.form.bRadiusSpin.valueChanged.connect(self.spinValChanged)
+            self.form.bThicknessSpin.valueChanged.connect(self.spinValChanged)
+            self.form.bWidthSpin.valueChanged.connect(self.spinValChanged)
+            self.form.bHeightSpin.valueChanged.connect(self.spinValChanged)
+            self.form.bFlangeWidthSpin.valueChanged.connect(self.spinValChanged)
+            self.form.bLengthSpin.valueChanged.connect(self.spinValChanged)
+            self.form.shapeType.currentIndexChanged.connect(self.typeChanged)
+            self.form.originLoc.currentIndexChanged.connect(self.spinValChanged)
+            self.form.chkFillGaps.stateChanged.connect(self.checkChanged)
+            self.form.update()
+
+            #SMLogger.log(str(self.formReady) + " <2 \n")
+        def updateEnableState(self):
+            type = base_shape_types[self.form.shapeType.currentIndex()]
+            self.form.bFlangeWidthSpin.setEnabled(type in ["Hat", "Box"])
+            self.form.bRadiusSpin.setEnabled(not type == "Flat")
+            self.form.bHeightSpin.setEnabled(not type == "Flat")
+
+        def spinValChanged(self):
+            if not self.formReady:
+               return
+            self.updateObj()
+            self.obj.recompute()
+
+        def typeChanged(self):
+            self.updateEnableState()
+            self.spinValChanged()
+
+        def checkChanged(self):
+            self.spinValChanged()
+
+        def ShowAxisCross(self):
+            self.hasAxisCross = Gui.ActiveDocument.ActiveView.hasAxisCross()
+            Gui.ActiveDocument.ActiveView.setAxisCross(True)
+
+        def RevertAxisCross(self):
+            Gui.ActiveDocument.ActiveView.setAxisCross(self.hasAxisCross)
+
+        def updateObj(self):
+            #spin = Gui.UiLoader().createWidget("Gui::QuantitySpinBox")
+            #SMLogger.log(str(self.form.bRadiusSpin.property('rawValue')))
+            self.obj.radius = self.form.bRadiusSpin.property('value')
+            self.obj.thickness = self.form.bThicknessSpin.property('value')
+            self.obj.width = self.form.bWidthSpin.property('value')
+            self.obj.height = self.form.bHeightSpin.property('value')
+            self.obj.flangeWidth = self.form.bFlangeWidthSpin.property('value')
+            self.obj.length = self.form.bLengthSpin.property('value')
+            selected_type = self.form.shapeType.currentText()
+            if selected_type not in base_shape_types:
+                selected_type = base_shape_types[self.form.shapeType.currentIndex()]
+            self.obj.shapeType = selected_type
+            self.obj.originLoc = origin_location_types[self.form.originLoc.currentIndex()]
+            self.obj.fillGaps = self._stateToBool(self.form.chkFillGaps.checkState())
+
+        def accept(self):
+            doc = FreeCAD.ActiveDocument
+            self.updateObj()
+            doc.commitTransaction()
+            Gui.Control.closeDialog()
+            doc.recompute()
+            Gui.ActiveDocument.resetEdit()
+            self.RevertAxisCross()
+
+
+        def reject(self):
+            FreeCAD.ActiveDocument.abortTransaction()
+            Gui.Control.closeDialog()
+            FreeCAD.ActiveDocument.recompute()
+            self.RevertAxisCross()
+
+        def updateSpin(self, spin, property):
+            Gui.ExpressionBinding(spin).bind(self.obj, property)
+            spin.setProperty('value', getattr(self.obj, property))
+            pass
+
+        def update(self):
+            self.updateSpin(self.form.bRadiusSpin, 'radius')
+            self.updateSpin(self.form.bThicknessSpin, 'thickness')
+            self.updateSpin(self.form.bWidthSpin, 'width')
+            self.updateSpin(self.form.bHeightSpin, 'height')
+            self.updateSpin(self.form.bFlangeWidthSpin, 'flangeWidth')
+            self.updateSpin(self.form.bLengthSpin, 'length')
+            self.form.shapeType.setCurrentText(self.obj.shapeType)
+            self.form.originLoc.setCurrentIndex(origin_location_types.index(self.obj.originLoc))
+            self.form.chkFillGaps.setCheckState(self._boolToState(self.obj.fillGaps))
+            self.formReady = True
+
+
+    ##########################################################################################################
+    # View Provider
+    ##########################################################################################################
+
+    class SMBaseShapeViewProviderFlat:
+        "A View provider that nests children objects under the created one"
+
+        def __init__(self, obj):
+            obj.Proxy = self
+            self.Object = obj.Object
+
+        def attach(self, obj):
+            self.Object = obj.Object
+            return
+
+        def updateData(self, fp, prop):
+            return
+
+        def getDisplayModes(self,obj):
+            modes=[]
+            return modes
+
+        def setDisplayMode(self,mode):
+            return mode
+
+        def onChanged(self, vp, prop):
+            return
+
+        def __getstate__(self):
+            #        return {'ObjectName' : self.Object.Name}
+            return None
+
+        def __setstate__(self, state):
+            self.loads(state)
+
+        # dumps and loads replace __getstate__ and __setstate__ post v. 0.21.2
+        def dumps(self):
+            return None
+
+        def loads(self, state):
+            if state is not None:
+                self.Object = FreeCAD.ActiveDocument.getObject(state['ObjectName'])
+
+        def claimChildren(self):
+            return []
+
+        def getIcon(self):
+            return os.path.join( icons_path , 'SheetMetal_AddBaseShape.svg')
+
+        def setEdit(self, vobj, mode):
+            SMLogger.log(
+                FreeCAD.Qt.translate("Logger", "Base shape edit mode: ") + str(mode)
+            )
+            if mode != 0:
+                return None
+                return super.setEdit(vobj, mode)
+            taskd = BaseShapeTaskPanel()
+            taskd.obj = vobj.Object
+            taskd.update()
+            #self.Object.ViewObject.Visibility=False
+            Gui.Selection.clearSelection()
+            FreeCAD.ActiveDocument.openTransaction("BaseShape")
+            Gui.Control.showDialog(taskd)
+            #Gui.ActiveDocument.resetEdit()
+            return False
+
+        def unsetEdit(self,vobj,mode):
+            Gui.Control.closeDialog()
+            self.Object.ViewObject.Visibility=True
+            return False
+
+
+    ##########################################################################################################
+    # Command
+    ##########################################################################################################
+
+    class SMBaseshapeCommandClass:
+        """Open Base shape task"""
+
+        def GetResources(self):
+            # add translations path
+            Gui.addLanguagePath(language_path)
+            Gui.updateLocale()
+            return {
+                "Pixmap": os.path.join(
+                    icons_path, "SheetMetal_AddBaseShape.svg"
+                ),  # the name of a svg file available in the resources
+                "MenuText": FreeCAD.Qt.translate("SheetMetal", "Add base shape"),
+                "Accel": "H",
+                "ToolTip": FreeCAD.Qt.translate(
+                    "SheetMetal",
+                    "Add basic sheet metal object."
+                ),
+            }
+
+        def Activated(self):
+            doc = FreeCAD.ActiveDocument
+            activeBody = None
+            view = Gui.ActiveDocument.ActiveView
+            if hasattr(view, "getActiveObject"):
+                activeBody = view.getActiveObject("pdbody")
+            doc.openTransaction("BaseShape")
+            a = doc.addObject("PartDesign::FeaturePython","BaseShape")
+            SMBaseShape(a)
+            SMBaseShapeViewProviderFlat(a.ViewObject)
+            if not activeBody:
+                activeBody = FreeCAD.activeDocument().addObject('PartDesign::Body','Body')
+                Gui.ActiveDocument.ActiveView.setActiveObject('pdbody', activeBody)
+            activeBody.addObject(a)
+            doc.recompute()
+
+            dialog = BaseShapeTaskPanel()
+            dialog.obj = a
+            dialog.update()
+            Gui.Control.showDialog(dialog)
+
+        def IsActive(self):
+            return FreeCAD.ActiveDocument is not None
+
+    Gui.addCommand("SheetMetal_BaseShape", SMBaseshapeCommandClass())
