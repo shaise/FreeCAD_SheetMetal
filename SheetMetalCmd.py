@@ -258,7 +258,7 @@ def smGetFace(Faces, obj):
 
 
 def LineExtend(edge, distance1, distance2):
-    # Extend a ine by given distances
+    # Extend a line by given distances
     result = edge.Curve.toShape(
         edge.FirstParameter - distance1, edge.LastParameter + distance2
     )

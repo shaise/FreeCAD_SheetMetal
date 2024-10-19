@@ -87,7 +87,7 @@ def smSolidBend(radius = 1.0, selEdgeNames = '', MainObject = None):
       OuterEdgesToBend.append(edge)
   
   if len(InnerEdgesToBend) > 0:
-    # find thickness of sheet by distance from v1 to one of the edges comming out of edge[0]
+    # find thickness of sheet by distance from v1 to one of the edges coming out of edge[0]
     # we assume all corners have same thickness
     for dedge in MainObject.ancestorsOfType(edge.Vertexes[0], Part.Edge):
       if not dedge.isSame(edge):
