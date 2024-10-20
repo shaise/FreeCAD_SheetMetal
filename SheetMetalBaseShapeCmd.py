@@ -461,18 +461,10 @@ if SheetMetalTools.isGuiLoaded():
 
         def Activated(self):
             doc = FreeCAD.ActiveDocument
-            activeBody = None
-            view = Gui.ActiveDocument.ActiveView
-            if hasattr(view, "getActiveObject"):
-                activeBody = view.getActiveObject("pdbody")
             doc.openTransaction("BaseShape")
             a = doc.addObject("PartDesign::FeaturePython","BaseShape")
             SMBaseShape(a)
             SMBaseShapeViewProviderFlat(a.ViewObject)
-            if not activeBody:
-                activeBody = FreeCAD.activeDocument().addObject('PartDesign::Body','Body')
-                Gui.ActiveDocument.ActiveView.setActiveObject('pdbody', activeBody)
-            activeBody.addObject(a)
             doc.recompute()
 
             dialog = BaseShapeTaskPanel(a)
