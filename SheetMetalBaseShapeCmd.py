@@ -299,7 +299,7 @@ if SheetMetalTools.isGuiLoaded():
             self.spinValChanged()
 
         def origButtPressed(self, butt):
-            print(butt.objectName())
+            # print(butt.objectName())
             self.setSelectedOrigButton(butt)
             self.spinValChanged()
 
