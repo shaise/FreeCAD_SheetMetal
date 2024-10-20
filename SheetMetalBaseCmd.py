@@ -108,7 +108,7 @@ def smBase(
     return wallSolid
 
 class SMBaseBend:
-    def __init__(self, obj):
+    def __init__(self, obj, sketch):
         '''"Add wall or Wall with radius bend"'''
         _tip_ = translate("App::Property", "Bend Radius")
         obj.addProperty(
@@ -129,7 +129,7 @@ class SMBaseBend:
         _tip_ = translate("App::Property", "Wall Sketch object")
         obj.addProperty(
             "App::PropertyLink", "BendSketch", "Parameters", _tip_
-        ).BendSketch = None
+        ).BendSketch = sketch
         _tip_ = translate("App::Property", "Extrude Symmetric to Plane")
         obj.addProperty(
             "App::PropertyBool", "MidPlane", "Parameters", _tip_
@@ -260,15 +260,13 @@ if SheetMetalTools.isGuiLoaded():
             doc.openTransaction("BaseBend")
             if activeBody is None:
                 a = doc.addObject("Part::FeaturePython", "BaseBend")
-                SMBaseBend(a)
+                SMBaseBend(a, selobj)
                 SMBaseViewProvider(a.ViewObject)
-                a.BendSketch = selobj
             else:
                 # FreeCAD.Console.PrintLog("found active body: " + activeBody.Name)
                 a = doc.addObject("PartDesign::FeaturePython", "BaseBend")
-                SMBaseBend(a)
+                SMBaseBend(a, selobj)
                 SMBaseViewProvider(a.ViewObject)
-                a.BendSketch = selobj
                 activeBody.addObject(a)
             doc.recompute()
             doc.commitTransaction()

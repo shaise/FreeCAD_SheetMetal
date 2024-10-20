@@ -121,7 +121,7 @@ def smFold(
             facenormal = cutFaceDir.Faces[0].normalAt(0, 0)
             # print(facenormal)
 
-            if position == "middle":
+            if position == "middle" or position == "intersection of planes":
                 tool.translate(facenormal * -unfoldLength / 2.0)
                 toolFaces = tool.extrude(normal * -thk)
             elif position == "backward":
@@ -243,11 +243,13 @@ def smFold(
     else:
         if bendlinesketch and bendA > 0.0:
             resultsolid = FoldShape
+    Gui.ActiveDocument.getObject(MainObject.Name).Visibility = False
+    Gui.ActiveDocument.getObject(bendlinesketch.Name).Visibility = False
     return resultsolid
 
 
 class SMFoldWall:
-    def __init__(self, obj):
+    def __init__(self, obj, selobj, sel_items, sel_sketch):
         '''"Fold / Bend a Sheetmetal with given Bend Radius"'''
 
         _tip_ = FreeCAD.Qt.translate("App::Property", "Bend Radius")
@@ -259,11 +261,11 @@ class SMFoldWall:
         _tip_ = FreeCAD.Qt.translate("App::Property", "Base Object")
         obj.addProperty(
             "App::PropertyLinkSub", "baseObject", "Parameters", _tip_
-        )
+        ).baseObject = (selobj, sel_items)
         _tip_ = FreeCAD.Qt.translate("App::Property", "Bend Reference Line List")
         obj.addProperty(
             "App::PropertyLink", "BendLine", "Parameters", _tip_
-        )
+        ).BendLine = sel_sketch
         _tip_ = FreeCAD.Qt.translate("App::Property", "Invert Solid Bend Direction")
         obj.addProperty(
             "App::PropertyBool", "invertbend", "Parameters", _tip_
@@ -458,16 +460,12 @@ if SheetMetalTools.isGuiLoaded():
             doc.openTransaction("Bend")
             if activeBody is None or not SheetMetalTools.smIsPartDesign(selobj):
                 a = doc.addObject("Part::FeaturePython", "Fold")
-                SMFoldWall(a)
-                a.baseObject = (selobj, sel[0].SubElementNames)
-                a.BendLine = sel[1].Object
+                SMFoldWall(a, selobj, sel[0].SubElementNames, sel[1].Object)
                 SMFoldViewProvider(a.ViewObject)
             else:
                 # FreeCAD.Console.PrintLog("found active body: " + activeBody.Name)
                 a = doc.addObject("PartDesign::FeaturePython", "Fold")
-                SMFoldWall(a)
-                a.baseObject = (selobj, sel[0].SubElementNames)
-                a.BendLine = sel[1].Object
+                SMFoldWall(a, selobj, sel[0].SubElementNames, sel[1].Object)
                 SMFoldPDViewProvider(a.ViewObject)
                 activeBody.addObject(a)
             SheetMetalTools.SetViewConfig(a, viewConf)

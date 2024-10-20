@@ -105,7 +105,7 @@ def makeforming(tool, base, base_face, thk, tool_faces = None, point = FreeCAD.V
   return base
 
 class SMBendWall:
-  def __init__(self, obj):
+  def __init__(self, obj, selobj, selobj_items, seltool, seltool_items):
     '''"Add Forming Wall" '''
 
     _tip_ = FreeCAD.Qt.translate("App::Property","Offset from Center of Face")
@@ -117,9 +117,11 @@ class SMBendWall:
     _tip_ = FreeCAD.Qt.translate("App::Property","Thickness of Sheetmetal")
     obj.addProperty("App::PropertyDistance","thickness","Parameters",_tip_)
     _tip_ = FreeCAD.Qt.translate("App::Property","Base Object")
-    obj.addProperty("App::PropertyLinkSub", "baseObject", "Parameters",_tip_)
+    obj.addProperty("App::PropertyLinkSub", "baseObject", "Parameters",
+                    _tip_).baseObject = (selobj, selobj_items)
     _tip_ = FreeCAD.Qt.translate("App::Property","Forming Tool Object")
-    obj.addProperty("App::PropertyLinkSub", "toolObject", "Parameters",_tip_)
+    obj.addProperty("App::PropertyLinkSub", "toolObject", "Parameters",
+                    _tip_).toolObject = (seltool, seltool_items)
     _tip_ = FreeCAD.Qt.translate("App::Property","Point Sketch on Sheetmetal")
     obj.addProperty("App::PropertyLink","Sketch","Parameters1",_tip_)
     obj.Proxy = self
@@ -155,6 +157,10 @@ class SMBendWall:
     else :
       a = base
     fp.Shape = a
+    Gui.ActiveDocument.getObject(fp.baseObject[0].Name).Visibility = False
+    Gui.ActiveDocument.getObject(fp.toolObject[0].Name).Visibility = False
+    if fp.Sketch:
+     Gui.ActiveDocument.getObject(fp.Sketch.Name).Visibility = False
 
 
 ##########################################################################################################
@@ -472,16 +478,12 @@ if SheetMetalTools.isGuiLoaded():
       doc.openTransaction("WallForming")
       if activeBody is None or not SheetMetalTools.smIsPartDesign(selobj):
         a = doc.addObject("Part::FeaturePython","WallForming")
-        SMBendWall(a)
-        a.baseObject = (selobj, sel[0].SubElementNames)
-        a.toolObject = (sel[1].Object, sel[1].SubElementNames)
+        SMBendWall(a, selobj, sel[0].SubElementNames, sel[1].Object, sel[1].SubElementNames)
         SMFormingVP(a.ViewObject)
       else:
         #FreeCAD.Console.PrintLog("found active body: " + activeBody.Name)
         a = doc.addObject("PartDesign::FeaturePython","WallForming")
-        SMBendWall(a)
-        a.baseObject = (selobj, sel[0].SubElementNames)
-        a.toolObject = (sel[1].Object, sel[1].SubElementNames)
+        SMBendWall(a, selobj, sel[0].SubElementNames, sel[1].Object, sel[1].SubElementNames)
         SMFormingPDVP(a.ViewObject)
         activeBody.addObject(a)
       SheetMetalTools.SetViewConfig(a, viewConf)

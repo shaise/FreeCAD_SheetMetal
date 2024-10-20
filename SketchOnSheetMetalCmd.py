@@ -256,20 +256,23 @@ def smSketchOnSheetMetal(
     # Part.show(SMSolid,"SMSolid")
     resultSolid = resultSolid.cut(SMSolid)
 
+    Gui.ActiveDocument.getObject(MainObject.Name).Visibility = False
+    Gui.ActiveDocument.getObject(sketch.Name).Visibility = False
     return resultSolid
 
 
 class SMSketchOnSheet:
     def __init__(self, obj):
         '''"Add Sketch based cut On Sheet metal"'''
+        selobj = Gui.Selection.getSelectionEx()
         _tip_ = FreeCAD.Qt.translate("App::Property", "Base Object")
         obj.addProperty(
             "App::PropertyLinkSub", "baseObject", "Parameters", _tip_
-        ).baseObject
+        ).baseObject = (selobj[0].Object, selobj[0].SubElementNames)
         _tip_ = FreeCAD.Qt.translate("App::Property", "Sketch on Sheetmetal")
         obj.addProperty(
             "App::PropertyLink", "Sketch", "Parameters", _tip_
-        )
+        ).Sketch = selobj[1].Object
         _tip_ = FreeCAD.Qt.translate("App::Property", "Gap from Left Side")
         obj.addProperty(
             "App::PropertyFloatConstraint", "kfactor", "Parameters", _tip_
@@ -426,7 +429,6 @@ if SheetMetalTools.isGuiLoaded():
             doc = FreeCAD.ActiveDocument
             view = Gui.ActiveDocument.ActiveView
             activeBody = None
-            sel = Gui.Selection.getSelectionEx()
             selobj = Gui.Selection.getSelectionEx()[0].Object
             viewConf = SheetMetalTools.GetViewConfig(selobj)
             if hasattr(view, "getActiveObject"):
@@ -437,15 +439,11 @@ if SheetMetalTools.isGuiLoaded():
             if activeBody is None or not SheetMetalTools.smIsPartDesign(selobj):
                 a = doc.addObject("Part::FeaturePython", "SketchOnSheet")
                 SMSketchOnSheet(a)
-                a.baseObject = (selobj, sel[0].SubElementNames)
-                a.Sketch = sel[1].Object
                 SMSketchOnSheetVP(a.ViewObject)
             else:
                 # FreeCAD.Console.PrintLog("found active body: " + activeBody.Name)
                 a = doc.addObject("PartDesign::FeaturePython", "SketchOnSheet")
                 SMSketchOnSheet(a)
-                a.baseObject = (selobj, sel[0].SubElementNames)
-                a.Sketch = sel[1].Object
                 SMSketchOnSheetPDVP(a.ViewObject)
                 activeBody.addObject(a)
             SheetMetalTools.SetViewConfig(a, viewConf)
