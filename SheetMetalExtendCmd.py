@@ -263,7 +263,7 @@ def smExtrude(extLength = 10.0, gap1 = 0.0, gap2 = 0.0, subtraction = False, off
   return finalShape
 
 class SMExtrudeWall:
-  def __init__(self, obj):
+  def __init__(self, obj, selobj, sel_items):
     '''"Add Sheetmetal Wall by Extending" '''
 
     _tip_ = FreeCAD.Qt.translate("App::Property","Length of Wall")
@@ -273,7 +273,7 @@ class SMExtrudeWall:
     _tip_ = FreeCAD.Qt.translate("App::Property","Gap from right side")
     obj.addProperty("App::PropertyDistance","gap2","Parameters",_tip_).gap2 = 0.0
     _tip_ = FreeCAD.Qt.translate("App::Property","Base object")
-    obj.addProperty("App::PropertyLinkSub", "baseObject", "Parameters",_tip_).baseObject
+    obj.addProperty("App::PropertyLinkSub", "baseObject", "Parameters",_tip_).baseObject = (selobj, sel_items)
     _tip_ = FreeCAD.Qt.translate("App::Property","Wall Sketch")
     obj.addProperty("App::PropertyLink","Sketch","ParametersExt",_tip_)
     _tip_ = FreeCAD.Qt.translate("App::Property","Use Subtraction")
@@ -579,13 +579,11 @@ if SheetMetalTools.isGuiLoaded():
       doc.openTransaction("Extend")
       if (activeBody is None):
         a = doc.addObject("Part::FeaturePython","Extend")
-        SMExtrudeWall(a)
-        a.baseObject = (selobj, sel.SubElementNames)
+        SMExtrudeWall(a, selobj, sel.SubElementNames)
         SMViewProviderTree(a.ViewObject)
       else:
         a = doc.addObject("PartDesign::FeaturePython","Extend")
-        SMExtrudeWall(a)
-        a.baseObject = (selobj, sel.SubElementNames)
+        SMExtrudeWall(a, selobj, sel.SubElementNames)
         SMViewProviderFlat(a.ViewObject)
         activeBody.addObject(a)
       SheetMetalTools.SetViewConfig(a, viewConf)    

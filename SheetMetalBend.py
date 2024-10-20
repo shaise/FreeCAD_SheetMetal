@@ -102,14 +102,15 @@ def smSolidBend(radius = 1.0, selEdgeNames = '', MainObject = None):
 
 
 class SMSolidBend:
-  def __init__(self, obj):
+  def __init__(self, obj, selobj, sel_elements):
     '''"Add Bend to Solid" '''
 
     _tip_ = FreeCAD.Qt.translate("App::Property","Bend Radius")
     obj.addProperty("App::PropertyLength","radius","Parameters", _tip_).radius = 1.0
 
     _tip_ = FreeCAD.Qt.translate("App::Property","Base object")
-    obj.addProperty("App::PropertyLinkSub", "baseObject", "Parameters", _tip_)
+    obj.addProperty("App::PropertyLinkSub", "baseObject", "Parameters", _tip_).baseObject = (selobj, sel_elements)
+    obj.Proxy = self
 
   def getElementMapVersion(self, _fp, ver, _prop, restored):
       if not restored:
@@ -390,13 +391,12 @@ if SheetMetalTools.isGuiLoaded():
         doc.openTransaction("Add Bend")
         if activeBody is None or not SheetMetalTools.smIsPartDesign(selobj):
           a = doc.addObject("Part::FeaturePython","SolidBend")
-          SMSolidBend(a)
-          a.baseObject = (selobj, sel.SubElementNames)
+          SMSolidBend(a, selobj, sel.SubElementNames)
           SMBendViewProviderTree(a.ViewObject)
         else:
           #FreeCAD.Console.PrintLog("found active body: " + activeBody.Name)
           a = doc.addObject("PartDesign::FeaturePython","SolidBend")
-          SMSolidBend(a)
+          SMSolidBend(a, selobj, sel.SubElementNames)
           SMBendViewProviderFlat(a.ViewObject)
           activeBody.addObject(a)
         SheetMetalTools.SetViewConfig(a, viewConf)

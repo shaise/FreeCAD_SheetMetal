@@ -26,9 +26,21 @@ if isGuiLoaded():
         )
         diag.setWindowModality(QtCore.Qt.ApplicationModal)
         diag.exec_()
+    
+    def HideObjects(*args):
+        from FreeCAD import Gui
+        for arg in args:
+            if arg:
+                obj = Gui.ActiveDocument.getObject(arg.Name)
+                if obj:
+                    obj.Visibility = False
+
 else:
     def smWarnDialog(msg):
         SMLogger.warning(msg)
+
+    def HideObjects(*args):
+        pass
 
 def smBelongToBody(item, body):
     if body is None:

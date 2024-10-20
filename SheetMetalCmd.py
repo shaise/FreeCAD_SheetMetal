@@ -1367,14 +1367,14 @@ def smBend(
 
 
 class SMBendWall:
-    def __init__(self, obj):
+    def __init__(self, obj, selobj, sel_items):
         '''"Add Wall with radius bend"'''
         self._addProperties(obj)
 
         _tip_ = translate("App::Property", "Base Object")
         obj.addProperty(
             "App::PropertyLinkSub", "baseObject", "Parameters", _tip_
-        )
+        ).baseObject = (selobj, sel_items)
         obj.Proxy = self
 
     def _addProperties(self, obj):
@@ -2066,14 +2066,12 @@ if SheetMetalTools.isGuiLoaded():
             doc.openTransaction("Bend")
             if activeBody is None or not SheetMetalTools.smIsPartDesign(selobj):
                 a = doc.addObject("Part::FeaturePython", "Bend")
-                SMBendWall(a)
-                a.baseObject = (selobj, sel.SubElementNames)
+                SMBendWall(a, selobj, sel.SubElementNames)
                 SMViewProviderTree(a.ViewObject)
             else:
                 # FreeCAD.Console.PrintLog("found active body: " + activeBody.Name)
                 a = doc.addObject("PartDesign::FeaturePython", "Bend")
-                SMBendWall(a)
-                a.baseObject = (selobj, sel.SubElementNames)
+                SMBendWall(a, selobj, sel.SubElementNames)
                 SMViewProviderFlat(a.ViewObject)
                 activeBody.addObject(a)
             SheetMetalTools.SetViewConfig(a, viewConf)

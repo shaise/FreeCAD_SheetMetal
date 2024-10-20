@@ -433,9 +433,8 @@ def smCornerR(
 
 
 class SMCornerRelief:
-    def __init__(self, obj):
+    def __init__(self, obj, selobj, sel_items):
         '''"Add Corner Relief to Sheetmetal Bends"'''
-        selobj = Gui.Selection.getSelectionEx()
         _tip_ = FreeCAD.Qt.translate("App::Property", "Corner Relief Type")
         obj.addProperty(
             "App::PropertyEnumeration", "ReliefSketch", "Parameters", _tip_
@@ -449,7 +448,7 @@ class SMCornerRelief:
         _tip_ = FreeCAD.Qt.translate("App::Property", "Base object")
         obj.addProperty(
             "App::PropertyLinkSub", "baseObject", "Parameters", _tip_
-        ).baseObject = (selobj[0].Object, selobj[0].SubElementNames)
+        ).baseObject = (selobj, sel_items)
         _tip_ = FreeCAD.Qt.translate("App::Property", "Size of Shape")
         obj.addProperty("App::PropertyLength", "Size", "Parameters", _tip_).Size = 3.0
         _tip_ = FreeCAD.Qt.translate("App::Property", "Size Ratio of Shape")
@@ -487,10 +486,7 @@ class SMCornerRelief:
             MainObject=fp.baseObject[0],
         )
         fp.Shape = s
-
-        Gui.ActiveDocument.getObject(fp.baseObject[0].Name).Visibility = False
-        if fp.Sketch:
-            Gui.ActiveDocument.getObject(fp.Sketch.Name).Visibility = False
+        SheetMetalTools.HideObjects(fp.baseObject[0], fp.Sketch)
 
 ##########################################################################################################
 # Gui code
@@ -640,13 +636,12 @@ if SheetMetalTools.isGuiLoaded():
             doc.openTransaction("Corner Relief")
             if activeBody is None or not SheetMetalTools.smIsPartDesign(selobj):
                 a = doc.addObject("Part::FeaturePython", "CornerRelief")
-                SMCornerRelief(a)
-                a.baseObject = (selobj, sel.SubElementNames)
+                SMCornerRelief(a, selobj, sel.SubElementNames)
                 SMCornerReliefVP(a.ViewObject)
             else:
                 # FreeCAD.Console.PrintLog("found active body: " + activeBody.Name)
                 a = doc.addObject("PartDesign::FeaturePython", "CornerRelief")
-                SMCornerRelief(a)
+                SMCornerRelief(a, selobj, sel.SubElementNames)
                 SMCornerReliefPDVP(a.ViewObject)
                 activeBody.addObject(a)
             SheetMetalTools.SetViewConfig(a, viewConf)
