@@ -24,7 +24,7 @@
 # - Make the script executable
 # 	$ chmod +x update_translation.sh
 # - The script has to be executed within the `translations` directory.
-# 	Executing the script with no flags involes the help.
+# 	Executing the script with no flags invokes the help.
 # 	$ ./update_translation.sh
 #
 # NOTE: WORKFLOW TRANSLATOR (LOCAL)

@@ -25,9 +25,9 @@ import os
 import glob
 
 #==============================================================================
-# Script for preparing translations of Fasterners Workbench
+# Script for preparing translations of Fasteners Workbench
 #
-# The script has to be started within the fasterners/translations Folder
+# The script has to be started within the fasteners/translations Folder
 #==============================================================================
 
 for fn in glob.glob('*_*.ts'):
