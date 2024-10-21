@@ -1,127 +1,127 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
-<TS version="2.1" language="sr-CS" sourcelanguage="en">
+<TS version="2.1" language="sr" sourcelanguage="en">
   <context>
     <name>App::Property</name>
     <message>
       <location filename="../SheetMetalFoldCmd.py" line="242"/>
       <source>Bend Radius</source>
-      <translation>Poluprečnik savijanja</translation>
+      <translation>Полупречник савијања</translation>
     </message>
     <message>
       <location filename="../SheetMetalBend.py" line="117"/>
       <source>Thickness of sheetmetal</source>
-      <translation>Debljina lima</translation>
+      <translation>Дебљина лима</translation>
     </message>
     <message>
       <location filename="../SheetMetalBaseCmd.py" line="202"/>
       <source>Relief Type</source>
-      <translation>Vrsta olakšanja</translation>
+      <translation>Врста олакшања</translation>
     </message>
     <message>
       <location filename="../SheetMetalBaseCmd.py" line="206"/>
       <source>Length of wall</source>
-      <translation>Dužina stranice</translation>
+      <translation>Дужина странице</translation>
     </message>
     <message>
       <location filename="../SheetMetalBaseCmd.py" line="210"/>
       <source>Wall Sketch object</source>
-      <translation>Objekat skica stranice</translation>
+      <translation>Објекат скица странице</translation>
     </message>
     <message>
       <location filename="../SheetMetalBaseCmd.py" line="227"/>
       <source>Extrude Symmetric to Plane</source>
-      <translation>Izvlačenje simetrično u odnosu na ravan</translation>
+      <translation>Извлачење симетрично у односу на раван</translation>
     </message>
     <message>
       <location filename="../SheetMetalBaseCmd.py" line="231"/>
       <source>Reverse Extrusion Direction</source>
-      <translation>Obrnuti smer izvlačenja</translation>
+      <translation>Обрнути смер извлачења</translation>
     </message>
     <message>
       <location filename="../SheetMetalExtendCmd.py" line="310"/>
       <source>Base object</source>
-      <translation>Osnova</translation>
+      <translation>Основа</translation>
     </message>
     <message>
       <location filename="../SketchOnSheetMetalCmd.py" line="288"/>
       <source>Base Object</source>
-      <translation>Osnova</translation>
+      <translation>Основа</translation>
     </message>
     <message>
       <location filename="../SheetMetalExtendCmd.py" line="304"/>
       <source>Length of Wall</source>
-      <translation>Dužina stranice</translation>
+      <translation>Дужина странице</translation>
     </message>
     <message>
       <location filename="../SketchOnSheetMetalCmd.py" line="292"/>
       <source>Gap from Left Side</source>
-      <translation>Odmaknuto od leve strane</translation>
+      <translation>Одмакнуто од леве стране</translation>
     </message>
     <message>
       <location filename="../SheetMetalCmd.py" line="1300"/>
       <source>Gap from Right Side</source>
-      <translation>Odmaknuto od desne strane</translation>
+      <translation>Одмакнуто од десне стране</translation>
     </message>
     <message>
       <location filename="../SheetMetalFoldCmd.py" line="254"/>
       <source>Invert Bend Direction</source>
-      <translation>Obrni smer savijanja</translation>
+      <translation>Обрни смер савијања</translation>
     </message>
     <message>
       <location filename="../SheetMetalFoldCmd.py" line="244"/>
       <source>Bend Angle</source>
-      <translation>Ugao savijanja</translation>
+      <translation>Угао савијања</translation>
     </message>
     <message>
       <location filename="../SheetMetalCmd.py" line="1315"/>
       <source>Extend from Left Side</source>
-      <translation>Proširi sa leve strane</translation>
+      <translation>Прошири са леве стране</translation>
     </message>
     <message>
       <location filename="../SheetMetalCmd.py" line="1321"/>
       <source>Extend from Right Side</source>
-      <translation>Proširi sa desne strane</translation>
+      <translation>Прошири са десне стране</translation>
     </message>
     <message>
       <location filename="../SheetMetalCmd.py" line="1327"/>
       <source>Bend Type</source>
-      <translation>Vrsta savijanja</translation>
+      <translation>Врста савијања</translation>
     </message>
     <message>
       <location filename="../SheetMetalCmd.py" line="1333"/>
       <source>Type of Length Specification</source>
-      <translation>Vrsta specifikacije dužine</translation>
+      <translation>Врста спецификације дужине</translation>
     </message>
     <message>
       <location filename="../SheetMetalCmd.py" line="1339"/>
       <source>Relief Width</source>
-      <translation>Širina olakšanja</translation>
+      <translation>Ширина олакшања</translation>
     </message>
     <message>
       <location filename="../SheetMetalCmd.py" line="1346"/>
       <source>Relief Depth</source>
-      <translation>Dubina olakšanja</translation>
+      <translation>Дубина олакшања</translation>
     </message>
     <message>
       <location filename="../SheetMetalCmd.py" line="1353"/>
       <source>Use Relief Factor</source>
-      <translation>Koristi koeficijent olakšanja</translation>
+      <translation>Користи коефицијент олакшања</translation>
     </message>
     <message>
       <location filename="../SheetMetalCmd.py" line="1368"/>
       <source>Relief Factor</source>
-      <translation>Koeficijent olakšanja</translation>
+      <translation>Коефицијент олакшања</translation>
     </message>
     <message>
       <location filename="../SheetMetalCmd.py" line="1375"/>
       <source>Bend Miter Angle from Left Side</source>
-      <translation>Zakošenje na levom boku savijanja</translation>
+      <translation>Закошење на левом боку савијања</translation>
     </message>
     <message>
       <location filename="../SheetMetalCmd.py" line="1382"/>
       <source>Bend Miter Angle from Right Side</source>
-      <translation>Zakošenje na desnom boku savijanja</translation>
+      <translation>Закошење на десном боку савијања</translation>
     </message>
     <message>
       <location filename="../SheetMetalCmd.py" line="1389"/>
@@ -141,137 +141,137 @@
     <message>
       <location filename="../SheetMetalCmd.py" line="1410"/>
       <source>Offset Bend</source>
-      <translation>Odmakni savijanje</translation>
+      <translation type="unfinished">Offset Bend</translation>
     </message>
     <message>
       <location filename="../SheetMetalCmd.py" line="1417"/>
       <source>Enable Auto Miter</source>
-      <translation>Omogući automatsko zakošenje</translation>
+      <translation>Омогући аутоматско закошење</translation>
     </message>
     <message>
       <location filename="../SheetMetalCmd.py" line="1424"/>
       <source>Shows Unfold View of Current Bend</source>
-      <translation>Prikazuje razvijeno stanje ovog savijanja</translation>
+      <translation>Приказује развијено стање овог савијања</translation>
     </message>
     <message>
       <location filename="../SheetMetalCmd.py" line="1432"/>
       <source>Location of Neutral Line. Caution: Using ANSI standards, not DIN.</source>
-      <translation>Položaj neutralne linije. Oprez: Koristi se ANSI standard, a ne DIN.</translation>
+      <translation>Положај неутралне линије. Опрез: Користи се ANSI стандард, а не DIN.</translation>
     </message>
     <message>
       <location filename="../SheetMetalCmd.py" line="1442"/>
       <source>Flip Sketch Direction</source>
-      <translation>Obrni smer skice</translation>
+      <translation>Обрни смер скице</translation>
     </message>
     <message>
       <location filename="../SheetMetalCmd.py" line="1449"/>
       <source>Invert Sketch Start</source>
-      <translation>Zameni početak skice</translation>
+      <translation>Замени почетак скице</translation>
     </message>
     <message>
       <location filename="../SheetMetalCmd.py" line="1457"/>
       <source>Sketch Object</source>
-      <translation>Objekat skica</translation>
+      <translation>Објекат скица</translation>
     </message>
     <message>
       <location filename="../SheetMetalCmd.py" line="1465"/>
       <source>Length of Wall List</source>
-      <translation>Lista dužina stranica</translation>
+      <translation>Листа дужина страница</translation>
     </message>
     <message>
       <location filename="../SheetMetalCmd.py" line="1473"/>
       <source>Bend Angle List</source>
-      <translation>Lista uglova savijanja</translation>
+      <translation>Листа углова савијања</translation>
     </message>
     <message>
       <location filename="../SheetMetalCornerReliefCmd.py" line="434"/>
       <source>Corner Relief Type</source>
-      <translation>Vrsta ugaonog olakšanja</translation>
+      <translation>Врста угаоног олакшања</translation>
     </message>
     <message>
       <location filename="../SheetMetalCornerReliefCmd.py" line="438"/>
       <source>Size of Shape</source>
-      <translation>Veličina oblika</translation>
+      <translation>Величина облика</translation>
     </message>
     <message>
       <location filename="../SheetMetalCornerReliefCmd.py" line="440"/>
       <source>Size Ratio of Shape</source>
-      <translation>Odnos veličina oblika</translation>
+      <translation>Однос величина облика</translation>
     </message>
     <message>
       <location filename="../SheetMetalFoldCmd.py" line="252"/>
       <source>Neutral Axis Position</source>
-      <translation>Položaj neutralne linije</translation>
+      <translation>Положај неутралне линије</translation>
     </message>
     <message>
       <location filename="../SheetMetalCornerReliefCmd.py" line="444"/>
       <source>Corner Relief Sketch</source>
-      <translation>Skica ugaonog olakšanja</translation>
+      <translation>Скица угаоног олакшања</translation>
     </message>
     <message>
       <location filename="../SheetMetalCornerReliefCmd.py" line="446"/>
       <source>Gap from side one</source>
-      <translation>Odmaknuto od prve strane</translation>
+      <translation>Одмакнуто од прве стране</translation>
     </message>
     <message>
       <location filename="../SheetMetalCornerReliefCmd.py" line="448"/>
       <source>Gap from side two</source>
-      <translation>Odmaknuto od druge strane</translation>
+      <translation>Одмакнуто од друге стране</translation>
     </message>
     <message>
       <location filename="../SheetMetalExtendCmd.py" line="306"/>
       <source>Gap from left side</source>
-      <translation>Odmaknuto od leve strane</translation>
+      <translation>Одмакнуто од леве стране</translation>
     </message>
     <message>
       <location filename="../SheetMetalExtendCmd.py" line="308"/>
       <source>Gap from right side</source>
-      <translation>Odmaknuto od desne strane</translation>
+      <translation>Одмакнуто од десне стране</translation>
     </message>
     <message>
       <location filename="../SheetMetalExtendCmd.py" line="328"/>
       <source>Wall Sketch</source>
-      <translation>Skica stranice</translation>
+      <translation>Скица странице</translation>
     </message>
     <message>
       <location filename="../SheetMetalExtendCmd.py" line="338"/>
       <source>Use Subtraction</source>
-      <translation>Koristi zazor</translation>
+      <translation>Користи зазор</translation>
     </message>
     <message>
       <location filename="../SheetMetalExtendCmd.py" line="316"/>
       <source>Offset for subtraction</source>
-      <translation>Veličina zazora</translation>
+      <translation>Величина зазора</translation>
     </message>
     <message>
       <location filename="../SheetMetalExtendCmd.py" line="332"/>
       <source>Use Refine</source>
-      <translation>Prečisti</translation>
+      <translation>Пречисти</translation>
     </message>
     <message>
       <location filename="../SheetMetalFoldCmd.py" line="248"/>
       <source>Bend Reference Line List</source>
-      <translation>Lista linija savijanja</translation>
+      <translation>Листа линија савијања</translation>
     </message>
     <message>
       <location filename="../SheetMetalFoldCmd.py" line="250"/>
       <source>Invert Solid Bend Direction</source>
-      <translation>Okreni deo u odnosu na savijanje</translation>
+      <translation>Окрени део у односу на савијање</translation>
     </message>
     <message>
       <location filename="../SheetMetalFoldCmd.py" line="256"/>
       <source>Unfold Bend</source>
-      <translation>Razvij savijanje</translation>
+      <translation>Развиј савијање</translation>
     </message>
     <message>
       <location filename="../SheetMetalFoldCmd.py" line="266"/>
       <source>Bend Line Position</source>
-      <translation>Položaj linije savijanja</translation>
+      <translation>Положај линије савијања</translation>
     </message>
     <message>
       <location filename="../SheetMetalFormingCmd.py" line="139"/>
       <source>Offset from Center of Face</source>
-      <translation>Odmak od centra stranice</translation>
+      <translation>Одмак од центра странице</translation>
     </message>
     <message>
       <location filename="../SheetMetalFormingCmd.py" line="141"/>
@@ -286,12 +286,12 @@
     <message>
       <location filename="../SheetMetalFormingCmd.py" line="145"/>
       <source>Thickness of Sheetmetal</source>
-      <translation>Debljina lima</translation>
+      <translation>Дебљина лима</translation>
     </message>
     <message>
       <location filename="../SheetMetalFormingCmd.py" line="149"/>
       <source>Forming Tool Object</source>
-      <translation>Objekat alata za oblikovanje</translation>
+      <translation>Објекат алата за обликовање</translation>
     </message>
     <message>
       <location filename="../SheetMetalFormingCmd.py" line="151"/>
@@ -301,30 +301,30 @@
     <message>
       <location filename="../SheetMetalJunction.py" line="104"/>
       <source>Junction Gap</source>
-      <translation>Procep na pregibu</translation>
+      <translation>Процеп на прегибу</translation>
     </message>
     <message>
       <location filename="../SheetMetalRelief.py" line="151"/>
       <source>Relief Size</source>
-      <translation>Veličina olakšanja</translation>
+      <translation>Величина олакшања</translation>
     </message>
     <message>
       <location filename="../SketchOnSheetMetalCmd.py" line="290"/>
       <source>Sketch on Sheetmetal</source>
-      <translation>Isecanje kroz pregib</translation>
+      <translation>Исецање кроз прегиб</translation>
     </message>
   </context>
   <context>
-    <name>Gui::Dialog::DlgSettingsDraft</name>
+    <name>Gui::Dialog::DlgSettingsSheetMetal</name>
     <message>
       <location filename="../SMprefs.ui" line="14"/>
       <source>General settings</source>
-      <translation>Opšta podešavanja</translation>
+      <translation>Општа подешавања</translation>
     </message>
     <message>
       <location filename="../SMprefs.ui" line="26"/>
       <source>General</source>
-      <translation>Opšte</translation>
+      <translation>Опште</translation>
     </message>
     <message>
       <location filename="../SMprefs.ui" line="37"/>
@@ -335,19 +335,19 @@
       <location filename="../SMprefs.ui" line="60"/>
       <location filename="../SMprefs.ui" line="116"/>
       <source>Method of icon grouping</source>
-      <translation>Način grupisanja ikona</translation>
+      <translation>Начин груписања икона</translation>
     </message>
     <message>
       <location filename="../SMprefs.ui" line="73"/>
       <location filename="../SMprefs.ui" line="129"/>
       <source>Disabled</source>
-      <translation>Onemogućeno</translation>
+      <translation>Онемогућено</translation>
     </message>
     <message>
       <location filename="../SMprefs.ui" line="78"/>
       <location filename="../SMprefs.ui" line="134"/>
       <source>Enabled</source>
-      <translation>Omogućeno</translation>
+      <translation>Омогућено</translation>
     </message>
     <message>
       <location filename="../SMprefs.ui" line="93"/>
@@ -365,7 +365,7 @@
     <message>
       <location filename="../SheetMetalBaseShapeCmd.py" line="243"/>
       <source>Base shape edit mode: </source>
-      <translation>Režim uređivanja primitiva od lima: </translation>
+      <translation>Режим уређивања примитива од лима: </translation>
     </message>
     <message>
       <location filename="../SketchOnSheetMetalCmd.py" line="88"/>
@@ -373,12 +373,12 @@
       <location filename="../SheetMetalFoldCmd.py" line="75"/>
       <location filename="../SheetMetalCornerReliefCmd.py" line="77"/>
       <source>Shape is not a real 3D-object or to small for a metal-sheet!</source>
-      <translation>Oblik nije odgovarajući 3D objekat ili je suviše mali za deo od lima!</translation>
+      <translation>Облик није одговарајући 3Д објекат или је сувише мали за део од лима!</translation>
     </message>
     <message>
       <location filename="../SheetMetalUnfoldCmd.py" line="62"/>
       <source>Running unattended unfold...</source>
-      <translation>Izvršava se razvijanje po automatizmu...</translation>
+      <translation>Извршава се развијање по аутоматизму...</translation>
     </message>
     <message>
       <location filename="../SheetMetalUnfolder.py" line="425"/>
@@ -398,17 +398,17 @@
     <message>
       <location filename="../SheetMetalUnfolder.py" line="3180"/>
       <source>Exception at line {}: Outline Sketch failed, re-trying after tidying up</source>
-      <translation>Izuzetak na liniji {}: Skica konture nije napravljena, ponovni pokušaj nakon sređivanja</translation>
+      <translation>Изузетак на линији {}: Скица контуре није направљена, поновни покушај након сређивања</translation>
     </message>
     <message>
       <location filename="../SheetMetalUnfolder.py" line="3197"/>
       <source>tidying up Unfold_Sketch_Outline</source>
-      <translation>sredjivanje skice_razvijene_konture</translation>
+      <translation>средјивање скице_развијене_контуре</translation>
     </message>
     <message>
       <location filename="../SheetMetalUnfolder.py" line="3219"/>
       <source>Exception at line {}: Outline Sketch not created</source>
-      <translation>Izuzetak na liniji {}: Skica konture nije napravljena</translation>
+      <translation>Изузетак на линији {}: Скица контуре није направљена</translation>
     </message>
     <message>
       <location filename="../SheetMetalUnfolder.py" line="3253"/>
@@ -418,7 +418,7 @@
     <message>
       <location filename="../UnfoldGUI.py" line="126"/>
       <source>Unfold operation needs to know K-factor value(s) to be used.</source>
-      <translation>Razvijanje u ravan nije moguće bez koeficijenta neutralne linije</translation>
+      <translation>Развијање у раван није могуће без коефицијента неутралне линије</translation>
     </message>
   </context>
   <context>
@@ -451,8 +451,8 @@
       <source>The selected geometry does not belong to the active Body.
 Please make the container of this item active by
 double clicking on it.</source>
-      <translation>Izabrana geometrija ne pripada aktivnom Telu.
-Aktiviraj kontejner ove stavke dvoklikom.</translation>
+      <translation>Изабрана геометрија не припада активном Телу.
+Активирај контејнер ове ставке двокликом.</translation>
     </message>
     <message>
       <location filename="../UnfoldGUI.py" line="130"/>
@@ -461,14 +461,14 @@ Aktiviraj kontejner ove stavke dvoklikom.</translation>
 &lt;li&gt;Or use a &lt;a href=&apos;{}&apos;&gt;Material Definition Sheet&lt;/a&gt;&lt;/li&gt;
 &lt;/ol&gt;</source>
       <translation>&lt;ol&gt;
-&lt;li&gt;Ili unesi &apos;Koeficijent neutralne linije&apos;&lt;/li&gt;
-&lt;li&gt;Ili koristi &lt;a href=&apos;{}&apos;&gt;Tabelu koeficijenata neutralne linije&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;Или унеси &apos;Коефицијент неутралне линије&apos;&lt;/li&gt;
+&lt;li&gt;Или користи &lt;a href=&apos;{}&apos;&gt;Табелу коефицијената неутралне линије&lt;/a&gt;&lt;/li&gt;
 &lt;/ol&gt;</translation>
     </message>
     <message>
       <location filename="../UnfoldGUI.py" line="250"/>
       <source>Warning</source>
-      <translation>Upozorenje</translation>
+      <translation>Упозорење</translation>
     </message>
     <message>
       <location filename="../UnfoldGUI.py" line="240"/>
@@ -487,7 +487,7 @@ If the opposite face also fails then switch Refine to false on feature </transla
     <message>
       <location filename="../SheetMetalRelief.py" line="189"/>
       <source>Edit %1</source>
-      <translation>Uredi %1</translation>
+      <translation>Уреди %1</translation>
     </message>
   </context>
   <context>
@@ -496,55 +496,55 @@ If the opposite face also fails then switch Refine to false on feature </transla
       <location filename="../SheetMetalBaseShapeCmd.py" line="297"/>
       <source>Thickness of sheetmetal</source>
       <comment>Property</comment>
-      <translation>Debljina lima</translation>
+      <translation>Дебљина лима</translation>
     </message>
     <message>
       <location filename="../SheetMetalBaseShapeCmd.py" line="301"/>
       <source>Bend Radius</source>
       <comment>Property</comment>
-      <translation>Poluprečnik savijanja</translation>
+      <translation>Полупречник савијања</translation>
     </message>
     <message>
       <location filename="../SheetMetalBaseShapeCmd.py" line="304"/>
       <source>Shape width</source>
       <comment>Property</comment>
-      <translation>Širina primitiva</translation>
+      <translation>Ширина примитива</translation>
     </message>
     <message>
       <location filename="../SheetMetalBaseShapeCmd.py" line="307"/>
       <source>Shape length</source>
       <comment>Property</comment>
-      <translation>Dužina primitiva</translation>
+      <translation>Дужина примитива</translation>
     </message>
     <message>
       <location filename="../SheetMetalBaseShapeCmd.py" line="310"/>
       <source>Shape height</source>
       <comment>Property</comment>
-      <translation>Visina primitiva</translation>
+      <translation>Висина примитива</translation>
     </message>
     <message>
       <location filename="../SheetMetalBaseShapeCmd.py" line="315"/>
       <source>Width of top flange</source>
       <comment>Property</comment>
-      <translation>Širina gornjeg poruba</translation>
+      <translation>Ширина горњег поруба</translation>
     </message>
     <message>
       <location filename="../SheetMetalBaseShapeCmd.py" line="321"/>
       <source>Base shape type</source>
       <comment>Property</comment>
-      <translation>Vrsta primitiva od lima</translation>
+      <translation>Врста примитива од лима</translation>
     </message>
     <message>
       <location filename="../SheetMetalBaseShapeCmd.py" line="357"/>
       <source>Location of part origin</source>
       <comment>Property</comment>
-      <translation>Položaj koordinatnog početka</translation>
+      <translation>Положај координатног почетка</translation>
     </message>
     <message>
       <location filename="../SheetMetalBaseShapeCmd.py" line="327"/>
       <source>Extend sides and flange to close all gaps</source>
       <comment>Property</comment>
-      <translation>Zatvaranje procepa produživanjem zidova i poruba</translation>
+      <translation>Затварање процепа продуживањем зидова и поруба</translation>
     </message>
   </context>
   <context>
@@ -552,137 +552,137 @@ If the opposite face also fails then switch Refine to false on feature </transla
     <message>
       <location filename="../BaseShapeOptions.ui" line="14"/>
       <source>Generate Sheet Metal base shape</source>
-      <translation>Napravi primitive od lima</translation>
+      <translation>Направи примитиве од лима</translation>
     </message>
     <message>
       <location filename="../BaseShapeOptions.ui" line="14"/>
       <source>Unfold sheet metal object</source>
-      <translation>Razvijena forma dela od lima</translation>
+      <translation>Развијена форма дела од лима</translation>
     </message>
     <message>
       <location filename="../BaseShapeOptions.ui" line="22"/>
       <source>Base shape type</source>
-      <translation>Vrsta primitiva od lima</translation>
+      <translation>Примитив од лима</translation>
     </message>
     <message>
       <location filename="../BaseShapeOptions.ui" line="61"/>
       <source>Flat</source>
-      <translation>Ravni lim</translation>
+      <translation>Равни лим</translation>
     </message>
     <message>
       <location filename="../BaseShapeOptions.ui" line="61"/>
       <source>L-Shape</source>
-      <translation>L oblik</translation>
+      <translation>Л облик</translation>
     </message>
     <message>
       <location filename="../BaseShapeOptions.ui" line="66"/>
       <source>U-Shape</source>
-      <translation>U oblik</translation>
+      <translation>У облик</translation>
     </message>
     <message>
       <location filename="../BaseShapeOptions.ui" line="71"/>
       <source>Tub</source>
-      <translation>Otvorena kutija</translation>
+      <translation>Отворена кутија</translation>
     </message>
     <message>
       <location filename="../BaseShapeOptions.ui" line="76"/>
       <source>Hat</source>
-      <translation>Kutija sa porubom</translation>
+      <translation>Кутија са порубом</translation>
     </message>
     <message>
       <location filename="../BaseShapeOptions.ui" line="81"/>
       <source>Box</source>
-      <translation>Zatvorena kutija</translation>
+      <translation>Отворена кутија</translation>
     </message>
     <message>
       <location filename="../BaseShapeOptions.ui" line="93"/>
       <source>Thickness</source>
-      <translation>Debljina</translation>
+      <translation>Дебљина</translation>
     </message>
     <message>
       <location filename="../BaseShapeOptions.ui" line="131"/>
       <source>Thickness of sheet</source>
-      <translation>Debljina lima</translation>
+      <translation>Дебљина лима</translation>
     </message>
     <message>
       <location filename="../BaseShapeOptions.ui" line="157"/>
       <source>Bend radius</source>
-      <translation>Poluprečnik savijanja</translation>
+      <translation>Полупречник савијања</translation>
     </message>
     <message>
       <location filename="../BaseShapeOptions.ui" line="195"/>
       <source>Inner radius of the bend</source>
-      <translation>Unutrašnji poluprečnik savijanja</translation>
+      <translation>Унутрашњи полупречник савијања</translation>
     </message>
     <message>
       <location filename="../BaseShapeOptions.ui" line="221"/>
       <source>Width</source>
-      <translation>Širina</translation>
+      <translation>Ширина</translation>
     </message>
     <message>
       <location filename="../BaseShapeOptions.ui" line="259"/>
       <source>Width of base shape</source>
-      <translation>Širina primitiva od lima</translation>
+      <translation>Ширина примитива од лима</translation>
     </message>
     <message>
       <location filename="../BaseShapeOptions.ui" line="282"/>
       <source>Length</source>
-      <translation>Dužina</translation>
+      <translation>Дужина</translation>
     </message>
     <message>
       <location filename="../BaseShapeOptions.ui" line="323"/>
       <source>Length of base shape</source>
-      <translation>Dužina primitiva od lima</translation>
+      <translation>Дужина примитива од лима</translation>
     </message>
     <message>
       <location filename="../BaseShapeOptions.ui" line="349"/>
       <source>Height</source>
-      <translation>Visina</translation>
+      <translation>Висина</translation>
     </message>
     <message>
       <location filename="../BaseShapeOptions.ui" line="381"/>
       <source>height of base shape</source>
-      <translation>visina primitiva od lima</translation>
+      <translation>висина примитива од лима</translation>
     </message>
     <message>
       <location filename="../BaseShapeOptions.ui" line="410"/>
       <source>Flange width</source>
-      <translation>Širina poruba</translation>
+      <translation>Ширина поруба</translation>
     </message>
     <message>
       <location filename="../BaseShapeOptions.ui" line="442"/>
       <source>Width of top flange (for Box and Hat types)</source>
-      <translation>Širina gornjeg poruba (za zatvorenu i kutiju sa porubom)</translation>
+      <translation>Ширина горењег поруба (за затворену и кутију са порубом)</translation>
     </message>
     <message>
       <location filename="../BaseShapeOptions.ui" line="482"/>
       <source>Location of part origin</source>
-      <translation>Položaj koordinatnog početka</translation>
+      <translation>Положај координатног почетка</translation>
     </message>
     <message>
       <location filename="../BaseShapeOptions.ui" line="520"/>
       <source>Top view</source>
-      <translation>Pogled odozgo</translation>
+      <translation>Поглед одозго</translation>
     </message>
     <message>
       <location filename="../BaseShapeOptions.ui" line="463"/>
       <source>Extend sides and flange to close all gaps</source>
-      <translation>Zatvaranje procepa produživanjem zidova i poruba</translation>
+      <translation>Затварање процепа продуживањем зидова и поруба</translation>
     </message>
     <message>
       <location filename="../BaseShapeOptions.ui" line="466"/>
       <source>Fill gaps</source>
-      <translation>Popuni procepe</translation>
+      <translation>Попуни процепе</translation>
     </message>
     <message>
       <location filename="../BaseShapeOptions.ui" line="473"/>
       <source>Create the base shape as a new body</source>
-      <translation>Napravi primitiva od lima kao novo Telo</translation>
+      <translation>Направи примитив од лима као ново тело</translation>
     </message>
     <message>
       <location filename="../BaseShapeOptions.ui" line="476"/>
       <source>Embed in new Body</source>
-      <translation>Napravi unutar tela</translation>
+      <translation>Направи унутар тела</translation>
     </message>
   </context>
   <context>
@@ -690,32 +690,32 @@ If the opposite face also fails then switch Refine to false on feature </transla
     <message>
       <location filename="../UnfoldOptions.ui" line="14"/>
       <source>Unfold sheet metal object</source>
-      <translation>Razvijanje u ravan dela od lima</translation>
+      <translation>Развијена у раван дела од лима</translation>
     </message>
     <message>
       <location filename="../UnfoldOptions.ui" line="22"/>
       <source>Generate projection sketch</source>
-      <translation>Napravi skicu projekcije</translation>
+      <translation>Направи скицу пројекције</translation>
     </message>
     <message>
       <location filename="../UnfoldOptions.ui" line="55"/>
       <source>Separate projection layers</source>
-      <translation>Razdvoj vrste linija projekcije</translation>
+      <translation>Раздвој врсте линија пројекције</translation>
     </message>
     <message>
       <location filename="../UnfoldOptions.ui" line="64"/>
       <source>Bend lines color</source>
-      <translation>Boja linija savijanja</translation>
+      <translation>Боја линија савијања</translation>
     </message>
     <message>
       <location filename="../UnfoldOptions.ui" line="91"/>
       <source>Internal lines color</source>
-      <translation>Boja unutrašnjih linija</translation>
+      <translation>Боја унутрашњих линија</translation>
     </message>
     <message>
       <location filename="../UnfoldOptions.ui" line="121"/>
       <source>Export sketch</source>
-      <translation>Izvezi skicu</translation>
+      <translation>Извези скицу</translation>
     </message>
     <message>
       <location filename="../UnfoldOptions.ui" line="141"/>
@@ -730,12 +730,12 @@ If the opposite face also fails then switch Refine to false on feature </transla
     <message>
       <location filename="../UnfoldOptions.ui" line="168"/>
       <source>Material Definition Sheet</source>
-      <translation>Tabela koeficijenata neutralne linije</translation>
+      <translation>Табела коефицијената неутралне линије</translation>
     </message>
     <message>
       <location filename="../UnfoldOptions.ui" line="185"/>
       <source>Manual K-Factor</source>
-      <translation>Koeficijent neutralne linije</translation>
+      <translation>Коефицијент неутралне линије</translation>
     </message>
     <message>
       <location filename="../UnfoldOptions.ui" line="236"/>
@@ -750,7 +750,7 @@ If the opposite face also fails then switch Refine to false on feature </transla
     <message>
       <location filename="../UnfoldOptions.ui" line="272"/>
       <source>Unfold object transparency</source>
-      <translation>Providnost razvijene forme</translation>
+      <translation>Провидност развијене форме</translation>
     </message>
     <message>
       <location filename="../UnfoldOptions.ui" line="291"/>
@@ -763,93 +763,93 @@ If the opposite face also fails then switch Refine to false on feature </transla
     <message>
       <location filename="../InitGui.py" line="52"/>
       <source>Sheet Metal</source>
-      <translation>Delovi od lima</translation>
+      <translation>Делови од лима</translation>
     </message>
     <message>
       <location filename="../InitGui.py" line="54"/>
       <source>Sheet Metal workbench allows for designing and unfolding sheet metal parts</source>
-      <translation>Okruženje Delovi od lima omogućava modeliranje i razvijanje delova od lima</translation>
+      <translation>Окружење Делови од лима омогућава моделирање и развијање делова од лима</translation>
     </message>
     <message>
       <location filename="../InitGui.py" line="96"/>
       <source>&amp;Sheet Metal</source>
-      <translation>&amp;Delovi od lima</translation>
+      <translation>&amp;Делови од лима</translation>
     </message>
     <message>
       <location filename="../InitGui.py" line="96"/>
       <source>Sheet Me&amp;tal</source>
-      <translation>Delovi od lima</translation>
+      <translation>Делови од лима</translation>
     </message>
     <message>
       <location filename="../SheetMetalBaseCmd.py" line="312"/>
       <source>Make Base Wall</source>
-      <translation>Početni lim</translation>
+      <translation>Почетни лим</translation>
     </message>
     <message>
       <location filename="../SheetMetalBaseCmd.py" line="314"/>
       <source>Create a sheetmetal wall from a sketch
 1. Select a Skech to create bends with walls.
 2. Use Property editor to modify other parameters</source>
-      <translation>Napravi početni oblik od lima pomoću skice
-1. Izaberi skicu (od zatvorene se dobija ploča, a od otvorene profilno savijanje)
-2. Koristi Urednik svojstava za promenu ostalih parametara</translation>
+      <translation>Направи профилни део од лима помоћу скице
+1. Изабери скицу на основу које се праве зидови и прегиби
+2. Користи Уредник својстава за промену осталих параметара</translation>
     </message>
     <message>
       <location filename="../SheetMetalBaseShapeCmd.py" line="304"/>
       <source>Add base shape</source>
-      <translation>Primitiv od lima</translation>
+      <translation>Примитив од лима</translation>
     </message>
     <message>
       <location filename="../SheetMetalBaseShapeCmd.py" line="306"/>
       <source>Add basic sheet metal object.</source>
-      <translation>Napravi objekat primitiv od lima.</translation>
+      <translation>Направи објекат Примитив од лима.</translation>
     </message>
     <message>
       <location filename="../SheetMetalBend.py" line="372"/>
       <source>Make Bend</source>
-      <translation>Pretvori u savijanje</translation>
+      <translation>Претвори у савијање</translation>
     </message>
     <message>
       <location filename="../SheetMetalBend.py" line="374"/>
       <source>Create Bend where two walls come together on solids
 1. Select edge(s) to create bend on corner edge(s).
 2. Use Property editor to modify parameters</source>
-      <translation>Pretvori oštru ivicu punog tela u savijenu ivicu limenog dela
-1. Izaberi ivice koje treba pretvoriti u savijanje
-2. Koristi Urednik svojstava za promenu ostalih parametara</translation>
+      <translation>Претвори оштру ивицу пуног тела у савијену ивицу лименог дела
+1. Изабери ивице које треба претворити у савијање
+2. Користи Уредник својстава за промену осталих параметара</translation>
     </message>
     <message>
       <location filename="../SheetMetalCmd.py" line="1651"/>
       <source>Make Wall</source>
-      <translation>Savijanje na ivici</translation>
+      <translation>Савијање на ивици</translation>
     </message>
     <message>
       <location filename="../SheetMetalCmd.py" line="1653"/>
       <source>Extends one or more face, connected by a bend on existing sheet metal.
 1. Select edges or thickness side faces to create bends with walls.
 2. Use Property editor to modify other parameters</source>
-      <translation>Napravi porube na stranici dela od lima.
-1. Izaberi ivice (ili stranice koje predstavljaju debljinu lima) na kojima žališ napraviti porube.
-2. Koristi Urednik svojstava za promenu ostalih parametara</translation>
+      <translation>Направи порубе на страници дела од лима.
+1. Изабери ивице (или странице које представљају дебљину лима) на којима жалиш направити порубе.
+2. Користи Уредник својстава за промену осталих параметара</translation>
     </message>
     <message>
       <location filename="../SheetMetalCornerReliefCmd.py" line="570"/>
       <source>Add Corner Relief</source>
-      <translation>Dodaj ugaono olakšanje</translation>
+      <translation>Додај угаоно олакшање</translation>
     </message>
     <message>
       <location filename="../SheetMetalCornerReliefCmd.py" line="572"/>
       <source>Corner Relief to metal sheet corner.
 1. Select 2 Edges (on flat face that shared with bend faces) to create Relief on sheetmetal.
 2. Use Property editor to modify default parameters</source>
-      <translation>Napravi olakšanje na uglu dela od lima.
-1. Izaberi 2 ivice (zajedničke stranici i pregibima) na kojima treba napraviti olakšanje
-2. Koristi Urednik svojstava za promenu ostalih parametara</translation>
+      <translation>Направи олакшање на углу дела од лима.
+1. Изабери 2 ивице (заједничке страници и прегибима) на којима треба направити олакшање
+2. Користи Уредник својстава за промену осталих параметара</translation>
     </message>
     <message>
       <location filename="../SheetMetalExtendCmd.py" line="588"/>
       <source>Extend Face</source>
-      <translation>Proširi stranicu</translation>
+      <translation>Прошири страницу</translation>
     </message>
     <message>
       <location filename="../SheetMetalExtendCmd.py" line="590"/>
@@ -857,15 +857,15 @@ If the opposite face also fails then switch Refine to false on feature </transla
 1. Select edges or thickness side faces to create walls.
 2. Select a sketch in property editor to create tabs. 
 3. Use Property editor to modify other parameters</source>
-      <translation>Proširuje jednu ili više stranica dela od lima.
-1. Izaberi ivice ili stranice koje predstavljaju debljinu lima.
-2. Da bi napravio jezičke u Uredniku svojstava izaberi skicu.
-3. Koristi Urednik svojstava za promenu ostalih parametara</translation>
+      <translation>Проширује једну или више страница дела од лима.
+1. Изабери ивице или странице које представљају дебљину лима.
+2. Да би направио језичке у Уреднику својстава изабери скицу.
+3. Користи Уредник својстава за промену осталих параметара</translation>
     </message>
     <message>
       <location filename="../SheetMetalFoldCmd.py" line="379"/>
       <source>Fold a Wall</source>
-      <translation>Savijanje na stranici</translation>
+      <translation>Савијање на страници</translation>
     </message>
     <message>
       <location filename="../SheetMetalFoldCmd.py" line="381"/>
@@ -873,15 +873,15 @@ If the opposite face also fails then switch Refine to false on feature </transla
 1. Select a flat face on sheet metal and
 2. Select a bend line (sketch) on same face (ends of sketch bend lines must extend beyond edges of face) to create sheetmetal fold.
 3. Use Property editor to modify other parameters</source>
-      <translation>Napravi pregib na stranici dela od lima
-1. Izaberi stranicu limenog dela
-2. Izaberi skicu na kojoj je nacrtana linija savijanja (krajevi moraju izlaziti preko ivica stranice). Skica mora ležati na izabranoj stranici.
-3. Koristi Urednik svojstava za promenu ostalih parametara</translation>
+      <translation>Направи прегиб на страници дела од лима
+1. Изабери страницу дела
+2. Изабери скицу на којој је нацртана линија савијања (крајеви морају излазити преко ивица странице). Скица мора лежати на изабраној страници.
+3. Користи Уредник својстава за промену осталих параметара</translation>
     </message>
     <message>
       <location filename="../SheetMetalFormingCmd.py" line="469"/>
       <source>Make Forming in Wall</source>
-      <translation>Oblikovanje lima</translation>
+      <translation>Обликовање лима</translation>
     </message>
     <message>
       <location filename="../SheetMetalFormingCmd.py" line="471"/>
@@ -890,72 +890,72 @@ If the opposite face also fails then switch Refine to false on feature </transla
 2. Select face(s) on forming tool Shape to create Formed sheetmetal.
 3. Use Suppress in Property editor to disable during unfolding
 4. Use Property editor to modify other parameters</source>
-      <translation>Oblikuj lim pomoću alata
-1. Izaberi stranicu limenog dela koja se oblikuje
-2. Izaberi stranice na alatu za oblikovanje
-3. Koristi opciju Suppress u uredniku svojstava da bi onemogućio ovaj tipski oblik prilikom razvijanja
-4. Koristi urednik svojstava za promenu ostalih parametara oblikovanja</translation>
+      <translation>Обликуј лим помоћу алата
+1. Изабери страницу лименог дела која се обликује
+2. Изабери странице на алату за обликовање
+3. Користи опцију Суппресс у уреднику својстава да би онемогуц́ио овај типски облик приликом развијања
+4. Користи уредник својстава за промену осталих параметара обликовања</translation>
     </message>
     <message>
       <location filename="../SheetMetalJunction.py" line="356"/>
       <source>Make Junction</source>
-      <translation>Napravi procep</translation>
+      <translation>Направи процеп</translation>
     </message>
     <message>
       <location filename="../SheetMetalJunction.py" line="358"/>
       <source>Create a rip where two walls come together on solids.
 1. Select edge(s) to create rip on corner edge(s).
 2. Use Property editor to modify parameters</source>
-      <translation>Napravi procep na pregibu gde se spajaju dva zida.
-1. Izaberi ivice pregiba na kojima hoćeš napraviti procepe 
-2. Koristi uređivač svojstava da bi prilagodio parametre</translation>
+      <translation>Направи процеп на прегибу где се спајају два зида.
+1. Изабери ивице прегиба на којима хоћеш направити процепе 
+2. Користи уређивач својстава да би прилагодио параметре</translation>
     </message>
     <message>
       <location filename="../SheetMetalRelief.py" line="404"/>
       <source>Make Relief</source>
-      <translation>Napravi olakšanje</translation>
+      <translation>Направи олакшање</translation>
     </message>
     <message>
       <location filename="../SheetMetalRelief.py" line="406"/>
       <source>Modify an Individual solid corner to create Relief.
 1. Select Vertex(es) to create Relief on Solid corner Vertex(es).
 2. Use Property editor to modify default parameters</source>
-      <translation>Napravi olakšanje na uglu punog tela.
-1. Izaberi teme ili temena na kojima treba napraviti olakšanje
-2. Koristi Urednik svojstava za promenu ostalih parametara</translation>
+      <translation>Направи олакшање на углу пуног тела.
+1. Изабери теме или темена на којима треба направити олакшање
+2. Користи Уредник својстава за промену осталих параметара</translation>
     </message>
     <message>
       <location filename="../SheetMetalUnfoldCmd.py" line="51"/>
       <source>Unattended Unfold</source>
-      <translation>Automatsko razvijanje</translation>
+      <translation>Аутоматско развијање</translation>
     </message>
     <message>
       <location filename="../SheetMetalUnfoldCmd.py" line="53"/>
       <source>Flatten folded sheet metal object with default options
 1. Select flat face on sheetmetal shape.
 2. Change parameters from task Panel to create unfold Shape &amp; Flatten drawing.</source>
-      <translation>Razvij deo od lima sa podrazumevanim opcijama.
-1. Izaberi ravnu stranicu limenog dela
-2. U panelu zadataka podesi parametre razvijanja.</translation>
+      <translation>Развиј део од лима са подразумеваним опцијама.
+1. Изабери равну страницу на лименом делу
+2. У панелу задатака подеси параметре развијања.</translation>
     </message>
     <message>
       <location filename="../SheetMetalUnfoldCmd.py" line="113"/>
       <source>Unfold</source>
-      <translation>Razvijanje</translation>
+      <translation>Развијање</translation>
     </message>
     <message>
       <location filename="../SheetMetalUnfoldCmd.py" line="115"/>
       <source>Flatten folded sheet metal object.
 1. Select flat face on sheetmetal shape.
 2. Change parameters from task Panel to create unfold Shape &amp; Flatten drawing.</source>
-      <translation>Razvij u ravan deo od lima.
-1. Izaberi ravnu stranicu limenog dela
-2. U panelu zadataka podesi parametre razvijanja.</translation>
+      <translation>Развиј у раван део од лима.
+1. Изабери равну страницу на лименом делу
+2. У панелу задатака подеси параметре развијања.</translation>
     </message>
     <message>
       <location filename="../SketchOnSheetMetalCmd.py" line="408"/>
       <source>Sketch On Sheet metal</source>
-      <translation>Isecanje kroz pregib</translation>
+      <translation>Исецање кроз прегиб</translation>
     </message>
     <message>
       <location filename="../SketchOnSheetMetalCmd.py" line="410"/>
@@ -963,10 +963,10 @@ If the opposite face also fails then switch Refine to false on feature </transla
 1. Select a flat face on sheet metal and
 2. Select a sketch on same face to create sheetmetal extruded cut.
 3. Use Property editor to modify other parameters</source>
-      <translation>Napravi isecanje kroz pregib pomoću skice
-1. Izaberi stranicu limenog dela
-2. Izaberi skicu koja leži na izabranoj stranici
-3. Koristi Urednik svojstava za promenu ostalih parametara</translation>
+      <translation>Направи исецање кроз прегиб помоћу скице
+1. Изабери страницу лименог дела
+2. Изабери скицу која лежи на изабраној страници
+3. Користи Уредник својстава за промену осталих параметара</translation>
     </message>
     <message>
       <location filename="../SketchOnSheetMetalCmd.py" line="410"/>
@@ -974,10 +974,10 @@ If the opposite face also fails then switch Refine to false on feature </transla
 1. Select a flat face on sheet metal and
 2. Select a sketch on same face to create sheetmetal extruded cut.
 3. Use Property editor to modify other parameters</source>
-      <translation> Napravi isecanje kroz pregib pomoću skice
-1. Izaberi stranicu limenog dela
-2. Izaberi skicu koja leži na izabranoj stranici
-3. Koristi Urednik svojstava za promenu ostalih parametara</translation>
+      <translation> Направи исецање кроз прегиб помоћу скице
+1. Изабери страницу лименог дела
+2. Изабери скицу која лежи на изабраној страници
+3. Користи Уредник својстава за промену осталих параметара</translation>
     </message>
   </context>
   <context>
@@ -985,7 +985,7 @@ If the opposite face also fails then switch Refine to false on feature </transla
     <message>
       <location filename="../SheetMetalRelief.py" line="396"/>
       <source>Update</source>
-      <translation>Ažuriranje</translation>
+      <translation>Ажурирање</translation>
     </message>
   </context>
   <context>
@@ -993,7 +993,7 @@ If the opposite face also fails then switch Refine to false on feature </transla
     <message>
       <location filename="../InitGui.py" line="96"/>
       <source>Sheet Metal</source>
-      <translation>Delovi od lima</translation>
+      <translation>Делови од лима</translation>
     </message>
   </context>
 </TS>

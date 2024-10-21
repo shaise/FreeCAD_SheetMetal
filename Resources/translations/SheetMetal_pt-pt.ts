@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
-<TS version="2.1" language="pt_BR" sourcelanguage="en_US">
+<TS version="2.1" language="pt_PT" sourcelanguage="en_US">
 <context>
-    <name>Gui::Dialog::DlgSettingsDraft</name>
+    <name>Gui::Dialog::DlgSettingsSheetMetal</name>
     <message>
         <location filename="../SMprefs.ui" line="14"/>
         <source>General settings</source>
