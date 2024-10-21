@@ -99,6 +99,7 @@ Starting from FreeCAD 0.17 it can be installed via the [Addon Manager](https://g
 * FreeCAD Forum announcement/discussion [thread](https://forum.freecadweb.org/viewtopic.php?f=3&t=60818) 
 
 #### Release notes:
+* V0.5.02 21 Oct 2024:  Fix many small bugs after Ondsel merge.  
 * V0.5.01 20 Oct 2024:  Fix bug in base shape creating double model.  
                       - Fix typos by [@luzpaz][luzpaz].  
 * V0.5.00 19 Oct 2024:  Merge Ondsel changes made by [@adrianinsaval][adrianinsaval].  

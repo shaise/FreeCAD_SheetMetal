@@ -243,8 +243,7 @@ def smFold(
     else:
         if bendlinesketch and bendA > 0.0:
             resultsolid = FoldShape
-    Gui.ActiveDocument.getObject(MainObject.Name).Visibility = False
-    Gui.ActiveDocument.getObject(bendlinesketch.Name).Visibility = False
+    SheetMetalTools.HideObjects(MainObject, bendlinesketch)
     return resultsolid
 
 

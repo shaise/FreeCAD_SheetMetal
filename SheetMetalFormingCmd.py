@@ -157,11 +157,7 @@ class SMBendWall:
     else :
       a = base
     fp.Shape = a
-    Gui.ActiveDocument.getObject(fp.baseObject[0].Name).Visibility = False
-    Gui.ActiveDocument.getObject(fp.toolObject[0].Name).Visibility = False
-    if fp.Sketch:
-     Gui.ActiveDocument.getObject(fp.Sketch.Name).Visibility = False
-
+    SheetMetalTools.HideObjects(fp.baseObject[0], fp.toolObject[0].Name, fp.Sketch)
 
 ##########################################################################################################
 # Gui code

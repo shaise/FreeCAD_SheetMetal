@@ -62,13 +62,14 @@ def smJunction(gap = 2.0, selEdgeNames = '', MainObject = None):
   return resultSolid
 
 class SMJunction:
-  def __init__(self, obj):
+  def __init__(self, obj, selobj, sel_items):
     '''"Add Gap to Solid" '''
 
     _tip_ = FreeCAD.Qt.translate("App::Property","Junction Gap")
     obj.addProperty("App::PropertyLength","gap","Parameters",_tip_).gap = 2.0
     _tip_ = FreeCAD.Qt.translate("App::Property","Base Object")
-    obj.addProperty("App::PropertyLinkSub", "baseObject", "Parameters",_tip_)
+    obj.addProperty("App::PropertyLinkSub", "baseObject", "Parameters",
+                    _tip_).baseObject = (selobj, sel_items)
     obj.Proxy = self
 
   def getElementMapVersion(self, _fp, ver, _prop, restored):
@@ -81,6 +82,7 @@ class SMJunction:
     Main_Object = fp.baseObject[0].Shape.copy()
     s = smJunction(gap = fp.gap.Value, selEdgeNames = fp.baseObject[1], MainObject = Main_Object)
     fp.Shape = s
+    SheetMetalTools.HideObjects(fp.baseObject[0])
 
 
 ##########################################################################################################
@@ -351,14 +353,12 @@ if SheetMetalTools.isGuiLoaded():
         doc.openTransaction("Add Junction")
         if activeBody is None or not SheetMetalTools.smIsPartDesign(selobj):
           a = doc.addObject("Part::FeaturePython","Junction")
-          SMJunction(a)
-          a.baseObject = (selobj, sel.SubElementNames)
+          SMJunction(a, selobj, sel.SubElementNames)
           SMJViewProviderTree(a.ViewObject)
         else:
           #FreeCAD.Console.PrintLog("found active body: " + activeBody.Name)
           a = doc.addObject("PartDesign::FeaturePython","Junction")
-          SMJunction(a)
-          a.baseObject = (selobj, sel.SubElementNames)
+          SMJunction(a, selobj, sel.SubElementNames)
           SMJViewProviderFlat(a.ViewObject)
           activeBody.addObject(a)
         SheetMetalTools.SetViewConfig(a, viewConf)

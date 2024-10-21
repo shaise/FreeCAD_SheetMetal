@@ -162,6 +162,7 @@ class SMBaseBend:
         )
 
         fp.Shape = s
+        SheetMetalTools.HideObjects(fp.BendSketch)
 
 
 ##########################################################################################################

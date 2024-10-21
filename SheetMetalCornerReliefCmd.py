@@ -486,10 +486,7 @@ class SMCornerRelief:
             MainObject=fp.baseObject[0],
         )
         fp.Shape = s
-
-        Gui.ActiveDocument.getObject(fp.baseObject[0].Name).Visibility = False
-        if fp.Sketch:
-            Gui.ActiveDocument.getObject(fp.Sketch.Name).Visibility = False
+        SheetMetalTools.HideObjects(fp.baseObject[0], fp.Sketch)
 
 ##########################################################################################################
 # Gui code
