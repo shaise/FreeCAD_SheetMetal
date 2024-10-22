@@ -96,7 +96,7 @@ def smCreateBaseShape(type, thickness, radius, width, length, height, flangeWidt
             faces.append("Face" + str(i+1))
 
     shape, f = smBend(thickness, selFaceNames = faces, extLen = height, bendR = radius,
-                      MainObject = box, automiter = fillGaps)
+                      MainObject = box, automiter = fillGaps, maxExtendGap = 999999)
     if type in ["Hat", "Box"]:
         faces = []
         invertBend = False
