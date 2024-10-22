@@ -86,21 +86,37 @@ def transform_tool(tool, base_face, tool_face, point = FreeCAD.Vector(0, 0, 0), 
   #Part.show(tool,"tool")
   return tool
 
+def combine_solids(base, cut_tool, form_tool):
+  form_tool = form_tool.cut(base)
+  base = base.cut(cut_tool)
+  return base.fuse(form_tool)
+
+
 def makeforming(tool, base, base_face, thk, tool_faces = None, point = FreeCAD.Vector(0, 0, 0), angle = 0.0) :
-##  faces = [ face for face in tool.Shape.Faces for tool_face in tool_faces if not(face.isSame(tool_face)) ]
-#  faces = [ face for face in tool.Shape.Faces if not face in tool_faces ]
-#  tool_shell = Part.makeShell(faces)
-#  offsetshell = tool_shell.makeOffsetShape(thk, 0.0, inter = False, self_inter = False, offsetMode = 0, join = 2, fill = True)
-  offsetshell = tool.makeThickness(tool_faces, thk, 0.0001, False, False, 0, 0)
-  #Part.show(offsetshell, "offsetshell")
-  cutSolid = tool.fuse(offsetshell)
-  #Part.show(cutSolid, "cutSolid")
-  offsetshell_tran = transform_tool(offsetshell, base_face, tool_faces[0], point, angle)
-  #Part.show(offsetshell_tran, "offsetshell_tran")
-  cutSolid_trans = transform_tool(cutSolid, base_face, tool_faces[0], point, angle)
-  base = base.cut(cutSolid_trans)
-  base = base.fuse(offsetshell_tran)
-  #base.removeSplitter()
+  # create a shell from all faces but the selected ones
+  cutSolid = tool.copy()
+  cutSolid_tran = transform_tool(cutSolid, base_face, tool_faces[0], point, angle)
+  try:
+    faces = []
+    for face in tool.Faces:
+      use_tool = True
+      for selface in tool_faces:
+        if face.isSame(selface):
+          use_tool = False
+          break
+      if use_tool:
+        faces.append(face)
+    tool_shell = Part.makeShell(faces)
+
+    offsetshell = tool_shell.makeOffsetShape(thk, 0.0, inter = False, self_inter = False, offsetMode = 0, join = 2, fill = True)
+    offsetshell_tran = transform_tool(offsetshell, base_face, tool_faces[0], point, angle)
+    base = combine_solids(base, cutSolid_tran, offsetshell_tran)
+  except:
+    FreeCAD.Console.PrintWarning("Forming faild. Trying alternate way.")
+    offsetshell = tool.makeThickness(tool_faces, thk, 0.0001, False, False, 0, 0)
+    offsetshell_tran = transform_tool(offsetshell, base_face, tool_faces[0], point, angle)
+    base = combine_solids(base, cutSolid_tran, offsetshell_tran)
+
   #Part.show(base, "base")
   return base
 
@@ -153,11 +169,12 @@ class SMBendWall:
     if not(fp.SuppressFeature) :
       for i in range(len(offsetlist)):
         a = makeforming(tool, base, base_face, thk, tool_faces, offsetlist[i], fp.angle.Value)
+        #Part.show(a)
         base = a
     else :
       a = base
     fp.Shape = a
-    SheetMetalTools.HideObjects(fp.baseObject[0], fp.toolObject[0].Name, fp.Sketch)
+    SheetMetalTools.HideObjects(fp.baseObject[0], fp.toolObject[0], fp.Sketch)
 
 ##########################################################################################################
 # Gui code
