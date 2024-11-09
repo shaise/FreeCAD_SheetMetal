@@ -6,11 +6,10 @@ import os  # Make sure 'os' is imported for the icon path
 import SheetMetalTools
 
 class ExtrudedCutout:
-    def __init__(self, obj, sketch, selected_object, selected_face):
+    def __init__(self, obj, sketch, selected_face):
         '''Initialize the parametric Sheet Metal Cut object and add properties'''
         obj.addProperty("App::PropertyLink", "Sketch", "ExtrudedCutout", "The sketch for the cut").Sketch = sketch
-        obj.addProperty("App::PropertyLink", "SelectedObject", "ExtrudedCutout", "The object to cut").SelectedObject = selected_object
-        obj.addProperty("App::PropertyLinkSub", "SelectedFace", "ExtrudedCutout", "The selected face").SelectedFace = selected_face
+        obj.addProperty("App::PropertyLinkSub", "SelectedFace", "ExtrudedCutout", "The selecteds object and face").SelectedFace = selected_face
         obj.addProperty("App::PropertyLength", "ExtrusionLength1", "ExtrudedCutout", "Length of the extrusion direction 1").ExtrusionLength1 = 500.0
         obj.setEditorMode("ExtrusionLength1",2) # Hide by default
         obj.addProperty("App::PropertyLength", "ExtrusionLength2", "ExtrudedCutout", "Length of the extrusion direction 2").ExtrusionLength2 = 500.0
@@ -28,7 +27,7 @@ class ExtrudedCutout:
 
     def onChanged(self, fp, prop):
         '''Respond to property changes'''
-        if prop in ["Sketch", "SelectedObject", "ExtrusionLength1", "ExtrusionLength2", "CutSide", "CutType"]:
+        if prop in ["Sketch", "SelectedFace", "ExtrusionLength1", "ExtrusionLength2", "CutSide", "CutType"]:
             App.ActiveDocument.recompute()  # Trigger a recompute when these properties change
         
         # Show or hide length properties based in the CutType property:
@@ -52,18 +51,26 @@ class ExtrudedCutout:
     def execute(self, fp):
         '''Perform the cut when the object is recomputed'''
         try:
-            # Debug: Print the values of Sketch, SelectedObject, and CutSide
+            # Debug: Print the values of Sketch, SelectedFace, and CutSide
             App.Console.PrintMessage(f"Sketch: {fp.Sketch}\n")
-            App.Console.PrintMessage(f"SelectedObject: {fp.SelectedObject}\n")
+            App.Console.PrintMessage(f"SelectedFace: {fp.SelectedFace}\n")
             App.Console.PrintMessage(f"CutSide: {fp.CutSide}\n")
 
-            # Ensure the Sketch and SelectedObject properties are valid
-            if fp.Sketch is None or fp.SelectedObject is None:
-                raise Exception("Both the Sketch and SelectedObject properties must be set.")
+            # Ensure the Sketch and SelectedFace properties are valid
+            if fp.Sketch is None or fp.SelectedFace is None:
+                raise Exception("Both the Sketch and SelectedFace properties must be set.")
             
+            # Get the sketch from the properties
             cutSketch = fp.Sketch
-            selected_object = fp.SelectedObject
+            
+            # Get selected object and selected face from the properties
+            selected_object, face_name = fp.SelectedFace
+            face_name = face_name[0]
+            selected_face = selected_object.Shape.getElement(face_name)
 
+            normal_vector = selected_face.normalAt(0, 0)
+
+            # Lengths
             if fp.CutType == "Two dimensions":
                 ExtLength1 = fp.ExtrusionLength1.Value
                 ExtLength2 = fp.ExtrusionLength2.Value
@@ -73,36 +80,27 @@ class ExtrudedCutout:
                 ExtLength2 = fp.ExtrusionLength1.Value/2
 
             if fp.CutType == "Through everything both sides":
-                TotalLength = fp.SelectedObject.Shape.BoundBox.DiagonalLength
+                TotalLength = selected_object.Shape.BoundBox.DiagonalLength
 
                 ExtLength1 = TotalLength
                 ExtLength2 = TotalLength
 
             if fp.CutType == "Through everything side 1":
-                TotalLength = fp.SelectedObject.Shape.BoundBox.DiagonalLength
+                TotalLength = selected_object.Shape.BoundBox.DiagonalLength
 
                 ExtLength1 = TotalLength
                 ExtLength2 = -TotalLength
 
             if fp.CutType == "Through everything side 2":
-                TotalLength = fp.SelectedObject.Shape.BoundBox.DiagonalLength
+                TotalLength = selected_object.Shape.BoundBox.DiagonalLength
 
                 ExtLength2 = TotalLength
                 ExtLength1 = -TotalLength
 
-            # Get the selected face and its normal from the SelectedObject
-            faces = fp.SelectedObject.Shape.Faces
-            
-            # Retrieve the linked object and sub-element from the property
-            linked_obj, face_name = fp.SelectedFace
-            face_name = face_name[0]
-            selected_face = linked_obj.Shape.getElement(face_name)
-
-            normal_vector = selected_face.normalAt(0, 0)
-
             # Step 1: Determine the sheet metal thickness
             min_distance = float('inf')
             
+            faces = selected_object.Shape.Faces
             for face in faces:
                 if face is not selected_face:
                     if normal_vector.isEqual(face.normalAt(0, 0).multiply(-1), 1e-6):
@@ -238,21 +236,15 @@ if SheetMetalTools.isGuiLoaded():
             return
 
         def getDisplayModes(self, obj):
-            '''Define display modes for the object'''
-            return ["Flat", "Shaded"]
+            modes = []
+            return modes
 
         def setDisplayMode(self, mode):
-            '''Set a specific display mode'''
-            if mode == "Flat":
-                return "Flat"
-            elif mode == "Shaded":
-                return "Shaded"
-            return "Flat"
+            return mode
 
         def onChanged(self, vp, prop):
             '''Triggered when the object or its properties change'''
-            if prop == "Shape":
-                vp.ViewObject.Document.recompute()
+            return
 
         def __getstate__(self):
             '''Return the state of the object for serialization'''
@@ -265,9 +257,9 @@ if SheetMetalTools.isGuiLoaded():
         def claimChildren(self):
             '''Define the children of the object'''
             objs = []
-            if hasattr(self.Object, "SelectedObject") and self.Object.SelectedObject is not None:
-                # If SelectedObject is a PropertyLink, you need to access it correctly
-                selected_object = self.Object.SelectedObject
+            if hasattr(self.Object, "SelectedFace") and self.Object.SelectedFace is not None:
+                # If SelectedFace is a PropertyLink, you need to access it correctly
+                selected_object = self.Object.SelectedFace[0]
                 if hasattr(selected_object, "Shape"):
                     objs.append(selected_object)
             if hasattr(self.Object, "Sketch") and self.Object.Sketch is not None:
@@ -296,16 +288,11 @@ if SheetMetalTools.isGuiLoaded():
             return
 
         def getDisplayModes(self, obj):
-            '''Define display modes for the object'''
-            return ["Flat", "Shaded"]
+            modes = []
+            return modes
 
         def setDisplayMode(self, mode):
-            '''Set a specific display mode'''
-            if mode == "Flat":
-                return "Flat"
-            elif mode == "Shaded":
-                return "Shaded"
-            return "Flat"
+            return mode
 
         def onChanged(self, vp, prop):
             '''Triggered when the object or its properties change'''
@@ -342,7 +329,10 @@ if SheetMetalTools.isGuiLoaded():
                 ),  # the name of a svg file available in the resources
                 "MenuText": "Extruded Cutout",
                 "Accel": "E, C",
-                "ToolTip": "SheetMetal Extruded Cutout"
+                "ToolTip": "Extruded cutout from sketch extrusion\n"
+                    "1. Select a face of the sheet metal part (must not be the thickness face) and\n"
+                    "2. Select a sketch for the extruded cut (the sketch must be closed).\n"
+                    "3. Use Property editor to modify other parameters"
             }
 
         def Activated(self):
@@ -350,24 +340,39 @@ if SheetMetalTools.isGuiLoaded():
 
             doc = App.ActiveDocument
 
-            # Get the selected face
+            # Get the selecteds object and face
             selection = Gui.Selection.getSelectionEx()[0]
-            obj = selection.Object
+            if selection.Object.isDerivedFrom("Sketcher::SketchObject"): # When user select first the sketch
+                # Get selected sketch
+                cutSketch = Gui.Selection.Filter("SELECT Sketcher::SketchObject")
+                cutSketch.match()
+                cutSketch = cutSketch.result()[0][0].Object if cutSketch.result() else None
 
-            # Check if we have any sub-objects (faces) selected
-            if len(selection.SubObjects) == 0:
-                raise Exception("No face selected. Please select a face.")
+                # Check if we have any sub-objects (faces) selected
+                selection = Gui.Selection.getSelectionEx()[1]
+                if len(selection.SubObjects) == 0:
+                    raise Exception("No face selected. Please select a face.")
 
-            # Get the selected face directly from SubObjects
-            selected_face = [obj, selection.SubElementNames[0]]
+                #Get selected object
+                selected_object = selection.Object
 
-            # Identify selected sketch and object
-            cutSketch = Gui.Selection.Filter("SELECT Sketcher::SketchObject")
-            cutSketch.match()
-            cutSketch = cutSketch.result()[0][0].Object if cutSketch.result() else None
+                # Get the selected face
+                selected_face = [selected_object, selection.SubElementNames[0]]
+            else:  # When user select first the object face
+                if len(selection.SubObjects) == 0: # Check if we have any sub-objects (faces) selected
+                    raise Exception("No face selected. Please select a face.")
+                
+                # Get selected object
+                selected_object = selection.Object
 
-            selection = Gui.Selection.getSelection()
-            selected_object = selection[0]
+                # Get the selected face
+                selected_face = [selected_object, selection.SubElementNames[0]]
+
+                # Get selected sketch
+                cutSketch = Gui.Selection.Filter("SELECT Sketcher::SketchObject")
+                cutSketch.match()
+                cutSketch = cutSketch.result()[0][0].Object if cutSketch.result() else None
+
             if cutSketch is None or not selected_object.Shape:
                 raise Exception("Both a valid sketch and an object with a shape must be selected.")
             
@@ -377,14 +382,14 @@ if SheetMetalTools.isGuiLoaded():
                 SMBody = selected_object.getParent()
 
                 obj = App.ActiveDocument.addObject("PartDesign::FeaturePython", "ExtrudedCutout")
-                ExtrudedCutout(obj, cutSketch, selected_object, selected_face)
+                ExtrudedCutout(obj, cutSketch, selected_face)
 
                 SMExtrudedCutoutPDVP(obj.ViewObject)
 
                 SMBody.addObject(obj)
             else:
                 obj = App.ActiveDocument.addObject("Part::FeaturePython", "ExtrudedCutout")
-                ExtrudedCutout(obj, cutSketch, selected_object, selected_face)
+                ExtrudedCutout(obj, cutSketch, selected_face)
                 
                 SMExtrudedCutoutVP(obj.ViewObject)
             cutSketch.ViewObject.hide()
@@ -392,9 +397,10 @@ if SheetMetalTools.isGuiLoaded():
             App.ActiveDocument.recompute()
             doc.commitTransaction() # Feature that makes undoing and redoing easier - END
  
-
         def IsActive(self):
             if len(Gui.Selection.getSelection()) < 2:
+                return False
+            if len(Gui.Selection.getSelection()) > 2:
                 return False
             return True
          
