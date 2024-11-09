@@ -68,6 +68,7 @@ class SMWorkbench(Workbench):
         import SheetMetalJunction
         import SheetMetalBend
         import SketchOnSheetMetalCmd
+        import ExtrudedCutout
         import SheetMetalCornerReliefCmd
         import SheetMetalFormingCmd
         import SheetMetalUnfoldCmd
@@ -85,6 +86,7 @@ class SMWorkbench(Workbench):
             "SheetMetal_AddJunction",
             "SheetMetal_AddBend",
             "SheetMetal_SketchOnSheet",
+            "SheetMetal_AddCutout",
             "SheetMetal_Forming",
             "SheetMetal_BaseShape",
         ]  # A list of command names created in the line above
