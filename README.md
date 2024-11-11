@@ -149,7 +149,7 @@ Starting from FreeCAD 0.17 it can be installed via the [Addon Manager](https://g
 * V0.3.15 10 Jan 2024:  Unfold compatibility with old freecad versions by [@ksigurdur][ksigurdur].  
 * V0.3.14 04 Jan 2024:  Fix export of dxf.  
 * V0.3.13 10 Dec 2023:  update polish translations by [@kaktusus][kaktusus].  
-* V0.3.12 11 Nov 2023:  Fix duplicate lines in unfold sketches issue #284.  
+* V0.3.12 11 Nov 2023:  Fix duplicate lines in unfold sketches issue [#284][284].  
 * V0.3.11 11 Nov 2023:  Fix broken engineering mode. Some unfold gui cleanup.  
 * V0.3.10 09 Nov 2023:  Add base Sheetmetal shape tool, proposed by [@blindmessenger][opic82482].  
 * V0.3.02 10 Oct 2023:  Add Polish translation by [@kaktusus][kaktusus].  
@@ -162,13 +162,13 @@ Starting from FreeCAD 0.17 it can be installed via the [Addon Manager](https://g
 * V0.2.60 24 Dec 2022:  Improved unfolding script to better handle chamfers by [@chappatted][chappatted].   
 * V0.2.59 11 Nov 2022:  Make unfolder sketch work with linkstage version by [@Syres916][Syres916].  
                       - Fix refine function when multiple edges selected  
-                      - Make unfolder work with counter bore holes by [@chappatted][chappatted]. 
+                      - Make unfolder work with counter bore holes by [@chappatted][chappatted].  
                       - Fix typos by [@luzpaz][luzpaz].  
 * V0.2.58 06 Oct 2022:  respect 'midplane' and 'reverse' options by [@alexneufeld][alexneufeld]. 
 * V0.2.57 07 Sep 2022:  Fix unfold issue with compound holes by [@chappatted][chappatted]. 
 * V0.2.56 04 Aug 2022:  Fix issue #206 (object color changes by every sheetmetal command) by [@Syres916][Syres916]. 
-* V0.2.55 03 Aug 2022:  Add more backward compatibility to pr #242 by [@Syres916][Syres916]. 
-* V0.2.54 30 Jul 2022:  Fix version 20 compatibility with pr #242 by [@Roy-043][Roy-043].
+* V0.2.55 03 Aug 2022:  Add more backward compatibility to pr [#242][242] by [@Syres916][Syres916]. 
+* V0.2.54 30 Jul 2022:  Fix version 20 compatibility with pr [#242][242] by [@Roy-043][Roy-043].
 * V0.2.53 28 Jul 2022:  Fix getBendetail and smExtrude for non-planar connecting faces by [@Roy-043][Roy-043].
 * V0.2.52 25 Jul 2022:  Better fix for the UseSubtraction issue. Thank you [@akshimassar][akshimassar]
 * V0.2.51 23 Jul 2022:  Several fixes and new features: Thank you all!
@@ -185,7 +185,7 @@ Starting from FreeCAD 0.17 it can be installed via the [Addon Manager](https://g
 * V0.2.43 01 Dec 2020:  Added corner feature and map sketch to cut openings by [@jaisejames][jaisejames]. Thank you!
 * V0.2.42 09 Jun 2020:  Added Engineering UX Mode by [@ceremcem][ceremcem]. Thank you!
 * V0.2.41 01 Jun 2020:  Added Drop down Menu
-* V0.2.40 24 May 2020:  Added added tools for conversion of solid corners to sheetmetal by [@jaisejames][jaisejames]. Thank you!
+* V0.2.40 24 May 2020:  Added tools for conversion of solid corners to sheetmetal by [@jaisejames][jaisejames]. Thank you!
 * V0.2.34 09 Mar 2020:  Rename "my commands" context menu to sheet metal
 * V0.2.33 09 Mar 2020:  Fix bend radius bug on sketch bends. Thank you Léo Flaventin!
 * V0.2.32 02 Jan 2020:  Python 3.8 update by [@looooo][lorenz]. Thank you!
@@ -270,6 +270,8 @@ Starting from FreeCAD 0.17 it can be installed via the [Addon Manager](https://g
 [46]: https://github.com/shaise/FreeCAD_SheetMetal/issues/46
 [52]: https://github.com/shaise/FreeCAD_SheetMetal/issues/52
 [54]: https://github.com/shaise/FreeCAD_SheetMetal/issues/54
+[242]: https://github.com/shaise/FreeCAD_SheetMetal/issues/242
+[284]: https://github.com/shaise/FreeCAD_SheetMetal/issues/284
 
 ## License
 GPLv3 (see [LICENSE](LICENSE))
