@@ -99,6 +99,7 @@ Starting from FreeCAD 0.17 it can be installed via the [Addon Manager](https://g
 * FreeCAD Forum announcement/discussion [thread](https://forum.freecadweb.org/viewtopic.php?f=3&t=60818) 
 
 #### Release notes:
+* V0.5.05 13 Nov 2024:  Extruded Cutout compatibility with FC Link.
 * V0.5.04 11 Nov 2024:  Add new feature - Extruded Cutout by [@sheetmetalman][sheetmetalman].
 * V0.5.03 22 Oct 2024:  Fix fill gap issue in base shape feature.
                       - Partially Fix forming issue not working in latest freecad  

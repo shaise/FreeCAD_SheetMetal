@@ -379,7 +379,7 @@ if SheetMetalTools.isGuiLoaded():
             # Create and assign the ExtrudedCutout object
             doc.openTransaction("ExtrudedCutout") # Feature that makes undoing and redoing easier - START
             if selected_object.isDerivedFrom("PartDesign::Feature"):
-                SMBody = selected_object.getParent()
+                SMBody = SheetMetalTools.smGetBodyOfItem(selected_object)
 
                 obj = App.ActiveDocument.addObject("PartDesign::FeaturePython", "ExtrudedCutout")
                 ExtrudedCutout(obj, cutSketch, selected_face)
