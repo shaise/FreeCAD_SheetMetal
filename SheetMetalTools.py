@@ -158,3 +158,11 @@ def smAddEnumProperty(
         setattr(obj, name, enumlist)
         if defval is not None:
             setattr(obj, name, defval)
+
+def smGetBodyOfItem(obj):
+    if hasattr(obj, "getParent"):
+        return obj.getParent()
+    elif hasattr(obj, "getParents"): # probably FreeCadLink version
+        parent, _ = obj.getParents()[0]
+        return parent
+    return None
