@@ -81,18 +81,30 @@ class ExtrudedCutout:
 
             if fp.CutType == "Through everything both sides":
                 TotalLength = selected_object.Shape.BoundBox.DiagonalLength
+                skCenter = cutSketch.Shape.BoundBox.Center
+                objCenter = selected_object.Shape.BoundBox.Center
+                distance = skCenter - objCenter
+                TotalLength = TotalLength + distance.Length
 
                 ExtLength1 = TotalLength
                 ExtLength2 = TotalLength
 
             if fp.CutType == "Through everything side 1":
                 TotalLength = selected_object.Shape.BoundBox.DiagonalLength
+                skCenter = cutSketch.Shape.BoundBox.Center
+                objCenter = selected_object.Shape.BoundBox.Center
+                distance = skCenter - objCenter
+                TotalLength = TotalLength + distance.Length
 
                 ExtLength1 = TotalLength
                 ExtLength2 = -TotalLength
 
             if fp.CutType == "Through everything side 2":
                 TotalLength = selected_object.Shape.BoundBox.DiagonalLength
+                skCenter = cutSketch.Shape.BoundBox.Center
+                objCenter = selected_object.Shape.BoundBox.Center
+                distance = skCenter - objCenter
+                TotalLength = TotalLength + distance.Length
 
                 ExtLength2 = TotalLength
                 ExtLength1 = -TotalLength
@@ -344,9 +356,7 @@ if SheetMetalTools.isGuiLoaded():
             selection = Gui.Selection.getSelectionEx()[0]
             if selection.Object.isDerivedFrom("Sketcher::SketchObject"): # When user select first the sketch
                 # Get selected sketch
-                cutSketch = Gui.Selection.Filter("SELECT Sketcher::SketchObject")
-                cutSketch.match()
-                cutSketch = cutSketch.result()[0][0].Object if cutSketch.result() else None
+                cutSketch = selection.Object
 
                 # Check if we have any sub-objects (faces) selected
                 selection = Gui.Selection.getSelectionEx()[1]
@@ -369,9 +379,8 @@ if SheetMetalTools.isGuiLoaded():
                 selected_face = [selected_object, selection.SubElementNames[0]]
 
                 # Get selected sketch
-                cutSketch = Gui.Selection.Filter("SELECT Sketcher::SketchObject")
-                cutSketch.match()
-                cutSketch = cutSketch.result()[0][0].Object if cutSketch.result() else None
+                selection = Gui.Selection.getSelectionEx()[1]
+                cutSketch = selection.Object
 
             if cutSketch is None or not selected_object.Shape:
                 raise Exception("Both a valid sketch and an object with a shape must be selected.")
