@@ -144,7 +144,14 @@ class ExtrudedCutout:
                 raise Exception("No pairs of parallel faces with the specified thickness distance were found.")
 
             # Step 3: Extrude the cut sketch
-            myFace = Part.Face(cutSketch.Shape)
+            # Get all faces in sketch
+            skWiresList = cutSketch.Shape.Wires
+            myFacesList = []
+            for wire in skWiresList:
+                myFace = Part.Face(wire)
+                myFacesList.append(myFace)
+
+            compFaces = Part.Compound(myFacesList)
 
             if ExtLength1 == 0 and ExtLength2 == 0:
                 raise Exception("Cut length cannot be zero for both sides.")
@@ -154,12 +161,13 @@ class ExtrudedCutout:
                 if ExtLength2 == 0:
                     ExtLength2 = (-ExtLength1)
 
-                ExtLength1 = myFace.Faces[0].normalAt(0, 0) * (-ExtLength1)
-                ExtLength2 = myFace.Faces[0].normalAt(0, 0) * ExtLength2
+                ExtLength1 = compFaces.Faces[0].normalAt(0, 0) * (-ExtLength1)
+                ExtLength2 = compFaces.Faces[0].normalAt(0, 0) * ExtLength2
 
-                myExtrusion1 = myFace.extrude(ExtLength1)
-                myExtrusion2 = myFace.extrude(ExtLength2)
+                myExtrusion1 = compFaces.extrude(ExtLength1)
+                myExtrusion2 = compFaces.extrude(ExtLength2)
                 myUnion = Part.Solid.fuse(myExtrusion1, myExtrusion2).removeSplitter()
+
                 myCommon = myUnion.common(shell)
 
             # Step 4: Find connected components and offset shapes
