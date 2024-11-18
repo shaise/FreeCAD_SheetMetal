@@ -451,11 +451,7 @@ if SheetMetalTools.isGuiLoaded():
       return os.path.join( icons_path , 'SheetMetal_Extrude.svg')
 
     def setEdit(self,vobj,mode):
-      taskd = SMExtendWallTaskPanel()
-      taskd.obj = vobj.Object
-      taskd.update()
-      self.Object.ViewObject.Visibility=False
-      self.Object.baseObject[0].ViewObject.Visibility=True
+      taskd = SMExtendWallTaskPanel(vobj.Object)
       Gui.Control.showDialog(taskd)
       return True
 
@@ -467,32 +463,16 @@ if SheetMetalTools.isGuiLoaded():
 
   class SMExtendWallTaskPanel:
       '''A TaskPanel for the Sheetmetal'''
-      def __init__(self):
+      def __init__(self, obj):
 
-        self.obj = None
-        self.form = QtGui.QWidget()
-        self.form.setObjectName("SMExtendWallTaskPanel")
-        self.form.setWindowTitle("Binded faces/edges list")
-        self.grid = QtGui.QGridLayout(self.form)
-        self.grid.setObjectName("grid")
-        self.title = QtGui.QLabel(self.form)
-        self.grid.addWidget(self.title, 0, 0, 1, 2)
-        self.title.setText("Select new face(s)/Edge(s) and press Update")
-
-        # tree
-        self.tree = QtGui.QTreeWidget(self.form)
-        self.grid.addWidget(self.tree, 1, 0, 1, 2)
-        self.tree.setColumnCount(2)
-        self.tree.setHeaderLabels(["Name","Subelement"])
-
-        # buttons
-        self.addButton = QtGui.QPushButton(self.form)
-        self.addButton.setObjectName("addButton")
-        self.addButton.setIcon(QtGui.QIcon(os.path.join( icons_path , 'SheetMetal_Update.svg')))
-        self.grid.addWidget(self.addButton, 3, 0, 1, 2)
-
-        QtCore.QObject.connect(self.addButton, QtCore.SIGNAL("clicked()"), self.updateElement)
-        self.update()
+          self.obj = obj
+          self.form = SheetMetalTools.taskLoadUI("ExtendTaskPanel.ui")
+          SheetMetalTools.taskPopulateSelectionList(self.form.tree, self.obj.baseObject)
+          SheetMetalTools.taskConnectSelection(self.form.AddRemove, self.form.tree, self.obj, ["Face"])
+          SheetMetalTools.taskConnectSpin(self, self.form.OffsetA, "gap1")
+          SheetMetalTools.taskConnectSpin(self, self.form.OffsetB, "gap2")
+          SheetMetalTools.taskConnectSpin(self, self.form.Length, "length")
+          SheetMetalTools.taskConnectCheck(self, self.form.RefineCheckbox, "Refine")
 
       def isAllowedAlterSelection(self):
           return True
@@ -500,58 +480,12 @@ if SheetMetalTools.isGuiLoaded():
       def isAllowedAlterView(self):
           return True
 
-      def getStandardButtons(self):
-          return QtGui.QDialogButtonBox.Ok
-
-      def update(self):
-        'fills the treewidget'
-        self.tree.clear()
-        if self.obj:
-          f = self.obj.baseObject
-          if isinstance(f[1],list):
-            for subf in f[1]:
-              #FreeCAD.Console.PrintLog("item: " + subf + "\n")
-              item = QtGui.QTreeWidgetItem(self.tree)
-              item.setText(0,f[0].Name)
-              item.setIcon(0,QtGui.QIcon(":/icons/Tree_Part.svg"))
-              item.setText(1,subf)
-          else:
-            item = QtGui.QTreeWidgetItem(self.tree)
-            item.setText(0,f[0].Name)
-            item.setIcon(0,QtGui.QIcon(":/icons/Tree_Part.svg"))
-            item.setText(1,f[1][0])
-        self.retranslateUi(self.form)
-
-      def updateElement(self):
-        if self.obj:
-          sel = Gui.Selection.getSelectionEx()[0]
-          if sel.HasSubObjects:
-            obj = sel.Object
-            for elt in sel.SubElementNames:
-              if "Face" in elt or "Edge" in elt:
-                face = self.obj.baseObject
-                found = False
-                if (face[0] == obj.Name):
-                  if isinstance(face[1],tuple):
-                    for subf in face[1]:
-                      if subf == elt:
-                        found = True
-                  else:
-                    if (face[1][0] == elt):
-                      found = True
-                if not found:
-                  self.obj.baseObject = (sel.Object, sel.SubElementNames)
-          self.update()
-
       def accept(self):
-          FreeCAD.ActiveDocument.recompute()
-          Gui.ActiveDocument.resetEdit()
-          #self.obj.ViewObject.Visibility=True
+          SheetMetalTools.taskAccept(self, self.form.AddRemove)
           return True
 
-      def retranslateUi(self, TaskPanel):
-          #TaskPanel.setWindowTitle(QtGui.QApplication.translate("draft", "Faces", None))
-          self.addButton.setText(QtGui.QApplication.translate("draft", "Update", None))
+      def reject(self):
+          SheetMetalTools.taskReject(self, self.form.AddRemove)
 
   class SMExtrudeCommandClass():
     """Extrude face"""

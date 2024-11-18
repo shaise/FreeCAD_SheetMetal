@@ -1,5 +1,6 @@
 import FreeCAD, os
 from SheetMetalLogger import SMLogger
+import re
 
 translate = FreeCAD.Qt.translate
 
@@ -18,6 +19,7 @@ def isGuiLoaded():
     
 if isGuiLoaded():
     from PySide import QtCore, QtGui
+    from FreeCAD import Gui
     def smWarnDialog(msg):
         diag = QtGui.QMessageBox(
             QtGui.QMessageBox.Warning,
@@ -27,7 +29,7 @@ if isGuiLoaded():
         diag.setWindowModality(QtCore.Qt.ApplicationModal)
         diag.exec_()
     
-    def HideObjects(*args):
+    def smHideObjects(*args):
         from FreeCAD import Gui
         for arg in args:
             if arg:
@@ -35,12 +37,116 @@ if isGuiLoaded():
                 if obj:
                     obj.Visibility = False
 
+    # Task panel helper code
+    def taskPopulateSelectionList(qwidget, baseObject):
+        qwidget.clear()
+        obj, items = baseObject
+        if not isinstance(items, list):
+            items = [items]
+        for subf in items:
+            # FreeCAD.Console.PrintLog("item: " + subf + "\n")
+            item = QtGui.QTreeWidgetItem(qwidget)
+            item.setText(0, obj.Name)
+            item.setIcon(0, QtGui.QIcon(":/icons/Tree_Part.svg"))
+            item.setText(1, subf)
+
+    def updateSelectionElements(obj, allowedTypes):
+        if not obj:
+            return
+
+        sel = Gui.Selection.getSelectionEx()[0]
+        if not sel.HasSubObjects:
+            return
+
+        subItems = []
+        for element in sel.SubElementNames:
+            if smStripTrailingNumber(element) in allowedTypes:
+                subItems.append(element)
+        if len(subItems) == 0:
+            return
+        #print(sel.Object, subItems)
+        obj.baseObject = (sel.Object, subItems)
+
+    def _taskToggleSelectionMode(isChecked, addRemoveButton, treeWidget, obj, allowedTypes):
+        if isChecked:
+            obj.Visibility=False
+            obj.baseObject[0].Visibility=True
+            Gui.Selection.clearSelection()
+            Gui.Selection.addSelection(obj.baseObject[0],obj.baseObject[1])
+            Gui.Selection.setSelectionStyle(Gui.Selection.SelectionStyle.GreedySelection)
+            addRemoveButton.setText('Preview')
+        else:
+            updateSelectionElements(obj, allowedTypes)
+            Gui.Selection.clearSelection()
+            Gui.Selection.setSelectionStyle(Gui.Selection.SelectionStyle.NormalSelection)
+            obj.Document.recompute()
+            obj.baseObject[0].Visibility=False
+            obj.Visibility=True
+            addRemoveButton.setText('Select')
+            taskPopulateSelectionList(treeWidget, obj.baseObject)
+    
+    def taskConnectSelection(addRemoveButton, treeWidget, obj, allowedTypes):
+        addRemoveButton.toggled.connect(
+            lambda value: _taskToggleSelectionMode(value, addRemoveButton, treeWidget, obj, allowedTypes))
+
+    def _taskUpdateValue(value, obj, objvar, callback):
+        setattr(obj, objvar, value)
+        obj.Document.recompute()
+        if callback is not None:
+            callback(value)
+    
+    def taskConnectSpin(task, formvar, objvar, callback = None):
+        formvar.setProperty("value", getattr(task.obj, objvar))
+        Gui.ExpressionBinding(formvar).bind(task.obj, objvar)
+        formvar.valueChanged.connect(lambda value: _taskUpdateValue(value, task.obj, objvar, callback))
+
+    def taskConnectCheck(task, formvar, objvar, callback = None):
+        formvar.setChecked(getattr(task.obj, objvar))
+        formvar.toggled.connect(lambda value: _taskUpdateValue(value, task.obj, objvar, callback))
+
+    def taskConnectEnum(task, formvar, objvar, callback = None):
+        enumlist = task.obj.getEnumerationsOfProperty(objvar)
+        formvar.setProperty("currentIndex", enumlist.index(getattr(task.obj, objvar)))
+        formvar.currentIndexChanged.connect(lambda value: _taskUpdateValue(value, task.obj, objvar, callback))
+
+    def taskAccept(task, addRemoveButton):
+        if addRemoveButton.isChecked():
+            addRemoveButton.AddRemove.toggle()
+        FreeCAD.ActiveDocument.recompute()
+        task.obj.Document.commitTransaction()
+        Gui.Control.closeDialog()
+        Gui.ActiveDocument.resetEdit()
+        return True
+
+    def taskReject(task, addRemoveButton):
+        FreeCAD.ActiveDocument.abortTransaction()
+        if addRemoveButton.isChecked():
+            Gui.Selection.setSelectionStyle(Gui.Selection.SelectionStyle.NormalSelection)
+            task.obj.Visibility = True
+        Gui.Control.closeDialog()
+        FreeCAD.ActiveDocument.recompute()
+      
+    def taskLoadUI(*args):
+        if len(args) == 1:
+            path = os.path.join(panels_path, args[0])
+            return Gui.PySideUic.loadUi(path)
+        
+        forms = []
+        for uiFile in args:
+            path = os.path.join(panels_path, uiFile)
+            forms.append(Gui.PySideUic.loadUi(path))
+        return forms
+
+
 else:
     def smWarnDialog(msg):
         SMLogger.warning(msg)
 
-    def HideObjects(*args):
+    def smHideObjects(*args):
         pass
+
+def smStripTrailingNumber(item):
+    return re.sub(r'\d+$', '', item)
 
 def smBelongToBody(item, body):
     if body is None:

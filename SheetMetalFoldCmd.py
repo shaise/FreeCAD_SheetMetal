@@ -243,7 +243,7 @@ def smFold(
     else:
         if bendlinesketch and bendA > 0.0:
             resultsolid = FoldShape
-    SheetMetalTools.HideObjects(MainObject, bendlinesketch)
+    SheetMetalTools.smHideObjects(MainObject, bendlinesketch)
     return resultsolid
 
 

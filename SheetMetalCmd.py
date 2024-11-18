@@ -1710,7 +1710,6 @@ if SheetMetalTools.isGuiLoaded():
     from PySide import QtGui
 
     icons_path = SheetMetalTools.icons_path
-    panels_path = SheetMetalTools.panels_path
     smEpsilon = SheetMetalTools.smEpsilon
 
     class SMViewProviderTree:
@@ -1866,40 +1865,31 @@ if SheetMetalTools.isGuiLoaded():
 
         def __init__(self, obj):
             self.obj = obj
-            self.spinPairs = []
-            path = os.path.join(panels_path, "FlangeParameters.ui")
-            path2 = os.path.join(panels_path, "FlangeAdvancedParameters.ui")
-            self.SelModeActive = False
-            self.form = []
-            self.form.append(Gui.PySideUic.loadUi(path))
-            self.form.append(Gui.PySideUic.loadUi(path2))
-            self.update()
-            # flange parameters connects
-            self.form[0].AddRemove.toggled.connect(self.toggleSelectionMode)
-            self.form[0].BendType.currentIndexChanged.connect(self.updateProperties)
-            self.connectSpin(self.form[0].Offset, "offset")
-            self.connectSpin(self.form[0].Radius, "radius")
-            self.connectSpin(self.form[0].Angle, "angle")
-            self.connectSpin(self.form[0].Length, "length")
-            self.form[0].LengthSpec.currentIndexChanged.connect(self.updateProperties)
-            self.form[0].UnfoldCheckbox.toggled.connect(self.updateProperties)
-            self.form[0].ReversedCheckbox.toggled.connect(self.updateProperties)
-            self.connectSpin(self.form[0].extend1, "extend1")
-            self.connectSpin(self.form[0].extend2, "extend2")
-            # advanced flange parameters connects
-            self.form[1].reliefTypeButtonGroup.buttonToggled.connect(self.updateProperties)
-            self.connectSpin(self.form[1].reliefWidth, "reliefw")
-            self.connectSpin(self.form[1].reliefDepth, "reliefd")
-            self.form[1].autoMiterCheckbox.toggled.connect(self.updateProperties)
-            self.connectSpin(self.form[1].minGap, "minGap")
-            self.connectSpin(self.form[1].maxExDist, "maxExtendDist")
-            self.connectSpin(self.form[1].miterAngle1, "miterangle1")
-            self.connectSpin(self.form[1].miterAngle2, "miterangle2")
+            self.form = SheetMetalTools.taskLoadUI("FlangeParameters.ui", "FlangeAdvancedParameters.ui")
+            self.updateForm()
 
-        def connectSpin(self, formvar, objvar):
-            formvar.valueChanged.connect(self.updateProperties)
-            Gui.ExpressionBinding(formvar).bind(self.obj, objvar)
-            self.spinPairs.append((formvar, objvar))
+            # flange parameters connects
+            SheetMetalTools.taskConnectSelection(
+                self.form[0].AddRemove, self.form[0].tree, self.obj, ["Face", "Edge"])
+            SheetMetalTools.taskConnectEnum(self, self.form[0].BendType, "BendType", self.bendTypeUpdated)
+            SheetMetalTools.taskConnectSpin(self, self.form[0].Offset, "offset")
+            SheetMetalTools.taskConnectSpin(self, self.form[0].Radius, "radius")
+            SheetMetalTools.taskConnectSpin(self, self.form[0].Angle, "angle")
+            SheetMetalTools.taskConnectSpin(self, self.form[0].Length, "length")
+            SheetMetalTools.taskConnectEnum(self, self.form[0].LengthSpec, "LengthSpec")
+            SheetMetalTools.taskConnectCheck(self, self.form[0].UnfoldCheckbox, "unfold")
+            SheetMetalTools.taskConnectCheck(self, self.form[0].ReversedCheckbox, "invert")
+            SheetMetalTools.taskConnectSpin(self, self.form[0].extend1, "extend1")
+            SheetMetalTools.taskConnectSpin(self, self.form[0].extend2, "extend2")
+            # advanced flange parameters connects
+            self.form[1].reliefTypeButtonGroup.buttonToggled.connect(self.reliefTypeUpdated)
+            SheetMetalTools.taskConnectSpin(self, self.form[1].reliefWidth, "reliefw")
+            SheetMetalTools.taskConnectSpin(self, self.form[1].reliefDepth, "reliefd")
+            SheetMetalTools.taskConnectCheck(self, self.form[1].autoMiterCheckbox, "AutoMiter")
+            SheetMetalTools.taskConnectSpin(self, self.form[1].minGap, "minGap")
+            SheetMetalTools.taskConnectSpin(self, self.form[1].maxExDist, "maxExtendDist")
+            SheetMetalTools.taskConnectSpin(self, self.form[1].miterAngle1, "miterangle1")
+            SheetMetalTools.taskConnectSpin(self, self.form[1].miterAngle2, "miterangle2")
 
         def isAllowedAlterSelection(self):
             return True
@@ -1907,132 +1897,37 @@ if SheetMetalTools.isGuiLoaded():
         def isAllowedAlterView(self):
             return True
 
-        def getStandardButtons(self):
-            return QtGui.QDialogButtonBox.Ok
+        # def getStandardButtons(self):
+        #     return QtGui.QDialogButtonBox.Ok
 
-        def updateProperties(self):
-            self.obj.BendType = self.form[0].BendType.currentIndex()
+        def bendTypeUpdated(self, value):
             if self.obj.BendType == "Offset":
                 self.form[0].Offset.setEnabled(True)
             else:
                 self.form[0].Offset.setEnabled(False)
-            
-            for formvar, objvar in self.spinPairs:
-                setattr(self.obj, objvar, formvar.property("value"))
-                
-            self.obj.LengthSpec = self.form[0].LengthSpec.currentIndex()
-            self.obj.unfold = self.form[0].UnfoldCheckbox.isChecked()
-            self.obj.invert = self.form[0].ReversedCheckbox.isChecked()
+
+        def reliefTypeUpdated(self):
             self.obj.reliefType = (
                 "Rectangle" if self.form[1].reliefRectangle.isChecked() else "Round"
             )
-            self.obj.AutoMiter = self.form[1].autoMiterCheckbox.isChecked()
             self.obj.Document.recompute()
 
-        def update(self):
-            # load property values
-            typeList = ["Material Outside","Material Inside","Thickness Outside","Offset"]
-            lSpecList = ["Leg","Outer Sharp","Inner Sharp","Tangential"]
-            self.form[0].BendType.setProperty("currentIndex", typeList.index(self.obj.BendType))
-            if self.obj.BendType == "Offset":
-                self.form[0].Offset.setEnabled(True)
-            else:
-                self.form[0].Offset.setEnabled(False)
-            self.form[0].Offset.setProperty("value", self.obj.offset)
-            self.form[0].Radius.setProperty("value", self.obj.radius)
-            self.form[0].Angle.setProperty("value", self.obj.angle)
-            self.form[0].Length.setProperty("value", self.obj.length)
-            self.form[0].LengthSpec.setProperty("currentIndex", lSpecList.index(self.obj.LengthSpec))
-            self.form[0].UnfoldCheckbox.setChecked(self.obj.unfold)
-            self.form[0].ReversedCheckbox.setChecked(self.obj.invert)
-            self.form[0].extend1.setProperty("value", self.obj.extend1)
-            self.form[0].extend2.setProperty("value", self.obj.extend2)
-            # fill the treewidget
-            self.form[0].tree.clear()
-            f = self.obj.baseObject
-            if isinstance(f[1], list):
-                for subf in f[1]:
-                    # FreeCAD.Console.PrintLog("item: " + subf + "\n")
-                    item = QtGui.QTreeWidgetItem(self.form[0].tree)
-                    item.setText(0, f[0].Name)
-                    item.setIcon(0, QtGui.QIcon(":/icons/Tree_Part.svg"))
-                    item.setText(1, subf)
-            else:
-                item = QtGui.QTreeWidgetItem(self.form[0].tree)
-                item.setText(0, f[0].Name)
-                item.setIcon(0, QtGui.QIcon(":/icons/Tree_Part.svg"))
-                item.setText(1, f[1][0])
+        def updateForm(self):
+            self.form[0].Offset.setEnabled(self.obj.BendType == "Offset")
+            SheetMetalTools.taskPopulateSelectionList(self.form[0].tree, self.obj.baseObject)
+
             # Advanced parameters update
             if self.obj.reliefType == "Rectangle":
                 self.form[1].reliefRectangle.setChecked(True)
             else:
                 self.form[1].reliefRound.setChecked(True)
-            self.form[1].reliefDepth.setProperty("value", self.obj.reliefd)
-            self.form[1].reliefWidth.setProperty("value", self.obj.reliefw)
-            self.form[1].autoMiterCheckbox.setChecked(self.obj.AutoMiter)
-            self.form[1].minGap.setProperty("value", self.obj.minGap)
-            self.form[1].maxExDist.setProperty("value", self.obj.maxExtendDist)
-            self.form[1].miterAngle1.setProperty("value", self.obj.miterangle1)
-            self.form[1].miterAngle2.setProperty("value", self.obj.miterangle2)
-
-        def toggleSelectionMode(self):
-            if not self.SelModeActive:
-                self.obj.Visibility=False
-                self.obj.baseObject[0].Visibility=True
-                Gui.Selection.clearSelection()
-                Gui.Selection.addSelection(self.obj.baseObject[0],self.obj.baseObject[1])
-                Gui.Selection.setSelectionStyle(Gui.Selection.SelectionStyle.GreedySelection)
-                self.SelModeActive=True
-                self.form[0].AddRemove.setText('Preview')
-            else:
-                self.updateElement()
-                Gui.Selection.clearSelection()
-                Gui.Selection.setSelectionStyle(Gui.Selection.SelectionStyle.NormalSelection)
-                self.obj.Document.recompute()
-                self.obj.baseObject[0].Visibility=False
-                self.obj.Visibility=True
-                self.SelModeActive=False
-                self.form[0].AddRemove.setText('Select')
-
-        def updateElement(self):
-            if not self.obj:
-                return
-
-            sel = Gui.Selection.getSelectionEx()[0]
-            if not sel.HasSubObjects:
-                self.update()
-                return
-
-            obj = sel.Object
-            for elt in sel.SubElementNames:
-                if "Face" in elt or "Edge" in elt:
-                    face = self.obj.baseObject
-                    found = False
-                    if face[0] == obj.Name:
-                        if isinstance(face[1], tuple):
-                            for subf in face[1]:
-                                if subf == elt:
-                                    found = True
-                        else:
-                            if face[1][0] == elt:
-                                found = True
-                    if not found:
-                        self.obj.baseObject = (sel.Object, sel.SubElementNames)
-            self.update()
-
+             
         def accept(self):
-            FreeCAD.ActiveDocument.recompute()
-            Gui.Selection.setSelectionStyle(Gui.Selection.SelectionStyle.NormalSelection)
-            self.obj.Document.commitTransaction()
-            Gui.Control.closeDialog()
-            Gui.ActiveDocument.resetEdit()
-            # self.obj.ViewObject.Visibility=True
+            SheetMetalTools.taskAccept(self, self.form[0].AddRemove)
             return True
 
         def reject(self):
-            FreeCAD.ActiveDocument.abortTransaction()
-            Gui.Control.closeDialog()
-            FreeCAD.ActiveDocument.recompute()
+            SheetMetalTools.taskReject(self, self.form[0].AddRemove)
 
     class AddWallCommandClass:
         """Add Wall command"""
