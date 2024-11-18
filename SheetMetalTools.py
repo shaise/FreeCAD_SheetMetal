@@ -126,11 +126,18 @@ if isGuiLoaded():
         Gui.Control.closeDialog()
         FreeCAD.ActiveDocument.recompute()
       
+    def taskSaveDefaults(obj, defaultDict, varList):
+        for var in varList:
+            defaultDict[var] = getattr(obj, var)
+
+    def taskRestoreDefaults(obj, defaultDict):
+        for var, value in defaultDict.items():
+            setattr(obj, var, value)
+
     def taskLoadUI(*args):
         if len(args) == 1:
             path = os.path.join(panels_path, args[0])
-            return Gui.PySideUic.loadUi(path)
-        
+            return Gui.PySideUic.loadUi(path)           
         forms = []
         for uiFile in args:
             path = os.path.join(panels_path, uiFile)

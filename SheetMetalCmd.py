@@ -31,6 +31,8 @@ import SheetMetalTools
 smElementMapVersion = "sm1."
 
 smEpsilon = SheetMetalTools.smEpsilon
+smAddWallDefaults = {}
+smAddWallDefaultVars = ["BendType", "LengthSpec", "angle", "radius", "AutoMiter", "kfactor"]
 
 translate = FreeCAD.Qt.translate
 
@@ -1376,6 +1378,7 @@ class SMBendWall:
             "App::PropertyLinkSub", "baseObject", "Parameters", _tip_
         ).baseObject = (selobj, sel_items)
         obj.Proxy = self
+        SheetMetalTools.taskRestoreDefaults(obj, smAddWallDefaults)
 
     def _addProperties(self, obj):
         SheetMetalTools.smAddLengthProperty(
@@ -1924,6 +1927,7 @@ if SheetMetalTools.isGuiLoaded():
              
         def accept(self):
             SheetMetalTools.taskAccept(self, self.form[0].AddRemove)
+            SheetMetalTools.taskSaveDefaults(self.obj, smAddWallDefaults, smAddWallDefaultVars)
             return True
 
         def reject(self):
