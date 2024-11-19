@@ -5,11 +5,14 @@ import Part
 import os  # Make sure 'os' is imported for the icon path
 import SheetMetalTools
 
+translate = FreeCAD.Qt.translate
+
 class ExtrudedCutout:
     def __init__(self, obj, sketch, selected_face):
         '''Initialize the parametric Sheet Metal Cut object and add properties'''
         obj.addProperty("App::PropertyLink", "Sketch", "ExtrudedCutout", "The sketch for the cut").Sketch = sketch
         obj.addProperty("App::PropertyLinkSub", "SelectedFace", "ExtrudedCutout", "The selecteds object and face").SelectedFace = selected_face
+        self._addProperties(obj) # Add other properties (is necessary this way to not cause errors on old files)
         obj.addProperty("App::PropertyLength", "ExtrusionLength1", "ExtrudedCutout", "Length of the extrusion direction 1").ExtrusionLength1 = 500.0
         obj.setEditorMode("ExtrusionLength1",2) # Hide by default
         obj.addProperty("App::PropertyLength", "ExtrusionLength2", "ExtrudedCutout", "Length of the extrusion direction 2").ExtrusionLength2 = 500.0
@@ -25,9 +28,18 @@ class ExtrudedCutout:
 
         obj.Proxy = self
 
+    def _addProperties(self, obj):
+        SheetMetalTools.smAddBoolProperty(
+            obj,
+            "Refine",
+            translate("App::Property", "Refine the geometry"),
+            False,
+            "ExtrudedCutout"
+        )
+
     def onChanged(self, fp, prop):
         '''Respond to property changes'''
-        if prop in ["Sketch", "SelectedFace", "ExtrusionLength1", "ExtrusionLength2", "CutSide", "CutType"]:
+        if prop in ["Sketch", "SelectedFace", "ExtrusionLength1", "ExtrusionLength2", "CutSide", "CutType", "Refine"]:
             App.ActiveDocument.recompute()  # Trigger a recompute when these properties change
         
         # Show or hide length properties based in the CutType property:
@@ -50,6 +62,9 @@ class ExtrudedCutout:
 
     def execute(self, fp):
         '''Perform the cut when the object is recomputed'''
+
+        self._addProperties(fp)
+
         try:
             # Debug: Print the values of Sketch, SelectedFace, and CutSide
             App.Console.PrintMessage(f"Sketch: {fp.Sketch}\n")
@@ -166,7 +181,11 @@ class ExtrudedCutout:
 
                 myExtrusion1 = compFaces.extrude(ExtLength1)
                 myExtrusion2 = compFaces.extrude(ExtLength2)
-                myUnion = Part.Solid.fuse(myExtrusion1, myExtrusion2).removeSplitter()
+
+                if fp.Refine == True:
+                    myUnion = Part.Solid.fuse(myExtrusion1, myExtrusion2).removeSplitter()
+                else:
+                    myUnion = Part.Solid.fuse(myExtrusion1, myExtrusion2)
 
                 myCommon = myUnion.common(shell)
 
@@ -189,9 +208,15 @@ class ExtrudedCutout:
                 # Step 6: Cut
                 # Check the "CutSide" property to decide how to perform the cut
                 if fp.CutSide == "Inside":
-                    cut_result = selected_object.Shape.cut(combined_offset).removeSplitter()
+                    if fp.Refine == True:
+                        cut_result = selected_object.Shape.cut(combined_offset).removeSplitter()
+                    else:
+                        cut_result = selected_object.Shape.cut(combined_offset)
                 elif fp.CutSide == "Outside":
-                    cut_result = selected_object.Shape.common(combined_offset).removeSplitter()
+                    if fp.Refine == True:
+                        cut_result = selected_object.Shape.common(combined_offset).removeSplitter()
+                    else:
+                        cut_result = selected_object.Shape.common(combined_offset)
                 else:
                     raise Exception("Invalid CutSide value.")
 
