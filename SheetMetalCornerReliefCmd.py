@@ -486,7 +486,7 @@ class SMCornerRelief:
             MainObject=fp.baseObject[0],
         )
         fp.Shape = s
-        SheetMetalTools.HideObjects(fp.baseObject[0], fp.Sketch)
+        SheetMetalTools.smHideObjects(fp.baseObject[0], fp.Sketch)
 
 ##########################################################################################################
 # Gui code

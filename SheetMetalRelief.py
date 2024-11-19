@@ -129,7 +129,7 @@ class SMRelief:
     Main_Object = fp.baseObject[0].Shape.copy()
     s = smRelief(relief = fp.relief.Value, selVertexNames = fp.baseObject[1], MainObject = Main_Object)
     fp.Shape = s
-    SheetMetalTools.HideObjects(fp.baseObject[0])
+    SheetMetalTools.smHideObjects(fp.baseObject[0])
 
 
 ##########################################################################################################

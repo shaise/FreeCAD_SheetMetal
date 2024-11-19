@@ -255,7 +255,7 @@ def smSketchOnSheetMetal(
         SMSolid = solidlist[0]
     # Part.show(SMSolid,"SMSolid")
     resultSolid = resultSolid.cut(SMSolid)
-    SheetMetalTools.HideObjects(MainObject, sketch)
+    SheetMetalTools.smHideObjects(MainObject, sketch)
     return resultSolid
 
 

@@ -175,7 +175,7 @@ class SMBendWall:
     else :
       a = base
     fp.Shape = a
-    SheetMetalTools.HideObjects(fp.baseObject[0], fp.toolObject[0], fp.Sketch)
+    SheetMetalTools.smHideObjects(fp.baseObject[0], fp.toolObject[0], fp.Sketch)
 
 ##########################################################################################################
 # Gui code

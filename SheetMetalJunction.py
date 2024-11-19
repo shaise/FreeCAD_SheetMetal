@@ -82,7 +82,7 @@ class SMJunction:
     Main_Object = fp.baseObject[0].Shape.copy()
     s = smJunction(gap = fp.gap.Value, selEdgeNames = fp.baseObject[1], MainObject = Main_Object)
     fp.Shape = s
-    SheetMetalTools.HideObjects(fp.baseObject[0])
+    SheetMetalTools.smHideObjects(fp.baseObject[0])
 
 
 ##########################################################################################################
