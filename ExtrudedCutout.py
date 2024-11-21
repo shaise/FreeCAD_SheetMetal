@@ -38,10 +38,7 @@ class ExtrudedCutout:
         )
 
     def onChanged(self, fp, prop):
-        '''Respond to property changes'''
-        if prop in ["Sketch", "SelectedFace", "ExtrusionLength1", "ExtrusionLength2", "CutSide", "CutType", "Refine"]:
-            App.ActiveDocument.recompute()  # Trigger a recompute when these properties change
-        
+        '''Respond to property changes'''        
         # Show or hide length properties based in the CutType property:
         if prop == "CutType":
             if fp.CutType == "Through everything both sides":
@@ -67,9 +64,9 @@ class ExtrudedCutout:
 
         try:
             # Debug: Print the values of Sketch, SelectedFace, and CutSide
-            App.Console.PrintMessage(f"Sketch: {fp.Sketch}\n")
-            App.Console.PrintMessage(f"SelectedFace: {fp.SelectedFace}\n")
-            App.Console.PrintMessage(f"CutSide: {fp.CutSide}\n")
+            # App.Console.PrintMessage(f"Sketch: {fp.Sketch}\n")
+            # App.Console.PrintMessage(f"SelectedFace: {fp.SelectedFace}\n")
+            # App.Console.PrintMessage(f"CutSide: {fp.CutSide}\n")
 
             # Ensure the Sketch and SelectedFace properties are valid
             if fp.Sketch is None or fp.SelectedFace is None:
