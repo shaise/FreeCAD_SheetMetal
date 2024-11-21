@@ -358,23 +358,25 @@ if SheetMetalTools.isGuiLoaded():
                 return
             doc.openTransaction("Add Bend")
             if activeBody is None or not SheetMetalTools.smIsPartDesign(selobj):
-                a = doc.addObject("Part::FeaturePython", "SolidBend")
-                SMSolidBend(a, selobj, sel.SubElementNames)
-                SMBendViewProviderTree(a.ViewObject)
+                newobj = doc.addObject("Part::FeaturePython", "SolidBend")
+                SMSolidBend(newobj, selobj, sel.SubElementNames)
+                SMBendViewProviderTree(newobj.ViewObject)
             else:
                 # FreeCAD.Console.PrintLog("found active body: " + activeBody.Name)
-                a = doc.addObject("PartDesign::FeaturePython", "SolidBend")
-                SMSolidBend(a, selobj, sel.SubElementNames)
-                SMBendViewProviderFlat(a.ViewObject)
-                activeBody.addObject(a)
-            SheetMetalTools.SetViewConfig(a, viewConf)
+                newobj = doc.addObject("PartDesign::FeaturePython", "SolidBend")
+                SMSolidBend(newobj, selobj, sel.SubElementNames)
+                SMBendViewProviderFlat(newobj.ViewObject)
+                activeBody.addObject(newobj)
+            SheetMetalTools.SetViewConfig(newobj, viewConf)
             if SheetMetalTools.is_autolink_enabled():
-                root = SheetMetalTools.getOriginalBendObject(a)
+                root = SheetMetalTools.getOriginalBendObject(newobj)
                 if root:
-                    a.setExpression("radius", root.Label + ".radius")
+                    newobj.setExpression("radius", root.Label + ".radius")
             Gui.Selection.clearSelection()
+            newobj.baseObject[0].ViewObject.Visibility = False
+            dialog = SMBendTaskPanel(newobj)
             doc.recompute()
-            doc.commitTransaction()
+            Gui.Control.showDialog(dialog)
             return
 
         def IsActive(self):
