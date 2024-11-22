@@ -582,18 +582,20 @@ if SheetMetalTools.isGuiLoaded():
                 return
             doc.openTransaction("Extend")
             if activeBody is None:
-                a = doc.addObject("Part::FeaturePython", "Extend")
-                SMExtrudeWall(a, selobj, sel.SubElementNames)
-                SMViewProviderTree(a.ViewObject)
+                newObj = doc.addObject("Part::FeaturePython", "Extend")
+                SMExtrudeWall(newObj, selobj, sel.SubElementNames)
+                SMViewProviderTree(newObj.ViewObject)
             else:
-                a = doc.addObject("PartDesign::FeaturePython", "Extend")
-                SMExtrudeWall(a, selobj, sel.SubElementNames)
-                SMViewProviderFlat(a.ViewObject)
-                activeBody.addObject(a)
-            SheetMetalTools.SetViewConfig(a, viewConf)
+                newObj = doc.addObject("PartDesign::FeaturePython", "Extend")
+                SMExtrudeWall(newObj, selobj, sel.SubElementNames)
+                SMViewProviderFlat(newObj.ViewObject)
+                activeBody.addObject(newObj)
+            SheetMetalTools.SetViewConfig(newObj, viewConf)
             Gui.Selection.clearSelection()
+            newObj.baseObject[0].ViewObject.Visibility = False
+            dialog = SMExtendWallTaskPanel(newObj)
             doc.recompute()
-            doc.commitTransaction()
+            Gui.Control.showDialog(dialog)
             return
 
         def IsActive(self):

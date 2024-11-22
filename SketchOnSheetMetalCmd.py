@@ -262,7 +262,6 @@ def smSketchOnSheetMetal(
 class SMSketchOnSheet:
     def __init__(self, obj, selobj, sel_items, selsketch):
         '''"Add Sketch based cut On Sheet metal"'''
-        selobj = Gui.Selection.getSelectionEx()
         _tip_ = FreeCAD.Qt.translate("App::Property", "Base Object")
         obj.addProperty(
             "App::PropertyLinkSub", "baseObject", "Parameters", _tip_
