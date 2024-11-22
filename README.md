@@ -99,6 +99,7 @@ Starting from FreeCAD 0.17 it can be installed via the [Addon Manager](https://g
 * FreeCAD Forum announcement/discussion [thread](https://forum.freecadweb.org/viewtopic.php?f=3&t=60818) 
 
 #### Release notes:
+* V0.5.07 22 Nov 2024:  Extruded Cutout: add improvements by [@sheetmetalman][sheetmetalman].  
 * V0.5.06 17 Nov 2024:  Extruded Cutout: support far sketches by [@sheetmetalman][sheetmetalman].  
                       - Add bug report template for GitHub.  
                       - Fix bug when unfolding sheet with material definition.  
