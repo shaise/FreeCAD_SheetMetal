@@ -229,7 +229,7 @@ if SheetMetalTools.isGuiLoaded():
             path = os.path.join(panels_path, 'BaseShapeOptions.ui')
             self.form = Gui.PySideUic.loadUi(path)
             self.formReady = False
-            self.firstTime = True
+            self.firstTime = False
             self.selOrigButton = None
             self.spinPairs = []
             self.ShowAxisCross()
@@ -334,6 +334,7 @@ if SheetMetalTools.isGuiLoaded():
                 body.Label = 'Body'
                 body.addObject(self.obj)
                 Gui.ActiveDocument.ActiveView.setActiveObject('pdbody', body)
+                self.firstTime = False
             doc.commitTransaction()
             Gui.Control.closeDialog()
             doc.recompute()
@@ -420,8 +421,8 @@ if SheetMetalTools.isGuiLoaded():
             )
             if mode != 0:
                 return None
-                return super.setEdit(vobj, mode)
             taskd = BaseShapeTaskPanel(vobj.Object)
+            taskd.firstTime = False
             taskd.update()
             #self.Object.ViewObject.Visibility=False
             Gui.Selection.clearSelection()
@@ -430,7 +431,7 @@ if SheetMetalTools.isGuiLoaded():
             #Gui.ActiveDocument.resetEdit()
             return False
 
-        def unsetEdit(self,vobj,mode):
+        def unsetEdit(self, vobj, mode):
             Gui.Control.closeDialog()
             self.Object.ViewObject.Visibility=True
             return False
@@ -466,8 +467,8 @@ if SheetMetalTools.isGuiLoaded():
             SMBaseShape(a)
             SMBaseShapeViewProviderFlat(a.ViewObject)
             doc.recompute()
-
             dialog = BaseShapeTaskPanel(a)
+            dialog.firstTime = True
             dialog.update()
             Gui.Control.showDialog(dialog)
 
