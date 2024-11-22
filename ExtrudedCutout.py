@@ -38,14 +38,6 @@ class ExtrudedCutout:
             "ExtrudedCutoutImprovements"
         )
 
-        SheetMetalTools.smAddBoolProperty(
-            obj,
-            "ImproveCut",
-            translate("App::Property", "Improve cut geometry if it enters the cutting zone. Only select true if the cut needs fix, 'cause it can be slow"),
-            False,
-            "ExtrudedCutoutImprovements"
-        )
-
         SheetMetalTools.smAddProperty(
             obj,
             "App::PropertyIntegerConstraint",
@@ -53,6 +45,14 @@ class ExtrudedCutout:
             translate("App::Property", "Level of cut improvement quality. More than 10 can take a very long time"),
             (4, 2, 20, 1),
             "ExtrudedCutoutImprovements",
+        )
+
+        SheetMetalTools.smAddBoolProperty(
+            obj,
+            "ImproveCut",
+            translate("App::Property", "Improve cut geometry if it enters the cutting zone. Only select true if the cut needs fix, 'cause it can be slow"),
+            False,
+            "ExtrudedCutoutImprovements"
         )
 
     def onChanged(self, fp, prop):
@@ -369,16 +369,6 @@ if SheetMetalTools.isGuiLoaded():
             '''Restore the object from its state'''
             self.loads(state)
         
-        def dumps(self):
-            return None
-
-        def loads(self, state):
-            if state is not None:
-                import FreeCAD
-
-                doc = FreeCAD.ActiveDocument  # crap
-                self.Object = doc.getObject(state["ObjectName"])
-
         # dumps and loads replace __getstate__ and __setstate__ post v. 0.21.2
         def dumps(self):
             return None
