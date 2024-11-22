@@ -13,11 +13,12 @@ class ExtrudedCutout:
         obj.addProperty("App::PropertyLink", "Sketch", "ExtrudedCutout", "The sketch for the cut").Sketch = sketch
         obj.addProperty("App::PropertyLinkSub", "SelectedFace", "ExtrudedCutout", "The selecteds object and face").SelectedFace = selected_face
         self._addProperties(obj) # Add other properties (is necessary this way to not cause errors on old files)
+        obj.setEditorMode("ImproveLevel",2) # Hide by default
         obj.addProperty("App::PropertyLength", "ExtrusionLength1", "ExtrudedCutout", "Length of the extrusion direction 1").ExtrusionLength1 = 500.0
         obj.setEditorMode("ExtrusionLength1",2) # Hide by default
         obj.addProperty("App::PropertyLength", "ExtrusionLength2", "ExtrudedCutout", "Length of the extrusion direction 2").ExtrusionLength2 = 500.0
         obj.setEditorMode("ExtrusionLength2",2) # Hide by default
-        
+
         # CutType property
         obj.addProperty("App::PropertyEnumeration", "CutType", "ExtrudedCutout", "Cut type").CutType = ["Two dimensions", "Symmetric", "Through everything both sides", "Through everything side 1", "Through everything side 2"]
         obj.CutType = "Through everything both sides"  # Default value
@@ -34,11 +35,35 @@ class ExtrudedCutout:
             "Refine",
             translate("App::Property", "Refine the geometry"),
             False,
-            "ExtrudedCutout"
+            "ExtrudedCutoutImprovements"
+        )
+
+        SheetMetalTools.smAddBoolProperty(
+            obj,
+            "ImproveCut",
+            translate("App::Property", "Improve cut geometry if it enters the cutting zone. Only select true if the cut needs fix, 'cause it can be slow"),
+            False,
+            "ExtrudedCutoutImprovements"
+        )
+
+        SheetMetalTools.smAddProperty(
+            obj,
+            "App::PropertyIntegerConstraint",
+            "ImproveLevel",
+            translate("App::Property", "Level of cut improvement quality. More than 10 can take a very long time"),
+            (4, 2, 20, 1),
+            "ExtrudedCutoutImprovements",
         )
 
     def onChanged(self, fp, prop):
-        '''Respond to property changes'''        
+        '''Respond to property changes'''
+        # Show or hide improvement of the cut:
+        if prop == "ImproveCut":
+            if fp.ImproveCut == True:
+                fp.setEditorMode("ImproveLevel", 0) # Show
+            if fp.ImproveCut == False:
+                fp.setEditorMode("ImproveLevel", 2) # Hide
+
         # Show or hide length properties based in the CutType property:
         if prop == "CutType":
             if fp.CutType == "Through everything both sides":
@@ -63,11 +88,6 @@ class ExtrudedCutout:
         self._addProperties(fp)
 
         try:
-            # Debug: Print the values of Sketch, SelectedFace, and CutSide
-            # App.Console.PrintMessage(f"Sketch: {fp.Sketch}\n")
-            # App.Console.PrintMessage(f"SelectedFace: {fp.SelectedFace}\n")
-            # App.Console.PrintMessage(f"CutSide: {fp.CutSide}\n")
-
             # Ensure the Sketch and SelectedFace properties are valid
             if fp.Sketch is None or fp.SelectedFace is None:
                 raise Exception("Both the Sketch and SelectedFace properties must be set.")
@@ -147,13 +167,29 @@ class ExtrudedCutout:
                     if face1.normalAt(0, 0).isEqual(face2.normalAt(0, 0).multiply(-1), 1e-6):
                         distance_info = face1.distToShape(face2)
                         distance = distance_info[0]
-                        if abs(distance - thickness) < 1e-6:
+                        if abs(distance - thickness) < 1e-5: # In the past, this tolerance was 1e-6, it's leads to errors
                             parallel_faces.extend([face1, face2])
         
             if parallel_faces:
                 shell = Part.Shell(parallel_faces)
             else:
                 raise Exception("No pairs of parallel faces with the specified thickness distance were found.")
+
+            # Surfaces to improve the cut geometry:
+            if fp.ImproveCut == True:
+                smSide1 = self.find_connected_faces(shell)
+                smSide1 = Part.Shell(smSide1[0])
+
+                tknOffStep = thickness / fp.ImproveLevel
+
+                improvSurfaces = []
+                tknOff = tknOffStep
+                while abs(thickness - tknOff) > 1e-6:
+                    sideOff = smSide1.makeOffsetShape(-tknOff, 0, fill=False)
+                    improvSurfaces.append(sideOff)
+                    tknOff = tknOff + tknOffStep
+
+                improvShell = improvSurfaces
 
             # Step 3: Extrude the cut sketch
             # Get all faces in sketch
@@ -186,6 +222,10 @@ class ExtrudedCutout:
 
                 myCommon = myUnion.common(shell)
 
+                # Intersection with the improvement surfaces:
+                if fp.ImproveCut == True:
+                    myCommImprov = myUnion.common(improvShell)
+
             # Step 4: Find connected components and offset shapes
             connected_components = self.find_connected_faces(myCommon)
             offset_shapes = []
@@ -196,13 +236,46 @@ class ExtrudedCutout:
                     if offset_shape.isValid():
                         offset_shapes.append(offset_shape)
 
+            if fp.ImproveCut == True:
+                connected_improv = self.find_connected_faces(myCommImprov)
+                offset_improv = []
+                for improv in connected_improv: # Offset to one side
+                    improv_shell = Part.Shell(improv)
+                    offset_value = improv_shell.distToShape(smSide1)[0]
+                    off_impr = improv_shell.makeOffsetShape(offset_value, 0, fill=True)
+                    offset_improv.append(off_impr)
+                for improv in connected_improv: # Offset to other side
+                    improv_shell = Part.Shell(improv)
+                    offset_value = thickness - improv_shell.distToShape(smSide1)[0]
+                    off_impr = improv_shell.makeOffsetShape(-offset_value, 0, fill=True)
+                    offset_improv.append(off_impr)
+
             # Step 5: Combine the offsets
             if offset_shapes:
                 combined_offset = Part.Solid(offset_shapes[0])
                 for shape in offset_shapes[1:]:
                     combined_offset = combined_offset.fuse(shape)
 
-                # Step 6: Cut
+                if fp.ImproveCut == True:
+                    comb_impr_off = Part.Solid(offset_improv[0])
+                    for impr_shape in offset_improv[1:]:
+                        comb_impr_off = comb_impr_off.fuse(impr_shape)
+                    combined_offset = combined_offset.fuse(comb_impr_off)
+
+                # Step 6: Intersection with sheet metal faces
+                cutOffsets = combined_offset.common(shell)
+                conn_offsetFaces = self.find_connected_faces(cutOffsets)
+                shapeCutOffsets = []
+                for offset in conn_offsetFaces:
+                    offsetFace = Part.Shell(offset)
+                    offsetSolid = offsetFace.makeOffsetShape(-thickness, 0, fill=True)
+                    shapeCutOffsets.append(offsetSolid)
+
+                combined_offset = Part.Solid(shapeCutOffsets[0])
+                for shape in shapeCutOffsets[1:]:
+                    combined_offset = combined_offset.fuse(shape)
+
+                # Step 7: Cut
                 # Check the "CutSide" property to decide how to perform the cut
                 if fp.CutSide == "Inside":
                     if fp.Refine == True:
@@ -295,6 +368,16 @@ if SheetMetalTools.isGuiLoaded():
         def __setstate__(self, state):
             '''Restore the object from its state'''
             self.loads(state)
+        
+        def dumps(self):
+            return None
+
+        def loads(self, state):
+            if state is not None:
+                import FreeCAD
+
+                doc = FreeCAD.ActiveDocument  # crap
+                self.Object = doc.getObject(state["ObjectName"])
 
         # dumps and loads replace __getstate__ and __setstate__ post v. 0.21.2
         def dumps(self):
