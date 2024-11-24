@@ -147,16 +147,22 @@ class ExtrudedCutout:
             faces = selected_object.Shape.Faces
             for face in faces:
                 if face is not selected_face:
-                    if normal_vector.isEqual(face.normalAt(0, 0).multiply(-1), 1e-6):
+                    if normal_vector.isEqual(face.normalAt(0, 0).multiply(-1), 1e-6): # Test to find a face with opposite normal
                         distance_info = selected_face.distToShape(face)
                         distance = distance_info[0]
-                        if distance < min_distance:
-                            min_distance = distance
+                        if distance < min_distance: # Test to find the closest opposite face
+                            try:
+                                checkFace = face.makeOffsetShape(-distance, 0)
+                                checkCut = selected_face.cut(checkFace)
+                                if checkCut.Area < 1e-6: # Test to ensure the opposite face is, in fact, the other side of the sheet metal part
+                                    min_distance = distance
+                            except: # Is necessary 'try' and 'except','cause rounded surfaces offset can lead to errors if offset is bigger than it's radius
+                                continue
         
             if min_distance == float('inf'):
                 raise Exception("No opposite face found to calculate thickness.")
             
-            thickness = min_distance
+            thickness = round(min_distance,4) # Appear that rounding can help on speed performance of the rest of the code
 
             # Step 2: Find pairs of parallel faces
             parallel_faces = []
@@ -169,7 +175,7 @@ class ExtrudedCutout:
                         distance = distance_info[0]
                         if abs(distance - thickness) < 1e-5: # In the past, this tolerance was 1e-6, it's leads to errors
                             parallel_faces.extend([face1, face2])
-        
+
             if parallel_faces:
                 shell = Part.Shell(parallel_faces)
             else:
@@ -185,7 +191,7 @@ class ExtrudedCutout:
                 improvSurfaces = []
                 tknOff = tknOffStep
                 while abs(thickness - tknOff) > 1e-6:
-                    sideOff = smSide1.makeOffsetShape(-tknOff, 0, fill=False)
+                    sideOff = smSide1.makeOffsetShape(-tknOff, 0)
                     improvSurfaces.append(sideOff)
                     tknOff = tknOff + tknOffStep
 
@@ -262,20 +268,20 @@ class ExtrudedCutout:
                         comb_impr_off = comb_impr_off.fuse(impr_shape)
                     combined_offset = combined_offset.fuse(comb_impr_off)
 
-                # Step 6: Intersection with sheet metal faces
-                cutOffsets = combined_offset.common(shell)
-                conn_offsetFaces = self.find_connected_faces(cutOffsets)
-                shapeCutOffsets = []
-                for offset in conn_offsetFaces:
-                    offsetFace = Part.Shell(offset)
-                    offsetSolid = offsetFace.makeOffsetShape(-thickness, 0, fill=True)
-                    shapeCutOffsets.append(offsetSolid)
+                    # Intersection with sheet metal faces
+                    cutOffsets = combined_offset.common(shell)
+                    conn_offsetFaces = self.find_connected_faces(cutOffsets)
+                    shapeCutOffsets = []
+                    for offset in conn_offsetFaces:
+                        offsetFace = Part.Shell(offset)
+                        offsetSolid = offsetFace.makeOffsetShape(-thickness, 0, fill=True)
+                        shapeCutOffsets.append(offsetSolid)
 
-                combined_offset = Part.Solid(shapeCutOffsets[0])
-                for shape in shapeCutOffsets[1:]:
-                    combined_offset = combined_offset.fuse(shape)
+                    combined_offset = Part.Solid(shapeCutOffsets[0])
+                    for shape in shapeCutOffsets[1:]:
+                        combined_offset = combined_offset.fuse(shape)
 
-                # Step 7: Cut
+                # Step 6: Cut
                 # Check the "CutSide" property to decide how to perform the cut
                 if fp.CutSide == "Inside":
                     if fp.Refine == True:
