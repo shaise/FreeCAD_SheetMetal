@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
-<TS version="2.1" language="sr_CS" sourcelanguage="en">
+<TS version="2.1" language="zh_TW" sourcelanguage="en">
   <context>
     <name>App::Property</name>
     <message>
@@ -9,47 +9,47 @@
       <location filename="../../SheetMetalCmd.py" line="1382"/>
       <location filename="../../SheetMetalFoldCmd.py" line="255"/>
       <source>Bend Radius</source>
-      <translation>Poluprečnik savijanja</translation>
+      <translation>彎曲半徑</translation>
     </message>
     <message>
       <location filename="../../SheetMetalBaseCmd.py" line="118"/>
       <source>Thickness of sheetmetal</source>
-      <translation>Debljina lima</translation>
+      <translation>鈑金厚度</translation>
     </message>
     <message>
       <location filename="../../SheetMetalBaseCmd.py" line="122"/>
       <location filename="../../SheetMetalCmd.py" line="1456"/>
       <source>Relief Type</source>
-      <translation>Vrsta olakšanja</translation>
+      <translation>解脱類型</translation>
     </message>
     <message>
       <location filename="../../SheetMetalBaseCmd.py" line="126"/>
       <source>Length of wall</source>
-      <translation>Dužina stranice</translation>
+      <translation>牆面長度</translation>
     </message>
     <message>
       <location filename="../../SheetMetalBaseCmd.py" line="130"/>
       <source>Wall Sketch object</source>
-      <translation>Objekat skica stranice</translation>
+      <translation>牆面草圖物體</translation>
     </message>
     <message>
       <location filename="../../SheetMetalBaseCmd.py" line="134"/>
       <location filename="../../SheetMetalBaseCmd.py" line="147"/>
       <source>Extrude Symmetric to Plane</source>
-      <translation>Izvlačenje simetrično u odnosu na ravan</translation>
+      <translation>擠出對稱於平面</translation>
     </message>
     <message>
       <location filename="../../SheetMetalBaseCmd.py" line="138"/>
       <location filename="../../SheetMetalBaseCmd.py" line="151"/>
       <source>Reverse Extrusion Direction</source>
-      <translation>Obrnuti smer izvlačenja</translation>
+      <translation>反向擠壓方向</translation>
     </message>
     <message>
       <location filename="../../SheetMetalBend.py" line="112"/>
       <location filename="../../SheetMetalCornerReliefCmd.py" line="449"/>
       <location filename="../../SheetMetalExtendCmd.py" line="276"/>
       <source>Base object</source>
-      <translation>Osnova</translation>
+      <translation>基礎物體</translation>
     </message>
     <message>
       <location filename="../../SheetMetalCmd.py" line="1375"/>
@@ -59,307 +59,307 @@
       <location filename="../../SheetMetalRelief.py" line="119"/>
       <location filename="../../SketchOnSheetMetalCmd.py" line="267"/>
       <source>Base Object</source>
-      <translation>Osnova</translation>
+      <translation>基礎物體</translation>
     </message>
     <message>
       <location filename="../../SheetMetalCmd.py" line="1385"/>
       <location filename="../../SheetMetalExtendCmd.py" line="270"/>
       <source>Length of Wall</source>
-      <translation>Dužina stranice</translation>
+      <translation>牆面長度</translation>
     </message>
     <message>
       <location filename="../../SheetMetalCmd.py" line="1390"/>
       <location filename="../../SketchOnSheetMetalCmd.py" line="275"/>
       <source>Gap from Left Side</source>
-      <translation>Odmaknuto od leve strane</translation>
+      <translation>左側間隙</translation>
     </message>
     <message>
       <location filename="../../SheetMetalCmd.py" line="1396"/>
       <source>Gap from Right Side</source>
-      <translation>Odmaknuto od desne strane</translation>
+      <translation>右側間隙</translation>
     </message>
     <message>
       <location filename="../../SheetMetalCmd.py" line="1402"/>
       <location filename="../../SheetMetalFoldCmd.py" line="277"/>
       <source>Invert Bend Direction</source>
-      <translation>Obrni smer savijanja</translation>
+      <translation>反轉彎曲方向</translation>
     </message>
     <message>
       <location filename="../../SheetMetalCmd.py" line="1406"/>
       <location filename="../../SheetMetalFoldCmd.py" line="259"/>
       <source>Bend Angle</source>
-      <translation>Ugao savijanja</translation>
+      <translation>彎曲角度</translation>
     </message>
     <message>
       <location filename="../../SheetMetalCmd.py" line="1411"/>
       <source>Extend from Left Side</source>
-      <translation>Proširi sa leve strane</translation>
+      <translation>從左側延伸</translation>
     </message>
     <message>
       <location filename="../../SheetMetalCmd.py" line="1417"/>
       <source>Extend from Right Side</source>
-      <translation>Proširi sa desne strane</translation>
+      <translation>從右側延伸</translation>
     </message>
     <message>
       <location filename="../../SheetMetalCmd.py" line="1423"/>
       <source>Bend Type</source>
-      <translation>Vrsta savijanja</translation>
+      <translation>彎曲類型</translation>
     </message>
     <message>
       <location filename="../../SheetMetalCmd.py" line="1429"/>
       <source>Type of Length Specification</source>
-      <translation>Vrsta specifikacije dužine</translation>
+      <translation>長度規格類型</translation>
     </message>
     <message>
       <location filename="../../SheetMetalCmd.py" line="1435"/>
       <source>Relief Width</source>
-      <translation>Širina olakšanja</translation>
+      <translation>減免寬度</translation>
     </message>
     <message>
       <location filename="../../SheetMetalCmd.py" line="1442"/>
       <source>Relief Depth</source>
-      <translation>Dubina olakšanja</translation>
+      <translation>減免深度</translation>
     </message>
     <message>
       <location filename="../../SheetMetalCmd.py" line="1449"/>
       <source>Use Relief Factor</source>
-      <translation>Koristi koeficijent olakšanja</translation>
+      <translation>使用減免因素</translation>
     </message>
     <message>
       <location filename="../../SheetMetalCmd.py" line="1464"/>
       <source>Relief Factor</source>
-      <translation>Koeficijent olakšanja</translation>
+      <translation>減免因素</translation>
     </message>
     <message>
       <location filename="../../SheetMetalCmd.py" line="1471"/>
       <source>Bend Miter Angle from Left Side</source>
-      <translation>Zakošenje na levom boku savijanja</translation>
+      <translation>從左側彎曲斜接角度</translation>
     </message>
     <message>
       <location filename="../../SheetMetalCmd.py" line="1478"/>
       <source>Bend Miter Angle from Right Side</source>
-      <translation>Zakošenje na desnom boku savijanja</translation>
+      <translation>從右側彎曲斜接角度</translation>
     </message>
     <message>
       <location filename="../../SheetMetalCmd.py" line="1485"/>
       <source>Auto Miter Minimum Gap</source>
-      <translation>Minimalni procep automatskog zakošenja</translation>
+      <translation>自動斜接最小間隙</translation>
     </message>
     <message>
       <location filename="../../SheetMetalCmd.py" line="1492"/>
       <source>Auto Miter maximum Extend Distance</source>
-      <translation>Maksimalno produženje automatskog zakošenja</translation>
+      <translation>自動斜接最大延伸距離</translation>
     </message>
     <message>
       <location filename="../../SheetMetalCmd.py" line="1499"/>
       <source>Minimum Gap to Relief Cut</source>
-      <translation>Minimalni procep olakšanja</translation>
+      <translation>到減免切割的最小間隙</translation>
     </message>
     <message>
       <location filename="../../SheetMetalCmd.py" line="1506"/>
       <source>Offset Bend</source>
-      <translation>Odmak savijanja</translation>
+      <translation>偏移彎曲</translation>
     </message>
     <message>
       <location filename="../../SheetMetalCmd.py" line="1513"/>
       <source>Enable Auto Miter</source>
-      <translation>Omogući automatsko zakošenje</translation>
+      <translation>啟用自動斜接</translation>
     </message>
     <message>
       <location filename="../../SheetMetalCmd.py" line="1520"/>
       <source>Shows Unfold View of Current Bend</source>
-      <translation>Prikazuje razvijeno stanje ovog savijanja</translation>
+      <translation>顯示目前折彎的展開檢視</translation>
     </message>
     <message>
       <location filename="../../SheetMetalCmd.py" line="1531"/>
       <source>Location of Neutral Line. Caution: Using ANSI standards, not DIN.</source>
-      <translation>Položaj neutralne linije. Oprez: Koristi se ANSI standard, a ne DIN.</translation>
+      <translation type="unfinished">Location of Neutral Line. Caution: Using ANSI standards, not DIN.</translation>
     </message>
     <message>
       <location filename="../../SheetMetalCmd.py" line="1538"/>
       <source>Flip Sketch Direction</source>
-      <translation>Obrni smer skice</translation>
+      <translation>翻轉草圖方向</translation>
     </message>
     <message>
       <location filename="../../SheetMetalCmd.py" line="1545"/>
       <source>Invert Sketch Start</source>
-      <translation>Zameni početak skice</translation>
+      <translation>反轉草圖起點</translation>
     </message>
     <message>
       <location filename="../../SheetMetalCmd.py" line="1553"/>
       <source>Sketch Object</source>
-      <translation>Objekat skica</translation>
+      <translation>草圖物體</translation>
     </message>
     <message>
       <location filename="../../SheetMetalCmd.py" line="1561"/>
       <source>Length of Wall List</source>
-      <translation>Lista dužina stranica</translation>
+      <translation>牆面列表長度</translation>
     </message>
     <message>
       <location filename="../../SheetMetalCmd.py" line="1569"/>
       <source>Bend Angle List</source>
-      <translation>Lista uglova savijanja</translation>
+      <translation>彎曲角度列表</translation>
     </message>
     <message>
       <location filename="../../SheetMetalCmd.py" line="1576"/>
       <source>Enable Perforation</source>
-      <translation>Omogući perforaciju</translation>
+      <translation>啟用穿孔</translation>
     </message>
     <message>
       <location filename="../../SheetMetalCmd.py" line="1583"/>
       <source>Perforation Angle</source>
-      <translation>Ugao perforacije</translation>
+      <translation>穿孔角度</translation>
     </message>
     <message>
       <location filename="../../SheetMetalCmd.py" line="1590"/>
       <source>Initial Perforation Length</source>
-      <translation>Početna dužina perforacije</translation>
+      <translation>初始穿孔長度</translation>
     </message>
     <message>
       <location filename="../../SheetMetalCmd.py" line="1597"/>
       <source>Perforation Max Length</source>
-      <translation>Maksimalna dužina perforacije</translation>
+      <translation>穿孔最大長度</translation>
     </message>
     <message>
       <location filename="../../SheetMetalCmd.py" line="1604"/>
       <source>Non-Perforation Max Length</source>
-      <translation>Maksimalna dužina bez perforacije</translation>
+      <translation>非穿孔最大長度</translation>
     </message>
     <message>
       <location filename="../../SheetMetalCornerReliefCmd.py" line="439"/>
       <source>Corner Relief Type</source>
-      <translation>Vrsta ugaonog olakšanja</translation>
+      <translation>邊角減免類型</translation>
     </message>
     <message>
       <location filename="../../SheetMetalCornerReliefCmd.py" line="453"/>
       <source>Size of Shape</source>
-      <translation>Veličina oblika</translation>
+      <translation>形狀尺寸</translation>
     </message>
     <message>
       <location filename="../../SheetMetalCornerReliefCmd.py" line="455"/>
       <source>Size Ratio of Shape</source>
-      <translation>Odnos veličina oblika</translation>
+      <translation>形狀尺寸比</translation>
     </message>
     <message>
       <location filename="../../SheetMetalCornerReliefCmd.py" line="459"/>
       <location filename="../../SheetMetalFoldCmd.py" line="273"/>
       <source>Neutral Axis Position</source>
-      <translation>Položaj neutralne linije</translation>
+      <translation>中性軸位置</translation>
     </message>
     <message>
       <location filename="../../SheetMetalCornerReliefCmd.py" line="463"/>
       <source>Corner Relief Sketch</source>
-      <translation>Skica ugaonog olakšanja</translation>
+      <translation>邊角減免草圖</translation>
     </message>
     <message>
       <location filename="../../SheetMetalCornerReliefCmd.py" line="465"/>
       <source>Gap from side one</source>
-      <translation>Odmaknuto od prve strane</translation>
+      <translation>與第一面的差距間隙</translation>
     </message>
     <message>
       <location filename="../../SheetMetalCornerReliefCmd.py" line="469"/>
       <source>Gap from side two</source>
-      <translation>Odmaknuto od druge strane</translation>
+      <translation>與第二面的差距間隙</translation>
     </message>
     <message>
       <location filename="../../SheetMetalExtendCmd.py" line="272"/>
       <source>Gap from left side</source>
-      <translation>Odmaknuto od leve strane</translation>
+      <translation>左側間隙</translation>
     </message>
     <message>
       <location filename="../../SheetMetalExtendCmd.py" line="274"/>
       <source>Gap from right side</source>
-      <translation>Odmaknuto od desne strane</translation>
+      <translation>右側間隙</translation>
     </message>
     <message>
       <location filename="../../SheetMetalExtendCmd.py" line="278"/>
       <location filename="../../SheetMetalExtendCmd.py" line="294"/>
       <source>Wall Sketch</source>
-      <translation>Skica stranice</translation>
+      <translation>牆面草圖</translation>
     </message>
     <message>
       <location filename="../../SheetMetalExtendCmd.py" line="280"/>
       <location filename="../../SheetMetalExtendCmd.py" line="296"/>
       <location filename="../../SheetMetalExtendCmd.py" line="304"/>
       <source>Use Subtraction</source>
-      <translation>Koristi zazor</translation>
+      <translation>使用減免因素</translation>
     </message>
     <message>
       <location filename="../../SheetMetalExtendCmd.py" line="282"/>
       <source>Offset for subtraction</source>
-      <translation>Veličina zazora</translation>
+      <translation>減免因素偏移量</translation>
     </message>
     <message>
       <location filename="../../SheetMetalExtendCmd.py" line="284"/>
       <location filename="../../SheetMetalExtendCmd.py" line="298"/>
       <source>Use Refine</source>
-      <translation>Prečisti</translation>
+      <translation>使用優化</translation>
     </message>
     <message>
       <location filename="../../SheetMetalFoldCmd.py" line="265"/>
       <source>Bend Reference Line List</source>
-      <translation>Lista linija savijanja</translation>
+      <translation>折彎參考線列表</translation>
     </message>
     <message>
       <location filename="../../SheetMetalFoldCmd.py" line="269"/>
       <source>Invert Solid Bend Direction</source>
-      <translation>Okreni deo u odnosu na savijanje</translation>
+      <translation>反轉實體折彎方向</translation>
     </message>
     <message>
       <location filename="../../SheetMetalFoldCmd.py" line="281"/>
       <source>Unfold Bend</source>
-      <translation>Razvij savijanje</translation>
+      <translation>展開彎曲</translation>
     </message>
     <message>
       <location filename="../../SheetMetalFoldCmd.py" line="285"/>
       <location filename="../../SheetMetalFoldCmd.py" line="295"/>
       <source>Bend Line Position</source>
-      <translation>Položaj linije savijanja</translation>
+      <translation>彎折線位置</translation>
     </message>
     <message>
       <location filename="../../SheetMetalFormingCmd.py" line="112"/>
       <source>Offset from Center of Face</source>
-      <translation>Odmak od centra stranice</translation>
+      <translation>從面中心偏移</translation>
     </message>
     <message>
       <location filename="../../SheetMetalFormingCmd.py" line="114"/>
       <source>Suppress Forming Feature</source>
-      <translation>Stavi na čekanje tipski oblik Utiskivanje</translation>
+      <translation>抑製成形特徵</translation>
     </message>
     <message>
       <location filename="../../SheetMetalFormingCmd.py" line="116"/>
       <source>Tool Position Angle</source>
-      <translation>Ugao alata</translation>
+      <translation>工具位置角度</translation>
     </message>
     <message>
       <location filename="../../SheetMetalFormingCmd.py" line="118"/>
       <source>Thickness of Sheetmetal</source>
-      <translation>Debljina lima</translation>
+      <translation>鈑金厚度</translation>
     </message>
     <message>
       <location filename="../../SheetMetalFormingCmd.py" line="123"/>
       <source>Forming Tool Object</source>
-      <translation>Objekat alat za utiskivanje</translation>
+      <translation>成形工具物體</translation>
     </message>
     <message>
       <location filename="../../SheetMetalFormingCmd.py" line="126"/>
       <source>Point Sketch on Sheetmetal</source>
-      <translation>Postavljaj skicu po limu</translation>
+      <translation>鈑金件上的點草圖</translation>
     </message>
     <message>
       <location filename="../../SheetMetalJunction.py" line="69"/>
       <source>Junction Gap</source>
-      <translation>Procep na pregibu</translation>
+      <translation>結點間隔</translation>
     </message>
     <message>
       <location filename="../../SheetMetalRelief.py" line="117"/>
       <source>Relief Size</source>
-      <translation>Veličina olakšanja</translation>
+      <translation>減免大小</translation>
     </message>
     <message>
       <location filename="../../SketchOnSheetMetalCmd.py" line="271"/>
       <source>Sketch on Sheetmetal</source>
-      <translation>Isecanje kroz pregib</translation>
+      <translation>草圖於鈑金工作台</translation>
     </message>
   </context>
   <context>
@@ -367,12 +367,12 @@
     <message>
       <location filename="../panels/SMprefs.ui" line="14"/>
       <source>General settings</source>
-      <translation>Opšta podešavanja</translation>
+      <translation type="unfinished">General settings</translation>
     </message>
     <message>
       <location filename="../panels/SMprefs.ui" line="26"/>
       <source>General</source>
-      <translation>Opšte</translation>
+      <translation type="unfinished">General</translation>
     </message>
     <message>
       <location filename="../panels/SMprefs.ui" line="37"/>
@@ -383,13 +383,13 @@
       <location filename="../panels/SMprefs.ui" line="70"/>
       <location filename="../panels/SMprefs.ui" line="123"/>
       <source>Disabled</source>
-      <translation>Onemogućeno</translation>
+      <translation type="unfinished">Disabled</translation>
     </message>
     <message>
       <location filename="../panels/SMprefs.ui" line="75"/>
       <location filename="../panels/SMprefs.ui" line="128"/>
       <source>Enabled</source>
-      <translation>Omogućeno</translation>
+      <translation type="unfinished">Enabled</translation>
     </message>
     <message>
       <location filename="../panels/SMprefs.ui" line="90"/>
@@ -399,7 +399,7 @@
     <message>
       <location filename="../panels/SMprefs.ui" line="171"/>
       <source>Preferences for the SheetMetal Workbench</source>
-      <translation>Podešavanja okruženja Delovi od lima</translation>
+      <translation type="unfinished">Preferences for the SheetMetal Workbench</translation>
     </message>
   </context>
   <context>
@@ -407,7 +407,7 @@
     <message>
       <location filename="../../SheetMetalBaseShapeCmd.py" line="419"/>
       <source>Base shape edit mode: </source>
-      <translation>Režim uređivanja primitiva od lima: </translation>
+      <translation>基礎形狀編輯模式: </translation>
     </message>
     <message>
       <location filename="../../SheetMetalCornerReliefCmd.py" line="39"/>
@@ -415,52 +415,52 @@
       <location filename="../../SheetMetalFormingCmd.py" line="40"/>
       <location filename="../../SketchOnSheetMetalCmd.py" line="52"/>
       <source>Shape is not a real 3D-object or to small for a metal-sheet!</source>
-      <translation>Oblik nije odgovarajući 3D objekat ili je suviše mali za deo od lima!</translation>
+      <translation>形狀不是真正的 3D 物件或對於金屬板來說太小!</translation>
     </message>
     <message>
       <location filename="../../SheetMetalUnfoldCmd.py" line="62"/>
       <source>Running unattended unfold...</source>
-      <translation>Izvršava se razvijanje po automatizmu...</translation>
+      <translation>自動展開執行...</translation>
     </message>
     <message>
       <location filename="../../SheetMetalUnfolder.py" line="427"/>
       <source>k_Factor is a readonly property! Won&apos;t set to:</source>
-      <translation type="unfinished">k_Factor is a readonly property! Won&apos;t set to:</translation>
+      <translation>k_Factor 是一個唯讀屬性! 不會設定為:</translation>
     </message>
     <message>
       <location filename="../../SheetMetalUnfolder.py" line="2498"/>
       <source>at line {} got exception: </source>
-      <translation type="unfinished">at line {} got exception: </translation>
+      <translation>異常於線 {}: </translation>
     </message>
     <message>
       <location filename="../../SheetMetalUnfolder.py" line="3136"/>
       <source>exception at line </source>
-      <translation type="unfinished">exception at line </translation>
+      <translation>異常於線 </translation>
     </message>
     <message>
       <location filename="../../SheetMetalUnfolder.py" line="3184"/>
       <source>Exception at line {}: Outline Sketch failed, re-trying after tidying up</source>
-      <translation>Izuzetak na liniji {}: Skica konture nije napravljena, ponovni pokušaj nakon sređivanja</translation>
+      <translation type="unfinished">Exception at line {}: Outline Sketch failed, re-trying after tidying up</translation>
     </message>
     <message>
       <location filename="../../SheetMetalUnfolder.py" line="3200"/>
       <source>tidying up Unfold_Sketch_Outline</source>
-      <translation>sredjivanje skice_razvijene_konture</translation>
+      <translation>異常於線 {}: 草圖線框失敗，重新整理後重試</translation>
     </message>
     <message>
       <location filename="../../SheetMetalUnfolder.py" line="3222"/>
       <source>Exception at line {}: Outline Sketch not created</source>
-      <translation>Izuzetak na liniji {}: Skica konture nije napravljena</translation>
+      <translation type="unfinished">Exception at line {}: Outline Sketch not created</translation>
     </message>
     <message>
       <location filename="../../SheetMetalUnfolder.py" line="3253"/>
       <source>discretizing Sketch</source>
-      <translation type="unfinished">discretizing Sketch</translation>
+      <translation>離散化草圖</translation>
     </message>
     <message>
       <location filename="../../UnfoldGUI.py" line="129"/>
       <source>Unfold operation needs to know K-factor value(s) to be used.</source>
-      <translation>Razvijanje u ravan nije moguće bez koeficijenta položaja neutralne linije.</translation>
+      <translation>展開操作需要知道要使用的 K 因子.</translation>
     </message>
   </context>
   <context>
@@ -468,15 +468,16 @@
     <message>
       <location filename="../../SheetMetalTools.py" line="24"/>
       <source>Error in macro MessageBox</source>
-      <translation type="unfinished">Error in macro MessageBox</translation>
+      <translation>錯誤於巨集訊息框</translation>
     </message>
     <message>
       <location filename="../../SheetMetalTools.py" line="69"/>
       <source>The selected geometry does not belong to the active Body.
 Please make the container of this item active by
 double clicking on it.</source>
-      <translation>Izabrana geometrija ne pripada aktivnom Telu.
-Aktiviraj kontejner ove stavke dvoklikom.</translation>
+      <translation type="unfinished">The selected geometry does not belong to the active Body.
+Please make the container of this item active by
+double clicking on it.</translation>
     </message>
     <message>
       <location filename="../../UnfoldGUI.py" line="136"/>
@@ -484,16 +485,16 @@ Aktiviraj kontejner ove stavke dvoklikom.</translation>
 &lt;li&gt;Either select &apos;Manual K-factor&apos;&lt;/li&gt;
 &lt;li&gt;Or use a &lt;a href=&apos;{}&apos;&gt;Material Definition Sheet&lt;/a&gt;&lt;/li&gt;
 &lt;/ol&gt;</source>
-      <translation>&lt;ol&gt;
-&lt;li&gt;Ili unesi &apos;Koeficijent položaja neutralne linije&apos;&lt;/li&gt;
-&lt;li&gt;Ili koristi &lt;a href=&apos;{}&apos;&gt;Tabelu koeficijenata položaja neutralne linije&lt;/a&gt;&lt;/li&gt;
+      <translation type="unfinished">&lt;ol&gt;
+&lt;li&gt;Either select &apos;Manual K-factor&apos;&lt;/li&gt;
+&lt;li&gt;Or use a &lt;a href=&apos;{}&apos;&gt;Material Definition Sheet&lt;/a&gt;&lt;/li&gt;
 &lt;/ol&gt;</translation>
     </message>
     <message>
       <location filename="../../UnfoldGUI.py" line="138"/>
       <location filename="../../UnfoldGUI.py" line="252"/>
       <source>Warning</source>
-      <translation>Upozorenje</translation>
+      <translation>警告</translation>
     </message>
     <message>
       <location filename="../../UnfoldGUI.py" line="248"/>
@@ -501,10 +502,10 @@ Aktiviraj kontejner ove stavke dvoklikom.</translation>
 Please try to select a different face to unfold your object
 
 If the opposite face also fails then switch Refine to false on feature </source>
-      <translation>Razvijanje nije uspelo.
-Probaj da izabereš neku drugu stranicu.
+      <translation type="unfinished">Unfold is failing.
+Please try to select a different face to unfold your object
 
-Ako razvijanje ne uspe ni za suprotnu stranicu, promeni opciju Prečisti na Netačno </translation>
+If the opposite face also fails then switch Refine to false on feature </translation>
     </message>
   </context>
   <context>
@@ -523,7 +524,7 @@ Ako razvijanje ne uspe ni za suprotnu stranicu, promeni opciju Prečisti na Neta
       <location filename="../../SheetMetalRelief.py" line="162"/>
       <location filename="../../SheetMetalRelief.py" line="169"/>
       <source>Edit %1</source>
-      <translation>Uredi %1</translation>
+      <translation>編輯 %1</translation>
     </message>
   </context>
   <context>
@@ -532,55 +533,55 @@ Ako razvijanje ne uspe ni za suprotnu stranicu, promeni opciju Prečisti na Neta
       <location filename="../../SheetMetalBaseShapeCmd.py" line="126"/>
       <source>Thickness of sheetmetal</source>
       <comment>Property</comment>
-      <translation>Debljina lima</translation>
+      <translation>鈑金厚度</translation>
     </message>
     <message>
       <location filename="../../SheetMetalBaseShapeCmd.py" line="132"/>
       <source>Bend Radius</source>
       <comment>Property</comment>
-      <translation>Poluprečnik savijanja</translation>
+      <translation>彎曲半徑</translation>
     </message>
     <message>
       <location filename="../../SheetMetalBaseShapeCmd.py" line="138"/>
       <source>Shape width</source>
       <comment>Property</comment>
-      <translation>Širina primitiva</translation>
+      <translation>造型寬度</translation>
     </message>
     <message>
       <location filename="../../SheetMetalBaseShapeCmd.py" line="144"/>
       <source>Shape length</source>
       <comment>Property</comment>
-      <translation>Dužina primitiva</translation>
+      <translation>造型長度</translation>
     </message>
     <message>
       <location filename="../../SheetMetalBaseShapeCmd.py" line="150"/>
       <source>Shape height</source>
       <comment>Property</comment>
-      <translation>Visina primitiva</translation>
+      <translation>造型高度</translation>
     </message>
     <message>
       <location filename="../../SheetMetalBaseShapeCmd.py" line="156"/>
       <source>Width of top flange</source>
       <comment>Property</comment>
-      <translation>Širina gornjeg poruba</translation>
+      <translation>頂部凸緣寬度</translation>
     </message>
     <message>
       <location filename="../../SheetMetalBaseShapeCmd.py" line="162"/>
       <source>Base shape type</source>
       <comment>Property</comment>
-      <translation>Vrsta primitiva od lima</translation>
+      <translation>基礎形狀類型</translation>
     </message>
     <message>
       <location filename="../../SheetMetalBaseShapeCmd.py" line="169"/>
       <source>Location of part origin</source>
       <comment>Property</comment>
-      <translation>Položaj koordinatnog početka</translation>
+      <translation>零件原點</translation>
     </message>
     <message>
       <location filename="../../SheetMetalBaseShapeCmd.py" line="178"/>
       <source>Extend sides and flange to close all gaps</source>
       <comment>Property</comment>
-      <translation>Zatvaranje procepa produživanjem zidova i poruba</translation>
+      <translation>延伸側面和凸緣以封閉所有間隙</translation>
     </message>
   </context>
   <context>
@@ -588,127 +589,127 @@ Ako razvijanje ne uspe ni za suprotnu stranicu, promeni opciju Prečisti na Neta
     <message>
       <location filename="../panels/BaseShapeOptions.ui" line="14"/>
       <source>Generate Sheet Metal base shape</source>
-      <translation>Napravi primitive od lima</translation>
+      <translation>產生鈑金工作台基礎形狀</translation>
     </message>
     <message>
       <location filename="../panels/BaseShapeOptions.ui" line="22"/>
       <source>Base shape type</source>
-      <translation>Vrsta primitiva od lima</translation>
+      <translation>基礎形狀類型</translation>
     </message>
     <message>
       <location filename="../panels/BaseShapeOptions.ui" line="61"/>
       <source>Flat</source>
-      <translation>Ravni lim</translation>
+      <translation type="unfinished">Flat</translation>
     </message>
     <message>
       <location filename="../panels/BaseShapeOptions.ui" line="66"/>
       <source>L-Shape</source>
-      <translation>L oblik</translation>
+      <translation type="unfinished">L-Shape</translation>
     </message>
     <message>
       <location filename="../panels/BaseShapeOptions.ui" line="71"/>
       <source>U-Shape</source>
-      <translation>U oblik</translation>
+      <translation type="unfinished">U-Shape</translation>
     </message>
     <message>
       <location filename="../panels/BaseShapeOptions.ui" line="76"/>
       <source>Tub</source>
-      <translation>Otvorena kutija</translation>
+      <translation type="unfinished">Tub</translation>
     </message>
     <message>
       <location filename="../panels/BaseShapeOptions.ui" line="81"/>
       <source>Hat</source>
-      <translation>Kutija sa porubom</translation>
+      <translation type="unfinished">Hat</translation>
     </message>
     <message>
       <location filename="../panels/BaseShapeOptions.ui" line="86"/>
       <source>Box</source>
-      <translation>Zatvorena kutija</translation>
+      <translation type="unfinished">Box</translation>
     </message>
     <message>
       <location filename="../panels/BaseShapeOptions.ui" line="98"/>
       <source>Thickness</source>
-      <translation>Debljina</translation>
+      <translation>厚度</translation>
     </message>
     <message>
       <location filename="../panels/BaseShapeOptions.ui" line="136"/>
       <source>Thickness of sheet</source>
-      <translation>Debljina lima</translation>
+      <translation>鈑金厚度</translation>
     </message>
     <message>
       <location filename="../panels/BaseShapeOptions.ui" line="162"/>
       <source>Bend radius</source>
-      <translation>Poluprečnik savijanja</translation>
+      <translation>彎曲半徑</translation>
     </message>
     <message>
       <location filename="../panels/BaseShapeOptions.ui" line="200"/>
       <source>Inner radius of the bend</source>
-      <translation>Unutrašnji poluprečnik savijanja</translation>
+      <translation>彎曲內半徑</translation>
     </message>
     <message>
       <location filename="../panels/BaseShapeOptions.ui" line="226"/>
       <source>Width</source>
-      <translation>Širina</translation>
+      <translation>寬度</translation>
     </message>
     <message>
       <location filename="../panels/BaseShapeOptions.ui" line="264"/>
       <source>Width of base shape</source>
-      <translation>Širina primitiva od lima</translation>
+      <translation>基座形狀的寬度</translation>
     </message>
     <message>
       <location filename="../panels/BaseShapeOptions.ui" line="287"/>
       <source>Length</source>
-      <translation>Dužina</translation>
+      <translation>長度</translation>
     </message>
     <message>
       <location filename="../panels/BaseShapeOptions.ui" line="328"/>
       <source>Length of base shape</source>
-      <translation>Dužina primitiva od lima</translation>
+      <translation>基座形狀的長度</translation>
     </message>
     <message>
       <location filename="../panels/BaseShapeOptions.ui" line="354"/>
       <source>Height</source>
-      <translation>Visina</translation>
+      <translation>高度</translation>
     </message>
     <message>
       <location filename="../panels/BaseShapeOptions.ui" line="386"/>
       <source>height of base shape</source>
-      <translation>visina primitiva od lima</translation>
+      <translation>基座形狀的高度</translation>
     </message>
     <message>
       <location filename="../panels/BaseShapeOptions.ui" line="415"/>
       <source>Flange width</source>
-      <translation>Širina poruba</translation>
+      <translation>法蘭寬度</translation>
     </message>
     <message>
       <location filename="../panels/BaseShapeOptions.ui" line="447"/>
       <source>Width of top flange (for Box and Hat types)</source>
-      <translation>Širina gornjeg poruba (za zatvorenu i kutiju sa porubom)</translation>
+      <translation>頂部凸緣寬度(適用於立方型和帽型)</translation>
     </message>
     <message>
       <location filename="../panels/BaseShapeOptions.ui" line="482"/>
       <source>Location of part origin</source>
-      <translation>Položaj koordinatnog početka</translation>
+      <translation>零件原點</translation>
     </message>
     <message>
       <location filename="../panels/BaseShapeOptions.ui" line="874"/>
       <source>Extend sides and flange to close all gaps</source>
-      <translation>Zatvaranje procepa produživanjem zidova i poruba</translation>
+      <translation>延伸側面和凸緣以封閉所有間隙</translation>
     </message>
     <message>
       <location filename="../panels/BaseShapeOptions.ui" line="877"/>
       <source>Fill gaps</source>
-      <translation>Popuni procepe</translation>
+      <translation>填充間隙</translation>
     </message>
     <message>
       <location filename="../panels/BaseShapeOptions.ui" line="884"/>
       <source>Create the base shape as a new body</source>
-      <translation>Napravi primitiva od lima kao novo Telo</translation>
+      <translation>建立基礎形狀作為新實體</translation>
     </message>
     <message>
       <location filename="../panels/BaseShapeOptions.ui" line="887"/>
       <source>Embed in new Body</source>
-      <translation>Napravi unutar Tela</translation>
+      <translation>嵌入新實體</translation>
     </message>
   </context>
   <context>
@@ -716,42 +717,42 @@ Ako razvijanje ne uspe ni za suprotnu stranicu, promeni opciju Prečisti na Neta
     <message>
       <location filename="../panels/BendOnLinePanel.ui" line="14"/>
       <source>Generate Sheet Metal base shape</source>
-      <translation>Napravi primitive od lima</translation>
+      <translation>產生鈑金工作台基礎形狀</translation>
     </message>
     <message>
       <location filename="../panels/BendOnLinePanel.ui" line="32"/>
       <source>Bend Line</source>
-      <translation>Linija savijanja</translation>
+      <translation type="unfinished">Bend Line</translation>
     </message>
     <message>
       <location filename="../panels/BendOnLinePanel.ui" line="39"/>
       <source>Base Object</source>
-      <translation>Osnova</translation>
+      <translation>基礎物體</translation>
     </message>
     <message>
       <location filename="../panels/BendOnLinePanel.ui" line="46"/>
       <source>Feature Name</source>
-      <translation>Ime tipskog oblika</translation>
+      <translation type="unfinished">Feature Name</translation>
     </message>
     <message>
       <location filename="../panels/BendOnLinePanel.ui" line="64"/>
       <source>Flip Direction</source>
-      <translation>Obrni smer</translation>
+      <translation type="unfinished">Flip Direction</translation>
     </message>
     <message>
       <location filename="../panels/BendOnLinePanel.ui" line="71"/>
       <source>Unbend</source>
-      <translation>Ispravi</translation>
+      <translation type="unfinished">Unbend</translation>
     </message>
     <message>
       <location filename="../panels/BendOnLinePanel.ui" line="83"/>
       <source>Bend Radius</source>
-      <translation>Poluprečnik savijanja</translation>
+      <translation>彎曲半徑</translation>
     </message>
     <message>
       <location filename="../panels/BendOnLinePanel.ui" line="96"/>
       <source>Bend Angle</source>
-      <translation>Ugao savijanja</translation>
+      <translation>彎曲角度</translation>
     </message>
   </context>
   <context>
@@ -759,37 +760,37 @@ Ako razvijanje ne uspe ni za suprotnu stranicu, promeni opciju Prečisti na Neta
     <message>
       <location filename="../panels/CornerReliefPanel.ui" line="14"/>
       <source>Generate Sheet Metal base shape</source>
-      <translation>Napravi primitive od lima</translation>
+      <translation>產生鈑金工作台基礎形狀</translation>
     </message>
     <message>
       <location filename="../panels/CornerReliefPanel.ui" line="29"/>
       <source>Relief Size</source>
-      <translation>Veličina olakšanja</translation>
+      <translation>減免大小</translation>
     </message>
     <message>
       <location filename="../panels/CornerReliefPanel.ui" line="70"/>
       <source>Relief Type</source>
-      <translation>Vrsta olakšanja</translation>
+      <translation>解脱類型</translation>
     </message>
     <message>
       <location filename="../panels/CornerReliefPanel.ui" line="80"/>
       <source>Circular</source>
-      <translation>Kružni</translation>
+      <translation type="unfinished">Circular</translation>
     </message>
     <message>
       <location filename="../panels/CornerReliefPanel.ui" line="90"/>
       <source>Square</source>
-      <translation>Kvadratni</translation>
+      <translation type="unfinished">Square</translation>
     </message>
     <message>
       <location filename="../panels/CornerReliefPanel.ui" line="97"/>
       <source>Scaling</source>
-      <translation>Skaliranje</translation>
+      <translation type="unfinished">Scaling</translation>
     </message>
     <message>
       <location filename="../panels/CornerReliefPanel.ui" line="104"/>
       <source>Scale Factor</source>
-      <translation>Razmera</translation>
+      <translation type="unfinished">Scale Factor</translation>
     </message>
   </context>
   <context>
@@ -797,37 +798,37 @@ Ako razvijanje ne uspe ni za suprotnu stranicu, promeni opciju Prečisti na Neta
     <message>
       <location filename="../panels/CreateBaseShape.ui" line="14"/>
       <source>Generate Sheet Metal base shape</source>
-      <translation>Napravi primitive od lima</translation>
+      <translation>產生鈑金工作台基礎形狀</translation>
     </message>
     <message>
       <location filename="../panels/CreateBaseShape.ui" line="22"/>
       <source>Sketch: </source>
-      <translation>Skica: </translation>
+      <translation type="unfinished">Sketch: </translation>
     </message>
     <message>
       <location filename="../panels/CreateBaseShape.ui" line="29"/>
       <source>Select</source>
-      <translation>Izaberi</translation>
+      <translation type="unfinished">Select</translation>
     </message>
     <message>
       <location filename="../panels/CreateBaseShape.ui" line="41"/>
       <source>Extend sides and flange to close all gaps</source>
-      <translation>Zatvaranje procepa produživanjem zidova i poruba</translation>
+      <translation>延伸側面和凸緣以封閉所有間隙</translation>
     </message>
     <message>
       <location filename="../panels/CreateBaseShape.ui" line="47"/>
       <source>Reverse Direction</source>
-      <translation>Obrni smer</translation>
+      <translation type="unfinished">Reverse Direction</translation>
     </message>
     <message>
       <location filename="../panels/CreateBaseShape.ui" line="54"/>
       <source>Create the base shape as a new body</source>
-      <translation>Napravi primitiva od lima kao novo Telo</translation>
+      <translation>建立基礎形狀作為新實體</translation>
     </message>
     <message>
       <location filename="../panels/CreateBaseShape.ui" line="60"/>
       <source>Center on Plane</source>
-      <translation>Centar na ravni</translation>
+      <translation type="unfinished">Center on Plane</translation>
     </message>
   </context>
   <context>
@@ -835,37 +836,37 @@ Ako razvijanje ne uspe ni za suprotnu stranicu, promeni opciju Prečisti na Neta
     <message>
       <location filename="../panels/ExtendTaskPanel.ui" line="14"/>
       <source>Generate Sheet Metal base shape</source>
-      <translation>Napravi primitive od lima</translation>
+      <translation>產生鈑金工作台基礎形狀</translation>
     </message>
     <message>
       <location filename="../panels/ExtendTaskPanel.ui" line="32"/>
       <source>Feature Name</source>
-      <translation>Ime tipskog oblika</translation>
+      <translation type="unfinished">Feature Name</translation>
     </message>
     <message>
       <location filename="../panels/ExtendTaskPanel.ui" line="39"/>
       <source>Base Element</source>
-      <translation>Osnovni element</translation>
+      <translation type="unfinished">Base Element</translation>
     </message>
     <message>
       <location filename="../panels/ExtendTaskPanel.ui" line="46"/>
       <source>Length</source>
-      <translation>Dužina</translation>
+      <translation>長度</translation>
     </message>
     <message>
       <location filename="../panels/ExtendTaskPanel.ui" line="62"/>
       <source>Flange Side Offset</source>
-      <translation>Odmak stranice poruba</translation>
+      <translation type="unfinished">Flange Side Offset</translation>
     </message>
     <message>
       <location filename="../panels/ExtendTaskPanel.ui" line="74"/>
       <source>SideA</source>
-      <translation>Stranica A</translation>
+      <translation type="unfinished">SideA</translation>
     </message>
     <message>
       <location filename="../panels/ExtendTaskPanel.ui" line="81"/>
       <source>SideB</source>
-      <translation>Stranica B</translation>
+      <translation type="unfinished">SideB</translation>
     </message>
   </context>
   <context>
@@ -873,67 +874,67 @@ Ako razvijanje ne uspe ni za suprotnu stranicu, promeni opciju Prečisti na Neta
     <message>
       <location filename="../panels/FlangeAdvancedParameters.ui" line="14"/>
       <source>Advanced Parameters</source>
-      <translation>Napredni parametri</translation>
+      <translation type="unfinished">Advanced Parameters</translation>
     </message>
     <message>
       <location filename="../panels/FlangeAdvancedParameters.ui" line="20"/>
       <source>Relief Cuts</source>
-      <translation>Olakšanje</translation>
+      <translation type="unfinished">Relief Cuts</translation>
     </message>
     <message>
       <location filename="../panels/FlangeAdvancedParameters.ui" line="26"/>
       <source>Width</source>
-      <translation>Širina</translation>
+      <translation>寬度</translation>
     </message>
     <message>
       <location filename="../panels/FlangeAdvancedParameters.ui" line="39"/>
       <source>Depth</source>
-      <translation>Dubina</translation>
+      <translation type="unfinished">Depth</translation>
     </message>
     <message>
       <location filename="../panels/FlangeAdvancedParameters.ui" line="56"/>
       <source>mm</source>
-      <translation>mm</translation>
+      <translation type="unfinished">mm</translation>
     </message>
     <message>
       <location filename="../panels/FlangeAdvancedParameters.ui" line="71"/>
       <source>Rectangle</source>
-      <translation>Pravougaonik</translation>
+      <translation type="unfinished">Rectangle</translation>
     </message>
     <message>
       <location filename="../panels/FlangeAdvancedParameters.ui" line="84"/>
       <source>Round</source>
-      <translation>Zaobljen</translation>
+      <translation type="unfinished">Round</translation>
     </message>
     <message>
       <location filename="../panels/FlangeAdvancedParameters.ui" line="112"/>
       <source>Auto Miter</source>
-      <translation>Automatsko zakošenje</translation>
+      <translation type="unfinished">Auto Miter</translation>
     </message>
     <message>
       <location filename="../panels/FlangeAdvancedParameters.ui" line="135"/>
       <source>Maximum Extend Distance</source>
-      <translation>Maksimalno produženje</translation>
+      <translation type="unfinished">Maximum Extend Distance</translation>
     </message>
     <message>
       <location filename="../panels/FlangeAdvancedParameters.ui" line="152"/>
       <source>Minimum Gap</source>
-      <translation>Minimalni procep</translation>
+      <translation type="unfinished">Minimum Gap</translation>
     </message>
     <message>
       <location filename="../panels/FlangeAdvancedParameters.ui" line="162"/>
       <source>Manual Miter</source>
-      <translation>Ručno zakošenje</translation>
+      <translation type="unfinished">Manual Miter</translation>
     </message>
     <message>
       <location filename="../panels/FlangeAdvancedParameters.ui" line="194"/>
       <source>Angle 2</source>
-      <translation>Ugao 2</translation>
+      <translation type="unfinished">Angle 2</translation>
     </message>
     <message>
       <location filename="../panels/FlangeAdvancedParameters.ui" line="201"/>
       <source>Angle 1</source>
-      <translation>Ugao 1</translation>
+      <translation type="unfinished">Angle 1</translation>
     </message>
   </context>
   <context>
@@ -941,118 +942,118 @@ Ako razvijanje ne uspe ni za suprotnu stranicu, promeni opciju Prečisti na Neta
     <message>
       <location filename="../panels/FlangeParameters.ui" line="14"/>
       <source>Flange Parameters</source>
-      <translation>Parametri poruba</translation>
+      <translation type="unfinished">Flange Parameters</translation>
     </message>
     <message>
       <location filename="../panels/FlangeParameters.ui" line="25"/>
       <source>Select</source>
-      <translation>Izaberi</translation>
+      <translation type="unfinished">Select</translation>
     </message>
     <message>
       <location filename="../panels/FlangeParameters.ui" line="63"/>
       <source>Name</source>
-      <translation>Ime</translation>
+      <translation>名稱</translation>
     </message>
     <message>
       <location filename="../panels/FlangeParameters.ui" line="68"/>
       <source>SubElement</source>
-      <translation>Podelement</translation>
+      <translation type="unfinished">SubElement</translation>
     </message>
     <message>
       <location filename="../panels/FlangeParameters.ui" line="76"/>
       <source>Bend</source>
-      <translation>Savijanje</translation>
+      <translation type="unfinished">Bend</translation>
     </message>
     <message>
       <location filename="../panels/FlangeParameters.ui" line="82"/>
       <source>Type</source>
-      <translation>Vrsta</translation>
+      <translation type="unfinished">Type</translation>
     </message>
     <message>
       <location filename="../panels/FlangeParameters.ui" line="90"/>
       <source>Material Outside</source>
-      <translation>Materijal spolja</translation>
+      <translation type="unfinished">Material Outside</translation>
     </message>
     <message>
       <location filename="../panels/FlangeParameters.ui" line="95"/>
       <source>Material Inside</source>
-      <translation>Materijal unutra</translation>
+      <translation type="unfinished">Material Inside</translation>
     </message>
     <message>
       <location filename="../panels/FlangeParameters.ui" line="100"/>
       <source>Thickness Outside</source>
-      <translation>Debljina ka napolje</translation>
+      <translation type="unfinished">Thickness Outside</translation>
     </message>
     <message>
       <location filename="../panels/FlangeParameters.ui" line="105"/>
       <location filename="../panels/FlangeParameters.ui" line="113"/>
       <source>Offset</source>
-      <translation>Odmak</translation>
+      <translation type="unfinished">Offset</translation>
     </message>
     <message>
       <location filename="../panels/FlangeParameters.ui" line="130"/>
       <source>Radius</source>
-      <translation>Poluprečnik</translation>
+      <translation type="unfinished">Radius</translation>
     </message>
     <message>
       <location filename="../panels/FlangeParameters.ui" line="153"/>
       <source>Angle</source>
-      <translation>Ugao</translation>
+      <translation type="unfinished">Angle</translation>
     </message>
     <message>
       <location filename="../panels/FlangeParameters.ui" line="176"/>
       <source>Length</source>
-      <translation>Dužina</translation>
+      <translation>長度</translation>
     </message>
     <message>
       <location filename="../panels/FlangeParameters.ui" line="198"/>
       <source>Length mode</source>
-      <translation>Režim dužine</translation>
+      <translation type="unfinished">Length mode</translation>
     </message>
     <message>
       <location filename="../panels/FlangeParameters.ui" line="206"/>
       <source>Leg</source>
-      <translation>Noga</translation>
+      <translation type="unfinished">Leg</translation>
     </message>
     <message>
       <location filename="../panels/FlangeParameters.ui" line="211"/>
       <source>Outer Sharp</source>
-      <translation>Oštar spolja</translation>
+      <translation type="unfinished">Outer Sharp</translation>
     </message>
     <message>
       <location filename="../panels/FlangeParameters.ui" line="216"/>
       <source>Inner Sharp</source>
-      <translation>Oštar unutra</translation>
+      <translation type="unfinished">Inner Sharp</translation>
     </message>
     <message>
       <location filename="../panels/FlangeParameters.ui" line="221"/>
       <source>Tangential</source>
-      <translation>Tangentno</translation>
+      <translation type="unfinished">Tangential</translation>
     </message>
     <message>
       <location filename="../panels/FlangeParameters.ui" line="233"/>
       <source>Unfold</source>
-      <translation>Razvijanje</translation>
+      <translation>展開</translation>
     </message>
     <message>
       <location filename="../panels/FlangeParameters.ui" line="240"/>
       <source>Reversed</source>
-      <translation>Obrnuto</translation>
+      <translation type="unfinished">Reversed</translation>
     </message>
     <message>
       <location filename="../panels/FlangeParameters.ui" line="252"/>
       <source>Side Offsets</source>
-      <translation>Bočni odmaci</translation>
+      <translation type="unfinished">Side Offsets</translation>
     </message>
     <message>
       <location filename="../panels/FlangeParameters.ui" line="258"/>
       <source>Side A</source>
-      <translation>Strana A</translation>
+      <translation type="unfinished">Side A</translation>
     </message>
     <message>
       <location filename="../panels/FlangeParameters.ui" line="272"/>
       <source>Side B</source>
-      <translation>Strana B</translation>
+      <translation type="unfinished">Side B</translation>
     </message>
   </context>
   <context>
@@ -1060,52 +1061,52 @@ Ako razvijanje ne uspe ni za suprotnu stranicu, promeni opciju Prečisti na Neta
     <message>
       <location filename="../panels/StampPanel.ui" line="14"/>
       <source>Generate Sheet Metal base shape</source>
-      <translation>Napravi primitive od lima</translation>
+      <translation>產生鈑金工作台基礎形狀</translation>
     </message>
     <message>
       <location filename="../panels/StampPanel.ui" line="35"/>
       <source>Select Face</source>
-      <translation>Izaberi stranicu</translation>
+      <translation type="unfinished">Select Face</translation>
     </message>
     <message>
       <location filename="../panels/StampPanel.ui" line="42"/>
       <source>Select Tool</source>
-      <translation>Alatka za izbor</translation>
+      <translation type="unfinished">Select Tool</translation>
     </message>
     <message>
       <location filename="../panels/StampPanel.ui" line="52"/>
       <source>Selected Feature</source>
-      <translation>Izabrani tipski oblik</translation>
+      <translation type="unfinished">Selected Feature</translation>
     </message>
     <message>
       <location filename="../panels/StampPanel.ui" line="68"/>
       <source>Position Offset</source>
-      <translation>Odmak položaja</translation>
+      <translation type="unfinished">Position Offset</translation>
     </message>
     <message>
       <location filename="../panels/StampPanel.ui" line="74"/>
       <source>Offset X</source>
-      <translation>Odmak X</translation>
+      <translation type="unfinished">Offset X</translation>
     </message>
     <message>
       <location filename="../panels/StampPanel.ui" line="84"/>
       <source>Offset Y</source>
-      <translation>Odmak Y</translation>
+      <translation type="unfinished">Offset Y</translation>
     </message>
     <message>
       <location filename="../panels/StampPanel.ui" line="94"/>
       <source>Offset Z</source>
-      <translation>Odmak Z</translation>
+      <translation type="unfinished">Offset Z</translation>
     </message>
     <message>
       <location filename="../panels/StampPanel.ui" line="104"/>
       <source>Angle</source>
-      <translation>Ugao</translation>
+      <translation type="unfinished">Angle</translation>
     </message>
     <message>
       <location filename="../panels/StampPanel.ui" line="126"/>
       <source>Thickness</source>
-      <translation>Debljina</translation>
+      <translation>厚度</translation>
     </message>
   </context>
   <context>
@@ -1113,32 +1114,32 @@ Ako razvijanje ne uspe ni za suprotnu stranicu, promeni opciju Prečisti na Neta
     <message>
       <location filename="../panels/UnfoldSketchOptions.ui" line="14"/>
       <source>Projection Sketch</source>
-      <translation>Skica projekcije</translation>
+      <translation type="unfinished">Projection Sketch</translation>
     </message>
     <message>
       <location filename="../panels/UnfoldSketchOptions.ui" line="20"/>
       <source>Generate projection sketch</source>
-      <translation>Napravi skicu projekcije</translation>
+      <translation>產生投影草圖</translation>
     </message>
     <message>
       <location filename="../panels/UnfoldSketchOptions.ui" line="35"/>
       <source>Color</source>
-      <translation>Boja</translation>
+      <translation>色彩</translation>
     </message>
     <message>
       <location filename="../panels/UnfoldSketchOptions.ui" line="74"/>
       <source>Separate projection layers</source>
-      <translation>Razdvoj vrste linija projekcije</translation>
+      <translation>單獨的投影層</translation>
     </message>
     <message>
       <location filename="../panels/UnfoldSketchOptions.ui" line="83"/>
       <source>Bend lines color</source>
-      <translation>Boja linija savijanja</translation>
+      <translation>彎折線顏色</translation>
     </message>
     <message>
       <location filename="../panels/UnfoldSketchOptions.ui" line="117"/>
       <source>Internal lines color</source>
-      <translation>Boja unutrašnjih linija</translation>
+      <translation>內部線條顏色</translation>
     </message>
   </context>
   <context>
@@ -1146,72 +1147,72 @@ Ako razvijanje ne uspe ni za suprotnu stranicu, promeni opciju Prečisti na Neta
     <message>
       <location filename="../panels/UnfoldOptions.ui" line="14"/>
       <source>Unfold sheet metal object</source>
-      <translation>Razvijanje u ravan dela od lima</translation>
+      <translation>展開板金物體</translation>
     </message>
     <message>
       <location filename="../panels/UnfoldOptions.ui" line="22"/>
       <source>Generate projection sketch</source>
-      <translation>Napravi skicu projekcije</translation>
+      <translation>產生投影草圖</translation>
     </message>
     <message>
       <location filename="../panels/UnfoldOptions.ui" line="55"/>
       <source>Separate projection layers</source>
-      <translation>Razdvoj vrste linija projekcije</translation>
+      <translation>單獨的投影層</translation>
     </message>
     <message>
       <location filename="../panels/UnfoldOptions.ui" line="64"/>
       <source>Bend lines color</source>
-      <translation>Boja linija savijanja</translation>
+      <translation>彎折線顏色</translation>
     </message>
     <message>
       <location filename="../panels/UnfoldOptions.ui" line="91"/>
       <source>Internal lines color</source>
-      <translation>Boja unutrašnjih linija</translation>
+      <translation>內部線條顏色</translation>
     </message>
     <message>
       <location filename="../panels/UnfoldOptions.ui" line="121"/>
       <source>Export sketch</source>
-      <translation>Izvezi skicu</translation>
+      <translation>匯出草圖</translation>
     </message>
     <message>
       <location filename="../panels/UnfoldOptions.ui" line="141"/>
       <source>DXF</source>
-      <translation>DXF</translation>
+      <translation type="unfinished">DXF</translation>
     </message>
     <message>
       <location filename="../panels/UnfoldOptions.ui" line="154"/>
       <source>SVG</source>
-      <translation>SVG</translation>
+      <translation type="unfinished">SVG</translation>
     </message>
     <message>
       <location filename="../panels/UnfoldOptions.ui" line="168"/>
       <source>Material Definition Sheet</source>
-      <translation>Tabela koeficijenata neutralne linije</translation>
+      <translation>材質定義表</translation>
     </message>
     <message>
       <location filename="../panels/UnfoldOptions.ui" line="185"/>
       <source>Manual K-Factor</source>
-      <translation>Koeficijent položaja neutralne linije</translation>
+      <translation>手動 K-係數</translation>
     </message>
     <message>
       <location filename="../panels/UnfoldOptions.ui" line="236"/>
       <source>ANSI</source>
-      <translation>ANSI</translation>
+      <translation type="unfinished">ANSI</translation>
     </message>
     <message>
       <location filename="../panels/UnfoldOptions.ui" line="246"/>
       <source>DIN</source>
-      <translation>DIN</translation>
+      <translation type="unfinished">DIN</translation>
     </message>
     <message>
       <location filename="../panels/UnfoldOptions.ui" line="272"/>
       <source>Unfold object transparency</source>
-      <translation>Providnost razvijene forme</translation>
+      <translation>展開物體透明度</translation>
     </message>
     <message>
       <location filename="../panels/UnfoldOptions.ui" line="291"/>
       <source>%</source>
-      <translation>%</translation>
+      <translation type="unfinished">%</translation>
     </message>
   </context>
   <context>
@@ -1221,88 +1222,88 @@ Ako razvijanje ne uspe ni za suprotnu stranicu, promeni opciju Prečisti na Neta
       <location filename="../../InitGui.py" line="96"/>
       <location filename="../../InitGui.py" line="117"/>
       <source>Sheet Metal</source>
-      <translation>Delovi od lima</translation>
+      <translation>鈑金工作台</translation>
     </message>
     <message>
       <location filename="../../InitGui.py" line="58"/>
       <source>Sheet Metal workbench allows for designing and unfolding sheet metal parts</source>
-      <translation>Okruženje Delovi od lima omogućava modeliranje i razvijanje delova od lima</translation>
+      <translation type="unfinished">Sheet Metal workbench allows for designing and unfolding sheet metal parts</translation>
     </message>
     <message>
       <location filename="../../InitGui.py" line="99"/>
       <source>&amp;Sheet Metal</source>
-      <translation>&amp;Delovi od lima</translation>
+      <translation>鈑金工作台(&amp;S)</translation>
     </message>
     <message>
       <location filename="../../SheetMetalBaseCmd.py" line="242"/>
       <source>Make Base Wall</source>
-      <translation>Napravi pripremak</translation>
+      <translation>建立基礎牆面</translation>
     </message>
     <message>
       <location filename="../../SheetMetalBaseCmd.py" line="249"/>
       <source>Create a sheetmetal wall from a sketch
 1. Select a Skech to create bends with walls.
 2. Use Property editor to modify other parameters</source>
-      <translation>Napravi početni oblik od lima pomoću skice
-1. Izaberi skicu (od zatvorene se dobija ploča, a od otvorene profilno savijanje)
-2. Koristi Urednik svojstava za promenu ostalih parametara</translation>
+      <translation type="unfinished">Create a sheetmetal wall from a sketch
+1. Select a Skech to create bends with walls.
+2. Use Property editor to modify other parameters</translation>
     </message>
     <message>
       <location filename="../../SheetMetalBaseShapeCmd.py" line="454"/>
       <source>Add base shape</source>
-      <translation>Primitiv od lima</translation>
+      <translation>新增基礎形狀</translation>
     </message>
     <message>
       <location filename="../../SheetMetalBaseShapeCmd.py" line="459"/>
       <source>Add basic sheet metal object.</source>
-      <translation>Napravi objekat primitiv od lima.</translation>
+      <translation>新增基本板金物體.</translation>
     </message>
     <message>
       <location filename="../../SheetMetalBend.py" line="374"/>
       <source>Make Bend</source>
-      <translation>Pretvori u savijanje</translation>
+      <translation>建立彎曲</translation>
     </message>
     <message>
       <location filename="../../SheetMetalBend.py" line="380"/>
       <source>Create Bend where two walls come together on solids
 1. Select edge(s) to create bend on corner edge(s).
 2. Use Property editor to modify parameters</source>
-      <translation>Pretvori oštru ivicu punog tela u savijenu ivicu limenog dela
-1. Izaberi ivice koje treba pretvoriti u savijanje
-2. Koristi Urednik svojstava za promenu ostalih parametara</translation>
+      <translation>建立彎曲，其中兩面牆體在實體上匯合在一起
+1. 選擇邊以在拐角邊上建立彎曲.
+2. 使用屬性編輯器修改參數</translation>
     </message>
     <message>
       <location filename="../../SheetMetalCmd.py" line="2045"/>
       <source>Make Wall</source>
-      <translation>Savijanje na ivici</translation>
+      <translation>建立彎曲牆面</translation>
     </message>
     <message>
       <location filename="../../SheetMetalCmd.py" line="2052"/>
       <source>Extends one or more face, connected by a bend on existing sheet metal.
 1. Select edges or thickness side faces to create bends with walls.
 2. Use Property editor to modify other parameters</source>
-      <translation>Napravi porube na stranici dela od lima.
-1. Izaberi ivice (ili stranice koje predstavljaju debljinu lima) na kojima žališ napraviti porube.
-2. Koristi Urednik svojstava za promenu ostalih parametara</translation>
+      <translation type="unfinished">Extends one or more face, connected by a bend on existing sheet metal.
+1. Select edges or thickness side faces to create bends with walls.
+2. Use Property editor to modify other parameters</translation>
     </message>
     <message>
       <location filename="../../SheetMetalCornerReliefCmd.py" line="615"/>
       <source>Add Corner Relief</source>
-      <translation>Dodaj ugaono olakšanje</translation>
+      <translation>增加拐角浮雕解脱</translation>
     </message>
     <message>
       <location filename="../../SheetMetalCornerReliefCmd.py" line="622"/>
       <source>Corner Relief to metal sheet corner.
 1. Select 2 Edges (on flat face that shared with bend faces) to create Relief on sheetmetal.
 2. Use Property editor to modify default parameters</source>
-      <translation>Napravi olakšanje na uglu dela od lima.
-1. Izaberi 2 ivice (zajedničke stranici i pregibima) na kojima treba napraviti olakšanje
-2. Koristi Urednik svojstava za promenu ostalih parametara</translation>
+      <translation type="unfinished">Corner Relief to metal sheet corner.
+1. Select 2 Edges (on flat face that shared with bend faces) to create Relief on sheetmetal.
+2. Use Property editor to modify default parameters</translation>
     </message>
     <message>
       <location filename="../../SheetMetalExtendCmd.py" line="561"/>
       <source>Extend Face</source>
-      <translation>Proširi stranicu</translation>
+      <translation>延伸表面</translation>
     </message>
     <message>
       <location filename="../../SheetMetalExtendCmd.py" line="568"/>
@@ -1310,15 +1311,15 @@ Ako razvijanje ne uspe ni za suprotnu stranicu, promeni opciju Prečisti na Neta
 1. Select edges or thickness side faces to create walls.
 2. Select a sketch in property editor to create tabs. 
 3. Use Property editor to modify other parameters</source>
-      <translation>Proširuje jednu ili više stranica dela od lima.
-1. Izaberi ivice ili stranice koje predstavljaju debljinu lima.
-2. Da bi napravio jezičke u Uredniku svojstava izaberi skicu.
-3. Koristi Urednik svojstava za promenu ostalih parametara</translation>
+      <translation>在現有鈑金件上延伸一個或多個面.
+1. 選擇邊或厚度側面來建立牆面.
+2. 在屬性編輯器中選擇草圖以建立分頁.
+3. 使用屬性編輯器修改其他參數</translation>
     </message>
     <message>
       <location filename="../../SheetMetalFoldCmd.py" line="436"/>
       <source>Fold a Wall</source>
-      <translation>Savijanje na stranici</translation>
+      <translation>收攏牆面</translation>
     </message>
     <message>
       <location filename="../../SheetMetalFoldCmd.py" line="445"/>
@@ -1326,15 +1327,15 @@ Ako razvijanje ne uspe ni za suprotnu stranicu, promeni opciju Prečisti na Neta
 1. Select a flat face on sheet metal and
 2. Select a bend line (sketch) on same face (ends of sketch bend lines must extend beyond edges of face) to create sheetmetal fold.
 3. Use Property editor to modify other parameters</source>
-      <translation>Napravi pregib na stranici dela od lima
-1. Izaberi stranicu limenog dela
-2. Izaberi skicu na kojoj je nacrtana linija savijanja (krajevi moraju izlaziti preko ivica stranice). Skica mora ležati na izabranoj stranici.
-3. Koristi Urednik svojstava za promenu ostalih parametara</translation>
+      <translation type="unfinished">Fold a wall of metal sheet
+1. Select a flat face on sheet metal and
+2. Select a bend line (sketch) on same face (ends of sketch bend lines must extend beyond edges of face) to create sheetmetal fold.
+3. Use Property editor to modify other parameters</translation>
     </message>
     <message>
       <location filename="../../SheetMetalFormingCmd.py" line="455"/>
       <source>Make Forming in Wall</source>
-      <translation>Utiskivanje</translation>
+      <translation>牆體成型</translation>
     </message>
     <message>
       <location filename="../../SheetMetalFormingCmd.py" line="463"/>
@@ -1343,72 +1344,72 @@ Ako razvijanje ne uspe ni za suprotnu stranicu, promeni opciju Prečisti na Neta
 2. Select face(s) on forming tool Shape to create Formed sheetmetal.
 3. Use Suppress in Property editor to disable during unfolding
 4. Use Property editor to modify other parameters</source>
-      <translation>Utisni oblik alata u stranicu dela od lima
-1. Izaberi stranicu dela od lima
-2. Izaberi stranice na alatu za utiskivanje
-3. Koristi opciju Na čekanju u uredniku svojstava da bi onemogućio ovaj tipski oblik prilikom razvijanja
-4. Koristi urednik svojstava za promenu ostalih parametara utiskivanja</translation>
+      <translation>使用金屬板中的工具進行成型
+1. 在鈑金上選擇一個平面，然後
+2. 選擇成形工具形狀上的面以建立成形鈑金件.
+3. 在屬性編輯器中使用壓制在展開時禁用
+4. 使用屬性編輯器修改其他參數</translation>
     </message>
     <message>
       <location filename="../../SheetMetalJunction.py" line="336"/>
       <source>Make Junction</source>
-      <translation>Napravi procep</translation>
+      <translation>建立結點</translation>
     </message>
     <message>
       <location filename="../../SheetMetalJunction.py" line="342"/>
       <source>Create a rip where two walls come together on solids.
 1. Select edge(s) to create rip on corner edge(s).
 2. Use Property editor to modify parameters</source>
-      <translation>Napravi procep na pregibu gde se spajaju dva zida.
-1. Izaberi ivice pregiba na kojima hoćeš napraviti procepe 
-2. Koristi uređivač svojstava da bi prilagodio parametre</translation>
+      <translation>建立一個裂口，其中兩面牆體在實體上匯合在一起.
+1. 選擇邊以在角邊上建立裂口.
+2. 使用屬性編輯器修改參數</translation>
     </message>
     <message>
       <location filename="../../SheetMetalRelief.py" line="384"/>
       <source>Make Relief</source>
-      <translation>Napravi olakšanje</translation>
+      <translation>建立解脱</translation>
     </message>
     <message>
       <location filename="../../SheetMetalRelief.py" line="390"/>
       <source>Modify an Individual solid corner to create Relief.
 1. Select Vertex(es) to create Relief on Solid corner Vertex(es).
 2. Use Property editor to modify default parameters</source>
-      <translation>Napravi olakšanje na uglu punog tela.
-1. Izaberi teme ili temena na kojima treba napraviti olakšanje
-2. Koristi Urednik svojstava za promenu ostalih parametara</translation>
+      <translation>修改一個單獨的實角以建立減免.
+1. 選擇頂點以在實體角頂點上建立減免.
+2. 使用屬性編輯器修改預設參數</translation>
     </message>
     <message>
       <location filename="../../SheetMetalUnfoldCmd.py" line="51"/>
       <source>Unattended Unfold</source>
-      <translation>Automatsko razvijanje</translation>
+      <translation>展開未處理的</translation>
     </message>
     <message>
       <location filename="../../SheetMetalUnfoldCmd.py" line="58"/>
       <source>Flatten folded sheet metal object with default options
 1. Select flat face on sheetmetal shape.
 2. Change parameters from task Panel to create unfold Shape &amp; Flatten drawing.</source>
-      <translation>Razvij deo od lima sa podrazumevanim opcijama.
-1. Izaberi ravnu stranicu limenog dela
-2. U panelu zadataka podesi parametre razvijanja.</translation>
+      <translation type="unfinished">Flatten folded sheet metal object with default options
+1. Select flat face on sheetmetal shape.
+2. Change parameters from task Panel to create unfold Shape &amp; Flatten drawing.</translation>
     </message>
     <message>
       <location filename="../../SheetMetalUnfoldCmd.py" line="113"/>
       <source>Unfold</source>
-      <translation>Razvijanje</translation>
+      <translation>展開</translation>
     </message>
     <message>
       <location filename="../../SheetMetalUnfoldCmd.py" line="120"/>
       <source>Flatten folded sheet metal object.
 1. Select flat face on sheetmetal shape.
 2. Change parameters from task Panel to create unfold Shape &amp; Flatten drawing.</source>
-      <translation>Razvij u ravan deo od lima.
-1. Izaberi ravnu stranicu limenog dela
-2. U panelu zadataka podesi parametre razvijanja.</translation>
+      <translation type="unfinished">Flatten folded sheet metal object.
+1. Select flat face on sheetmetal shape.
+2. Change parameters from task Panel to create unfold Shape &amp; Flatten drawing.</translation>
     </message>
     <message>
       <location filename="../../SketchOnSheetMetalCmd.py" line="415"/>
       <source>Sketch On Sheet metal</source>
-      <translation>Isecanje kroz pregib</translation>
+      <translation>草圖於鈑金工作台</translation>
     </message>
     <message>
       <location filename="../../SketchOnSheetMetalCmd.py" line="423"/>
@@ -1416,10 +1417,10 @@ Ako razvijanje ne uspe ni za suprotnu stranicu, promeni opciju Prečisti na Neta
 1. Select a flat face on sheet metal and
 2. Select a sketch on same face to create sheetmetal extruded cut.
 3. Use Property editor to modify other parameters</source>
-      <translation>Napravi isecanje kroz pregib pomoću skice
-1. Izaberi stranicu limenog dela
-2. Izaberi skicu koja leži na izabranoj stranici
-3. Koristi Urednik svojstava za promenu ostalih parametara</translation>
+      <translation type="unfinished">Extruded cut from Sketch On Sheet metal faces
+1. Select a flat face on sheet metal and
+2. Select a sketch on same face to create sheetmetal extruded cut.
+3. Use Property editor to modify other parameters</translation>
     </message>
   </context>
   <context>
@@ -1431,7 +1432,7 @@ Ako razvijanje ne uspe ni za suprotnu stranicu, promeni opciju Prečisti na Neta
       <location filename="../../SheetMetalJunction.py" line="328"/>
       <location filename="../../SheetMetalRelief.py" line="376"/>
       <source>Update</source>
-      <translation>Ažuriranje</translation>
+      <translation>更新</translation>
     </message>
   </context>
 </TS>
