@@ -28,6 +28,7 @@ import SheetMetalBendSolid
 from SheetMetalLogger import SMLogger
 
 smEpsilon = SheetMetalTools.smEpsilon
+BendOnLineDefaults = {}
 
 def smthk(obj, foldface):
     normal = foldface.normalAt(0, 0)
@@ -80,7 +81,8 @@ def smFold(
     if bendA < 0:
         bendA = -bendA
         flipped = not flipped
-    if not (unfold):
+    resultsolid = None
+    if not unfold:
         if bendlinesketch and bendA > 0.0:
             foldface = FoldShape.getElement(SheetMetalTools.getElementFromTNP(selFaceNames[0]))
             tool = bendlinesketch.Shape.copy()
@@ -165,19 +167,16 @@ def smFold(
             bendEdge = bendEdges.Edges[0]
 
 
-###########################################################################################################################
-
-            if not (flipped):
-
-                    bendR_flip = bendR
+            #######################################################################################
+            if not flipped:
+                bendR_flip = bendR
             else:
-                    bendR_flip = bendR + thk
-
+                bendR_flip = bendR + thk
             if position == "intersection of planes" :
-                bendEdge.translate(facenormal * ((unfoldLength/2) -( bendR_flip ) * math.tan(math.radians(bendA / 2.0))))
-
-##############################################################################################################################
-            if not (flipped):
+                bendEdge.translate(facenormal * ((unfoldLength/2) -( bendR_flip ) 
+                                                 * math.tan(math.radians(bendA / 2.0))))
+            #######################################################################################
+            if not flipped:
                 revAxisP = bendEdge.valueAt(bendEdge.FirstParameter) + normal * bendR
             else:
                 revAxisP = bendEdge.valueAt(bendEdge.FirstParameter) - normal * (
@@ -214,13 +213,16 @@ def smFold(
             flatsolid = flatsolid.cut(solid1)
             # Part.show(flatsolid,"flatsolid")
             flatfaces = foldface.common(flatsolid)
-############################################################################################################################################
+            #######################################################################################
             if position == "intersection of planes" :
-                flatfaces.translate(facenormal * ((unfoldLength/2) -( bendR_flip ) * math.tan(math.radians(bendA / 2.0))))
+                flatfaces.translate(facenormal * ((unfoldLength/2) -( bendR_flip ) 
+                                                  * math.tan(math.radians(bendA / 2.0))))
             #Part.show(flatfaces,"flatface")
-                solid0.translate(facenormal * ((unfoldLength/2) -( bendR_flip ) * math.tan(math.radians(bendA / 2.0))))
-                solid1.translate(facenormal * ((-unfoldLength/2) -( bendR_flip ) * math.tan(math.radians(bendA / 2.0))))
-#############################################################################################################################################
+                solid0.translate(facenormal * ((unfoldLength/2) -( bendR_flip ) 
+                                               * math.tan(math.radians(bendA / 2.0))))
+                solid1.translate(facenormal * ((-unfoldLength/2) -( bendR_flip ) 
+                                               * math.tan(math.radians(bendA / 2.0))))
+            #######################################################################################
             else :
                 solid1.translate(facenormal * (-unfoldLength))
             # Part.show(flatfaces,"flatface")
@@ -248,9 +250,9 @@ def smFold(
 
 
 class SMFoldWall:
-    def __init__(self, obj, selobj, sel_items, sel_sketch):
-        '''"Fold / Bend a Sheetmetal with given Bend Radius"'''
+    '''"Fold / Bend a Sheetmetal with given Bend Radius"'''
 
+    def __init__(self, obj, selobj, sel_items, sel_sketch):
         _tip_ = FreeCAD.Qt.translate("App::Property", "Bend Radius")
         obj.addProperty(
             "App::PropertyLength", "radius", "Parameters", _tip_
@@ -310,9 +312,9 @@ class SMFoldWall:
         fp.Shape = s
 
 
-##########################################################################################################
+###################################################################################################
 # Gui code
-##########################################################################################################
+###################################################################################################
 
 if SheetMetalTools.isGuiLoaded():
     from FreeCAD import Gui
@@ -357,9 +359,7 @@ if SheetMetalTools.isGuiLoaded():
 
         def loads(self, state):
             if state is not None:
-                import FreeCAD
-
-                doc = FreeCAD.ActiveDocument  # crap
+                doc = FreeCAD.ActiveDocument
                 self.Object = doc.getObject(state["ObjectName"])
 
         def claimChildren(self):
@@ -371,6 +371,17 @@ if SheetMetalTools.isGuiLoaded():
 
         def getIcon(self):
             return os.path.join(icons_path, "SheetMetal_AddFoldWall.svg")
+
+        def setEdit(self, vobj, mode):
+            taskd = SMFoldOnLineTaskPanel(vobj.Object)
+            Gui.Control.showDialog(taskd)
+            return True
+
+        def unsetEdit(self, vobj, mode):
+            Gui.Control.closeDialog()
+            self.Object.baseObject[0].ViewObject.Visibility = False
+            self.Object.ViewObject.Visibility = True
+            return False
 
 
     class SMFoldPDViewProvider:
@@ -410,8 +421,6 @@ if SheetMetalTools.isGuiLoaded():
 
         def loads(self, state):
             if state is not None:
-                import FreeCAD
-
                 doc = FreeCAD.ActiveDocument  # crap
                 self.Object = doc.getObject(state["ObjectName"])
 
@@ -423,6 +432,50 @@ if SheetMetalTools.isGuiLoaded():
 
         def getIcon(self):
             return os.path.join(icons_path, "SheetMetal_AddFoldWall.svg")
+        
+        def setEdit(self, vobj, mode):
+            taskd = SMFoldOnLineTaskPanel(vobj.Object)
+            FreeCAD.ActiveDocument.openTransaction("EditBendOnLine")
+            Gui.Control.showDialog(taskd)
+            return True
+
+        def unsetEdit(self, vobj, mode):
+            Gui.Control.closeDialog()
+            self.Object.baseObject[0].ViewObject.Visibility = False
+            self.Object.ViewObject.Visibility = True
+            return False
+
+    class SMFoldOnLineTaskPanel:
+        """A TaskPanel for the Sheetmetal"""
+
+        def __init__(self, obj):
+            self.obj = obj
+            self.activeSelection = {}
+            self.form = SheetMetalTools.taskLoadUI("BendOnLinePanel.ui")
+            SheetMetalTools.taskConnectSelectionSingle(
+                self, self.form.buttBaseObject, self.form.txtBaseObject, obj, "baseObject", ["Face"])
+            SheetMetalTools.taskConnectSelectionSingle(
+                self, self.form.buttBendLine, self.form.txtBendLine, obj, "BendLine", ("Sketcher::SketchObject", []))
+            SheetMetalTools.taskConnectSpin(self, self.form.unitBendRadius, "radius")
+            SheetMetalTools.taskConnectSpin(self, self.form.unitBendAngle, "angle")
+            SheetMetalTools.taskConnectCheck(self, self.form.checkFlipDir, "invertbend")
+            SheetMetalTools.taskConnectCheck(self, self.form.checkUnbend, "unfold")
+
+        def isAllowedAlterSelection(self):
+            return True
+
+        def isAllowedAlterView(self):
+            return True
+
+        def accept(self):
+            SheetMetalTools.taskAccept(self)
+            SheetMetalTools.taskSaveDefaults(self.obj, BendOnLineDefaults, ["radius", "angle"])
+            return True
+
+        def reject(self):
+            SheetMetalTools.taskReject(self)
+
+
 
 
     class AddFoldWallCommandClass:
@@ -456,24 +509,27 @@ if SheetMetalTools.isGuiLoaded():
                 activeBody = view.getActiveObject("pdbody")
             if not SheetMetalTools.smIsOperationLegal(activeBody, selobj):
                 return
-            doc.openTransaction("Bend")
+            doc.openTransaction("BendOnLine")
             if activeBody is None or not SheetMetalTools.smIsPartDesign(selobj):
-                a = doc.addObject("Part::FeaturePython", "Fold")
-                SMFoldWall(a, selobj, sel[0].SubElementNames, sel[1].Object)
-                SMFoldViewProvider(a.ViewObject)
+                newObj = doc.addObject("Part::FeaturePython", "Fold")
+                SMFoldWall(newObj, selobj, sel[0].SubElementNames, sel[1].Object)
+                SMFoldViewProvider(newObj.ViewObject)
             else:
                 # FreeCAD.Console.PrintLog("found active body: " + activeBody.Name)
-                a = doc.addObject("PartDesign::FeaturePython", "Fold")
-                SMFoldWall(a, selobj, sel[0].SubElementNames, sel[1].Object)
-                SMFoldPDViewProvider(a.ViewObject)
-                activeBody.addObject(a)
-            SheetMetalTools.SetViewConfig(a, viewConf)
+                newObj = doc.addObject("PartDesign::FeaturePython", "Fold")
+                SMFoldWall(newObj, selobj, sel[0].SubElementNames, sel[1].Object)
+                SMFoldPDViewProvider(newObj.ViewObject)
+                activeBody.addObject(newObj)
+            SheetMetalTools.SetViewConfig(newObj, viewConf)
             if SheetMetalTools.is_autolink_enabled():
-                root = SheetMetalTools.getOriginalBendObject(a)
+                root = SheetMetalTools.getOriginalBendObject(newObj)
                 if root:
-                    a.setExpression("radius", root.Label + ".radius")
+                    newObj.setExpression("radius", root.Label + ".radius")
+            newObj.baseObject[0].ViewObject.Visibility = False
+            dialog = SMFoldOnLineTaskPanel(newObj)
             doc.recompute()
-            doc.commitTransaction()
+            Gui.Control.showDialog(dialog)
+            #doc.commitTransaction()
             return
 
         def IsActive(self):

@@ -87,26 +87,27 @@ def smCreateBaseShape(type, thickness, radius, width, length, height, flangeWidt
     if numfolds == 0:
         return box
     faces = []
-    for i in range(len(box.Faces)):
-        v = box.Faces[i].normalAt(0,0)
+    for i, face in enumerate(box.Faces):
+        v = face.normalAt(0,0)
         if (v.y > 0.5 or
             (v.y < -0.5 and numfolds > 1) or
             (v.x > 0.5 and numfolds > 2) or
             (v.x < -0.5 and numfolds > 3)):
             faces.append("Face" + str(i+1))
 
-    shape, f = smBend(thickness, selFaceNames = faces, extLen = height, bendR = radius,
+    shape, _f = smBend(thickness, selFaceNames = faces, extLen = height, bendR = radius,
                       MainObject = box, automiter = fillGaps, maxExtendGap = 999999)
     if type in ["Hat", "Box"]:
         faces = []
         invertBend = False
-        if type == "Hat": invertBend = True
-        for i in range(len(shape.Faces)):
-            v = shape.Faces[i].normalAt(0,0)
-            z = shape.Faces[i].CenterOfGravity.z
+        if type == "Hat": 
+            invertBend = True
+        for i, face in enumerate(shape.Faces):
+            v = face.normalAt(0,0)
+            z = face.CenterOfGravity.z
             if v.z > 0.9999 and z > bendCompensation:
                 faces.append("Face" + str(i+1))
-        shape, f = smBend(thickness, selFaceNames = faces, extLen = flangeWidth,
+        shape, _f = smBend(thickness, selFaceNames = faces, extLen = flangeWidth,
                           bendR = radius, MainObject = shape, flipped = invertBend,
                           automiter = fillGaps)
     #SMLogger.message(str(faces))
@@ -201,10 +202,10 @@ class SMBaseShape:
 
         fp.Shape = s
 
-    def getBaseShapeTypes():
+    def getBaseShapeTypes(self):
         return base_shape_types
     
-    def getOriginLocationTypes():
+    def getOriginLocationTypes(self):
         return origin_location_types
 
 ##########################################################################################################
@@ -265,10 +266,10 @@ if SheetMetalTools.isGuiLoaded():
 
             #SMLogger.log(str(self.formReady) + " <2 \n")
         def updateEnableState(self):
-            type = base_shape_types[self.form.shapeType.currentIndex()]
-            self.form.bFlangeWidthSpin.setEnabled(type in ["Hat", "Box"])
-            self.form.bRadiusSpin.setEnabled(not type == "Flat")
-            self.form.bHeightSpin.setEnabled(not type == "Flat")
+            shapeType = base_shape_types[self.form.shapeType.currentIndex()]
+            self.form.bFlangeWidthSpin.setEnabled(shapeType in ["Hat", "Box"])
+            self.form.bRadiusSpin.setEnabled(not shapeType == "Flat")
+            self.form.bHeightSpin.setEnabled(not shapeType == "Flat")
 
         def buttonToOriginType(self, butt):
             if butt is None:
@@ -350,7 +351,6 @@ if SheetMetalTools.isGuiLoaded():
         def updateSpin(self, spin, property):
             Gui.ExpressionBinding(spin).bind(self.obj, property)
             spin.setProperty('value', getattr(self.obj, property))
-            pass
 
         def update(self):
             self.updateSpin(self.form.bRadiusSpin, 'radius')
@@ -426,7 +426,7 @@ if SheetMetalTools.isGuiLoaded():
             taskd.update()
             #self.Object.ViewObject.Visibility=False
             Gui.Selection.clearSelection()
-            FreeCAD.ActiveDocument.openTransaction("BaseShape")
+            FreeCAD.ActiveDocument.openTransaction("BaseSh-ape")
             Gui.Control.showDialog(taskd)
             #Gui.ActiveDocument.resetEdit()
             return False

@@ -24,34 +24,38 @@
      </property>
      <layout class="QGridLayout" name="gridLayout">
       <item row="0" column="2">
-       <widget class="QLineEdit" name="txtBaseObject"/>
-      </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="label_2">
-        <property name="text">
-         <string>Bend Line</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="0">
-       <widget class="QLabel" name="label">
-        <property name="text">
-         <string>Base Object</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="0">
-       <widget class="QLabel" name="label_3">
-        <property name="text">
-         <string>Feature Name</string>
+       <widget class="QLineEdit" name="txtBaseObject">
+        <property name="readOnly">
+         <bool>true</bool>
         </property>
        </widget>
       </item>
       <item row="1" column="2">
-       <widget class="QLineEdit" name="txtBendLine"/>
+       <widget class="QLineEdit" name="txtBendLine">
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+       </widget>
       </item>
-      <item row="2" column="2">
-       <widget class="QLineEdit" name="txtFeatureName_2"/>
+      <item row="0" column="0">
+       <widget class="QPushButton" name="buttBaseObject">
+        <property name="text">
+         <string>Base Object</string>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QPushButton" name="buttBendLine">
+        <property name="text">
+         <string>Bend Line</string>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
+        </property>
+       </widget>
       </item>
      </layout>
     </widget>
@@ -59,14 +63,14 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
-      <widget class="QPushButton" name="btnFlipDirection">
+      <widget class="QCheckBox" name="checkFlipDir">
        <property name="text">
         <string>Flip Direction</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="btnUnbend">
+      <widget class="QCheckBox" name="checkUnbend">
        <property name="text">
         <string>Unbend</string>
        </property>
@@ -85,10 +89,10 @@
        </widget>
       </item>
       <item row="0" column="1">
-       <widget class="Gui::PrefUnitSpinBox" name="unitBendRadius"/>
+       <widget class="Gui::PrefUnitSpinBox" name="unitBendRadius" native="true"/>
       </item>
       <item row="1" column="1">
-       <widget class="Gui::PrefUnitSpinBox" name="unitBendAngle"/>
+       <widget class="Gui::PrefUnitSpinBox" name="unitBendAngle" native="true"/>
       </item>
       <item row="1" column="0">
        <widget class="QLabel" name="label_5">

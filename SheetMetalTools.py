@@ -20,6 +20,7 @@ def isGuiLoaded():
 if isGuiLoaded():
     from PySide import QtCore, QtGui
     from FreeCAD import Gui
+
     def smWarnDialog(msg):
         diag = QtGui.QMessageBox(
             QtGui.QMessageBox.Warning,
@@ -28,9 +29,19 @@ if isGuiLoaded():
         )
         diag.setWindowModality(QtCore.Qt.ApplicationModal)
         diag.exec_()
+
+    class SMSingleSelectionObserver:
+        ''' used for tasks that needs to be aware of selection changes '''
+        def __init__(self):
+            self.button = None
+
+        def addSelection(self, document, obj, element, position):
+            taskSingleSelectionChanged(self.button)
     
+    smSingleSelObserver = SMSingleSelectionObserver()
+    Gui.Selection.addObserver(smSingleSelObserver)
+
     def smHideObjects(*args):
-        from FreeCAD import Gui
         for arg in args:
             if arg:
                 obj = Gui.ActiveDocument.getObject(arg.Name)
@@ -50,6 +61,13 @@ if isGuiLoaded():
             item.setIcon(0, QtGui.QIcon(":/icons/Tree_Part.svg"))
             item.setText(1, subf)
 
+    def taskPopulateSelectionSingle(textbox, baseObject):
+        if isinstance(baseObject, tuple):
+            obj, items = baseObject
+            item = "None" if len(items) == 0 else items[0]
+            textbox.setText(f"{obj.Name}: {item}")
+        else:
+            textbox.setText(baseObject.Name)
     def updateSelectionElements(obj, allowedTypes):
         if not obj:
             return
@@ -87,7 +105,67 @@ if isGuiLoaded():
     
     def taskConnectSelection(addRemoveButton, treeWidget, obj, allowedTypes):
         addRemoveButton.toggled.connect(
-            lambda value: _taskToggleSelectionMode(value, addRemoveButton, treeWidget, obj, allowedTypes))
+            lambda value: _taskToggleSelectionMode(value, addRemoveButton, treeWidget, 
+                                                   obj, allowedTypes))
+        
+    def _taskToggleSingleSelMode(task, isChecked, button, textbox, obj, selProperty, allowedTypes):
+        prop = getattr(obj, selProperty)
+        baseObject = obj.baseObject[0] if hasattr(obj, "baseObject") else None
+        Gui.Selection.clearSelection()
+        if isChecked:
+            if smSingleSelObserver.button is not None:
+                smSingleSelObserver.button.toggle()
+            if baseObject is not None:
+                baseObject.Visibility=True
+                obj.Visibility=False
+            button.activeTypes = allowedTypes
+            button.activeObject = obj
+            button.activeProperty = selProperty
+            button.saveText = button.text()
+            smSingleSelObserver.button = button
+            textbox.setText(f"Select {button.saveText}...")
+            button.setText("Cancel...")
+        else:
+            smSingleSelObserver.button = None
+            if baseObject is not None:
+                baseObject.Visibility=False
+                obj.Visibility=True
+            task.activeSelection = {}
+            taskPopulateSelectionSingle(textbox, prop)
+            button.setText(button.saveText)
+
+    def taskConnectSelectionSingle(task, button, textbox, obj, selProperty, allowedTypes):
+        taskPopulateSelectionSingle(textbox, getattr(obj, selProperty))
+        button.toggled.connect(
+            lambda value: _taskToggleSingleSelMode(
+                task, value, button, textbox, obj, selProperty, allowedTypes))
+        
+    def taskSingleSelectionChanged(button):
+        if button is None:
+            return
+        selobj = Gui.Selection.getSelectionEx()[0]
+        if len(selobj.SubElementNames) != 1:
+            return
+        selitem = selobj.SubElementNames[0]
+        selobj = selobj.Object
+        if isinstance(button.activeTypes, tuple):
+            # make sure object is of disired type or linked to one
+            objType, subObjTypes = button.activeTypes
+            if not selobj.isDerivedFrom(objType):
+                if selobj.isDerivedFrom("App::Link"):
+                    selobj = selobj.LinkedObject
+                elif selobj.isDerivedFrom("Part::Part2DObject"):
+                    selobj = selobj.Objects[0]
+                if not (selobj.isDerivedFrom(objType)):
+                    return
+        else:
+            subObjTypes = button.activeTypes
+        if len(subObjTypes) == 0 or smStripTrailingNumber(selitem) in subObjTypes:
+            baseObject = selobj if len(subObjTypes) == 0 else (selobj, [selitem])
+            setattr(button.activeObject, button.activeProperty, baseObject)
+            button.activeObject.Document.recompute()
+            button.toggle()
+
 
     def _taskUpdateValue(value, obj, objvar, callback):
         setattr(obj, objvar, value)
@@ -109,22 +187,26 @@ if isGuiLoaded():
         formvar.setProperty("currentIndex", enumlist.index(getattr(task.obj, objvar)))
         formvar.currentIndexChanged.connect(lambda value: _taskUpdateValue(value, task.obj, objvar, callback))
 
-    def taskAccept(task, addRemoveButton):
-        if addRemoveButton.isChecked():
+    def taskAccept(task, addRemoveButton = None):
+        if addRemoveButton is not None and addRemoveButton.isChecked():
             addRemoveButton.AddRemove.toggle()
+        if smSingleSelObserver.button is not None:
+            smSingleSelObserver.button.toggle()
         FreeCAD.ActiveDocument.recompute()
         task.obj.Document.commitTransaction()
         Gui.Control.closeDialog()
         Gui.ActiveDocument.resetEdit()
         return True
 
-    def taskReject(task, addRemoveButton):
-        FreeCAD.ActiveDocument.abortTransaction()
-        if addRemoveButton.isChecked():
+    def taskReject(task, addRemoveButton = None):
+        if addRemoveButton is not None and addRemoveButton.isChecked():
             Gui.Selection.setSelectionStyle(Gui.Selection.SelectionStyle.NormalSelection)
-            task.obj.Visibility = True
+        if smSingleSelObserver.button is not None:
+            smSingleSelObserver.button.toggle()
+        FreeCAD.ActiveDocument.abortTransaction()
         Gui.Control.closeDialog()
         FreeCAD.ActiveDocument.recompute()
+        Gui.ActiveDocument.resetEdit()
       
     def taskSaveDefaults(obj, defaultDict, varList):
         for var in varList:
