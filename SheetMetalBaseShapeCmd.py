@@ -224,6 +224,7 @@ if SheetMetalTools.isGuiLoaded():
     ##########################################################################################################
 
     class BaseShapeTaskPanel:
+        ''' Task Panel for Base Shape sheetmetal command '''
         def __init__(self, baseObj):
             self.obj = baseObj
             QtCore.QDir.addSearchPath('Icons', icons_path)
@@ -243,18 +244,13 @@ if SheetMetalTools.isGuiLoaded():
         def _stateToBool(self, state):
             return True if state == QtCore.Qt.Checked else False
 
-        def connectSpin(self, formvar, objvar):
-            formvar.valueChanged.connect(self.spinValChanged)
-            Gui.ExpressionBinding(formvar).bind(self.obj, objvar)
-            self.spinPairs.append((formvar, objvar))
-
         def setupUi(self):
-            self.connectSpin(self.form.bRadiusSpin, "radius")
-            self.connectSpin(self.form.bThicknessSpin, "thickness")
-            self.connectSpin(self.form.bWidthSpin, "width")
-            self.connectSpin(self.form.bHeightSpin, "height")
-            self.connectSpin(self.form.bFlangeWidthSpin, "flangeWidth")
-            self.connectSpin(self.form.bLengthSpin, "length")
+            SheetMetalTools.taskConnectSpin(self, self.form.bRadiusSpin, "radius")
+            SheetMetalTools.taskConnectSpin(self, self.form.bThicknessSpin, "thickness")
+            SheetMetalTools.taskConnectSpin(self, self.form.bWidthSpin, "width")
+            SheetMetalTools.taskConnectSpin(self, self.form.bHeightSpin, "height")
+            SheetMetalTools.taskConnectSpin(self, self.form.bFlangeWidthSpin, "flangeWidth")
+            SheetMetalTools.taskConnectSpin(self, self.form.bLengthSpin, "length")
 
             self.form.shapeType.currentIndexChanged.connect(self.typeChanged)
             self.form.chkFillGaps.stateChanged.connect(self.checkChanged)
@@ -339,6 +335,7 @@ if SheetMetalTools.isGuiLoaded():
             doc.commitTransaction()
             Gui.Control.closeDialog()
             doc.recompute()
+            Gui.ActiveDocument.resetEdit()
             self.RevertAxisCross()
 
 
@@ -346,6 +343,7 @@ if SheetMetalTools.isGuiLoaded():
             FreeCAD.ActiveDocument.abortTransaction()
             Gui.Control.closeDialog()
             FreeCAD.ActiveDocument.recompute()
+            Gui.ActiveDocument.resetEdit()
             self.RevertAxisCross()
 
         def updateSpin(self, spin, property):
@@ -353,12 +351,6 @@ if SheetMetalTools.isGuiLoaded():
             spin.setProperty('value', getattr(self.obj, property))
 
         def update(self):
-            self.updateSpin(self.form.bRadiusSpin, 'radius')
-            self.updateSpin(self.form.bThicknessSpin, 'thickness')
-            self.updateSpin(self.form.bWidthSpin, 'width')
-            self.updateSpin(self.form.bHeightSpin, 'height')
-            self.updateSpin(self.form.bFlangeWidthSpin, 'flangeWidth')
-            self.updateSpin(self.form.bLengthSpin, 'length')
             self.form.shapeType.setCurrentText(self.obj.shapeType)
             self.setSelectedOrigButton(self.originTypeToButton(self.obj.originLoc))
             self.form.chkFillGaps.setCheckState(self._boolToState(self.obj.fillGaps))
@@ -426,10 +418,9 @@ if SheetMetalTools.isGuiLoaded():
             taskd.update()
             #self.Object.ViewObject.Visibility=False
             Gui.Selection.clearSelection()
-            FreeCAD.ActiveDocument.openTransaction("BaseSh-ape")
+            FreeCAD.ActiveDocument.openTransaction("BaseShape")
             Gui.Control.showDialog(taskd)
-            #Gui.ActiveDocument.resetEdit()
-            return False
+            return True
 
         def unsetEdit(self, vobj, mode):
             Gui.Control.closeDialog()
