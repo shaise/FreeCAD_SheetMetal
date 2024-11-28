@@ -396,12 +396,12 @@ if SheetMetalTools.isGuiLoaded():
             return False
 
         def startDefaultEditMode(self, viewObject):
-            document = viewObject.Document.Document
-            if not document.HasPendingTransaction:
-                text = FreeCAD.Qt.translate("QObject", "Edit %1").replace(
-                    "%1", viewObject.Object.Label
-                )
-                document.openTransaction(text)
+            # document = viewObject.Document.Document
+            # if not document.HasPendingTransaction:
+            #     text = FreeCAD.Qt.translate("QObject", "Edit %1").replace(
+            #         "%1", viewObject.Object.Label
+            #     )
+            #     document.openTransaction(text)
             viewObject.Document.setEdit(viewObject.Object, 0)
 
         def updateData(self, fp, prop):
@@ -430,9 +430,7 @@ if SheetMetalTools.isGuiLoaded():
 
         def loads(self, state):
             if state is not None:
-                import FreeCAD
-
-                doc = FreeCAD.ActiveDocument  # crap
+                doc = FreeCAD.ActiveDocument
                 self.Object = doc.getObject(state["ObjectName"])
 
         def claimChildren(self):
@@ -448,6 +446,7 @@ if SheetMetalTools.isGuiLoaded():
 
         def setEdit(self, vobj, mode):
             taskd = SMExtendWallTaskPanel(vobj.Object)
+            FreeCAD.ActiveDocument.openTransaction("Extend")
             Gui.Control.showDialog(taskd)
             return True
 
@@ -494,9 +493,7 @@ if SheetMetalTools.isGuiLoaded():
 
         def loads(self, state):
             if state is not None:
-                import FreeCAD
-
-                doc = FreeCAD.ActiveDocument  # crap
+                doc = FreeCAD.ActiveDocument
                 self.Object = doc.getObject(state["ObjectName"])
 
         def claimChildren(self):
@@ -508,8 +505,21 @@ if SheetMetalTools.isGuiLoaded():
         def getIcon(self):
             return os.path.join(icons_path, "SheetMetal_Extrude.svg")
 
+        def setupContextMenu(self, viewObject, menu):
+            action = menu.addAction(
+                FreeCAD.Qt.translate("QObject", "Edit %1").replace(
+                    "%1", viewObject.Object.Label
+                )
+            )
+            action.triggered.connect(lambda: self.startDefaultEditMode(viewObject))
+            return False
+
+        def startDefaultEditMode(self, viewObject):
+            viewObject.Document.setEdit(viewObject.Object, 0)
+
         def setEdit(self, vobj, mode):
             taskd = SMExtendWallTaskPanel(vobj.Object)
+            FreeCAD.ActiveDocument.openTransaction("Extend")
             Gui.Control.showDialog(taskd)
             return True
 

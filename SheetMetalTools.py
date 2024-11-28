@@ -62,12 +62,15 @@ if isGuiLoaded():
             item.setText(1, subf)
 
     def taskPopulateSelectionSingle(textbox, baseObject):
-        if isinstance(baseObject, tuple):
+        if baseObject is None:
+            textbox.setText("")
+        elif isinstance(baseObject, tuple):
             obj, items = baseObject
             item = "None" if len(items) == 0 else items[0]
             textbox.setText(f"{obj.Name}: {item}")
         else:
             textbox.setText(baseObject.Name)
+            
     def updateSelectionElements(obj, allowedTypes):
         if not obj:
             return

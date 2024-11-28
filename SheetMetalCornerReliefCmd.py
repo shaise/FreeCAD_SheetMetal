@@ -27,6 +27,7 @@ import FreeCAD, Part, math, os, SheetMetalTools, SheetMetalBendSolid
 from SheetMetalLogger import SMLogger
 
 smEpsilon = SheetMetalTools.smEpsilon
+smCornerReliefDefaults = {}
 
 def smthk(obj, foldface):
     normal = foldface.normalAt(0, 0)
@@ -249,7 +250,7 @@ def smCornerR(
     xoffset=0.0,
     yoffset=0.0,
     kfactor=0.5,
-    sketch="",
+    sketch=None,
     flipped=False,
     selEdgeNames="",
     MainObject=None,
@@ -282,7 +283,10 @@ def smCornerR(
         )
         reliefFace = Part.Face(sketch)
     else:
-        reliefFace = Part.Face(sketch.Shape.Wires[0])
+        if sketch is None:
+            FreeCAD.Console.PrintError("Sketch object is missing, please select one\n")
+            return resultSolid
+        reliefFace = Part.Face(sketch.Shape.Wires[0]).translate(FreeCAD.Vector(xoffset, yoffset, 0))
     # Part.show(reliefFace,'reliefFace')
 
     # To check face direction
@@ -536,9 +540,7 @@ if SheetMetalTools.isGuiLoaded():
 
         def loads(self, state):
             if state is not None:
-                import FreeCAD
-
-                doc = FreeCAD.ActiveDocument  # crap
+                doc = FreeCAD.ActiveDocument
                 self.Object = doc.getObject(state["ObjectName"])
 
         def claimChildren(self):
@@ -551,6 +553,17 @@ if SheetMetalTools.isGuiLoaded():
         def getIcon(self):
             return os.path.join(icons_path, "SheetMetal_AddCornerRelief.svg")
 
+        def setEdit(self, vobj, mode):
+            taskd = SMCornerReliefTaskPanel(vobj.Object)
+            FreeCAD.ActiveDocument.openTransaction("Corner Relief")
+            Gui.Control.showDialog(taskd)
+            return True
+
+        def unsetEdit(self, vobj, mode):
+            Gui.Control.closeDialog()
+            self.Object.baseObject[0].ViewObject.Visibility = False
+            self.Object.ViewObject.Visibility = True
+            return False
 
     class SMCornerReliefPDVP:
         "A View provider that nests children objects under the created one"
@@ -589,9 +602,7 @@ if SheetMetalTools.isGuiLoaded():
 
         def loads(self, state):
             if state is not None:
-                import FreeCAD
-
-                doc = FreeCAD.ActiveDocument  # crap
+                doc = FreeCAD.ActiveDocument
                 self.Object = doc.getObject(state["ObjectName"])
 
         def claimChildren(self):
@@ -602,6 +613,95 @@ if SheetMetalTools.isGuiLoaded():
 
         def getIcon(self):
             return os.path.join(icons_path, "SheetMetal_AddCornerRelief.svg")
+
+        def setEdit(self, vobj, mode):
+            taskd = SMCornerReliefTaskPanel(vobj.Object)
+            FreeCAD.ActiveDocument.openTransaction("Corner Relief")
+            Gui.Control.showDialog(taskd)
+            return True
+
+        def unsetEdit(self, vobj, mode):
+            Gui.Control.closeDialog()
+            self.Object.baseObject[0].ViewObject.Visibility = False
+            self.Object.ViewObject.Visibility = True
+            return False
+
+
+    class SMCornerReliefTaskPanel:
+        """ A TaskPanel for the Sheetmetal corner relief function"""
+
+        def __init__(self, obj):
+            self.obj = obj
+            self.form = SheetMetalTools.taskLoadUI("CornerReliefPanel.ui")
+            self.updateForm()
+            SheetMetalTools.taskPopulateSelectionList(
+                self.form.tree, self.obj.baseObject)
+            SheetMetalTools.taskConnectSelection(
+                self.form.AddRemove, self.form.tree, self.obj, ["Edge"])
+            SheetMetalTools.taskConnectSelectionSingle(
+                self, self.form.pushSketch, self.form.txtSketch, obj, "Sketch", ("Sketcher::SketchObject", []))
+            SheetMetalTools.taskConnectSpin(self, self.form.unitReliefSize, "Size")
+            SheetMetalTools.taskConnectSpin(self, self.form.floatScaleFactor, "SizeRatio")
+            SheetMetalTools.taskConnectSpin(self, self.form.floatKFactor, "kfactor")
+            SheetMetalTools.taskConnectSpin(self, self.form.unitXOffset, "XOffset")
+            SheetMetalTools.taskConnectSpin(self, self.form.unitYOffset, "YOffset")
+            self.form.groupReliefType.buttonToggled.connect(self.reliefTypeChanged)
+            self.form.groupReliefSize.buttonToggled.connect(self.reliefSizingTypeChanged)
+
+        def updateForm(self):
+            reliefType = self.obj.ReliefSketch
+            if reliefType in ["Circle", "Circle-Scaled"]:
+                self.form.radioCircular.setChecked(True)
+            elif reliefType in ["Square", "Square-Scaled"]:
+                self.form.radioSquare.setChecked(True)
+            else:
+                self.form.radioSketch.setChecked(True)
+
+            if reliefType in ["Square-Scaled", "Circle-Scaled"]:
+                self.form.radioRelative.setChecked(True)
+            else:
+                self.form.radioAbsolute.setChecked(True)
+            self.updateWidgetVisibility()
+
+        def reliefTypeChanged(self, button, checked):
+            if not checked:
+                return
+            relative = self.form.radioRelative.isChecked()
+            if button == self.form.radioCircular:
+                self.obj.ReliefSketch = "Circle-Scaled" if relative else "Circle"
+            elif button == self.form.radioSquare:
+                self.obj.ReliefSketch = "Square-Scaled" if relative else "Square"
+            else:
+                self.obj.ReliefSketch = "Sketch"
+            self.updateWidgetVisibility()
+            self.obj.Document.recompute()
+
+        def reliefSizingTypeChanged(self, button, checked):
+            if not checked:
+                return
+            curTypeButton = self.form.groupReliefType.checkedButton()
+            self.reliefTypeChanged(curTypeButton, True)
+
+        def updateWidgetVisibility(self):
+            self.form.frameScaleFactor.setVisible(self.form.radioRelative.isChecked())
+            self.form.frameReliefSize.setVisible(self.form.radioAbsolute.isChecked())
+            self.form.groupSketch.setVisible(self.form.radioSketch.isChecked())
+
+
+        def isAllowedAlterSelection(self):
+            return True
+
+        def isAllowedAlterView(self):
+            return True
+
+        def accept(self):
+            SheetMetalTools.taskAccept(self, self.form.AddRemove)
+            SheetMetalTools.taskSaveDefaults(self.obj, smCornerReliefDefaults, 
+                                             ["Size", "SizeRatio", "kfactor"])
+            return True
+
+        def reject(self):
+            SheetMetalTools.taskReject(self, self.form.AddRemove)
 
 
     class AddCornerReliefCommandClass:
@@ -635,18 +735,21 @@ if SheetMetalTools.isGuiLoaded():
                 return
             doc.openTransaction("Corner Relief")
             if activeBody is None or not SheetMetalTools.smIsPartDesign(selobj):
-                a = doc.addObject("Part::FeaturePython", "CornerRelief")
-                SMCornerRelief(a, selobj, sel.SubElementNames)
-                SMCornerReliefVP(a.ViewObject)
+                newObj = doc.addObject("Part::FeaturePython", "CornerRelief")
+                SMCornerRelief(newObj, selobj, sel.SubElementNames)
+                SMCornerReliefVP(newObj.ViewObject)
             else:
                 # FreeCAD.Console.PrintLog("found active body: " + activeBody.Name)
-                a = doc.addObject("PartDesign::FeaturePython", "CornerRelief")
-                SMCornerRelief(a, selobj, sel.SubElementNames)
-                SMCornerReliefPDVP(a.ViewObject)
-                activeBody.addObject(a)
-            SheetMetalTools.SetViewConfig(a, viewConf)
+                newObj = doc.addObject("PartDesign::FeaturePython", "CornerRelief")
+                SMCornerRelief(newObj, selobj, sel.SubElementNames)
+                SMCornerReliefPDVP(newObj.ViewObject)
+                activeBody.addObject(newObj)
+            SheetMetalTools.SetViewConfig(newObj, viewConf)
+            Gui.Selection.clearSelection()
+            newObj.baseObject[0].ViewObject.Visibility = False
+            dialog = SMCornerReliefTaskPanel(newObj)
             doc.recompute()
-            doc.commitTransaction()
+            Gui.Control.showDialog(dialog)
             return
 
         def IsActive(self):
@@ -657,7 +760,7 @@ if SheetMetalTools.isGuiLoaded():
                 return False
             #    selobj = Gui.Selection.getSelection()[0]
             for selVertex in Gui.Selection.getSelectionEx()[0].SubObjects:
-                if type(selVertex) != Part.Edge:
+                if not isinstance(selVertex, Part.Edge):
                     return False
             return True
 
