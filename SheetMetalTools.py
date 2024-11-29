@@ -41,6 +41,15 @@ if isGuiLoaded():
     smSingleSelObserver = SMSingleSelectionObserver()
     Gui.Selection.addObserver(smSingleSelObserver)
 
+    def smSelectGreedy():
+        if hasattr(Gui.Selection, "setSelectionStyle"): # compatibility with FC link version
+            Gui.Selection.setSelectionStyle(Gui.Selection.SelectionStyle.GreedySelection)
+
+    def smSelectNormal():
+        if hasattr(Gui.Selection, "setSelectionStyle"): # compatibility with FC link version
+            Gui.Selection.setSelectionStyle(Gui.Selection.SelectionStyle.NormalSelection)
+
+
     def smHideObjects(*args):
         for arg in args:
             if arg:
@@ -94,12 +103,12 @@ if isGuiLoaded():
             obj.baseObject[0].Visibility=True
             Gui.Selection.clearSelection()
             Gui.Selection.addSelection(obj.baseObject[0],obj.baseObject[1])
-            Gui.Selection.setSelectionStyle(Gui.Selection.SelectionStyle.GreedySelection)
+            smSelectGreedy()
             addRemoveButton.setText('Preview')
         else:
             updateSelectionElements(obj, allowedTypes)
             Gui.Selection.clearSelection()
-            Gui.Selection.setSelectionStyle(Gui.Selection.SelectionStyle.NormalSelection)
+            smSelectNormal()
             obj.Document.recompute()
             obj.baseObject[0].Visibility=False
             obj.Visibility=True
@@ -183,6 +192,8 @@ if isGuiLoaded():
 
     def taskConnectCheck(task, formvar, objvar, callback = None):
         formvar.setChecked(getattr(task.obj, objvar))
+        if callback is not None:
+            callback(formvar.isChecked())
         formvar.toggled.connect(lambda value: _taskUpdateValue(value, task.obj, objvar, callback))
 
     def taskConnectEnum(task, formvar, objvar, callback = None):
@@ -203,7 +214,7 @@ if isGuiLoaded():
 
     def taskReject(task, addRemoveButton = None):
         if addRemoveButton is not None and addRemoveButton.isChecked():
-            Gui.Selection.setSelectionStyle(Gui.Selection.SelectionStyle.NormalSelection)
+            smSelectNormal()
         if smSingleSelObserver.button is not None:
             smSingleSelObserver.button.toggle()
         FreeCAD.ActiveDocument.abortTransaction()

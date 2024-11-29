@@ -675,17 +675,17 @@ def smMiter(
             # Part.show(edge_len,'edge_len')
 
         # check faces intersect each other
-        for i in range(len(facelist)):
-            for j in range(len(lenedgelist)):
+        for i, face in enumerate(facelist):
+            for j, lenedge in enumerate(lenedgelist):
                 if (
                     i != j
-                    and facelist[i].isCoplanar(facelist[j])
-                    and not (getParallel(lenedgelist[i], lenedgelist[j]))
+                    and face.isCoplanar(facelist[j])
+                    and not (getParallel(lenedgelist[i], lenedge))
                 ):
                     # Part.show(lenedgelist[i],'edge_len1')
-                    # Part.show(lenedgelist[j],'edge_len2')
+                    # Part.show(lenedge,'edge_len2')
                     gaps1, extgap1, cornerPoint1 = getGap(
-                        lenedgelist[i], lenedgelist[j], maxExtendGap, mingap
+                        lenedgelist[i], lenedge, maxExtendGap, mingap
                     )
                     gaps2, extgap2, cornerPoint2 = getGap(
                         tranedgelist[i], tranedgelist[j], maxExtendGap, mingap
@@ -693,12 +693,12 @@ def smMiter(
                     # print([gaps1,gaps2, extgap1, extgap2])
                     gaps = max(gaps1, gaps2)
                     extgap = min(extgap1, extgap2)
-                    p1 = lenedgelist[j].valueAt(lenedgelist[j].FirstParameter)
-                    p2 = lenedgelist[j].valueAt(lenedgelist[j].LastParameter)
-                    Angle = LineAngle(lenedgelist[i], lenedgelist[j])
+                    p1 = lenedge.valueAt(lenedge.FirstParameter)
+                    p2 = lenedge.valueAt(lenedge.LastParameter)
+                    Angle = LineAngle(lenedgelist[i], lenedge)
                     # print(Angle)
                     if gaps > 0.0:
-                        #            walledge_common = lenedgelist[j].section(lenedgelist[i])
+                        #            walledge_common = lenedge.section(lenedgelist[i])
                         #            vp1 = walledge_common.Vertexes[0].Point
                         dist1 = (p1 - cornerPoint1).Length
                         dist2 = (p2 - cornerPoint1).Length
@@ -715,7 +715,7 @@ def smMiter(
                             else:
                                 gap2List[j] = 0.0
                     elif extgap != 0.0 and (extgap + mingap) < maxExtendGap:
-                        wallface_common = facelist[j].common(facelist[i])
+                        wallface_common = facelist[j].common(face)
                         dist1 = (p1 - cornerPoint1).Length
                         dist2 = (p2 - cornerPoint1).Length
                         if abs(dist1) < abs(dist2):
@@ -736,13 +736,13 @@ def smMiter(
                                 extgap2List[j] = extgap
                             else:
                                 extgap2List[j] = 0.0
-                elif i != j and not (getParallel(lenedgelist[i], lenedgelist[j])):
+                elif i != j and not (getParallel(lenedgelist[i], lenedge)):
                     # Part.show(lenedgelist[i],'edge_len1')
-                    # Part.show(lenedgelist[j],'edge_len2')
+                    # Part.show(lenedge,'edge_len2')
                     # Part.show(tranedgelist[i],'edge_len1')
                     # Part.show(tranedgelist[j],'edge_len2')
                     gaps1, extgap1, cornerPoint1 = getGap(
-                        lenedgelist[i], lenedgelist[j], maxExtendGap, mingap
+                        lenedgelist[i], lenedge, maxExtendGap, mingap
                     )
                     gaps2, extgap2, cornerPoint2 = getGap(
                         tranedgelist[i], tranedgelist[j], maxExtendGap, mingap
@@ -750,12 +750,12 @@ def smMiter(
                     # print([gaps1, gaps2, extgap1, extgap2])
                     gaps = max(gaps1, gaps2)
                     extgap = min(extgap1, extgap2)
-                    p1 = lenedgelist[j].valueAt(lenedgelist[j].FirstParameter)
-                    p2 = lenedgelist[j].valueAt(lenedgelist[j].LastParameter)
+                    p1 = lenedge.valueAt(lenedge.FirstParameter)
+                    p2 = lenedge.valueAt(lenedge.LastParameter)
                     if gaps > 0.0:
-                        wallface_common = facelist[j].section(facelist[i])
+                        wallface_common = facelist[j].section(face)
                         # Part.show(facelist[j],'facelist')
-                        # Part.show(facelist[i],'facelist')
+                        # Part.show(face,'facelist')
                         wallface_common1 = tranfacelist[j].section(tranfacelist[i])
                         # Part.show(tranfacelist[j],'tranfacelist')
                         # Part.show(tranfacelist[i],'tranfacelist')
@@ -1775,7 +1775,7 @@ if SheetMetalTools.isGuiLoaded():
 
         def unsetEdit(self, vobj, mode):
             Gui.Control.closeDialog()
-            Gui.Selection.setSelectionStyle(Gui.Selection.SelectionStyle.NormalSelection)
+            SheetMetalTools.smSelectNormal()
             self.Object.baseObject[0].ViewObject.Visibility = False
             self.Object.ViewObject.Visibility = True
             return False
@@ -1857,7 +1857,7 @@ if SheetMetalTools.isGuiLoaded():
 
         def unsetEdit(self, vobj, mode):
             Gui.Control.closeDialog()
-            Gui.Selection.setSelectionStyle(Gui.Selection.SelectionStyle.NormalSelection)
+            SheetMetalTools.smSelectNormal()
             self.Object.baseObject[0].ViewObject.Visibility = False
             self.Object.ViewObject.Visibility = True
             return False
@@ -1868,31 +1868,39 @@ if SheetMetalTools.isGuiLoaded():
 
         def __init__(self, obj):
             self.obj = obj
-            self.form = SheetMetalTools.taskLoadUI("FlangeParameters.ui", "FlangeAdvancedParameters.ui")
+            self.form = SheetMetalTools.taskLoadUI("FlangeParameters.ui")
             self.updateForm()
 
             # flange parameters connects
             SheetMetalTools.taskConnectSelection(
-                self.form[0].AddRemove, self.form[0].tree, self.obj, ["Face", "Edge"])
-            SheetMetalTools.taskConnectEnum(self, self.form[0].BendType, "BendType", self.bendTypeUpdated)
-            SheetMetalTools.taskConnectSpin(self, self.form[0].Offset, "offset")
-            SheetMetalTools.taskConnectSpin(self, self.form[0].Radius, "radius")
-            SheetMetalTools.taskConnectSpin(self, self.form[0].Angle, "angle")
-            SheetMetalTools.taskConnectSpin(self, self.form[0].Length, "length")
-            SheetMetalTools.taskConnectEnum(self, self.form[0].LengthSpec, "LengthSpec")
-            SheetMetalTools.taskConnectCheck(self, self.form[0].UnfoldCheckbox, "unfold")
-            SheetMetalTools.taskConnectCheck(self, self.form[0].ReversedCheckbox, "invert")
-            SheetMetalTools.taskConnectSpin(self, self.form[0].extend1, "extend1")
-            SheetMetalTools.taskConnectSpin(self, self.form[0].extend2, "extend2")
+                self.form.AddRemove, self.form.tree, self.obj, ["Face", "Edge"])
+            SheetMetalTools.taskConnectEnum(self, self.form.BendType, "BendType", self.bendTypeUpdated)
+            SheetMetalTools.taskConnectSpin(self, self.form.Offset, "offset")
+            SheetMetalTools.taskConnectSpin(self, self.form.Radius, "radius")
+            SheetMetalTools.taskConnectSpin(self, self.form.Angle, "angle")
+            SheetMetalTools.taskConnectSpin(self, self.form.Length, "length")
+            SheetMetalTools.taskConnectEnum(self, self.form.LengthSpec, "LengthSpec")
+            SheetMetalTools.taskConnectCheck(self, self.form.UnfoldCheckbox, "unfold")
+            SheetMetalTools.taskConnectCheck(self, self.form.ReversedCheckbox, "invert")
+            SheetMetalTools.taskConnectSpin(self, self.form.gap1, "gap1")
+            SheetMetalTools.taskConnectSpin(self, self.form.gap2, "gap2")
+            SheetMetalTools.taskConnectSpin(self, self.form.extend1, "extend1")
+            SheetMetalTools.taskConnectSpin(self, self.form.extend2, "extend2")
             # advanced flange parameters connects
-            self.form[1].reliefTypeButtonGroup.buttonToggled.connect(self.reliefTypeUpdated)
-            SheetMetalTools.taskConnectSpin(self, self.form[1].reliefWidth, "reliefw")
-            SheetMetalTools.taskConnectSpin(self, self.form[1].reliefDepth, "reliefd")
-            SheetMetalTools.taskConnectCheck(self, self.form[1].autoMiterCheckbox, "AutoMiter")
-            SheetMetalTools.taskConnectSpin(self, self.form[1].minGap, "minGap")
-            SheetMetalTools.taskConnectSpin(self, self.form[1].maxExDist, "maxExtendDist")
-            SheetMetalTools.taskConnectSpin(self, self.form[1].miterAngle1, "miterangle1")
-            SheetMetalTools.taskConnectSpin(self, self.form[1].miterAngle2, "miterangle2")
+            self.form.reliefTypeButtonGroup.buttonToggled.connect(self.reliefTypeUpdated)
+            SheetMetalTools.taskConnectSpin(self, self.form.reliefWidth, "reliefw")
+            SheetMetalTools.taskConnectSpin(self, self.form.reliefDepth, "reliefd")
+            SheetMetalTools.taskConnectCheck(self, self.form.autoMiterCheckbox, "AutoMiter")
+            SheetMetalTools.taskConnectSpin(self, self.form.minGap, "minGap")
+            SheetMetalTools.taskConnectSpin(self, self.form.maxExDist, "maxExtendDist")
+            SheetMetalTools.taskConnectSpin(self, self.form.miterAngle1, "miterangle1")
+            SheetMetalTools.taskConnectSpin(self, self.form.miterAngle2, "miterangle2")
+            # perforation
+            SheetMetalTools.taskConnectCheck(self, self.form.checkPerforate, "Perforate", self.perforateChanged)
+            SheetMetalTools.taskConnectSpin(self, self.form.perforateAngle, "PerforationAngle")            
+            SheetMetalTools.taskConnectSpin(self, self.form.perforateInitialCutLen, "PerforationInitialLength")            
+            SheetMetalTools.taskConnectSpin(self, self.form.perforateMaxCutLen, "PerforationMaxLength")            
+            SheetMetalTools.taskConnectSpin(self, self.form.perforateMaxTabLen, "NonperforationMaxLength")            
 
         def isAllowedAlterSelection(self):
             return True
@@ -1905,33 +1913,36 @@ if SheetMetalTools.isGuiLoaded():
 
         def bendTypeUpdated(self, value):
             if self.obj.BendType == "Offset":
-                self.form[0].Offset.setEnabled(True)
+                self.form.Offset.setEnabled(True)
             else:
-                self.form[0].Offset.setEnabled(False)
+                self.form.Offset.setEnabled(False)
 
         def reliefTypeUpdated(self):
             self.obj.reliefType = (
-                "Rectangle" if self.form[1].reliefRectangle.isChecked() else "Round"
+                "Rectangle" if self.form.reliefRectangle.isChecked() else "Round"
             )
             self.obj.Document.recompute()
 
         def updateForm(self):
-            self.form[0].Offset.setEnabled(self.obj.BendType == "Offset")
-            SheetMetalTools.taskPopulateSelectionList(self.form[0].tree, self.obj.baseObject)
+            self.form.Offset.setEnabled(self.obj.BendType == "Offset")
+            SheetMetalTools.taskPopulateSelectionList(self.form.tree, self.obj.baseObject)
 
             # Advanced parameters update
             if self.obj.reliefType == "Rectangle":
-                self.form[1].reliefRectangle.setChecked(True)
+                self.form.reliefRectangle.setChecked(True)
             else:
-                self.form[1].reliefRound.setChecked(True)
+                self.form.reliefRound.setChecked(True)
+
+        def perforateChanged(self, isPerforate):
+            self.form.groupPerforate.setEnabled(isPerforate)
              
         def accept(self):
-            SheetMetalTools.taskAccept(self, self.form[0].AddRemove)
+            SheetMetalTools.taskAccept(self, self.form.AddRemove)
             SheetMetalTools.taskSaveDefaults(self.obj, smAddWallDefaults, smAddWallDefaultVars)
             return True
 
         def reject(self):
-            SheetMetalTools.taskReject(self, self.form[0].AddRemove)
+            SheetMetalTools.taskReject(self, self.form.AddRemove)
 
     class AddWallCommandClass:
         """Add Wall command"""
