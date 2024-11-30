@@ -203,7 +203,7 @@ if isGuiLoaded():
 
     def taskAccept(task, addRemoveButton = None):
         if addRemoveButton is not None and addRemoveButton.isChecked():
-            addRemoveButton.AddRemove.toggle()
+            addRemoveButton.toggle()
         if smSingleSelObserver.button is not None:
             smSingleSelObserver.button.toggle()
         FreeCAD.ActiveDocument.recompute()

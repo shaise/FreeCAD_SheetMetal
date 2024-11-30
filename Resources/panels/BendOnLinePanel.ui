@@ -6,12 +6,12 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>677</width>
+    <width>291</width>
     <height>565</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Generate Sheet Metal base shape</string>
+   <string>Fold on sketch line parameters</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>

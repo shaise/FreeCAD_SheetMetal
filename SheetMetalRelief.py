@@ -23,16 +23,16 @@
 #
 ###############################################################################
 
+import os
 import FreeCAD
 import Part
-import os
 import SheetMetalTools
 
 # IMPORTANT: please remember to change the element map version in case of any
 # changes in modeling logic
 smElementMapVersion = 'sm1.'
 smEpsilon = SheetMetalTools.smEpsilon
-
+smSolidCornerReliefDefaults = {}
 
 def smMakeFace(vertex, face, edges, relief):
 
@@ -125,6 +125,7 @@ class SMRelief:
         _tip_ = FreeCAD.Qt.translate("App::Property", "Base Object")
         obj.addProperty("App::PropertyLinkSub", "baseObject", "Parameters",
                         _tip_).baseObject = (selobj.Object, selobj.SubElementNames)
+        SheetMetalTools.taskRestoreDefaults(obj, smSolidCornerReliefDefaults)
         obj.Proxy = self
 
     def getElementMapVersion(self, _fp, ver, _prop, restored):
@@ -174,11 +175,6 @@ if SheetMetalTools.isGuiLoaded():
             return False
 
         def startDefaultEditMode(self, viewObject):
-            document = viewObject.Document.Document
-            if not document.HasPendingTransaction:
-                text = FreeCAD.Qt.translate("QObject", "Edit %1").replace(
-                    "%1", viewObject.Object.Label)
-                document.openTransaction(text)
             viewObject.Document.setEdit(viewObject.Object, 0)
 
         def updateData(self, fp, prop):
@@ -207,8 +203,7 @@ if SheetMetalTools.isGuiLoaded():
 
         def loads(self, state):
             if state is not None:
-                import FreeCAD
-                doc = FreeCAD.ActiveDocument  # crap
+                doc = FreeCAD.ActiveDocument
                 self.Object = doc.getObject(state['ObjectName'])
 
         def claimChildren(self):
@@ -221,11 +216,8 @@ if SheetMetalTools.isGuiLoaded():
             return os.path.join(icons_path, 'SheetMetal_AddRelief.svg')
 
         def setEdit(self, vobj, mode):
-            taskd = SMReliefTaskPanel()
-            taskd.obj = vobj.Object
-            taskd.update()
-            self.Object.ViewObject.Visibility = False
-            self.Object.baseObject[0].ViewObject.Visibility = True
+            taskd = SMReliefTaskPanel(vobj.Object)
+            FreeCAD.ActiveDocument.openTransaction("CornerRelief")
             Gui.Control.showDialog(taskd)
             return True
 
@@ -272,23 +264,18 @@ if SheetMetalTools.isGuiLoaded():
 
         def loads(self, state):
             if state is not None:
-                import FreeCAD
                 doc = FreeCAD.ActiveDocument  # crap
                 self.Object = doc.getObject(state['ObjectName'])
 
         def claimChildren(self):
-
             return []
 
         def getIcon(self):
             return os.path.join(icons_path, 'SheetMetal_AddRelief.svg')
 
         def setEdit(self, vobj, mode):
-            taskd = SMReliefTaskPanel()
-            taskd.obj = vobj.Object
-            taskd.update()
-            self.Object.ViewObject.Visibility = False
-            self.Object.baseObject[0].ViewObject.Visibility = True
+            taskd = SMReliefTaskPanel(vobj.Object)
+            FreeCAD.ActiveDocument.openTransaction("CornerRelief")
             Gui.Control.showDialog(taskd)
             return True
 
@@ -299,36 +286,19 @@ if SheetMetalTools.isGuiLoaded():
             return False
 
     class SMReliefTaskPanel:
-        '''A TaskPanel for the Sheetmetal'''
+        '''A TaskPanel for the Sheetmetal relief on solid corner'''
 
-        def __init__(self):
-
-            self.obj = None
-            self.form = QtGui.QWidget()
-            self.form.setObjectName("SMReliefTaskPanel")
-            self.form.setWindowTitle("Binded vertexes list")
-            self.grid = QtGui.QGridLayout(self.form)
-            self.grid.setObjectName("grid")
-            self.title = QtGui.QLabel(self.form)
-            self.grid.addWidget(self.title, 0, 0, 1, 2)
-            self.title.setText("Select new vertex(es) and press Update")
-
-            # tree
-            self.tree = QtGui.QTreeWidget(self.form)
-            self.grid.addWidget(self.tree, 1, 0, 1, 2)
-            self.tree.setColumnCount(2)
-            self.tree.setHeaderLabels(["Name", "Subelement"])
-
-            # buttons
-            self.addButton = QtGui.QPushButton(self.form)
-            self.addButton.setObjectName("addButton")
-            self.addButton.setIcon(QtGui.QIcon(
-                os.path.join(icons_path, 'SheetMetal_Update.svg')))
-            self.grid.addWidget(self.addButton, 3, 0, 1, 2)
-
-            QtCore.QObject.connect(self.addButton, QtCore.SIGNAL(
-                "clicked()"), self.updateElement)
-            self.update()
+        def __init__(self, obj):
+            self.obj = obj
+            self.form = SheetMetalTools.taskLoadUI("SolidCornerReliefPanel.ui")
+            SheetMetalTools.taskPopulateSelectionList(
+                self.form.tree, self.obj.baseObject
+            )
+            SheetMetalTools.taskConnectSelection(
+                self.form.AddRemove, self.form.tree, self.obj, ["Vertex"]
+            )
+            SheetMetalTools.taskConnectSpin(self, self.form.CornerSize, "relief")
+            # SheetMetalTools.taskConnectCheck(self, self.form.RefineCheckbox, "Refine")
 
         def isAllowedAlterSelection(self):
             return True
@@ -336,55 +306,13 @@ if SheetMetalTools.isGuiLoaded():
         def isAllowedAlterView(self):
             return True
 
-        def getStandardButtons(self):
-            return QtGui.QDialogButtonBox.Ok
-
-        def update(self):
-            'fills the treewidget'
-            self.tree.clear()
-            if self.obj:
-                f = self.obj.baseObject
-                if isinstance(f[1], list):
-                    for subf in f[1]:
-                        # FreeCAD.Console.PrintLog("item: " + subf + "\n")
-                        item = QtGui.QTreeWidgetItem(self.tree)
-                        item.setText(0, f[0].Name)
-                        item.setIcon(0, QtGui.QIcon(":/icons/Tree_Part.svg"))
-                        item.setText(1, subf)
-                else:
-                    item = QtGui.QTreeWidgetItem(self.tree)
-                    item.setText(0, f[0].Name)
-                    item.setIcon(0, QtGui.QIcon(":/icons/Tree_Part.svg"))
-                    item.setText(1, f[1][0])
-            self.retranslateUi(self.form)
-
-        def updateElement(self):
-            if self.obj:
-                sel = Gui.Selection.getSelectionEx()[0]
-                if sel.HasSubObjects:
-                    obj = sel.Object
-                    for elt in sel.SubElementNames:
-                        if "Vertex" in elt:
-                            vertex = self.obj.baseObject
-                            found = False
-                            if (vertex[0] == obj.Name):
-                                if isinstance(vertex[1], tuple):
-                                    for subf in vertex[1]:
-                                        if subf == elt:
-                                            found = True
-                                else:
-                                    if (vertex[1][0] == elt):
-                                        found = True
-                            if not found:
-                                self.obj.baseObject = (
-                                    sel.Object, sel.SubElementNames)
-                self.update()
-
         def accept(self):
-            FreeCAD.ActiveDocument.recompute()
-            Gui.ActiveDocument.resetEdit()
-            # self.obj.ViewObject.Visibility=True
+            SheetMetalTools.taskAccept(self, self.form.AddRemove)
+            SheetMetalTools.taskSaveDefaults(self.obj, smSolidCornerReliefDefaults, ["relief"])
             return True
+        
+        def reject(self):
+            SheetMetalTools.taskReject(self, self.form.AddRemove)
 
         def retranslateUi(self, TaskPanel):
             # TaskPanel.setWindowTitle(QtGui.QApplication.translate("draft", "vertexs", None))
@@ -413,7 +341,7 @@ if SheetMetalTools.isGuiLoaded():
                 activeBody = view.getActiveObject('pdbody')
             if not SheetMetalTools.smIsOperationLegal(activeBody, selobj):
                 return
-            doc.openTransaction("Add Relief")
+            doc.openTransaction("CornerRelief")
             if activeBody is None or not SheetMetalTools.smIsPartDesign(selobj):
                 a = doc.addObject("Part::FeaturePython", "Relief")
                 SMRelief(a)

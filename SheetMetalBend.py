@@ -175,12 +175,6 @@ if SheetMetalTools.isGuiLoaded():
             return False
 
         def startDefaultEditMode(self, viewObject):
-            document = viewObject.Document.Document
-            if not document.HasPendingTransaction:
-                text = FreeCAD.Qt.translate("QObject", "Edit %1").replace(
-                    "%1", viewObject.Object.Label
-                )
-                document.openTransaction(text)
             viewObject.Document.setEdit(viewObject.Object, 0)
 
         def updateData(self, fp, prop):
@@ -226,6 +220,7 @@ if SheetMetalTools.isGuiLoaded():
 
         def setEdit(self, vobj, mode):
             taskd = SMBendTaskPanel(vobj.Object)
+            FreeCAD.ActiveDocument.openTransaction("AddBend")
             Gui.Control.showDialog(taskd)
             return True
 
@@ -286,6 +281,7 @@ if SheetMetalTools.isGuiLoaded():
 
         def setEdit(self, vobj, mode):
             taskd = SMBendTaskPanel(vobj.Object)
+            FreeCAD.ActiveDocument.openTransaction("AddBend")
             Gui.Control.showDialog(taskd)
             return True
 
@@ -359,7 +355,7 @@ if SheetMetalTools.isGuiLoaded():
                 activeBody = view.getActiveObject("pdbody")
             if not SheetMetalTools.smIsOperationLegal(activeBody, selobj):
                 return
-            doc.openTransaction("Add Bend")
+            doc.openTransaction("AddBend")
             if activeBody is None or not SheetMetalTools.smIsPartDesign(selobj):
                 newobj = doc.addObject("Part::FeaturePython", "SolidBend")
                 SMSolidBend(newobj, selobj, sel.SubElementNames)
