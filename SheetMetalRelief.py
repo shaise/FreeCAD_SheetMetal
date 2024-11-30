@@ -116,15 +116,14 @@ def smRelief(relief=2.0, selVertexNames=' ', MainObject=None):
 
 
 class SMRelief:
-    def __init__(self, obj):
+    def __init__(self, obj, selobj, sel_items):
         '''"Add Relief to Solid" '''
-        selobj = Gui.Selection.getSelectionEx()[0]
         _tip_ = FreeCAD.Qt.translate("App::Property", "Relief Size")
         obj.addProperty("App::PropertyLength", "relief",
                         "Parameters", _tip_).relief = 2.0
         _tip_ = FreeCAD.Qt.translate("App::Property", "Base Object")
         obj.addProperty("App::PropertyLinkSub", "baseObject", "Parameters",
-                        _tip_).baseObject = (selobj.Object, selobj.SubElementNames)
+                        _tip_).baseObject = (selobj, sel_items)
         SheetMetalTools.taskRestoreDefaults(obj, smSolidCornerReliefDefaults)
         obj.Proxy = self
 
@@ -156,135 +155,17 @@ if SheetMetalTools.isGuiLoaded():
     Gui.addLanguagePath(SheetMetalTools.language_path)
     Gui.updateLocale()
 
-    class SMReliefViewProviderTree:
-        "A View provider that nests children objects under the created one"
-
-        def __init__(self, obj):
-            obj.Proxy = self
-            self.Object = obj.Object
-
-        def attach(self, obj):
-            self.Object = obj.Object
-            return
-
-        def setupContextMenu(self, viewObject, menu):
-            action = menu.addAction(FreeCAD.Qt.translate(
-                "QObject", "Edit %1").replace("%1", viewObject.Object.Label))
-            action.triggered.connect(
-                lambda: self.startDefaultEditMode(viewObject))
-            return False
-
-        def startDefaultEditMode(self, viewObject):
-            viewObject.Document.setEdit(viewObject.Object, 0)
-
-        def updateData(self, fp, prop):
-            return
-
-        def getDisplayModes(self, obj):
-            modes = []
-            return modes
-
-        def setDisplayMode(self, mode):
-            return mode
-
-        def onChanged(self, vp, prop):
-            return
-
-        def __getstate__(self):
-            #        return {'ObjectName' : self.Object.Name}
-            return None
-
-        def __setstate__(self, state):
-            self.loads(state)
-
-        # dumps and loads replace __getstate__ and __setstate__ post v. 0.21.2
-        def dumps(self):
-            return None
-
-        def loads(self, state):
-            if state is not None:
-                doc = FreeCAD.ActiveDocument
-                self.Object = doc.getObject(state['ObjectName'])
-
-        def claimChildren(self):
-            objs = []
-            if hasattr(self.Object, "baseObject"):
-                objs.append(self.Object.baseObject[0])
-            return objs
-
+    class SMReliefViewProviderTree(SheetMetalTools.SMViewProvider):
+        ''' Part WB style ViewProvider '''        
         def getIcon(self):
             return os.path.join(icons_path, 'SheetMetal_AddRelief.svg')
+        
+        def getTaskPanel(self, obj):
+            return SMReliefTaskPanel(obj)
 
-        def setEdit(self, vobj, mode):
-            taskd = SMReliefTaskPanel(vobj.Object)
-            FreeCAD.ActiveDocument.openTransaction("CornerRelief")
-            Gui.Control.showDialog(taskd)
-            return True
-
-        def unsetEdit(self, vobj, mode):
-            Gui.Control.closeDialog()
-            self.Object.baseObject[0].ViewObject.Visibility = False
-            self.Object.ViewObject.Visibility = True
-            return False
-
-    class SMReliefViewProviderFlat:
-        "A View provider that nests children objects under the created one"
-
-        def __init__(self, obj):
-            obj.Proxy = self
-            self.Object = obj.Object
-
-        def attach(self, obj):
-            self.Object = obj.Object
-            return
-
-        def updateData(self, fp, prop):
-            return
-
-        def getDisplayModes(self, obj):
-            modes = []
-            return modes
-
-        def setDisplayMode(self, mode):
-            return mode
-
-        def onChanged(self, vp, prop):
-            return
-
-        def __getstate__(self):
-            #        return {'ObjectName' : self.Object.Name}
-            return None
-
-        def __setstate__(self, state):
-            self.loads(state)
-
-        # dumps and loads replace __getstate__ and __setstate__ post v. 0.21.2
-        def dumps(self):
-            return None
-
-        def loads(self, state):
-            if state is not None:
-                doc = FreeCAD.ActiveDocument  # crap
-                self.Object = doc.getObject(state['ObjectName'])
-
-        def claimChildren(self):
-            return []
-
-        def getIcon(self):
-            return os.path.join(icons_path, 'SheetMetal_AddRelief.svg')
-
-        def setEdit(self, vobj, mode):
-            taskd = SMReliefTaskPanel(vobj.Object)
-            FreeCAD.ActiveDocument.openTransaction("CornerRelief")
-            Gui.Control.showDialog(taskd)
-            return True
-
-        def unsetEdit(self, vobj, mode):
-            Gui.Control.closeDialog()
-            self.Object.baseObject[0].ViewObject.Visibility = False
-            self.Object.ViewObject.Visibility = True
-            return False
-
+    class SMReliefViewProviderFlat(SMReliefViewProviderTree):
+        ''' Part WB style ViewProvider - backward compatibility only''' 
+        
     class SMReliefTaskPanel:
         '''A TaskPanel for the Sheetmetal relief on solid corner'''
 
@@ -331,33 +212,14 @@ if SheetMetalTools.isGuiLoaded():
                                                     '2. Use Property editor to modify default parameters')}
 
         def Activated(self):
-            doc = FreeCAD.ActiveDocument
-            view = Gui.ActiveDocument.ActiveView
-            activeBody = None
             sel = Gui.Selection.getSelectionEx()[0]
             selobj = Gui.Selection.getSelectionEx()[0].Object
-            viewConf = SheetMetalTools.GetViewConfig(selobj)
-            if hasattr(view, 'getActiveObject'):
-                activeBody = view.getActiveObject('pdbody')
-            if not SheetMetalTools.smIsOperationLegal(activeBody, selobj):
+            newObj, activeBody = SheetMetalTools.smCreateNewObject(selobj, "CornerRelief")
+            if newObj is None:
                 return
-            doc.openTransaction("CornerRelief")
-            if activeBody is None or not SheetMetalTools.smIsPartDesign(selobj):
-                a = doc.addObject("Part::FeaturePython", "Relief")
-                SMRelief(a)
-                a.baseObject = (selobj, sel.SubElementNames)
-                SMReliefViewProviderTree(a.ViewObject)
-            else:
-                # FreeCAD.Console.PrintLog("found active body: " + activeBody.Name)
-                a = doc.addObject("PartDesign::FeaturePython", "Relief")
-                SMRelief(a)
-                a.baseObject = (selobj, sel.SubElementNames)
-                SMReliefViewProviderFlat(a.ViewObject)
-                activeBody.addObject(a)
-            SheetMetalTools.SetViewConfig(a, viewConf)
-            Gui.Selection.clearSelection()
-            doc.recompute()
-            doc.commitTransaction()
+            SMRelief(newObj, selobj, sel.SubElementNames)
+            SMReliefViewProviderTree(newObj.ViewObject)
+            SheetMetalTools.smAddNewObject(selobj, newObj, activeBody, SMReliefTaskPanel)
             return
 
         def IsActive(self):

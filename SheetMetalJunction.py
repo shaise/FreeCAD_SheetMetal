@@ -110,135 +110,18 @@ if SheetMetalTools.isGuiLoaded():
     Gui.addLanguagePath(SheetMetalTools.language_path)
     Gui.updateLocale()
 
-    class SMJViewProviderTree:
-        "A View provider that nests children objects under the created one"
-
-        def __init__(self, obj):
-            obj.Proxy = self
-            self.Object = obj.Object
-
-        def attach(self, obj):
-            self.Object = obj.Object
-            return
-
-        def setupContextMenu(self, viewObject, menu):
-            action = menu.addAction(FreeCAD.Qt.translate(
-                "QObject", "Edit %1").replace("%1", viewObject.Object.Label))
-            action.triggered.connect(
-                lambda: self.startDefaultEditMode(viewObject))
-            return False
-
-        def startDefaultEditMode(self, viewObject):
-            viewObject.Document.setEdit(viewObject.Object, 0)
-
-        def updateData(self, fp, prop):
-            return
-
-        def getDisplayModes(self, obj):
-            modes = []
-            return modes
-
-        def setDisplayMode(self, mode):
-            return mode
-
-        def onChanged(self, vp, prop):
-            return
-
-        def __getstate__(self):
-            #        return {'ObjectName' : self.Object.Name}
-            return None
-
-        def __setstate__(self, state):
-            self.loads(state)
-
-        # dumps and loads replace __getstate__ and __setstate__ post v. 0.21.2
-        def dumps(self):
-            return None
-
-        def loads(self, state):
-            if state is not None:
-                import FreeCAD
-                doc = FreeCAD.ActiveDocument  # crap
-                self.Object = doc.getObject(state['ObjectName'])
-
-        def claimChildren(self):
-            objs = []
-            if hasattr(self.Object, "baseObject"):
-                objs.append(self.Object.baseObject[0])
-            return objs
-
+    class SMJViewProviderTree(SheetMetalTools.SMViewProvider):
+        ''' Part WB style ViewProvider '''        
         def getIcon(self):
             return os.path.join(icons_path, 'SheetMetal_AddJunction.svg')
+        
+        def getTaskPanel(self, obj):
+            return SMJunctionTaskPanel(obj)
 
-        def setEdit(self, vobj, mode):
-            taskd = SMJunctionTaskPanel(vobj.Object)
-            FreeCAD.ActiveDocument.openTransaction("Junction")
-            Gui.Control.showDialog(taskd)
-            return True
 
-        def unsetEdit(self, vobj, mode):
-            Gui.Control.closeDialog()
-            self.Object.baseObject[0].ViewObject.Visibility = False
-            self.Object.ViewObject.Visibility = True
-            return False
+    class SMJViewProviderFlat(SMJViewProviderTree):
+        ''' Part WB style ViewProvider - backward compatibility only''' 
 
-    class SMJViewProviderFlat:
-        "A View provider that nests children objects under the created one"
-
-        def __init__(self, obj):
-            obj.Proxy = self
-            self.Object = obj.Object
-
-        def attach(self, obj):
-            self.Object = obj.Object
-            return
-
-        def updateData(self, fp, prop):
-            return
-
-        def getDisplayModes(self, obj):
-            modes = []
-            return modes
-
-        def setDisplayMode(self, mode):
-            return mode
-
-        def onChanged(self, vp, prop):
-            return
-
-        def __getstate__(self):
-            #        return {'ObjectName' : self.Object.Name}
-            return None
-
-        def __setstate__(self, state):
-            self.loads(state)
-
-        # dumps and loads replace __getstate__ and __setstate__ post v. 0.21.2
-        def dumps(self):
-            return None
-
-        def loads(self, state):
-            if state is not None:
-                doc = FreeCAD.ActiveDocument
-                self.Object = doc.getObject(state['ObjectName'])
-
-        def claimChildren(self):
-            return []
-
-        def getIcon(self):
-            return os.path.join(icons_path, 'SheetMetal_AddJunction.svg')
-
-        def setEdit(self, vobj, mode):
-            taskd = SMJunctionTaskPanel(vobj.Object)
-            FreeCAD.ActiveDocument.openTransaction("Junction")
-            Gui.Control.showDialog(taskd)
-            return True
-
-        def unsetEdit(self, vobj, mode):
-            Gui.Control.closeDialog()
-            self.Object.baseObject[0].ViewObject.Visibility = False
-            self.Object.ViewObject.Visibility = True
-            return False
 
     class SMJunctionTaskPanel:
         '''A TaskPanel for the Sheetmetal addJunction command'''
@@ -285,33 +168,14 @@ if SheetMetalTools.isGuiLoaded():
                                                     '2. Use Property editor to modify parameters')}
 
         def Activated(self):
-            doc = FreeCAD.ActiveDocument
-            view = Gui.ActiveDocument.ActiveView
-            activeBody = None
             sel = Gui.Selection.getSelectionEx()[0]
             selobj = Gui.Selection.getSelectionEx()[0].Object
-            viewConf = SheetMetalTools.GetViewConfig(selobj)
-            if hasattr(view, 'getActiveObject'):
-                activeBody = view.getActiveObject('pdbody')
-            if not SheetMetalTools.smIsOperationLegal(activeBody, selobj):
+            newObj, activeBody = SheetMetalTools.smCreateNewObject(selobj, "Junction")
+            if newObj is None:
                 return
-            doc.openTransaction("Junction")
-            if activeBody is None or not SheetMetalTools.smIsPartDesign(selobj):
-                newObj = doc.addObject("Part::FeaturePython", "Junction")
-                SMJunction(newObj, selobj, sel.SubElementNames)
-                SMJViewProviderTree(newObj.ViewObject)
-            else:
-                # FreeCAD.Console.PrintLog("found active body: " + activeBody.Name)
-                newObj = doc.addObject("PartDesign::FeaturePython", "Junction")
-                SMJunction(newObj, selobj, sel.SubElementNames)
-                SMJViewProviderFlat(newObj.ViewObject)
-                activeBody.addObject(newObj)
-            SheetMetalTools.SetViewConfig(newObj, viewConf)
-            Gui.Selection.clearSelection()
-            newObj.baseObject[0].ViewObject.Visibility = False
-            dialog = SMJunctionTaskPanel(newObj)
-            doc.recompute()
-            Gui.Control.showDialog(dialog)
+            SMJunction(newObj, selobj, sel.SubElementNames)
+            SMJViewProviderTree(newObj.ViewObject)
+            SheetMetalTools.smAddNewObject(selobj, newObj, activeBody, SMJunctionTaskPanel)
             return
 
         def IsActive(self):

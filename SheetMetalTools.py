@@ -239,8 +239,116 @@ if isGuiLoaded():
             path = os.path.join(panels_path, uiFile)
             forms.append(Gui.PySideUic.loadUi(path))
         return forms
+        
+    def smAddNewObject(baseObj, newObj, activeBody, taskPanel):
+        if activeBody is not None:
+            activeBody.addObject(newObj)
+        viewConf = GetViewConfig(baseObj)
+        SetViewConfig(newObj, viewConf)
+        Gui.Selection.clearSelection()
+        newObj.baseObject[0].ViewObject.Visibility = False
+        dialog = taskPanel(newObj)
+        FreeCAD.ActiveDocument.recompute()
+        Gui.Control.showDialog(dialog)
+        return
+    
+    def smCreateNewObject(baseObj, name):
+        doc = FreeCAD.ActiveDocument
+        activeBody = None
+        view = Gui.ActiveDocument.ActiveView
+        if hasattr(view, 'getActiveObject'):
+            activeBody = view.getActiveObject('pdbody')
+        if not smIsOperationLegal(activeBody, baseObj):
+            return None, None
+        doc.openTransaction(name)
+        if activeBody is None or not smIsPartDesign(baseObj):
+            newObj = doc.addObject("Part::FeaturePython", name)
+            activeBody = None
+        else:
+            newObj = doc.addObject("PartDesign::FeaturePython", name)
+        return (newObj, activeBody)
+ 
+
+    #************************************************************************************
+    #* View providers for part and part design
+    #************************************************************************************
+
+    class SMViewProvider:
+        "A View provider for sheetmetal objects. supports Part/Part-Design types"
+
+        def __init__(self, obj):
+            obj.Proxy = self
+            self.Object = obj.Object
+
+        def attach(self, obj):
+            self.Object = obj.Object
+            return
+
+        def setupContextMenu(self, viewObject, menu):
+            action = menu.addAction(FreeCAD.Qt.translate(
+                "QObject", "Edit %1").replace("%1", viewObject.Object.Label))
+            action.triggered.connect(
+                lambda: self.startDefaultEditMode(viewObject))
+            return False
+
+        def startDefaultEditMode(self, viewObject):
+            viewObject.Document.setEdit(viewObject.Object, 0)
+
+        def updateData(self, fp, prop):
+            return
+
+        def getDisplayModes(self, obj):
+            modes = []
+            return modes
+
+        def setDisplayMode(self, mode):
+            return mode
+
+        def onChanged(self, vp, prop):
+            return
+
+        def __getstate__(self):
+            #        return {'ObjectName' : self.Object.Name}
+            return None
+
+        def __setstate__(self, state):
+            self.loads(state)
+
+        # dumps and loads replace __getstate__ and __setstate__ post v. 0.21.2
+        def dumps(self):
+            return None
+
+        def loads(self, state):
+            if state is not None:
+                doc = FreeCAD.ActiveDocument
+                self.Object = doc.getObject(state['ObjectName'])
+
+        def claimChildren(self):
+            objs = []
+            if not smIsPartDesign(self.Object) and hasattr(self.Object, "baseObject"):
+                objs.append(self.Object.baseObject[0])
+            if hasattr(self.Object, "Sketch"):
+                objs.append(self.Object.Sketch)
+            return objs
+
+        def setEdit(self, vobj, mode):
+            if not hasattr(self, "getTaskPanel"):
+                return False
+            taskd = self.getTaskPanel(vobj.Object)
+            if not smIsPartDesign(self.Object):
+                self.Object.ViewObject.Visibility = True
+            FreeCAD.ActiveDocument.openTransaction(self.Object.Name)
+            Gui.Control.showDialog(taskd)
+            return True
+
+        def unsetEdit(self, vobj, mode):
+            Gui.Control.closeDialog()
+            self.Object.baseObject[0].ViewObject.Visibility = False
+            self.Object.ViewObject.Visibility = True
+            return False
 
 
+# Else: In case no gui is loaded
 else:
     def smWarnDialog(msg):
         SMLogger.warning(msg)
@@ -260,10 +368,10 @@ def smBelongToBody(item, body):
     return False
 
 def smIsPartDesign(obj):
-    return str(obj).find("<PartDesign::") == 0
+    return obj.TypeId.startswith("PartDesign::")
 
 def smIsSketchObject(obj):
-    return str(obj).find("<Sketcher::") == 0
+    return obj.TypeId.startswith("Sketcher::")
 
 def smIsOperationLegal(body, selobj):
     # FreeCAD.Console.PrintLog(str(selobj) + " " + str(body) + " " + str(smBelongToBody(selobj, body)) + "\n")
