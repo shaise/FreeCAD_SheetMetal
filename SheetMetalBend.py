@@ -23,7 +23,10 @@
 #
 ##############################################################################
 
-import Part, SheetMetalTools, os
+import os
+import Part
+import FreeCAD
+import SheetMetalTools
 
 smEpsilon = SheetMetalTools.smEpsilon
 

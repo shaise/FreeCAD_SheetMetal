@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>336</width>
+    <width>298</width>
     <height>450</height>
    </rect>
   </property>
@@ -482,7 +482,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QGroupBox" name="groupBox_5">
+        <widget class="QGroupBox" name="groupAutoMiter">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
            <horstretch>0</horstretch>
@@ -490,20 +490,13 @@
           </sizepolicy>
          </property>
          <property name="title">
-          <string/>
+          <string>Auto Miter Parameters</string>
          </property>
          <layout class="QGridLayout" name="gridLayout_5">
           <item row="0" column="0">
            <widget class="QLabel" name="label_16">
             <property name="text">
              <string>Minimum Gap</string>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="0">
-           <widget class="QLabel" name="label_15">
-            <property name="text">
-             <string>Maximum Extend Distance</string>
             </property>
            </widget>
           </item>
@@ -517,7 +510,14 @@
             </property>
            </widget>
           </item>
-          <item row="3" column="1">
+          <item row="1" column="0">
+           <widget class="QLabel" name="label_15">
+            <property name="text">
+             <string>Max Extend Distance</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
            <widget class="Gui::QuantitySpinBox" name="maxExDist" native="true">
             <property name="unit" stdset="0">
              <string notr="true">mm</string>
@@ -531,7 +531,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QGroupBox" name="groupBox_4">
+        <widget class="QGroupBox" name="groupManualMiter">
          <property name="title">
           <string>Manual Miter</string>
          </property>

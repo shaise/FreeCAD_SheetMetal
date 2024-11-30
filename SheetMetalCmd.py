@@ -1890,7 +1890,7 @@ if SheetMetalTools.isGuiLoaded():
             self.form.reliefTypeButtonGroup.buttonToggled.connect(self.reliefTypeUpdated)
             SheetMetalTools.taskConnectSpin(self, self.form.reliefWidth, "reliefw")
             SheetMetalTools.taskConnectSpin(self, self.form.reliefDepth, "reliefd")
-            SheetMetalTools.taskConnectCheck(self, self.form.autoMiterCheckbox, "AutoMiter")
+            SheetMetalTools.taskConnectCheck(self, self.form.autoMiterCheckbox, "AutoMiter", self.autoMiterChanged)
             SheetMetalTools.taskConnectSpin(self, self.form.minGap, "minGap")
             SheetMetalTools.taskConnectSpin(self, self.form.maxExDist, "maxExtendDist")
             SheetMetalTools.taskConnectSpin(self, self.form.miterAngle1, "miterangle1")
@@ -1935,6 +1935,10 @@ if SheetMetalTools.isGuiLoaded():
 
         def perforateChanged(self, isPerforate):
             self.form.groupPerforate.setEnabled(isPerforate)
+
+        def autoMiterChanged(self, isAutoMiter):
+            self.form.groupAutoMiter.setEnabled(isAutoMiter)
+            self.form.groupManualMiter.setEnabled(not isAutoMiter)
              
         def accept(self):
             SheetMetalTools.taskAccept(self, self.form.AddRemove)
