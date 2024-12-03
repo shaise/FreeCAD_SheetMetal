@@ -513,7 +513,7 @@ if SheetMetalTools.isGuiLoaded():
             return SMCornerReliefTaskPanel(obj)
 
     class SMCornerReliefPDVP(SMCornerReliefVP):
-        ''' Part WB style ViewProvider - backward compatibility only''' 
+        ''' Part Design WB style ViewProvider - backward compatibility only''' 
 
 
 
@@ -524,8 +524,6 @@ if SheetMetalTools.isGuiLoaded():
             self.obj = obj
             self.form = SheetMetalTools.taskLoadUI("CornerReliefPanel.ui")
             self.updateForm()
-            SheetMetalTools.taskPopulateSelectionList(
-                self.form.tree, self.obj.baseObject)
             SheetMetalTools.taskConnectSelection(
                 self.form.AddRemove, self.form.tree, self.obj, ["Edge"])
             SheetMetalTools.taskConnectSelectionSingle(

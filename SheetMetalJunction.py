@@ -23,9 +23,9 @@
 #
 ###################################################################################
 
+import os
 import FreeCAD
 import Part
-import os
 import SheetMetalTools
 
 # IMPORTANT: please remember to change the element map version in case of any
@@ -120,7 +120,7 @@ if SheetMetalTools.isGuiLoaded():
 
 
     class SMJViewProviderFlat(SMJViewProviderTree):
-        ''' Part WB style ViewProvider - backward compatibility only''' 
+        ''' Part Design WB style ViewProvider - backward compatibility only''' 
 
 
     class SMJunctionTaskPanel:
@@ -129,9 +129,6 @@ if SheetMetalTools.isGuiLoaded():
         def __init__(self, obj):
             self.obj = obj
             self.form = SheetMetalTools.taskLoadUI("AddJunctionPanel.ui")
-            SheetMetalTools.taskPopulateSelectionList(
-                self.form.tree, self.obj.baseObject
-            )
             SheetMetalTools.taskConnectSelection(
                 self.form.AddRemove, self.form.tree, self.obj, ["Edge"]
             )
@@ -169,7 +166,7 @@ if SheetMetalTools.isGuiLoaded():
 
         def Activated(self):
             sel = Gui.Selection.getSelectionEx()[0]
-            selobj = Gui.Selection.getSelectionEx()[0].Object
+            selobj = sel.Object
             newObj, activeBody = SheetMetalTools.smCreateNewObject(selobj, "Junction")
             if newObj is None:
                 return
@@ -179,11 +176,12 @@ if SheetMetalTools.isGuiLoaded():
             return
 
         def IsActive(self):
-            if len(Gui.Selection.getSelection()) < 1 or len(Gui.Selection.getSelectionEx()[0].SubElementNames) < 1:
+            sel = Gui.Selection.getSelectionEx()[0]
+            if len(Gui.Selection.getSelection()) < 1 or len(sel.SubElementNames) < 1:
                 return False
     #    selobj = Gui.Selection.getSelection()[0]
-            for selEdge in Gui.Selection.getSelectionEx()[0].SubObjects:
-                if type(selEdge) != Part.Edge:
+            for selEdge in sel.SubObjects:
+                if isinstance(selEdge, Part.Edge):
                     return False
             return True
 

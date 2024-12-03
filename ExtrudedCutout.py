@@ -1,18 +1,42 @@
+# -*- coding: utf-8 -*-
+###################################################################################
+#
+#  ExtrudedCutout.py
+#
+#  Copyright 2024 by @sheetmetalman
+#
+#  This program is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation; either version 2 of the License, or
+#  (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software
+#  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+#  MA 02110-1301, USA.
+#
+#
+###################################################################################
+
+import os  # Make sure 'os' is imported for the icon path
 import FreeCAD
-import FreeCAD as App
 import FreeCADGui as Gui
 import Part
-import os  # Make sure 'os' is imported for the icon path
 import SheetMetalTools
+from SheetMetalTools import SMException
 
-translate = FreeCAD.Qt.translate
+smExtrudedCutoutDefaults = {}
 
 class ExtrudedCutout:
     def __init__(self, obj, sketch, selected_face):
         '''Initialize the parametric Sheet Metal Cut object and add properties'''
         obj.addProperty("App::PropertyLink", "Sketch", "ExtrudedCutout", "The sketch for the cut").Sketch = sketch
-        obj.addProperty("App::PropertyLinkSub", "SelectedFace", "ExtrudedCutout", "The selecteds object and face").SelectedFace = selected_face
-        self._addProperties(obj) # Add other properties (is necessary this way to not cause errors on old files)
+        self._addProperties(obj, selected_face) # Add other properties (is necessary this way to not cause errors on old files)
         obj.setEditorMode("ImproveLevel",2) # Hide by default
         obj.addProperty("App::PropertyLength", "ExtrusionLength1", "ExtrudedCutout", "Length of the extrusion direction 1").ExtrusionLength1 = 500.0
         obj.setEditorMode("ExtrusionLength1",2) # Hide by default
@@ -29,11 +53,21 @@ class ExtrudedCutout:
 
         obj.Proxy = self
 
-    def _addProperties(self, obj):
+    def _addProperties(self, obj, selected_face = None):
+        SheetMetalTools.smAddProperty(
+            obj,
+            "App::PropertyLinkSub",
+            "baseObject",
+            FreeCAD.Qt.translate("SheetMetal", "Selected face"),
+            selected_face,
+            "ExtrudedCutout",
+            # rename selectedFace to baseObject for compatibility with GUI system
+            "SelectedFace" 
+        )
         SheetMetalTools.smAddBoolProperty(
             obj,
             "Refine",
-            translate("App::Property", "Refine the geometry"),
+            FreeCAD.Qt.translate("SheetMetal", "Refine the geometry"),
             False,
             "ExtrudedCutoutImprovements"
         )
@@ -42,7 +76,7 @@ class ExtrudedCutout:
             obj,
             "App::PropertyIntegerConstraint",
             "ImproveLevel",
-            translate("App::Property", "Level of cut improvement quality. More than 10 can take a very long time"),
+            FreeCAD.Qt.translate("SheetMetal", "Level of cut improvement quality. More than 10 can take a very long time"),
             (4, 2, 20, 1),
             "ExtrudedCutoutImprovements",
         )
@@ -50,7 +84,7 @@ class ExtrudedCutout:
         SheetMetalTools.smAddBoolProperty(
             obj,
             "ImproveCut",
-            translate("App::Property", "Improve cut geometry if it enters the cutting zone. Only select true if the cut needs fix, 'cause it can be slow"),
+            FreeCAD.Qt.translate("SheetMetal", "Improve cut geometry if it enters the cutting zone. Only select true if the cut needs fix, 'cause it can be slow"),
             False,
             "ExtrudedCutoutImprovements"
         )
@@ -88,15 +122,15 @@ class ExtrudedCutout:
         self._addProperties(fp)
 
         try:
-            # Ensure the Sketch and SelectedFace properties are valid
-            if fp.Sketch is None or fp.SelectedFace is None:
-                raise Exception("Both the Sketch and SelectedFace properties must be set.")
+            # Ensure the Sketch and baseObject properties are valid
+            if fp.Sketch is None or fp.baseObject is None:
+                raise SMException("Both the Sketch and baseObject properties must be set.")
             
             # Get the sketch from the properties
             cutSketch = fp.Sketch
             
             # Get selected object and selected face from the properties
-            selected_object, face_name = fp.SelectedFace
+            selected_object, face_name = fp.baseObject
             face_name = face_name[0]
             selected_face = selected_object.Shape.getElement(face_name)
 
@@ -160,7 +194,7 @@ class ExtrudedCutout:
                                 continue
         
             if min_distance == float('inf'):
-                raise Exception("No opposite face found to calculate thickness.")
+                raise SMException("No opposite face found to calculate thickness.")
             
             thickness = round(min_distance,4) # Appear that rounding can help on speed performance of the rest of the code
 
@@ -179,10 +213,10 @@ class ExtrudedCutout:
             if parallel_faces:
                 shell = Part.Shell(parallel_faces)
             else:
-                raise Exception("No pairs of parallel faces with the specified thickness distance were found.")
+                raise SMException("No pairs of parallel faces with the specified thickness distance were found.")
 
             # Surfaces to improve the cut geometry:
-            if fp.ImproveCut == True:
+            if fp.ImproveCut:
                 smSide1 = self.find_connected_faces(shell)
                 smSide1 = Part.Shell(smSide1[0])
 
@@ -208,7 +242,7 @@ class ExtrudedCutout:
             compFaces = Part.Compound(myFacesList)
 
             if ExtLength1 == 0 and ExtLength2 == 0:
-                raise Exception("Cut length cannot be zero for both sides.")
+                raise SMException("Cut length cannot be zero for both sides.")
             else:
                 if ExtLength1 == 0:
                     ExtLength1 = (-ExtLength2)
@@ -221,7 +255,7 @@ class ExtrudedCutout:
                 myExtrusion1 = compFaces.extrude(ExtLength1)
                 myExtrusion2 = compFaces.extrude(ExtLength2)
 
-                if fp.Refine == True:
+                if fp.Refine:
                     myUnion = Part.Solid.fuse(myExtrusion1, myExtrusion2).removeSplitter()
                 else:
                     myUnion = Part.Solid.fuse(myExtrusion1, myExtrusion2)
@@ -229,7 +263,7 @@ class ExtrudedCutout:
                 myCommon = myUnion.common(shell)
 
                 # Intersection with the improvement surfaces:
-                if fp.ImproveCut == True:
+                if fp.ImproveCut:
                     myCommImprov = myUnion.common(improvShell)
 
             # Step 4: Find connected components and offset shapes
@@ -242,7 +276,7 @@ class ExtrudedCutout:
                     if offset_shape.isValid():
                         offset_shapes.append(offset_shape)
 
-            if fp.ImproveCut == True:
+            if fp.ImproveCut:
                 connected_improv = self.find_connected_faces(myCommImprov)
                 offset_improv = []
                 for improv in connected_improv: # Offset to one side
@@ -262,7 +296,7 @@ class ExtrudedCutout:
                 for shape in offset_shapes[1:]:
                     combined_offset = combined_offset.fuse(shape)
 
-                if fp.ImproveCut == True:
+                if fp.ImproveCut:
                     comb_impr_off = Part.Solid(offset_improv[0])
                     for impr_shape in offset_improv[1:]:
                         comb_impr_off = comb_impr_off.fuse(impr_shape)
@@ -284,24 +318,24 @@ class ExtrudedCutout:
                 # Step 6: Cut
                 # Check the "CutSide" property to decide how to perform the cut
                 if fp.CutSide == "Inside":
-                    if fp.Refine == True:
+                    if fp.Refine:
                         cut_result = selected_object.Shape.cut(combined_offset).removeSplitter()
                     else:
                         cut_result = selected_object.Shape.cut(combined_offset)
                 elif fp.CutSide == "Outside":
-                    if fp.Refine == True:
+                    if fp.Refine:
                         cut_result = selected_object.Shape.common(combined_offset).removeSplitter()
                     else:
                         cut_result = selected_object.Shape.common(combined_offset)
                 else:
-                    raise Exception("Invalid CutSide value.")
+                    raise SMException("Invalid CutSide value.")
 
                 fp.Shape = cut_result
             else:
-                raise Exception("No valid offset shapes were created.")
+                raise SMException("No valid offset shapes were created.")
 
-        except Exception as e:
-            App.Console.PrintError(f"Error: {e}\n")
+        except SMException as e:
+            FreeCAD.Console.PrintError(f"Error: {e}\n")
 
     def find_connected_faces(self, shape):
         '''Find connected faces in a shape'''
@@ -340,123 +374,79 @@ if SheetMetalTools.isGuiLoaded():
 
     icons_path = SheetMetalTools.icons_path
 
-    class SMExtrudedCutoutVP:
-        "A View provider for Sheet Metal Cut"
-
-        def __init__(self, obj):
-            self.Object = obj.Object
-            obj.Proxy = self
-
-        def attach(self, obj):
-            '''Called when the ViewProvider is attached to an object'''
-            self.Object = obj.Object
-            return
-
-        def updateData(self, fp, prop):
-            '''Handle updates to properties'''
-            return
-
-        def getDisplayModes(self, obj):
-            modes = []
-            return modes
-
-        def setDisplayMode(self, mode):
-            return mode
-
-        def onChanged(self, vp, prop):
-            '''Triggered when the object or its properties change'''
-            return
-
-        def __getstate__(self):
-            '''Return the state of the object for serialization'''
-            return None
-
-        def __setstate__(self, state):
-            '''Restore the object from its state'''
-            self.loads(state)
+    class SMExtrudedCutoutVP(SheetMetalTools.SMViewProvider):
+        ''' Part WB style ViewProvider '''        
+        def getIcon(self):
+            return os.path.join(icons_path, 'SheetMetal_AddCutout.svg')
         
-        # dumps and loads replace __getstate__ and __setstate__ post v. 0.21.2
-        def dumps(self):
-            return None
+        def getTaskPanel(self, obj):
+            return SMExtrudedCutoutTaskPanel(obj)
 
-        def loads(self, state):
-            if state is not None:
-                doc = FreeCAD.ActiveDocument  # crap
-                self.Object = doc.getObject(state["ObjectName"])
+    class SMExtrudedCutoutPDVP(SMExtrudedCutoutVP):
+        ''' Part Design WB style ViewProvider - backward compatibility only''' 
 
-        def claimChildren(self):
-            '''Define the children of the object'''
-            objs = []
-            if hasattr(self.Object, "SelectedFace") and self.Object.SelectedFace is not None:
-                # If SelectedFace is a PropertyLink, you need to access it correctly
-                selected_object = self.Object.SelectedFace[0]
-                if hasattr(selected_object, "Shape"):
-                    objs.append(selected_object)
-            if hasattr(self.Object, "Sketch") and self.Object.Sketch is not None:
-                objs.append(self.Object.Sketch)
-            return objs
-
-        def getIcon(self):
-            '''Return the icon for the object'''
-            icons_path = SheetMetalTools.icons_path
-            return os.path.join(icons_path, "SheetMetal_AddCutout.svg")
-
-    class SMExtrudedCutoutPDVP:
-        "A View provider for Sheet Metal Cut"
+    class SMExtrudedCutoutTaskPanel:
+        '''A TaskPanel for the Sheetmetal Extruded Cutout'''
 
         def __init__(self, obj):
-            self.Object = obj.Object
-            obj.Proxy = self
+            self.obj = obj
+            self.form = SheetMetalTools.taskLoadUI("ExtrudedCutoutPanel.ui")
+            self.LengthAText = FreeCAD.Qt.translate("SheetMetal", "Side A Length")
+            self.LengthText = FreeCAD.Qt.translate("SheetMetal", "Length")
+            self.updateDisplay()
 
-        def attach(self, obj):
-            '''Called when the ViewProvider is attached to an object'''
-            self.Object = obj.Object
-            return
+            SheetMetalTools.taskConnectSelectionSingle(
+                self, self.form.pushFace, self.form.txtFace, obj, "baseObject", ["Face"])
+            SheetMetalTools.taskConnectSelectionSingle(
+                self, self.form.pushSketch, self.form.txtSketch, obj, "Sketch", ("Sketcher::SketchObject", []))
+            self.form.groupCutSide.buttonToggled.connect(self.cutSideChanged)
+            SheetMetalTools.taskConnectEnum(self, self.form.comboCutoutType, "CutType", 
+                                            self.cutTypeChanged)
+            SheetMetalTools.taskConnectSpin(self, self.form.unitLengthA, "ExtrusionLength1")
+            SheetMetalTools.taskConnectSpin(self, self.form.unitLengthB, "ExtrusionLength2")
+            SheetMetalTools.taskConnectSpin(self, self.form.intImproveLevel, "ImproveLevel")            
+            SheetMetalTools.taskConnectCheck(self, self.form.checkImprove, "ImproveCut", 
+                                             self.improveChanged)
+            SheetMetalTools.taskConnectCheck(self, self.form.checkRefine, "Refine")
 
-        def updateData(self, fp, prop):
-            '''Handle updates to properties'''
-            return
+        def updateDisplay(self):
+            if self.obj.CutSide == "Inside":
+                self.form.radioInside.setChecked(True)
+            else:
+                self.form.radioOutside.setChecked(True)
+            self.updateWidgetsVisibility()
 
-        def getDisplayModes(self, obj):
-            modes = []
-            return modes
+        def cutSideChanged(self, button, checked):
+            if not checked:
+                return
+            self.obj.CutSide = "Inside" if button == self.form.radioInside else "Outside"
+            self.obj.Document.recompute()
 
-        def setDisplayMode(self, mode):
-            return mode
+        def improveChanged(self, isImprove):
+            self.form.frameImproveLevel.setVisible(isImprove)
 
-        def onChanged(self, vp, prop):
-            '''Triggered when the object or its properties change'''
-            if prop == "Shape":
-                vp.ViewObject.Document.recompute()
+        def updateWidgetsVisibility(self):
+            self.form.frameSideA.setVisible(self.obj.CutType in ["Two dimensions", "Symmetric"])
+            self.form.frameSideB.setVisible(self.obj.CutType == "Two dimensions")
+            self.form.labelSideA.setText(
+                self.LengthText if self.obj.CutType == "Symmetric" else self.LengthAText) 
 
-        def __getstate__(self):
-            '''Return the state of the object for serialization'''
-            return None
+        def cutTypeChanged(self, value):
+            self.updateWidgetsVisibility()
 
-        def __setstate__(self, state):
-            '''Restore the object from its state'''
-            self.loads(state)
+        def isAllowedAlterSelection(self):
+            return True
 
-       # dumps and loads replace __getstate__ and __setstate__ post v. 0.21.2
-        def dumps(self):
-            return None
+        def isAllowedAlterView(self):
+            return True
 
-        def loads(self, state):
-            if state is not None:
-                doc = FreeCAD.ActiveDocument  # crap
-                self.Object = doc.getObject(state["ObjectName"])
-
-        def claimChildren(self):
-            '''Define the children of the object (if any)'''
-            objs = []
-            if hasattr(self.Object, "Sketch") and self.Object.Sketch is not None:
-                objs.append(self.Object.Sketch)
-            return objs
-
-        def getIcon(self):
-            '''Return the icon for the object'''
-            icons_path = SheetMetalTools.icons_path
-            return os.path.join(icons_path, "SheetMetal_AddCutout.svg")
+        def accept(self):
+            SheetMetalTools.taskAccept(self)
+            SheetMetalTools.taskSaveDefaults(self.obj, smExtrudedCutoutDefaults, [])
+            return True
+        
+        def reject(self):
+            SheetMetalTools.taskReject(self)
 
     class AddExtrudedCutoutCommandClass:
         """Add Extruded Cutout command"""
@@ -476,9 +466,6 @@ if SheetMetalTools.isGuiLoaded():
 
         def Activated(self):
             '''Create a Extruded Cutout object from user selections'''
-
-            doc = App.ActiveDocument
-
             # Get the selecteds object and face
             selection = Gui.Selection.getSelectionEx()[0]
             if selection.Object.isDerivedFrom("Sketcher::SketchObject"): # When user select first the sketch
@@ -488,7 +475,7 @@ if SheetMetalTools.isGuiLoaded():
                 # Check if we have any sub-objects (faces) selected
                 selection = Gui.Selection.getSelectionEx()[1]
                 if len(selection.SubObjects) == 0:
-                    raise Exception("No face selected. Please select a face.")
+                    raise SMException("No face selected. Please select a face.")
 
                 #Get selected object
                 selected_object = selection.Object
@@ -497,7 +484,7 @@ if SheetMetalTools.isGuiLoaded():
                 selected_face = [selected_object, selection.SubElementNames[0]]
             else:  # When user select first the object face
                 if len(selection.SubObjects) == 0: # Check if we have any sub-objects (faces) selected
-                    raise Exception("No face selected. Please select a face.")
+                    raise SMException("No face selected. Please select a face.")
                 
                 # Get selected object
                 selected_object = selection.Object
@@ -510,28 +497,16 @@ if SheetMetalTools.isGuiLoaded():
                 cutSketch = selection.Object
 
             if cutSketch is None or not selected_object.Shape:
-                raise Exception("Both a valid sketch and an object with a shape must be selected.")
+                raise SMException("Both a valid sketch and an object with a shape must be selected.")
             
             # Create and assign the ExtrudedCutout object
-            doc.openTransaction("ExtrudedCutout") # Feature that makes undoing and redoing easier - START
-            if selected_object.isDerivedFrom("PartDesign::Feature"):
-                SMBody = SheetMetalTools.smGetBodyOfItem(selected_object)
-
-                obj = App.ActiveDocument.addObject("PartDesign::FeaturePython", "ExtrudedCutout")
-                ExtrudedCutout(obj, cutSketch, selected_face)
-
-                SMExtrudedCutoutPDVP(obj.ViewObject)
-
-                SMBody.addObject(obj)
-            else:
-                obj = App.ActiveDocument.addObject("Part::FeaturePython", "ExtrudedCutout")
-                ExtrudedCutout(obj, cutSketch, selected_face)
-                
-                SMExtrudedCutoutVP(obj.ViewObject)
-            cutSketch.ViewObject.hide()
-            selected_object.ViewObject.hide()
-            App.ActiveDocument.recompute()
-            doc.commitTransaction() # Feature that makes undoing and redoing easier - END
+            newObj, activeBody = SheetMetalTools.smCreateNewObject(selected_object, "ExtrudedCutout")
+            if newObj is None:
+                return
+            ExtrudedCutout(newObj, cutSketch, selected_face)
+            SMExtrudedCutoutVP(newObj.ViewObject)
+            SheetMetalTools.smAddNewObject(
+                selected_object, newObj, activeBody, SMExtrudedCutoutTaskPanel)
  
         def IsActive(self):
             if len(Gui.Selection.getSelection()) < 2:

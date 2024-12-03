@@ -164,7 +164,7 @@ if SheetMetalTools.isGuiLoaded():
             return SMReliefTaskPanel(obj)
 
     class SMReliefViewProviderFlat(SMReliefViewProviderTree):
-        ''' Part WB style ViewProvider - backward compatibility only''' 
+        ''' Part Design WB style ViewProvider - backward compatibility only''' 
         
     class SMReliefTaskPanel:
         '''A TaskPanel for the Sheetmetal relief on solid corner'''
@@ -172,9 +172,6 @@ if SheetMetalTools.isGuiLoaded():
         def __init__(self, obj):
             self.obj = obj
             self.form = SheetMetalTools.taskLoadUI("SolidCornerReliefPanel.ui")
-            SheetMetalTools.taskPopulateSelectionList(
-                self.form.tree, self.obj.baseObject
-            )
             SheetMetalTools.taskConnectSelection(
                 self.form.AddRemove, self.form.tree, self.obj, ["Vertex"]
             )
@@ -195,10 +192,6 @@ if SheetMetalTools.isGuiLoaded():
         def reject(self):
             SheetMetalTools.taskReject(self, self.form.AddRemove)
 
-        def retranslateUi(self, TaskPanel):
-            # TaskPanel.setWindowTitle(QtGui.QApplication.translate("draft", "vertexs", None))
-            self.addButton.setText(
-                QtGui.QApplication.translate("draft", "Update", None))
 
     class AddReliefCommandClass():
         """Add Relief command"""

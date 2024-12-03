@@ -82,8 +82,6 @@ def smSolidBend(radius=1.0, selEdgeNames="", MainObject=None):
     for selEdgeName in selEdgeNames:
         edge = MainObject.getElement(SheetMetalTools.getElementFromTNP(selEdgeName))
 
-        facelist = MainObject.ancestorsOfType(edge, Part.Face)
-
         # find matching inner edge to selected outer one
         v1 = smFindMatchingVert(MainObject, edge, 0)
         v2 = smFindMatchingVert(MainObject, edge, 1)
@@ -148,148 +146,20 @@ class SMSolidBend:
 ##########################################################################################################
 
 if SheetMetalTools.isGuiLoaded():
-    import FreeCAD
     from FreeCAD import Gui
-    from PySide import QtCore, QtGui
 
     icons_path = SheetMetalTools.icons_path
 
-    class SMBendViewProviderTree:
-        "A View provider that nests children objects under the created one (Part WB style)"
-
-        def __init__(self, obj):
-            obj.Proxy = self
-            self.Object = obj.Object
-
-        def attach(self, obj):
-            self.Object = obj.Object
-            return
-
-        def setupContextMenu(self, viewObject, menu):
-            action = menu.addAction(
-                FreeCAD.Qt.translate("QObject", "Edit %1").replace(
-                    "%1", viewObject.Object.Label
-                )
-            )
-            action.triggered.connect(lambda: self.startDefaultEditMode(viewObject))
-            return False
-
-        def startDefaultEditMode(self, viewObject):
-            viewObject.Document.setEdit(viewObject.Object, 0)
-
-        def updateData(self, fp, prop):
-            return
-
-        def getDisplayModes(self, obj):
-            modes = []
-            return modes
-
-        def setDisplayMode(self, mode):
-            return mode
-
-        def onChanged(self, vp, prop):
-            return
-
-        def __getstate__(self):
-            #        return {'ObjectName' : self.Object.Name}
-            return None
-
-        def __setstate__(self, state):
-            self.loads(state)
-
-        # dumps and loads replace __getstate__ and __setstate__ post v. 0.21.2
-        def dumps(self):
-            return None
-
-        def loads(self, state):
-            if state is not None:
-                import FreeCAD
-
-                doc = FreeCAD.ActiveDocument  # crap
-                self.Object = doc.getObject(state["ObjectName"])
-
-        def claimChildren(self):
-            objs = []
-            if hasattr(self.Object, "baseObject"):
-                self.Object.baseObject[0].ViewObject.Visibility=False
-                objs.append(self.Object.baseObject[0])
-            return objs
-
+    class SMBendViewProviderTree(SheetMetalTools.SMViewProvider):
+        ''' Part WB style ViewProvider '''        
         def getIcon(self):
-            return os.path.join(icons_path, "SheetMetal_AddBend.svg")
+            return os.path.join(icons_path, 'SheetMetal_AddBend.svg')
+        
+        def getTaskPanel(self, obj):
+            return SMBendTaskPanel(obj)
 
-        def setEdit(self, vobj, mode):
-            taskd = SMBendTaskPanel(vobj.Object)
-            FreeCAD.ActiveDocument.openTransaction("AddBend")
-            Gui.Control.showDialog(taskd)
-            return True
-
-        def unsetEdit(self, vobj, mode):
-            Gui.Control.closeDialog()
-            self.Object.baseObject[0].ViewObject.Visibility = False
-            self.Object.ViewObject.Visibility = True
-            return False
-
-    class SMBendViewProviderFlat:
-        "A View provider that place new objects under the base object (Part design WB style)"
-
-        def __init__(self, obj):
-            obj.Proxy = self
-            self.Object = obj.Object
-
-        def attach(self, obj):
-            self.Object = obj.Object
-            return
-
-        def updateData(self, fp, prop):
-            return
-
-        def getDisplayModes(self, obj):
-            modes = []
-            return modes
-
-        def setDisplayMode(self, mode):
-            return mode
-
-        def onChanged(self, vp, prop):
-            return
-
-        def __getstate__(self):
-            #        return {'ObjectName' : self.Object.Name}
-            return None
-
-        def __setstate__(self, state):
-            self.loads(state)
-
-        # dumps and loads replace __getstate__ and __setstate__ post v. 0.21.2
-        def dumps(self):
-            return None
-
-        def loads(self, state):
-            if state is not None:
-                import FreeCAD
-
-                doc = FreeCAD.ActiveDocument  # crap
-                self.Object = doc.getObject(state["ObjectName"])
-
-        def claimChildren(self):
-
-            return []
-
-        def getIcon(self):
-            return os.path.join(icons_path, "SheetMetal_AddBend.svg")
-
-        def setEdit(self, vobj, mode):
-            taskd = SMBendTaskPanel(vobj.Object)
-            FreeCAD.ActiveDocument.openTransaction("AddBend")
-            Gui.Control.showDialog(taskd)
-            return True
-
-        def unsetEdit(self, vobj, mode):
-            Gui.Control.closeDialog()
-            self.Object.baseObject[0].ViewObject.Visibility = False
-            self.Object.ViewObject.Visibility = True
-            return False
+    class SMBendViewProviderFlat(SMBendViewProviderTree):
+        ''' Part Design WB style ViewProvider - backward compatibility only''' 
 
     class SMBendTaskPanel:
         """A TaskPanel for the Sheetmetal"""
@@ -297,9 +167,6 @@ if SheetMetalTools.isGuiLoaded():
         def __init__(self, obj):
             self.obj = obj
             self.form = SheetMetalTools.taskLoadUI("BendCornerPanel.ui")
-            SheetMetalTools.taskPopulateSelectionList(
-                self.form.tree, self.obj.baseObject
-            )
             SheetMetalTools.taskConnectSelection(
                 self.form.AddRemove, self.form.tree, self.obj, ["Edge"]
             )
@@ -320,11 +187,7 @@ if SheetMetalTools.isGuiLoaded():
         def reject(self):
             SheetMetalTools.taskReject(self, self.form.AddRemove)
 
-        def retranslateUi(self, SMUnfoldTaskPanel):
-            # SMUnfoldTaskPanel.setWindowTitle(QtGui.QApplication.translate("draft", "Faces", None))
-            self.addButton.setText(
-                QtGui.QApplication.translate("draft", "Update", None)
-            )
+        #def retranslateUi(self, SMBendTaskPanel):
 
     class AddBendCommandClass:
         """Add Solid Bend command"""
@@ -345,48 +208,23 @@ if SheetMetalTools.isGuiLoaded():
             }
 
         def Activated(self):
-            doc = FreeCAD.ActiveDocument
-            view = Gui.ActiveDocument.ActiveView
-            activeBody = None
             sel = Gui.Selection.getSelectionEx()[0]
             selobj = sel.Object
-            viewConf = SheetMetalTools.GetViewConfig(selobj)
-            if hasattr(view, "getActiveObject"):
-                activeBody = view.getActiveObject("pdbody")
-            if not SheetMetalTools.smIsOperationLegal(activeBody, selobj):
+            newObj, activeBody = SheetMetalTools.smCreateNewObject(selobj, "SolidBend")
+            if newObj is None:
                 return
-            doc.openTransaction("AddBend")
-            if activeBody is None or not SheetMetalTools.smIsPartDesign(selobj):
-                newobj = doc.addObject("Part::FeaturePython", "SolidBend")
-                SMSolidBend(newobj, selobj, sel.SubElementNames)
-                SMBendViewProviderTree(newobj.ViewObject)
-            else:
-                # FreeCAD.Console.PrintLog("found active body: " + activeBody.Name)
-                newobj = doc.addObject("PartDesign::FeaturePython", "SolidBend")
-                SMSolidBend(newobj, selobj, sel.SubElementNames)
-                SMBendViewProviderFlat(newobj.ViewObject)
-                activeBody.addObject(newobj)
-            SheetMetalTools.SetViewConfig(newobj, viewConf)
-            if SheetMetalTools.is_autolink_enabled():
-                root = SheetMetalTools.getOriginalBendObject(newobj)
-                if root:
-                    newobj.setExpression("radius", root.Label + ".radius")
-            Gui.Selection.clearSelection()
-            newobj.baseObject[0].ViewObject.Visibility = False
-            dialog = SMBendTaskPanel(newobj)
-            doc.recompute()
-            Gui.Control.showDialog(dialog)
+            SMSolidBend(newObj, selobj, sel.SubElementNames)
+            SMBendViewProviderFlat(newObj.ViewObject)
+            SheetMetalTools.smAddNewObject(
+                selobj, newObj, activeBody, SMBendTaskPanel)
             return
 
         def IsActive(self):
-            if (
-                len(Gui.Selection.getSelection()) < 1
-                or len(Gui.Selection.getSelectionEx()[0].SubElementNames) < 1
-            ):
+            if (len(Gui.Selection.getSelection()) < 1
+                or len(Gui.Selection.getSelectionEx()[0].SubElementNames) < 1):
                 return False
-            #    selobj = Gui.Selection.getSelection()[0]
             for selFace in Gui.Selection.getSelectionEx()[0].SubObjects:
-                if type(selFace) != Part.Edge:
+                if not isinstance(selFace, Part.Edge):
                     return False
             return True
 

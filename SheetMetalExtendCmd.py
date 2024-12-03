@@ -375,159 +375,17 @@ if SheetMetalTools.isGuiLoaded():
 
     icons_path = SheetMetalTools.icons_path
 
-    class SMViewProviderTree:
-        "A View provider that nests children objects under the created one"
-
-        def __init__(self, obj):
-            obj.Proxy = self
-            self.Object = obj.Object
-
-        def attach(self, obj):
-            self.Object = obj.Object
-            return
-
-        def setupContextMenu(self, viewObject, menu):
-            action = menu.addAction(
-                FreeCAD.Qt.translate("QObject", "Edit %1").replace(
-                    "%1", viewObject.Object.Label
-                )
-            )
-            action.triggered.connect(lambda: self.startDefaultEditMode(viewObject))
-            return False
-
-        def startDefaultEditMode(self, viewObject):
-            # document = viewObject.Document.Document
-            # if not document.HasPendingTransaction:
-            #     text = FreeCAD.Qt.translate("QObject", "Edit %1").replace(
-            #         "%1", viewObject.Object.Label
-            #     )
-            #     document.openTransaction(text)
-            viewObject.Document.setEdit(viewObject.Object, 0)
-
-        def updateData(self, fp, prop):
-            return
-
-        def getDisplayModes(self, obj):
-            modes = []
-            return modes
-
-        def setDisplayMode(self, mode):
-            return mode
-
-        def onChanged(self, vp, prop):
-            return
-
-        def __getstate__(self):
-            #        return {'ObjectName' : self.Object.Name}
-            return None
-
-        def __setstate__(self, state):
-            self.loads(state)
-
-        # dumps and loads replace __getstate__ and __setstate__ post v. 0.21.2
-        def dumps(self):
-            return None
-
-        def loads(self, state):
-            if state is not None:
-                doc = FreeCAD.ActiveDocument
-                self.Object = doc.getObject(state["ObjectName"])
-
-        def claimChildren(self):
-            objs = []
-            if hasattr(self.Object, "baseObject"):
-                objs.append(self.Object.baseObject[0])
-            if hasattr(self.Object, "Sketch"):
-                objs.append(self.Object.Sketch)
-            return objs
-
+    class SMViewProviderTree(SheetMetalTools.SMViewProvider):
+        ''' Part WB style ViewProvider '''        
         def getIcon(self):
             return os.path.join(icons_path, "SheetMetal_Extrude.svg")
+        
+        def getTaskPanel(self, obj):
+            return SMExtendWallTaskPanel(obj)
+        
+    class SMViewProviderFlat(SMViewProviderTree):
+        ''' Part Design WB style ViewProvider - backward compatibility only''' 
 
-        def setEdit(self, vobj, mode):
-            taskd = SMExtendWallTaskPanel(vobj.Object)
-            FreeCAD.ActiveDocument.openTransaction("Extend")
-            Gui.Control.showDialog(taskd)
-            return True
-
-        def unsetEdit(self, vobj, mode):
-            Gui.Control.closeDialog()
-            self.Object.baseObject[0].ViewObject.Visibility = False
-            self.Object.ViewObject.Visibility = True
-            return False
-
-    class SMViewProviderFlat:
-        "A View provider that places objects flat under base object"
-
-        def __init__(self, obj):
-            obj.Proxy = self
-            self.Object = obj.Object
-
-        def attach(self, obj):
-            self.Object = obj.Object
-            return
-
-        def updateData(self, fp, prop):
-            return
-
-        def getDisplayModes(self, obj):
-            modes = []
-            return modes
-
-        def setDisplayMode(self, mode):
-            return mode
-
-        def onChanged(self, vp, prop):
-            return
-
-        def __getstate__(self):
-            #        return {'ObjectName' : self.Object.Name}
-            return None
-
-        def __setstate__(self, state):
-            self.loads(state)
-
-        # dumps and loads replace __getstate__ and __setstate__ post v. 0.21.2
-        def dumps(self):
-            return None
-
-        def loads(self, state):
-            if state is not None:
-                doc = FreeCAD.ActiveDocument
-                self.Object = doc.getObject(state["ObjectName"])
-
-        def claimChildren(self):
-            objs = []
-            if hasattr(self.Object, "Sketch"):
-                objs.append(self.Object.Sketch)
-            return objs
-
-        def getIcon(self):
-            return os.path.join(icons_path, "SheetMetal_Extrude.svg")
-
-        def setupContextMenu(self, viewObject, menu):
-            action = menu.addAction(
-                FreeCAD.Qt.translate("QObject", "Edit %1").replace(
-                    "%1", viewObject.Object.Label
-                )
-            )
-            action.triggered.connect(lambda: self.startDefaultEditMode(viewObject))
-            return False
-
-        def startDefaultEditMode(self, viewObject):
-            viewObject.Document.setEdit(viewObject.Object, 0)
-
-        def setEdit(self, vobj, mode):
-            taskd = SMExtendWallTaskPanel(vobj.Object)
-            FreeCAD.ActiveDocument.openTransaction("Extend")
-            Gui.Control.showDialog(taskd)
-            return True
-
-        def unsetEdit(self, vobj, mode):
-            Gui.Control.closeDialog()
-            self.Object.baseObject[0].ViewObject.Visibility = False
-            self.Object.ViewObject.Visibility = True
-            return False
 
     class SMExtendWallTaskPanel:
         """A TaskPanel for the Sheetmetal"""
@@ -535,9 +393,6 @@ if SheetMetalTools.isGuiLoaded():
         def __init__(self, obj):
             self.obj = obj
             self.form = SheetMetalTools.taskLoadUI("ExtendTaskPanel.ui")
-            SheetMetalTools.taskPopulateSelectionList(
-                self.form.tree, self.obj.baseObject
-            )
             SheetMetalTools.taskConnectSelection(
                 self.form.AddRemove, self.form.tree, self.obj, ["Face"]
             )
@@ -580,32 +435,14 @@ if SheetMetalTools.isGuiLoaded():
             }
 
         def Activated(self):
-            doc = FreeCAD.ActiveDocument
-            view = Gui.ActiveDocument.ActiveView
-            activeBody = None
             sel = Gui.Selection.getSelectionEx()[0]
             selobj = sel.Object
-            viewConf = SheetMetalTools.GetViewConfig(selobj)
-            if hasattr(view, "getActiveObject"):
-                activeBody = view.getActiveObject("pdbody")
-            if not SheetMetalTools.smIsOperationLegal(activeBody, selobj):
+            newObj, activeBody = SheetMetalTools.smCreateNewObject(selobj, "Extend")
+            if newObj is None:
                 return
-            doc.openTransaction("Extend")
-            if activeBody is None:
-                newObj = doc.addObject("Part::FeaturePython", "Extend")
-                SMExtrudeWall(newObj, selobj, sel.SubElementNames)
-                SMViewProviderTree(newObj.ViewObject)
-            else:
-                newObj = doc.addObject("PartDesign::FeaturePython", "Extend")
-                SMExtrudeWall(newObj, selobj, sel.SubElementNames)
-                SMViewProviderFlat(newObj.ViewObject)
-                activeBody.addObject(newObj)
-            SheetMetalTools.SetViewConfig(newObj, viewConf)
-            Gui.Selection.clearSelection()
-            newObj.baseObject[0].ViewObject.Visibility = False
-            dialog = SMExtendWallTaskPanel(newObj)
-            doc.recompute()
-            Gui.Control.showDialog(dialog)
+            SMExtrudeWall(newObj, selobj, sel.SubElementNames)
+            SMViewProviderTree(newObj.ViewObject)
+            SheetMetalTools.smAddNewObject(selobj, newObj, activeBody, SMExtendWallTaskPanel)
             return
 
         def IsActive(self):
@@ -618,7 +455,7 @@ if SheetMetalTools.isGuiLoaded():
                 if selobj.isDerivedFrom("Sketcher::SketchObject"):
                     return False
             for selFace in Gui.Selection.getSelectionEx()[0].SubObjects:
-                if type(selFace) == Part.Vertex:
+                if isinstance(selFace, Part.Vertex):
                     return False
             return True
 

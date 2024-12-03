@@ -322,128 +322,16 @@ if SheetMetalTools.isGuiLoaded():
     icons_path = SheetMetalTools.icons_path
 
 
-    class SMFoldViewProvider:
-        "A View provider that nests children objects under the created one"
-
-        def __init__(self, obj):
-            obj.Proxy = self
-            self.Object = obj.Object
-
-        def attach(self, obj):
-            self.Object = obj.Object
-            return
-
-        def updateData(self, fp, prop):
-            return
-
-        def getDisplayModes(self, obj):
-            modes = []
-            return modes
-
-        def setDisplayMode(self, mode):
-            return mode
-
-        def onChanged(self, vp, prop):
-            return
-
-        def __getstate__(self):
-            #        return {'ObjectName' : self.Object.Name}
-            return None
-
-        def __setstate__(self, state):
-            self.loads(state)
-
-        # dumps and loads replace __getstate__ and __setstate__ post v. 0.21.2
-        def dumps(self):
-            return None
-
-        def loads(self, state):
-            if state is not None:
-                doc = FreeCAD.ActiveDocument
-                self.Object = doc.getObject(state["ObjectName"])
-
-        def claimChildren(self):
-            objs = []
-            if hasattr(self.Object, "baseObject"):
-                objs.append(self.Object.baseObject[0])
-                objs.append(self.Object.BendLine)
-            return objs
-
+    class SMFoldViewProvider(SheetMetalTools.SMViewProvider):
+        ''' Part WB style ViewProvider '''        
         def getIcon(self):
-            return os.path.join(icons_path, "SheetMetal_AddFoldWall.svg")
-
-        def setEdit(self, vobj, mode):
-            taskd = SMFoldOnLineTaskPanel(vobj.Object)
-            Gui.Control.showDialog(taskd)
-            return True
-
-        def unsetEdit(self, vobj, mode):
-            Gui.Control.closeDialog()
-            self.Object.baseObject[0].ViewObject.Visibility = False
-            self.Object.ViewObject.Visibility = True
-            return False
-
-
-    class SMFoldPDViewProvider:
-        "A View provider that nests children objects under the created one"
-
-        def __init__(self, obj):
-            obj.Proxy = self
-            self.Object = obj.Object
-
-        def attach(self, obj):
-            self.Object = obj.Object
-            return
-
-        def updateData(self, fp, prop):
-            return
-
-        def getDisplayModes(self, obj):
-            modes = []
-            return modes
-
-        def setDisplayMode(self, mode):
-            return mode
-
-        def onChanged(self, vp, prop):
-            return
-
-        def __getstate__(self):
-            #        return {'ObjectName' : self.Object.Name}
-            return None
-
-        def __setstate__(self, state):
-            self.loads(state)
-
-        # dumps and loads replace __getstate__ and __setstate__ post v. 0.21.2
-        def dumps(self):
-            return None
-
-        def loads(self, state):
-            if state is not None:
-                doc = FreeCAD.ActiveDocument  # crap
-                self.Object = doc.getObject(state["ObjectName"])
-
-        def claimChildren(self):
-            objs = []
-            if hasattr(self.Object, "BendLine"):
-                objs.append(self.Object.BendLine)
-            return objs
-
-        def getIcon(self):
-            return os.path.join(icons_path, "SheetMetal_AddFoldWall.svg")
+            return os.path.join(icons_path, 'SheetMetal_AddFoldWall.svg')
         
-        def setEdit(self, vobj, mode):
-            taskd = SMFoldOnLineTaskPanel(vobj.Object)
-            FreeCAD.ActiveDocument.openTransaction("EditBendOnLine")
-            Gui.Control.showDialog(taskd)
-            return True
+        def getTaskPanel(self, obj):
+            return SMFoldOnLineTaskPanel(obj)
 
-        def unsetEdit(self, vobj, mode):
-            Gui.Control.closeDialog()
-            self.Object.baseObject[0].ViewObject.Visibility = False
-            self.Object.ViewObject.Visibility = True
-            return False
+    class SMFoldPDViewProvider(SMFoldViewProvider):
+        ''' Part Design WB style ViewProvider - backward compatibility only''' 
 
     class SMFoldOnLineTaskPanel:
         """A TaskPanel for the Sheetmetal"""
@@ -499,44 +387,21 @@ if SheetMetalTools.isGuiLoaded():
             }
 
         def Activated(self):
-            doc = FreeCAD.ActiveDocument
-            view = Gui.ActiveDocument.ActiveView
-            activeBody = None
             sel = Gui.Selection.getSelectionEx()
-            selobj = Gui.Selection.getSelectionEx()[0].Object
-            viewConf = SheetMetalTools.GetViewConfig(selobj)
-            if hasattr(view, "getActiveObject"):
-                activeBody = view.getActiveObject("pdbody")
-            if not SheetMetalTools.smIsOperationLegal(activeBody, selobj):
+            selobj = sel[0].Object
+            newObj, activeBody = SheetMetalTools.smCreateNewObject(selobj, "Fold")
+            if newObj is None:
                 return
-            doc.openTransaction("BendOnLine")
-            if activeBody is None or not SheetMetalTools.smIsPartDesign(selobj):
-                newObj = doc.addObject("Part::FeaturePython", "Fold")
-                SMFoldWall(newObj, selobj, sel[0].SubElementNames, sel[1].Object)
-                SMFoldViewProvider(newObj.ViewObject)
-            else:
-                # FreeCAD.Console.PrintLog("found active body: " + activeBody.Name)
-                newObj = doc.addObject("PartDesign::FeaturePython", "Fold")
-                SMFoldWall(newObj, selobj, sel[0].SubElementNames, sel[1].Object)
-                SMFoldPDViewProvider(newObj.ViewObject)
-                activeBody.addObject(newObj)
-            SheetMetalTools.SetViewConfig(newObj, viewConf)
-            if SheetMetalTools.is_autolink_enabled():
-                root = SheetMetalTools.getOriginalBendObject(newObj)
-                if root:
-                    newObj.setExpression("radius", root.Label + ".radius")
-            newObj.baseObject[0].ViewObject.Visibility = False
-            dialog = SMFoldOnLineTaskPanel(newObj)
-            doc.recompute()
-            Gui.Control.showDialog(dialog)
-            #doc.commitTransaction()
+            SMFoldWall(newObj, selobj, sel[0].SubElementNames, sel[1].Object)
+            SMFoldViewProvider(newObj.ViewObject)
+            SheetMetalTools.smAddNewObject(selobj, newObj, activeBody, SMFoldOnLineTaskPanel)
             return
-
+        
         def IsActive(self):
             if len(Gui.Selection.getSelection()) < 2:
                 return False
             selFace = Gui.Selection.getSelectionEx()[0].SubObjects[0]
-            if type(selFace) != Part.Face:
+            if not isinstance(selFace, Part.Face):
                 return False
             selobj = Gui.Selection.getSelection()[1]
             if selobj.isDerivedFrom("Sketcher::SketchObject"):

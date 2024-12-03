@@ -1,6 +1,32 @@
-import FreeCAD, os
-from SheetMetalLogger import SMLogger
+# -*- coding: utf-8 -*-
+##############################################################################
+#
+#  SheetMetalBend.py
+#
+#  Copyright 2024 Shai Seger <shaise at gmail dot com>
+#
+#  This program is free software; you can redistribute it and/or
+#  modify it under the terms of the GNU Lesser General Public
+#  License as published by the Free Software Foundation; either
+#  version 2 of the License, or (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU Lesser General Public
+#  License along with this program; if not, write to the Free Software
+#  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+#  MA 02110-1301, USA.
+#
+#
+##############################################################################
+
+import os
 import re
+import FreeCAD
+from SheetMetalLogger import SMLogger
 
 translate = FreeCAD.Qt.translate
 
@@ -11,11 +37,13 @@ language_path = os.path.join(mod_path, "translations")
 params = FreeCAD.ParamGet("User parameter:BaseApp/Preferences/Mod/SheetMetal")
 smEpsilon = 0.0000001
 
+class SMException(Exception):
+    ''' Sheet Metal Custom Exception '''
+
 def isGuiLoaded():
-    try:
+    if hasattr(FreeCAD, "GuiUp"):
         return FreeCAD.GuiUp
-    except:
-        return False
+    return False
     
 if isGuiLoaded():
     from PySide import QtCore, QtGui
@@ -116,6 +144,7 @@ if isGuiLoaded():
             taskPopulateSelectionList(treeWidget, obj.baseObject)
     
     def taskConnectSelection(addRemoveButton, treeWidget, obj, allowedTypes):
+        taskPopulateSelectionList(treeWidget, obj.baseObject)
         addRemoveButton.toggled.connect(
             lambda value: _taskToggleSelectionMode(value, addRemoveButton, treeWidget, 
                                                    obj, allowedTypes))
@@ -148,6 +177,7 @@ if isGuiLoaded():
 
     def taskConnectSelectionSingle(task, button, textbox, obj, selProperty, allowedTypes):
         taskPopulateSelectionSingle(textbox, getattr(obj, selProperty))
+        button.setCheckable(True)
         button.toggled.connect(
             lambda value: _taskToggleSingleSelMode(
                 task, value, button, textbox, obj, selProperty, allowedTypes))
@@ -335,13 +365,13 @@ if isGuiLoaded():
             if not hasattr(self, "getTaskPanel"):
                 return False
             taskd = self.getTaskPanel(vobj.Object)
-            if not smIsPartDesign(self.Object):
+            if smIsPartDesign(self.Object):
                 self.Object.ViewObject.Visibility = True
             FreeCAD.ActiveDocument.openTransaction(self.Object.Name)
             Gui.Control.showDialog(taskd)
             return True
 
-        def unsetEdit(self, vobj, mode):
+        def unsetEdit(self, _vobj, _mode):
             Gui.Control.closeDialog()
             self.Object.baseObject[0].ViewObject.Visibility = False
             self.Object.ViewObject.Visibility = True
@@ -428,7 +458,8 @@ def getElementFromTNP(tnpName):
         FreeCAD.Console.PrintWarning("Warning: Tnp Name still visible: " + tnpName + "\n")
     return names[len(names) - 1].lstrip('?')
 
-def smAddProperty(obj, proptype, name, proptip, defval=None, paramgroup="Parameters"):
+def smAddProperty(obj, proptype, name, proptip, defval=None, 
+                  paramgroup="Parameters", replacedname = None):
     """
     Add a property to a given object.
 
@@ -439,24 +470,27 @@ def smAddProperty(obj, proptype, name, proptip, defval=None, paramgroup="Paramet
     - proptip: The tooltip for the property. Need to be translated from outside.
     - defval: The default value for the property (optional).
     - paramgroup: The parameter group to which the property should belong (default is "Parameters").
+    - replacedname: If a property is renamed, for backward compatibility, add the replaced name
+                    to the old one so data can be extracted from it in old files
     """
     if not hasattr(obj, name):
         obj.addProperty(proptype, name, paramgroup, proptip)
         if defval is not None:
             setattr(obj, name, defval)
+    if replacedname is not None and hasattr(obj, replacedname):
+        setattr(obj, name, getattr(obj, replacedname))
+        obj.removeProperty(replacedname)
+    
 
 
 def smAddLengthProperty(obj, name, proptip, defval, paramgroup="Parameters"):
     smAddProperty(obj, "App::PropertyLength", name, proptip, defval, paramgroup)
 
-
 def smAddBoolProperty(obj, name, proptip, defval, paramgroup="Parameters"):
     smAddProperty(obj, "App::PropertyBool", name, proptip, defval, paramgroup)
 
-
 def smAddDistanceProperty(obj, name, proptip, defval, paramgroup="Parameters"):
     smAddProperty(obj, "App::PropertyDistance", name, proptip, defval, paramgroup)
-
 
 def smAddAngleProperty(obj, name, proptip, defval, paramgroup="Parameters"):
     smAddProperty(obj, "App::PropertyAngle", name, proptip, defval, paramgroup)
