@@ -49,21 +49,27 @@ def smStrEdge(e):
 def smMakeReliefFace(edge, dir, gap, reliefW, reliefD, reliefType, op=""):
     p1 = edge.valueAt(edge.FirstParameter + gap)
     p2 = edge.valueAt(edge.FirstParameter + gap + reliefW)
-    if reliefType == "Round" and reliefD > (reliefW / 2.0):
-        p3 = edge.valueAt(edge.FirstParameter + gap + reliefW) + dir.normalize() * (
-            reliefD - reliefW / 2
-        )
+    if reliefType == "Round": #and reliefD >= (reliefW / 2.0):
+        e1 = Part.makeLine(p1, p2)
         p34 = (
             edge.valueAt(edge.FirstParameter + gap + reliefW / 2)
             + dir.normalize() * reliefD
         )
-        p4 = edge.valueAt(edge.FirstParameter + gap) + dir.normalize() * (
-            reliefD - reliefW / 2
-        )
-        e1 = Part.makeLine(p1, p2)
-        e2 = Part.makeLine(p2, p3)
-        e3 = Part.Arc(p3, p34, p4).toShape()
-        e4 = Part.makeLine(p4, p1)
+
+        if (reliefD - (reliefW / 2.0)) < smEpsilon:
+            e3 = Part.Arc(p1, p34, p2).toShape()
+            w = Part.Wire([e1, e3])
+        else:
+            p3 = edge.valueAt(edge.FirstParameter + gap + reliefW) + dir.normalize() * (
+                reliefD - reliefW / 2
+            )
+            p4 = edge.valueAt(edge.FirstParameter + gap) + dir.normalize() * (
+                reliefD - reliefW / 2
+            )
+            e2 = Part.makeLine(p2, p3)
+            e3 = Part.Arc(p3, p34, p4).toShape()
+            e4 = Part.makeLine(p4, p1)
+            w = Part.Wire([e1, e2, e3, e4])
     else:
         p3 = (
             edge.valueAt(edge.FirstParameter + gap + reliefW)
@@ -74,8 +80,8 @@ def smMakeReliefFace(edge, dir, gap, reliefW, reliefD, reliefType, op=""):
         e2 = Part.makeLine(p2, p3)
         e3 = Part.makeLine(p3, p4)
         e4 = Part.makeLine(p4, p1)
+        w = Part.Wire([e1, e2, e3, e4])
 
-    w = Part.Wire([e1, e2, e3, e4])
     face = Part.Face(w)
     if hasattr(face, "mapShapes"):
         face.mapShapes([(edge, face)], [], op)
