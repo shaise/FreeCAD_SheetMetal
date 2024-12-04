@@ -211,14 +211,21 @@ if isGuiLoaded():
 
     def _taskUpdateValue(value, obj, objvar, callback):
         setattr(obj, objvar, value)
-        obj.Document.recompute()
+        try:  # avoid intermitant changes
+            obj.Document.recompute()
+        except:
+            pass
         if callback is not None:
             callback(value)
+
+    def _taskEditFinished(obj):
+        obj.Document.recompute()
     
     def taskConnectSpin(task, formvar, objvar, callback = None):
         formvar.setProperty("value", getattr(task.obj, objvar))
         Gui.ExpressionBinding(formvar).bind(task.obj, objvar)
         formvar.valueChanged.connect(lambda value: _taskUpdateValue(value, task.obj, objvar, callback))
+        formvar.editingFinished.connect(lambda: _taskEditFinished(task.obj))
 
     def taskConnectCheck(task, formvar, objvar, callback = None):
         formvar.setChecked(getattr(task.obj, objvar))

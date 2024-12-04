@@ -199,7 +199,7 @@
           </widget>
          </item>
          <item>
-          <widget class="Gui::PrefUnitSpinBox" name="unitLengthA" native="true">
+          <widget class="Gui::QuantitySpinBox" name="unitLengthA" native="true">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
              <horstretch>0</horstretch>
@@ -240,7 +240,7 @@
           </widget>
          </item>
          <item>
-          <widget class="Gui::PrefUnitSpinBox" name="unitLengthB" native="true">
+          <widget class="Gui::QuantitySpinBox" name="unitLengthB" native="true">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
              <horstretch>0</horstretch>
@@ -351,11 +351,6 @@
    <class>Gui::QuantitySpinBox</class>
    <extends>QWidget</extends>
    <header>Gui/QuantitySpinBox.h</header>
-  </customwidget>
-  <customwidget>
-   <class>Gui::PrefUnitSpinBox</class>
-   <extends>Gui::QuantitySpinBox</extends>
-   <header>Gui/PrefWidgets.h</header>
   </customwidget>
   <customwidget>
    <class>Gui::IntSpinBox</class>
