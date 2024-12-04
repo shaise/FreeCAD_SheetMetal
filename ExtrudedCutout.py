@@ -443,6 +443,7 @@ if SheetMetalTools.isGuiLoaded():
         def accept(self):
             SheetMetalTools.taskAccept(self)
             SheetMetalTools.taskSaveDefaults(self.obj, smExtrudedCutoutDefaults, [])
+            self.obj.Sketch.ViewObject.hide() # Hide sketch after click OK button
             return True
         
         def reject(self):
