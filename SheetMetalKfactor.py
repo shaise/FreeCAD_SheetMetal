@@ -63,7 +63,7 @@ def _find_objects(objs, _filter):
 
 
 def getSpreadSheetNames():
-    material_sheet_regex_str = "material_([a-zA-Z0-9_\-\[\]\.]+)"
+    material_sheet_regex_str = r"material_([a-zA-Z0-9_\-\[\]\.]+)"
     material_sheet_regex = re.compile(material_sheet_regex_str)
 
     spreadsheets = findObjectsByTypeRecursive(
@@ -88,7 +88,7 @@ def getSpreadSheetNames():
 
 
 class KFactorLookupTable:
-    cell_regex = re.compile("^([A-Z]+)([0-9]+)$")
+    cell_regex = re.compile(r"^([A-Z]+)([0-9]+)$")
 
     def __init__(self, material_sheet):
         lookup_sheet = FreeCAD.ActiveDocument.getObjectsByLabel(material_sheet)
@@ -152,7 +152,7 @@ class KFactorLookupTable:
             if content == "Radius / Thickness":
                 key_cell = cell
             try:
-                m = re.search("(K-[fF]actor)\s?\(?([a-zA-Z]*)\)?", content)
+                m = re.search(r"(K-[fF]actor)\s?\(?([a-zA-Z]*)\)?", content)
                 if m:
                     value_cell = cell
                     k_factor_standard = m.group(2).lower() or None
