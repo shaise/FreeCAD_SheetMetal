@@ -383,7 +383,7 @@
         </size>
        </property>
        <property name="toolTip">
-        <string>height of base shape</string>
+        <string>Height of base shape</string>
        </property>
        <property name="decimals">
         <number>3</number>

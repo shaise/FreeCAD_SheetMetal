@@ -162,7 +162,9 @@ class SMBendWall:
         obj.addProperty("App::PropertyLinkSub", "toolObject", "Parameters",
                         _tip_).toolObject = (seltool, seltool_items)
         _tip_ = FreeCAD.Qt.translate(
-            "App::Property", "Point Sketch on Sheetmetal")
+            "App::Property",
+            "Sketch containing circle's points to multiply and pattern the embossed feature",
+        )
         obj.addProperty("App::PropertyLink", "Sketch", "Parameters1", _tip_)
         obj.Proxy = self
 

@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Add Cornner Relief on Solid</string>
+   <string>Add Corner Relief on Solid</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
