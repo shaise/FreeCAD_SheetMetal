@@ -118,7 +118,7 @@ class SMBaseBend:
         obj.addProperty(
             "App::PropertyLength", "thickness", "Parameters", _tip_
         ).thickness = 1.0
-        _tip_ = translate("App::Property", "Relief Type")
+        _tip_ = translate("App::Property", "Bend Plane")
         obj.addProperty(
             "App::PropertyEnumeration", "BendSide", "Parameters", _tip_
         ).BendSide = ["Outside", "Inside", "Middle"]
@@ -244,7 +244,7 @@ if SheetMetalTools.isGuiLoaded():
                 "ToolTip": translate(
                     "SheetMetal",
                     "Create a sheetmetal wall from a sketch\n"
-                    "1. Select a Skech to create bends with walls.\n"
+                    "1. Select a Sketch to create bends with walls.\n"
                     "2. Use Property editor to modify other parameters",
                 ),
             }
