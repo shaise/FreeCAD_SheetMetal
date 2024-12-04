@@ -49,7 +49,7 @@ def smStrEdge(e):
 def smMakeReliefFace(edge, dir, gap, reliefW, reliefD, reliefType, op=""):
     p1 = edge.valueAt(edge.FirstParameter + gap)
     p2 = edge.valueAt(edge.FirstParameter + gap + reliefW)
-    if reliefType == "Round" and reliefD > reliefW:
+    if reliefType == "Round" and reliefD > (reliefW / 2.0):
         p3 = edge.valueAt(edge.FirstParameter + gap + reliefW) + dir.normalize() * (
             reliefD - reliefW / 2
         )
@@ -1660,7 +1660,7 @@ class SMBendWall:
         gap2_list[0] = fp.gap2.Value
         # print(gap1_list, gap2_list)
 
-        for i in range(len(LengthList)):
+        for i, Length in enumerate(LengthList):
             s, f = smBend(
                 thk,
                 bendR=fp.radius.Value,
@@ -1670,7 +1670,7 @@ class SMBendWall:
                 BendType=fp.BendType,
                 flipped=fp.invert,
                 unfold=fp.unfold,
-                extLen=LengthList[i],
+                extLen=Length,
                 reliefType=fp.reliefType,
                 gap1=gap1_list[i],
                 gap2=gap2_list[i],
@@ -1710,157 +1710,20 @@ class SMBendWall:
 if SheetMetalTools.isGuiLoaded():
     import os
     from FreeCAD import Gui
-    from PySide import QtGui
 
     icons_path = SheetMetalTools.icons_path
     smEpsilon = SheetMetalTools.smEpsilon
-
-    class SMViewProviderTree:
-        "A View provider that nests children objects under the created one"
-
-        def __init__(self, obj):
-            obj.Proxy = self
-            self.Object = obj.Object
-
-        def attach(self, obj):
-            self.Object = obj.Object
-            return
-
-        def updateData(self, fp, prop):
-            return
-
-        def getDisplayModes(self, obj):
-            modes = []
-            return modes
-
-        def setDisplayMode(self, mode):
-            return mode
-
-        def onChanged(self, vp, prop):
-            return
-
-        def __getstate__(self):
-            #        return {'ObjectName' : self.Object.Name}
-            return None
-
-        def __setstate__(self, state):
-            self.loads(state)
-
-        # dumps and loads replace __getstate__ and __setstate__ post v. 0.21.2
-        def dumps(self):
-            return None
-
-        def loads(self, state):
-            if state is not None:
-                import FreeCAD
-
-                doc = FreeCAD.ActiveDocument  # crap
-                self.Object = doc.getObject(state["ObjectName"])
-
-        def claimChildren(self):
-            objs = []
-            if hasattr(self.Object, "baseObject"):
-                objs.append(self.Object.baseObject[0])
-            if hasattr(self.Object, "Sketch"):
-                objs.append(self.Object.Sketch)
-            return objs
-
+       
+    class SMViewProviderTree(SheetMetalTools.SMViewProvider):
+        ''' Part WB style ViewProvider '''        
         def getIcon(self):
-            return os.path.join(icons_path, "SheetMetal_AddWall.svg")
+            return os.path.join(icons_path, 'SheetMetal_AddWall.svg')
+        
+        def getTaskPanel(self, obj):
+            return SMBendWallTaskPanel(obj)
 
-        def setEdit(self, vobj, mode):
-            taskd = SMBendWallTaskPanel(vobj.Object)
-            Gui.Control.showDialog(taskd)
-            return True
-
-        def unsetEdit(self, vobj, mode):
-            Gui.Control.closeDialog()
-            SheetMetalTools.smSelectNormal()
-            self.Object.baseObject[0].ViewObject.Visibility = False
-            self.Object.ViewObject.Visibility = True
-            return False
-
-
-    class SMViewProviderFlat:
-        "A View provider that places objects flat under base object"
-
-        def __init__(self, obj):
-            obj.Proxy = self
-            self.Object = obj.Object
-
-        def attach(self, obj):
-            self.Object = obj.Object
-            return
-
-        def setupContextMenu(self, viewObject, menu):
-            action = menu.addAction(
-                FreeCAD.Qt.translate("QObject", "Edit %1").replace(
-                    "%1", viewObject.Object.Label
-                )
-            )
-            action.triggered.connect(lambda: self.startDefaultEditMode(viewObject))
-            return False
-
-        def startDefaultEditMode(self, viewObject):
-            document = viewObject.Document.Document
-            if not document.HasPendingTransaction:
-                text = FreeCAD.Qt.translate("QObject", "Edit %1").replace(
-                    "%1", viewObject.Object.Label
-                )
-                document.openTransaction(text)
-            viewObject.Document.setEdit(viewObject.Object, 0)
-
-        def updateData(self, fp, prop):
-            return
-
-        def getDisplayModes(self, obj):
-            modes = []
-            return modes
-
-        def setDisplayMode(self, mode):
-            return mode
-
-        def onChanged(self, vp, prop):
-            return
-
-        def __getstate__(self):
-            #        return {'ObjectName' : self.Object.Name}
-            return None
-
-        def __setstate__(self, state):
-            self.loads(state)
-
-        # dumps and loads replace __getstate__ and __setstate__ post v. 0.21.2
-        def dumps(self):
-            return None
-
-        def loads(self, state):
-            if state is not None:
-                import FreeCAD
-
-                doc = FreeCAD.ActiveDocument  # crap
-                self.Object = doc.getObject(state["ObjectName"])
-
-        def claimChildren(self):
-            objs = []
-            if hasattr(self.Object, "Sketch"):
-                objs.append(self.Object.Sketch)
-            return objs
-
-        def getIcon(self):
-            return os.path.join(icons_path, "SheetMetal_AddWall.svg")
-
-        def setEdit(self, vobj, mode):
-            taskd = SMBendWallTaskPanel(vobj.Object)
-            Gui.Control.showDialog(taskd)
-            return True
-
-        def unsetEdit(self, vobj, mode):
-            Gui.Control.closeDialog()
-            SheetMetalTools.smSelectNormal()
-            self.Object.baseObject[0].ViewObject.Visibility = False
-            self.Object.ViewObject.Visibility = True
-            return False
+    class SMViewProviderFlat(SMViewProviderTree):
+        ''' Part Design WB style ViewProvider - backward compatibility only''' 
 
 
     class SMBendWallTaskPanel:
@@ -1907,9 +1770,6 @@ if SheetMetalTools.isGuiLoaded():
 
         def isAllowedAlterView(self):
             return True
-
-        # def getStandardButtons(self):
-        #     return QtGui.QDialogButtonBox.Ok
 
         def bendTypeUpdated(self, value):
             if self.obj.BendType == "Offset":
