@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
-<TS version="2.1" language="de" sourcelanguage="en">
+<TS version="2.1" language="de" sourcelanguage="en_US">
   <context>
     <name>App::Property</name>
     <message>
@@ -672,7 +672,7 @@ Sollte die gegenüberliegende Seite auch fehlschlagen, kann es helfen, Aufbereit
     </message>
     <message>
       <location filename="../panels/BaseShapeOptions.ui" line="386"/>
-      <source>height of base shape</source>
+      <source>Height of base shape</source>
       <translation>Höhe der Grundform</translation>
     </message>
     <message>
@@ -869,7 +869,7 @@ Sollte die gegenüberliegende Seite auch fehlschlagen, kann es helfen, Aufbereit
     </message>
   </context>
   <context>
-    <name>SMFlangeAdvancedTaskPanel</name>
+    <name>SMFlangeTaskPanel</name>
     <message>
       <location filename="../panels/FlangeAdvancedParameters.ui" line="14"/>
       <source>Advanced Parameters</source>
@@ -935,9 +935,6 @@ Sollte die gegenüberliegende Seite auch fehlschlagen, kann es helfen, Aufbereit
       <source>Angle 1</source>
       <translation>Winkel 1</translation>
     </message>
-  </context>
-  <context>
-    <name>SMFlangeTaskPanel</name>
     <message>
       <location filename="../panels/FlangeParameters.ui" line="14"/>
       <source>Flange Parameters</source>
@@ -1241,7 +1238,7 @@ Sollte die gegenüberliegende Seite auch fehlschlagen, kann es helfen, Aufbereit
     <message>
       <location filename="../../SheetMetalBaseCmd.py" line="249"/>
       <source>Create a sheetmetal wall from a sketch
-1. Select a Skech to create bends with walls.
+1. Select a Sketch to create bends with walls.
 2. Use Property editor to modify other parameters</source>
       <translation>Erstellt ein Blechprofil oder eine -platine aus einer Skizze
 1. Eine Skizze auswählen

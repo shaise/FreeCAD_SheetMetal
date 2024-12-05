@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
-<TS version="2.1" language="fr" sourcelanguage="en">
+<TS version="2.1" language="fr" sourcelanguage="en_US">
   <context>
     <name>App::Property</name>
     <message>
@@ -671,7 +671,7 @@ Si le dépliage de la face opposée échoue également, mettez la fonction Netto
     </message>
     <message>
       <location filename="../panels/BaseShapeOptions.ui" line="386"/>
-      <source>height of base shape</source>
+      <source>Height of base shape</source>
       <translation>Hauteur de la forme de base</translation>
     </message>
     <message>
@@ -868,7 +868,7 @@ Si le dépliage de la face opposée échoue également, mettez la fonction Netto
     </message>
   </context>
   <context>
-    <name>SMFlangeAdvancedTaskPanel</name>
+    <name>SMFlangeTaskPanel</name>
     <message>
       <location filename="../panels/FlangeAdvancedParameters.ui" line="14"/>
       <source>Advanced Parameters</source>
@@ -934,9 +934,6 @@ Si le dépliage de la face opposée échoue également, mettez la fonction Netto
       <source>Angle 1</source>
       <translation>Angle 1</translation>
     </message>
-  </context>
-  <context>
-    <name>SMFlangeTaskPanel</name>
     <message>
       <location filename="../panels/FlangeParameters.ui" line="14"/>
       <source>Flange Parameters</source>
@@ -1240,7 +1237,7 @@ Si le dépliage de la face opposée échoue également, mettez la fonction Netto
     <message>
       <location filename="../../SheetMetalBaseCmd.py" line="249"/>
       <source>Create a sheetmetal wall from a sketch
-1. Select a Skech to create bends with walls.
+1. Select a Sketch to create bends with walls.
 2. Use Property editor to modify other parameters</source>
       <translation>Créer une paroi/tôle à partir d'une esquisse :
 1. Sélectionner une esquisse pour créer des plis avec des parois,

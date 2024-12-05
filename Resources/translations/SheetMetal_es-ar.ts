@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
-<TS version="2.1" language="es_AR" sourcelanguage="en">
+<TS version="2.1" language="es_AR" sourcelanguage="en_US">
   <context>
     <name>App::Property</name>
     <message>
@@ -870,7 +870,7 @@ Si la cara opuesta también falla, cambie Refine a falso en la característica <
     </message>
   </context>
   <context>
-    <name>SMFlangeAdvancedTaskPanel</name>
+    <name>SMFlangeTaskPanel</name>
     <message>
       <location filename="../panels/FlangeAdvancedParameters.ui" line="14"/>
       <source>Advanced Parameters</source>
@@ -936,9 +936,6 @@ Si la cara opuesta también falla, cambie Refine a falso en la característica <
       <source>Angle 1</source>
       <translation>Ángulo 1</translation>
     </message>
-  </context>
-  <context>
-    <name>SMFlangeTaskPanel</name>
     <message>
       <location filename="../panels/FlangeParameters.ui" line="14"/>
       <source>Flange Parameters</source>
