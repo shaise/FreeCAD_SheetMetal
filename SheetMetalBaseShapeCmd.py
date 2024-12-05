@@ -237,13 +237,6 @@ if SheetMetalTools.isGuiLoaded():
             self.ShowAxisCross()
             self.setupUi()
 
-
-        def _boolToState(self, bool):
-            return QtCore.Qt.Checked if bool else QtCore.Qt.Unchecked
-
-        def _stateToBool(self, state):
-            return True if state == QtCore.Qt.Checked else False
-
         def setupUi(self):
             SheetMetalTools.taskConnectSpin(self, self.form.bRadiusSpin, "radius")
             SheetMetalTools.taskConnectSpin(self, self.form.bThicknessSpin, "thickness")
@@ -321,12 +314,12 @@ if SheetMetalTools.isGuiLoaded():
                 selected_type = base_shape_types[self.form.shapeType.currentIndex()]
             self.obj.shapeType = selected_type
             self.obj.originLoc = self.buttonToOriginType(self.selOrigButton)
-            self.obj.fillGaps = self._stateToBool(self.form.chkFillGaps.checkState())
+            self.obj.fillGaps = self.form.chkFillGaps.isChecked()
 
         def accept(self):
             doc = FreeCAD.ActiveDocument
             self.updateObj()
-            if self.firstTime  and self._stateToBool(self.form.chkNewBody.checkState()):
+            if self.firstTime  and self.form.chkNewBody.isChecked():
                 body = FreeCAD.activeDocument().addObject('PartDesign::Body','Body')
                 body.Label = 'Body'
                 body.addObject(self.obj)
@@ -353,7 +346,7 @@ if SheetMetalTools.isGuiLoaded():
         def update(self):
             self.form.shapeType.setCurrentText(self.obj.shapeType)
             self.setSelectedOrigButton(self.originTypeToButton(self.obj.originLoc))
-            self.form.chkFillGaps.setCheckState(self._boolToState(self.obj.fillGaps))
+            self.form.chkFillGaps.setChecked(self.obj.fillGaps)
             self.form.chkNewBody.setVisible(self.firstTime)
             self.formReady = True
 
