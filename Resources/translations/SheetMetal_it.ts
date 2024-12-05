@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
-<TS version="2.1" language="it" sourcelanguage="en">
+<TS version="2.1" language="it" sourcelanguage="en_US">
   <context>
     <name>App::Property</name>
     <message>
@@ -672,7 +672,7 @@ Se anche la faccia opposta fallisce, impostare Affina su falso sulla funzione </
     </message>
     <message>
       <location filename="../panels/BaseShapeOptions.ui" line="386"/>
-      <source>height of base shape</source>
+      <source>Height of base shape</source>
       <translation>altezza forma base</translation>
     </message>
     <message>
@@ -869,7 +869,7 @@ Se anche la faccia opposta fallisce, impostare Affina su falso sulla funzione </
     </message>
   </context>
   <context>
-    <name>SMFlangeAdvancedTaskPanel</name>
+    <name>SMFlangeTaskPanel</name>
     <message>
       <location filename="../panels/FlangeAdvancedParameters.ui" line="14"/>
       <source>Advanced Parameters</source>
@@ -935,9 +935,6 @@ Se anche la faccia opposta fallisce, impostare Affina su falso sulla funzione </
       <source>Angle 1</source>
       <translation type="unfinished">Angle 1</translation>
     </message>
-  </context>
-  <context>
-    <name>SMFlangeTaskPanel</name>
     <message>
       <location filename="../panels/FlangeParameters.ui" line="14"/>
       <source>Flange Parameters</source>
@@ -1241,7 +1238,7 @@ Se anche la faccia opposta fallisce, impostare Affina su falso sulla funzione </
     <message>
       <location filename="../../SheetMetalBaseCmd.py" line="249"/>
       <source>Create a sheetmetal wall from a sketch
-1. Select a Skech to create bends with walls.
+1. Select a Sketch to create bends with walls.
 2. Use Property editor to modify other parameters</source>
       <translation>Crea una parete sheet metal da uno sketch
 1. Seleziona uno Sketch per creare pieghe con le pareti.

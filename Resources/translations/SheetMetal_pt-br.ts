@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
-<TS version="2.1" language="pt_BR" sourcelanguage="en">
+<TS version="2.1" language="pt_BR" sourcelanguage="en_US">
   <context>
     <name>App::Property</name>
     <message>
@@ -673,8 +673,8 @@ If the opposite face also fails then switch Refine to false on feature </transla
     </message>
     <message>
       <location filename="../panels/BaseShapeOptions.ui" line="386"/>
-      <source>height of base shape</source>
-      <translation type="unfinished">height of base shape</translation>
+      <source>Height of base shape</source>
+      <translation type="unfinished">Height of base shape</translation>
     </message>
     <message>
       <location filename="../panels/BaseShapeOptions.ui" line="415"/>
@@ -870,7 +870,7 @@ If the opposite face also fails then switch Refine to false on feature </transla
     </message>
   </context>
   <context>
-    <name>SMFlangeAdvancedTaskPanel</name>
+    <name>SMFlangeTaskPanel</name>
     <message>
       <location filename="../panels/FlangeAdvancedParameters.ui" line="14"/>
       <source>Advanced Parameters</source>
@@ -936,9 +936,6 @@ If the opposite face also fails then switch Refine to false on feature </transla
       <source>Angle 1</source>
       <translation type="unfinished">Angle 1</translation>
     </message>
-  </context>
-  <context>
-    <name>SMFlangeTaskPanel</name>
     <message>
       <location filename="../panels/FlangeParameters.ui" line="14"/>
       <source>Flange Parameters</source>
@@ -1242,7 +1239,7 @@ If the opposite face also fails then switch Refine to false on feature </transla
     <message>
       <location filename="../../SheetMetalBaseCmd.py" line="249"/>
       <source>Create a sheetmetal wall from a sketch
-1. Select a Skech to create bends with walls.
+1. Select a Sketch to create bends with walls.
 2. Use Property editor to modify other parameters</source>
       <translation>Criar uma parede de chapa metálica a partir de um esboço
 1. Selecione um esboço para criar dobras com paredes.

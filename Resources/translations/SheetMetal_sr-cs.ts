@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
-<TS version="2.1" language="sr_CS" sourcelanguage="en">
+<TS version="2.1" language="sr_CS" sourcelanguage="en_US">
   <context>
     <name>App::Property</name>
     <message>
@@ -672,7 +672,7 @@ Ako razvijanje ne uspe ni za suprotnu stranicu, promeni opciju Prečisti na Neta
     </message>
     <message>
       <location filename="../panels/BaseShapeOptions.ui" line="386"/>
-      <source>height of base shape</source>
+      <source>Height of base shape</source>
       <translation>visina primitiva od lima</translation>
     </message>
     <message>
@@ -869,7 +869,7 @@ Ako razvijanje ne uspe ni za suprotnu stranicu, promeni opciju Prečisti na Neta
     </message>
   </context>
   <context>
-    <name>SMFlangeAdvancedTaskPanel</name>
+    <name>SMFlangeTaskPanel</name>
     <message>
       <location filename="../panels/FlangeAdvancedParameters.ui" line="14"/>
       <source>Advanced Parameters</source>
@@ -935,9 +935,6 @@ Ako razvijanje ne uspe ni za suprotnu stranicu, promeni opciju Prečisti na Neta
       <source>Angle 1</source>
       <translation>Ugao 1</translation>
     </message>
-  </context>
-  <context>
-    <name>SMFlangeTaskPanel</name>
     <message>
       <location filename="../panels/FlangeParameters.ui" line="14"/>
       <source>Flange Parameters</source>
@@ -1241,7 +1238,7 @@ Ako razvijanje ne uspe ni za suprotnu stranicu, promeni opciju Prečisti na Neta
     <message>
       <location filename="../../SheetMetalBaseCmd.py" line="249"/>
       <source>Create a sheetmetal wall from a sketch
-1. Select a Skech to create bends with walls.
+1. Select a Sketch to create bends with walls.
 2. Use Property editor to modify other parameters</source>
       <translation>Napravi početni oblik od lima pomoću skice
 1. Izaberi skicu (od zatvorene se dobija ploča, a od otvorene profilno savijanje)
