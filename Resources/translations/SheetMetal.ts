@@ -5,41 +5,40 @@
     <name>App::Property</name>
     <message>
         <location filename="../../SheetMetalBaseCmd.py" line="114"/>
-        <location filename="../../SheetMetalBend.py" line="122"/>
-        <location filename="../../SheetMetalCmd.py" line="1385"/>
-        <location filename="../../SheetMetalFoldCmd.py" line="257"/>
-        <source>Bend Radius</source>
+        <source>Bend Plane</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../SheetMetalBaseCmd.py" line="118"/>
-        <source>Thickness of sheetmetal</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../SheetMetalBaseCmd.py" line="122"/>
-        <source>Bend Side</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../SheetMetalBaseCmd.py" line="126"/>
-        <source>Length of wall</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../SheetMetalBaseCmd.py" line="130"/>
         <source>Wall Sketch object</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../SheetMetalBaseCmd.py" line="134"/>
+        <location filename="../../SheetMetalBaseCmd.py" line="122"/>
         <location filename="../../SheetMetalBaseCmd.py" line="147"/>
         <source>Extrude Symmetric to Plane</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../SheetMetalBaseCmd.py" line="138"/>
-        <location filename="../../SheetMetalBaseCmd.py" line="151"/>
+        <location filename="../../SheetMetalBaseCmd.py" line="129"/>
+        <location filename="../../SheetMetalBend.py" line="122"/>
+        <location filename="../../SheetMetalCmd.py" line="1391"/>
+        <location filename="../../SheetMetalFoldCmd.py" line="257"/>
+        <source>Bend Radius</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../SheetMetalBaseCmd.py" line="135"/>
+        <source>Thickness of sheetmetal</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../SheetMetalBaseCmd.py" line="141"/>
+        <source>Length of wall</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../SheetMetalBaseCmd.py" line="153"/>
         <source>Reverse Extrusion Direction</source>
         <translation type="unfinished"></translation>
     </message>
@@ -51,7 +50,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../SheetMetalCmd.py" line="1377"/>
+        <location filename="../../SheetMetalCmd.py" line="1383"/>
         <location filename="../../SheetMetalFoldCmd.py" line="263"/>
         <location filename="../../SheetMetalFormingCmd.py" line="159"/>
         <location filename="../../SheetMetalJunction.py" line="80"/>
@@ -61,171 +60,171 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../SheetMetalCmd.py" line="1388"/>
+        <location filename="../../SheetMetalCmd.py" line="1394"/>
         <location filename="../../SheetMetalExtendCmd.py" line="298"/>
         <source>Length of Wall</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../SheetMetalCmd.py" line="1393"/>
+        <location filename="../../SheetMetalCmd.py" line="1399"/>
         <location filename="../../SketchOnSheetMetalCmd.py" line="279"/>
         <source>Gap from Left Side</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../SheetMetalCmd.py" line="1399"/>
+        <location filename="../../SheetMetalCmd.py" line="1405"/>
         <source>Gap from Right Side</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../SheetMetalCmd.py" line="1405"/>
+        <location filename="../../SheetMetalCmd.py" line="1411"/>
         <location filename="../../SheetMetalFoldCmd.py" line="279"/>
         <source>Invert Bend Direction</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../SheetMetalCmd.py" line="1409"/>
+        <location filename="../../SheetMetalCmd.py" line="1415"/>
         <location filename="../../SheetMetalFoldCmd.py" line="261"/>
         <source>Bend Angle</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../SheetMetalCmd.py" line="1414"/>
+        <location filename="../../SheetMetalCmd.py" line="1420"/>
         <source>Extend from Left Side</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../SheetMetalCmd.py" line="1420"/>
+        <location filename="../../SheetMetalCmd.py" line="1426"/>
         <source>Extend from Right Side</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../SheetMetalCmd.py" line="1426"/>
+        <location filename="../../SheetMetalCmd.py" line="1432"/>
         <source>Bend Type</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../SheetMetalCmd.py" line="1432"/>
+        <location filename="../../SheetMetalCmd.py" line="1438"/>
         <source>Type of Length Specification</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../SheetMetalCmd.py" line="1438"/>
+        <location filename="../../SheetMetalCmd.py" line="1444"/>
         <source>Relief Width</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../SheetMetalCmd.py" line="1445"/>
+        <location filename="../../SheetMetalCmd.py" line="1451"/>
         <source>Relief Depth</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../SheetMetalCmd.py" line="1452"/>
+        <location filename="../../SheetMetalCmd.py" line="1458"/>
         <source>Use Relief Factor</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../SheetMetalCmd.py" line="1459"/>
+        <location filename="../../SheetMetalCmd.py" line="1465"/>
         <source>Relief Type</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../SheetMetalCmd.py" line="1467"/>
+        <location filename="../../SheetMetalCmd.py" line="1473"/>
         <source>Relief Factor</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../SheetMetalCmd.py" line="1474"/>
+        <location filename="../../SheetMetalCmd.py" line="1480"/>
         <source>Bend Miter Angle from Left Side</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../SheetMetalCmd.py" line="1481"/>
+        <location filename="../../SheetMetalCmd.py" line="1487"/>
         <source>Bend Miter Angle from Right Side</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../SheetMetalCmd.py" line="1488"/>
+        <location filename="../../SheetMetalCmd.py" line="1494"/>
         <source>Auto Miter Minimum Gap</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../SheetMetalCmd.py" line="1495"/>
+        <location filename="../../SheetMetalCmd.py" line="1501"/>
         <source>Auto Miter maximum Extend Distance</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../SheetMetalCmd.py" line="1502"/>
+        <location filename="../../SheetMetalCmd.py" line="1508"/>
         <source>Minimum Gap to Relief Cut</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../SheetMetalCmd.py" line="1509"/>
+        <location filename="../../SheetMetalCmd.py" line="1515"/>
         <source>Offset Bend</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../SheetMetalCmd.py" line="1516"/>
+        <location filename="../../SheetMetalCmd.py" line="1522"/>
         <source>Enable Auto Miter</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../SheetMetalCmd.py" line="1523"/>
+        <location filename="../../SheetMetalCmd.py" line="1529"/>
         <source>Shows Unfold View of Current Bend</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../SheetMetalCmd.py" line="1534"/>
+        <location filename="../../SheetMetalCmd.py" line="1540"/>
         <source>Location of Neutral Line. Caution: Using ANSI standards, not DIN.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../SheetMetalCmd.py" line="1541"/>
+        <location filename="../../SheetMetalCmd.py" line="1547"/>
         <source>Flip Sketch Direction</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../SheetMetalCmd.py" line="1548"/>
+        <location filename="../../SheetMetalCmd.py" line="1554"/>
         <source>Invert Sketch Start</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../SheetMetalCmd.py" line="1556"/>
+        <location filename="../../SheetMetalCmd.py" line="1562"/>
         <source>Sketch Object</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../SheetMetalCmd.py" line="1564"/>
+        <location filename="../../SheetMetalCmd.py" line="1570"/>
         <source>Length of Wall List</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../SheetMetalCmd.py" line="1572"/>
+        <location filename="../../SheetMetalCmd.py" line="1578"/>
         <source>Bend Angle List</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../SheetMetalCmd.py" line="1579"/>
+        <location filename="../../SheetMetalCmd.py" line="1585"/>
         <source>Enable Perforation</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../SheetMetalCmd.py" line="1586"/>
+        <location filename="../../SheetMetalCmd.py" line="1592"/>
         <source>Perforation Angle</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../SheetMetalCmd.py" line="1593"/>
+        <location filename="../../SheetMetalCmd.py" line="1599"/>
         <source>Initial Perforation Length</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../SheetMetalCmd.py" line="1600"/>
+        <location filename="../../SheetMetalCmd.py" line="1606"/>
         <source>Perforation Max Length</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../SheetMetalCmd.py" line="1607"/>
+        <location filename="../../SheetMetalCmd.py" line="1613"/>
         <source>Non-Perforation Max Length</source>
         <translation type="unfinished"></translation>
     </message>
@@ -347,7 +346,7 @@
     </message>
     <message>
         <location filename="../../SheetMetalFormingCmd.py" line="168"/>
-        <source>Point Sketch on Sheetmetal</source>
+        <source>Sketch containing circle&apos;s points to multiply and pattern the embossed feature</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -363,246 +362,6 @@
     <message>
         <location filename="../../SketchOnSheetMetalCmd.py" line="275"/>
         <source>Sketch on Sheetmetal</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>FlangeParameters</name>
-    <message>
-        <location filename="../panels/FlangeParameters.ui" line="20"/>
-        <source>Flange Parameters</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../panels/FlangeParameters.ui" line="30"/>
-        <source>General</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../panels/FlangeParameters.ui" line="41"/>
-        <source>Select</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../panels/FlangeParameters.ui" line="79"/>
-        <source>Name</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../panels/FlangeParameters.ui" line="84"/>
-        <source>SubElement</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../panels/FlangeParameters.ui" line="92"/>
-        <source>Bend</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../panels/FlangeParameters.ui" line="98"/>
-        <source>Type</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../panels/FlangeParameters.ui" line="106"/>
-        <source>Material Outside</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../panels/FlangeParameters.ui" line="111"/>
-        <source>Material Inside</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../panels/FlangeParameters.ui" line="116"/>
-        <source>Thickness Outside</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../panels/FlangeParameters.ui" line="121"/>
-        <location filename="../panels/FlangeParameters.ui" line="129"/>
-        <source>Offset</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../panels/FlangeParameters.ui" line="146"/>
-        <source>Radius</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../panels/FlangeParameters.ui" line="169"/>
-        <location filename="../panels/FlangeParameters.ui" line="618"/>
-        <source>Angle</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../panels/FlangeParameters.ui" line="192"/>
-        <source>Length</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../panels/FlangeParameters.ui" line="214"/>
-        <source>Length mode</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../panels/FlangeParameters.ui" line="222"/>
-        <source>Leg</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../panels/FlangeParameters.ui" line="227"/>
-        <source>Outer Sharp</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../panels/FlangeParameters.ui" line="232"/>
-        <source>Inner Sharp</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../panels/FlangeParameters.ui" line="237"/>
-        <source>Tangential</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../panels/FlangeParameters.ui" line="249"/>
-        <source>Unfold</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../panels/FlangeParameters.ui" line="256"/>
-        <source>Reversed</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../panels/FlangeParameters.ui" line="282"/>
-        <source>Offsets</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../panels/FlangeParameters.ui" line="294"/>
-        <source>Side Offsets</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../panels/FlangeParameters.ui" line="300"/>
-        <source>Gap A</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../panels/FlangeParameters.ui" line="317"/>
-        <source>Gap B</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../panels/FlangeParameters.ui" line="334"/>
-        <source>Extend A</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../panels/FlangeParameters.ui" line="351"/>
-        <source>Extend B</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../panels/FlangeParameters.ui" line="368"/>
-        <source>Relief Cuts</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../panels/FlangeParameters.ui" line="374"/>
-        <source>Width</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../panels/FlangeParameters.ui" line="387"/>
-        <source>Depth</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../panels/FlangeParameters.ui" line="404"/>
-        <source>mm</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../panels/FlangeParameters.ui" line="419"/>
-        <source>Rectangle</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../panels/FlangeParameters.ui" line="432"/>
-        <source>Round</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../panels/FlangeParameters.ui" line="474"/>
-        <source>Miter</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../panels/FlangeParameters.ui" line="480"/>
-        <source>Auto Miter</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../panels/FlangeParameters.ui" line="493"/>
-        <source>Auto Miter Parameters</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../panels/FlangeParameters.ui" line="499"/>
-        <source>Minimum Gap</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../panels/FlangeParameters.ui" line="516"/>
-        <source>Max Extend Distance</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../panels/FlangeParameters.ui" line="536"/>
-        <source>Manual Miter</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../panels/FlangeParameters.ui" line="568"/>
-        <source>Angle 2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../panels/FlangeParameters.ui" line="575"/>
-        <source>Angle 1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../panels/FlangeParameters.ui" line="599"/>
-        <source>Perforation</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../panels/FlangeParameters.ui" line="605"/>
-        <source>Perforate</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../panels/FlangeParameters.ui" line="612"/>
-        <source>Perforation Parameters</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../panels/FlangeParameters.ui" line="635"/>
-        <source>Initial Cut Length</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../panels/FlangeParameters.ui" line="652"/>
-        <source>Max Cut Length</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../panels/FlangeParameters.ui" line="669"/>
-        <source>Max Tab Length</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -649,7 +408,7 @@
 <context>
     <name>Logger</name>
     <message>
-        <location filename="../../SheetMetalBaseShapeCmd.py" line="412"/>
+        <location filename="../../SheetMetalBaseShapeCmd.py" line="405"/>
         <source>Base shape edit mode: </source>
         <translation type="unfinished"></translation>
     </message>
@@ -715,7 +474,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../SheetMetalTools.py" line="423"/>
+        <location filename="../../SheetMetalTools.py" line="433"/>
         <source>The selected geometry does not belong to the active Body.
 Please make the container of this item active by
 double clicking on it.</source>
@@ -749,7 +508,7 @@ If the opposite face also fails then switch Refine to false on feature </source>
     <message>
         <location filename="../../SheetMetalFormingCmd.py" line="237"/>
         <location filename="../../SheetMetalFormingCmd.py" line="245"/>
-        <location filename="../../SheetMetalTools.py" line="326"/>
+        <location filename="../../SheetMetalTools.py" line="335"/>
         <source>Edit %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1136,38 +895,78 @@ If the opposite face also fails then switch Refine to false on feature </source>
 <context>
     <name>SMCreateBaseShapeTaskPanel</name>
     <message>
-        <location filename="../panels/CreateBaseShape.ui" line="14"/>
+        <location filename="../panels/CreateBaseShape.ui" line="20"/>
         <source>Generate Sheet Metal base shape</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../panels/CreateBaseShape.ui" line="22"/>
-        <source>Sketch: </source>
+        <location filename="../panels/CreateBaseShape.ui" line="28"/>
+        <source>Sketch</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../panels/CreateBaseShape.ui" line="29"/>
-        <source>Select</source>
+        <location filename="../panels/CreateBaseShape.ui" line="46"/>
+        <source>Bend Options</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../panels/CreateBaseShape.ui" line="41"/>
-        <source>Extend sides and flange to close all gaps</source>
+        <location filename="../panels/CreateBaseShape.ui" line="52"/>
+        <source>Bend Plane</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../panels/CreateBaseShape.ui" line="47"/>
-        <source>Reverse Direction</source>
+        <location filename="../panels/CreateBaseShape.ui" line="85"/>
+        <source>Radius</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../panels/CreateBaseShape.ui" line="54"/>
+        <location filename="../panels/CreateBaseShape.ui" line="98"/>
+        <source>Thickness</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../panels/CreateBaseShape.ui" line="112"/>
+        <source>Outside</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../panels/CreateBaseShape.ui" line="117"/>
+        <source>Inside</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../panels/CreateBaseShape.ui" line="122"/>
+        <source>Centered</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../panels/CreateBaseShape.ui" line="139"/>
+        <source>Extrude options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../panels/CreateBaseShape.ui" line="151"/>
+        <source>Length</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../panels/CreateBaseShape.ui" line="168"/>
         <source>Create the base shape as a new body</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../panels/CreateBaseShape.ui" line="60"/>
-        <source>Center on Plane</source>
+        <location filename="../panels/CreateBaseShape.ui" line="171"/>
+        <source>Symmetric</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../panels/CreateBaseShape.ui" line="178"/>
+        <source>Extend sides and flange to close all gaps</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../panels/CreateBaseShape.ui" line="181"/>
+        <source>Reverse Direction</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1381,6 +1180,246 @@ If the opposite face also fails then switch Refine to false on feature </source>
     </message>
 </context>
 <context>
+    <name>SMFlangeTaskPanel</name>
+    <message>
+        <location filename="../panels/FlangeParameters.ui" line="20"/>
+        <source>Flange Parameters</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../panels/FlangeParameters.ui" line="30"/>
+        <source>General</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../panels/FlangeParameters.ui" line="41"/>
+        <source>Select</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../panels/FlangeParameters.ui" line="79"/>
+        <source>Name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../panels/FlangeParameters.ui" line="84"/>
+        <source>SubElement</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../panels/FlangeParameters.ui" line="92"/>
+        <source>Bend</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../panels/FlangeParameters.ui" line="98"/>
+        <source>Type</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../panels/FlangeParameters.ui" line="106"/>
+        <source>Material Outside</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../panels/FlangeParameters.ui" line="111"/>
+        <source>Material Inside</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../panels/FlangeParameters.ui" line="116"/>
+        <source>Thickness Outside</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../panels/FlangeParameters.ui" line="121"/>
+        <location filename="../panels/FlangeParameters.ui" line="129"/>
+        <source>Offset</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../panels/FlangeParameters.ui" line="146"/>
+        <source>Radius</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../panels/FlangeParameters.ui" line="169"/>
+        <location filename="../panels/FlangeParameters.ui" line="618"/>
+        <source>Angle</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../panels/FlangeParameters.ui" line="192"/>
+        <source>Length</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../panels/FlangeParameters.ui" line="214"/>
+        <source>Length mode</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../panels/FlangeParameters.ui" line="222"/>
+        <source>Leg</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../panels/FlangeParameters.ui" line="227"/>
+        <source>Outer Sharp</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../panels/FlangeParameters.ui" line="232"/>
+        <source>Inner Sharp</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../panels/FlangeParameters.ui" line="237"/>
+        <source>Tangential</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../panels/FlangeParameters.ui" line="249"/>
+        <source>Unfold</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../panels/FlangeParameters.ui" line="256"/>
+        <source>Reversed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../panels/FlangeParameters.ui" line="282"/>
+        <source>Offsets</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../panels/FlangeParameters.ui" line="294"/>
+        <source>Side Offsets</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../panels/FlangeParameters.ui" line="300"/>
+        <source>Gap A</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../panels/FlangeParameters.ui" line="317"/>
+        <source>Gap B</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../panels/FlangeParameters.ui" line="334"/>
+        <source>Extend A</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../panels/FlangeParameters.ui" line="351"/>
+        <source>Extend B</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../panels/FlangeParameters.ui" line="368"/>
+        <source>Relief Cuts</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../panels/FlangeParameters.ui" line="374"/>
+        <source>Width</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../panels/FlangeParameters.ui" line="387"/>
+        <source>Depth</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../panels/FlangeParameters.ui" line="404"/>
+        <source>mm</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../panels/FlangeParameters.ui" line="419"/>
+        <source>Rectangle</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../panels/FlangeParameters.ui" line="432"/>
+        <source>Round</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../panels/FlangeParameters.ui" line="474"/>
+        <source>Miter</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../panels/FlangeParameters.ui" line="480"/>
+        <source>Auto Miter</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../panels/FlangeParameters.ui" line="493"/>
+        <source>Auto Miter Parameters</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../panels/FlangeParameters.ui" line="499"/>
+        <source>Minimum Gap</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../panels/FlangeParameters.ui" line="516"/>
+        <source>Max Extend Distance</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../panels/FlangeParameters.ui" line="536"/>
+        <source>Manual Miter</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../panels/FlangeParameters.ui" line="568"/>
+        <source>Angle 2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../panels/FlangeParameters.ui" line="575"/>
+        <source>Angle 1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../panels/FlangeParameters.ui" line="599"/>
+        <source>Perforation</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../panels/FlangeParameters.ui" line="605"/>
+        <source>Perforate</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../panels/FlangeParameters.ui" line="612"/>
+        <source>Perforation Parameters</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../panels/FlangeParameters.ui" line="635"/>
+        <source>Initial Cut Length</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../panels/FlangeParameters.ui" line="652"/>
+        <source>Max Cut Length</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../panels/FlangeParameters.ui" line="669"/>
+        <source>Max Tab Length</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>SMSolidCornerReliefTaskPanel</name>
     <message>
         <location filename="../panels/SolidCornerReliefPanel.ui" line="14"/>
@@ -1580,71 +1619,109 @@ If the opposite face also fails then switch Refine to false on feature </source>
 <context>
     <name>SheetMetal</name>
     <message>
-        <location filename="../../ExtrudedCutout.py" line="61"/>
+        <location filename="../../ExtrudedCutout.py" line="43"/>
+        <source>The sketch for the cut</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../ExtrudedCutout.py" line="53"/>
+        <source>Length of the extrusion direction 1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../ExtrudedCutout.py" line="60"/>
+        <source>Length of the extrusion direction 2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../ExtrudedCutout.py" line="69"/>
+        <source>Cut type</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../ExtrudedCutout.py" line="84"/>
+        <source>Side of the cut</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../ExtrudedCutout.py" line="95"/>
         <source>Selected face</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../ExtrudedCutout.py" line="70"/>
+        <location filename="../../ExtrudedCutout.py" line="104"/>
         <source>Refine the geometry</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../ExtrudedCutout.py" line="79"/>
+        <location filename="../../ExtrudedCutout.py" line="116"/>
         <source>Level of cut improvement quality. More than 10 can take a very long time</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../ExtrudedCutout.py" line="87"/>
+        <location filename="../../ExtrudedCutout.py" line="127"/>
         <source>Improve cut geometry if it enters the cutting zone. Only select true if the cut needs fix, &apos;cause it can be slow</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../ExtrudedCutout.py" line="395"/>
+        <location filename="../../ExtrudedCutout.py" line="435"/>
         <source>Side A Length</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../ExtrudedCutout.py" line="396"/>
+        <location filename="../../ExtrudedCutout.py" line="436"/>
         <source>Length</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../InitGui.py" line="55"/>
-        <location filename="../../InitGui.py" line="99"/>
-        <location filename="../../InitGui.py" line="120"/>
+        <location filename="../../ExtrudedCutout.py" line="500"/>
+        <source>Extruded Cutout</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../ExtrudedCutout.py" line="508"/>
+        <source>Extruded cutout from sketch extrusion
+1. Select a face of the sheet metal part (must not be the thickness face) and
+2. Select a sketch for the extruded cut (the sketch must be closed).
+3. Use Property editor to modify other parameters</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../InitGui.py" line="54"/>
+        <location filename="../../InitGui.py" line="98"/>
+        <location filename="../../InitGui.py" line="119"/>
         <source>Sheet Metal</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../InitGui.py" line="59"/>
+        <location filename="../../InitGui.py" line="58"/>
         <source>Sheet Metal workbench allows for designing and unfolding sheet metal parts</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../InitGui.py" line="102"/>
+        <location filename="../../InitGui.py" line="101"/>
         <source>&amp;Sheet Metal</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../SheetMetalBaseCmd.py" line="242"/>
+        <location filename="../../SheetMetalBaseCmd.py" line="258"/>
         <source>Make Base Wall</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../SheetMetalBaseCmd.py" line="249"/>
+        <location filename="../../SheetMetalBaseCmd.py" line="265"/>
         <source>Create a sheetmetal wall from a sketch
 1. Select a Sketch to create bends with walls.
 2. Use Property editor to modify other parameters</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../SheetMetalBaseShapeCmd.py" line="446"/>
+        <location filename="../../SheetMetalBaseShapeCmd.py" line="439"/>
         <source>Add base shape</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../SheetMetalBaseShapeCmd.py" line="451"/>
+        <location filename="../../SheetMetalBaseShapeCmd.py" line="444"/>
         <source>Add basic sheet metal object.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1661,12 +1738,12 @@ If the opposite face also fails then switch Refine to false on feature </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../SheetMetalCmd.py" line="1819"/>
+        <location filename="../../SheetMetalCmd.py" line="1825"/>
         <source>Make Wall</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../SheetMetalCmd.py" line="1826"/>
+        <location filename="../../SheetMetalCmd.py" line="1832"/>
         <source>Extends one or more face, connected by a bend on existing sheet metal.
 1. Select edges or thickness side faces to create bends with walls.
 2. Use Property editor to modify other parameters</source>

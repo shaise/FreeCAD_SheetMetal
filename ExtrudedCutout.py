@@ -32,23 +32,57 @@ from SheetMetalTools import SMException
 
 smExtrudedCutoutDefaults = {}
 
+
 class ExtrudedCutout:
     def __init__(self, obj, sketch, selected_face):
-        '''Initialize the parametric Sheet Metal Cut object and add properties'''
-        obj.addProperty("App::PropertyLink", "Sketch", "ExtrudedCutout", "The sketch for the cut").Sketch = sketch
-        self._addProperties(obj, selected_face) # Add other properties (is necessary this way to not cause errors on old files)
-        obj.setEditorMode("ImproveLevel",2) # Hide by default
-        obj.addProperty("App::PropertyLength", "ExtrusionLength1", "ExtrudedCutout", "Length of the extrusion direction 1").ExtrusionLength1 = 500.0
-        obj.setEditorMode("ExtrusionLength1",2) # Hide by default
-        obj.addProperty("App::PropertyLength", "ExtrusionLength2", "ExtrudedCutout", "Length of the extrusion direction 2").ExtrusionLength2 = 500.0
-        obj.setEditorMode("ExtrusionLength2",2) # Hide by default
+        """Initialize the parametric Sheet Metal Cut object and add properties"""
+        obj.addProperty(
+            "App::PropertyLink",
+            "Sketch",
+            "ExtrudedCutout",
+            FreeCAD.Qt.translate("SheetMetal", "The sketch for the cut"),
+        ).Sketch = sketch
+        self._addProperties(
+            obj, selected_face
+        )  # Add other properties (is necessary this way to not cause errors on old files)
+        obj.setEditorMode("ImproveLevel", 2)  # Hide by default
+        obj.addProperty(
+            "App::PropertyLength",
+            "ExtrusionLength1",
+            "ExtrudedCutout",
+            FreeCAD.Qt.translate("SheetMetal", "Length of the extrusion direction 1"),
+        ).ExtrusionLength1 = 500.0
+        obj.setEditorMode("ExtrusionLength1", 2)  # Hide by default
+        obj.addProperty(
+            "App::PropertyLength",
+            "ExtrusionLength2",
+            "ExtrudedCutout",
+            FreeCAD.Qt.translate("SheetMetal", "Length of the extrusion direction 2"),
+        ).ExtrusionLength2 = 500.0
+        obj.setEditorMode("ExtrusionLength2", 2)  # Hide by default
 
         # CutType property
-        obj.addProperty("App::PropertyEnumeration", "CutType", "ExtrudedCutout", "Cut type").CutType = ["Two dimensions", "Symmetric", "Through everything both sides", "Through everything side 1", "Through everything side 2"]
+        obj.addProperty(
+            "App::PropertyEnumeration",
+            "CutType",
+            "ExtrudedCutout",
+            FreeCAD.Qt.translate("SheetMetal", "Cut type"),
+        ).CutType = [
+            "Two dimensions",
+            "Symmetric",
+            "Through everything both sides",
+            "Through everything side 1",
+            "Through everything side 2",
+        ]
         obj.CutType = "Through everything both sides"  # Default value
 
         # CutSide property
-        obj.addProperty("App::PropertyEnumeration", "CutSide", "ExtrudedCutout", "Side of the cut").CutSide = ["Inside", "Outside"]
+        obj.addProperty(
+            "App::PropertyEnumeration",
+            "CutSide",
+            "ExtrudedCutout",
+            FreeCAD.Qt.translate("SheetMetal", "Side of the cut"),
+        ).CutSide = ["Inside", "Outside"]
         obj.CutSide = "Inside"  # Default value
 
         obj.Proxy = self
@@ -76,7 +110,10 @@ class ExtrudedCutout:
             obj,
             "App::PropertyIntegerConstraint",
             "ImproveLevel",
-            FreeCAD.Qt.translate("SheetMetal", "Level of cut improvement quality. More than 10 can take a very long time"),
+            FreeCAD.Qt.translate(
+                "SheetMetal",
+                "Level of cut improvement quality. More than 10 can take a very long time",
+            ),
             (4, 2, 20, 1),
             "ExtrudedCutoutImprovements",
         )
@@ -84,7 +121,10 @@ class ExtrudedCutout:
         SheetMetalTools.smAddBoolProperty(
             obj,
             "ImproveCut",
-            FreeCAD.Qt.translate("SheetMetal", "Improve cut geometry if it enters the cutting zone. Only select true if the cut needs fix, 'cause it can be slow"),
+            FreeCAD.Qt.translate(
+                "SheetMetal",
+                "Improve cut geometry if it enters the cutting zone. Only select true if the cut needs fix, 'cause it can be slow",
+            ),
             False,
             "ExtrudedCutoutImprovements"
         )
@@ -457,12 +497,15 @@ if SheetMetalTools.isGuiLoaded():
                 "Pixmap": os.path.join(
                     icons_path, "SheetMetal_AddCutout.svg"
                 ),  # the name of a svg file available in the resources
-                "MenuText": "Extruded Cutout",
+                "MenuText": FreeCAD.Qt.translate("SheetMetal", "Extruded Cutout"),
                 "Accel": "E, C",
-                "ToolTip": "Extruded cutout from sketch extrusion\n"
+                "ToolTip": FreeCAD.Qt.translate(
+                    "SheetMetal",
+                    "Extruded cutout from sketch extrusion\n"
                     "1. Select a face of the sheet metal part (must not be the thickness face) and\n"
                     "2. Select a sketch for the extruded cut (the sketch must be closed).\n"
-                    "3. Use Property editor to modify other parameters"
+                    "3. Use Property editor to modify other parameters",
+                ),
             }
 
         def Activated(self):
