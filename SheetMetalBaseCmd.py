@@ -29,7 +29,7 @@ import SheetMetalTools
 translate = FreeCAD.Qt.translate
 icons_path = SheetMetalTools.icons_path
 panels_path = SheetMetalTools.panels_path
-
+smBaseDefaults = {}
 
 def modifiedWire(WireList, radius, thk, length, normal, Side, sign):
     # If sketch is one type, make a face by extruding & offset it to correct position
@@ -110,51 +110,58 @@ def smBase(
 class SMBaseBend:
     def __init__(self, obj, sketch):
         '''"Add wall or Wall with radius bend"'''
-        _tip_ = translate("App::Property", "Bend Radius")
-        obj.addProperty(
-            "App::PropertyLength", "radius", "Parameters", _tip_
-        ).radius = 1.0
-        _tip_ = translate("App::Property", "Thickness of sheetmetal")
-        obj.addProperty(
-            "App::PropertyLength", "thickness", "Parameters", _tip_
-        ).thickness = 1.0
         _tip_ = translate("App::Property", "Bend Plane")
         obj.addProperty(
             "App::PropertyEnumeration", "BendSide", "Parameters", _tip_
         ).BendSide = ["Outside", "Inside", "Middle"]
-        _tip_ = translate("App::Property", "Length of wall")
-        obj.addProperty(
-            "App::PropertyLength", "length", "Parameters", _tip_
-        ).length = 100.0
         _tip_ = translate("App::Property", "Wall Sketch object")
         obj.addProperty(
             "App::PropertyLink", "BendSketch", "Parameters", _tip_
         ).BendSketch = sketch
         _tip_ = translate("App::Property", "Extrude Symmetric to Plane")
-        obj.addProperty(
-            "App::PropertyBool", "MidPlane", "Parameters", _tip_
-        ).MidPlane = False
-        _tip_ = translate("App::Property", "Reverse Extrusion Direction")
-        obj.addProperty(
-            "App::PropertyBool", "Reverse", "Parameters", _tip_
-        ).Reverse = False
+        self._addProperties(obj)
         obj.Proxy = self
+
+    def _addProperties(self, obj):
+        SheetMetalTools.smAddLengthProperty(
+            obj,
+            "Radius",
+            translate("App::Property", "Bend Radius"),
+            1.0
+        )
+        SheetMetalTools.smAddLengthProperty(
+            obj,
+            "Thickness",
+            translate("App::Property", "Thickness of sheetmetal"),
+            1.0
+        )
+        SheetMetalTools.smAddLengthProperty(
+            obj,
+            "Length",
+            translate("App::Property", "Length of wall"),
+            100.0
+        )
+        SheetMetalTools.smAddBoolProperty(
+            obj, 
+            "MidPlane", 
+            FreeCAD.Qt.translate("App::Property", "Extrude Symmetric to Plane"), 
+            False
+        )
+        SheetMetalTools.smAddBoolProperty(
+            obj, 
+            "Reverse", 
+            FreeCAD.Qt.translate("App::Property", "Reverse Extrusion Direction"), 
+            False
+        )
+
 
     def execute(self, fp):
         '''"Print a short message when doing a recomputation, this method is mandatory"'''
-        if not hasattr(fp, "MidPlane"):
-            _tip_ = translate("App::Property", "Extrude Symmetric to Plane")
-            fp.addProperty(
-                "App::PropertyBool", "MidPlane", "Parameters", _tip_
-            ).MidPlane = False
-            _tip_ = translate("App::Property", "Reverse Extrusion Direction")
-            fp.addProperty(
-                "App::PropertyBool", "Reverse", "Parameters", _tip_
-            ).Reverse = False
+        self._addProperties(fp)
         s = smBase(
-            thk=fp.thickness.Value,
-            length=fp.length.Value,
-            radius=fp.radius.Value,
+            thk=fp.Thickness.Value,
+            length=fp.Length.Value,
+            radius=fp.Radius.Value,
             Side=fp.BendSide,
             midplane=fp.MidPlane,
             reverse=fp.Reverse,
@@ -176,56 +183,65 @@ if SheetMetalTools.isGuiLoaded():
     # View Provider
     ##########################################################################################################
 
-    class SMBaseViewProvider:
-        "A View provider that nests children objects under the created one"
-
-        def __init__(self, obj):
-            obj.Proxy = self
-            self.Object = obj.Object
-
-        def attach(self, obj):
-            self.Object = obj.Object
-            return
-
-        def updateData(self, fp, prop):
-            return
-
-        def getDisplayModes(self, obj):
-            modes = []
-            return modes
-
-        def setDisplayMode(self, mode):
-            return mode
-
-        def onChanged(self, vp, prop):
-            return
-
-        def __getstate__(self):
-            #    return {'ObjectName' : self.Object.Name}
-            return None
-
-        def __setstate__(self, state):
-            self.loads(state)
-
-        # dumps and loads replace __getstate__ and __setstate__ post v. 0.21.2
-        def dumps(self):
-            return None
-
-        def loads(self, state):
-            if state is not None:
-                import FreeCAD
-
-                doc = FreeCAD.ActiveDocument  # crap
-                self.Object = doc.getObject(state["ObjectName"])
-
+    class SMBaseViewProvider(SheetMetalTools.SMViewProvider):
+        ''' Part / Part WB style ViewProvider '''        
+        def getIcon(self):
+            return os.path.join(icons_path, 'SheetMetal_AddBase.svg')
+        
         def claimChildren(self):
             objs = []
             if hasattr(self, "Object") and hasattr(self.Object, "BendSketch"):
                 objs.append(self.Object.BendSketch)
             return objs
 
-        def getIcon(self):
-            return os.path.join(icons_path, "SheetMetal_AddBase.svg")
+        def getTaskPanel(self, obj):
+            return SMBaseBendTaskPanel(obj)
+
+
+        
+    ##########################################################################################################
+    # Task Panel
+    ##########################################################################################################
+
+    class SMBaseBendTaskPanel:
+        '''A TaskPanel for the Sheetmetal base bend command'''
+
+        def __init__(self, obj):
+            self.obj = obj
+            self.form = SheetMetalTools.taskLoadUI("CreateBaseShape.ui")
+            self.updateDisplay()
+            SheetMetalTools.taskConnectSelectionSingle(
+                self, self.form.pushSketch, self.form.txtSketch, obj, "BendSketch", ("Sketcher::SketchObject", [])
+            )
+            SheetMetalTools.taskConnectSpin(self, self.form.spinRadius, "Radius")
+            SheetMetalTools.taskConnectSpin(self, self.form.spinThickness, "Thickness")
+            SheetMetalTools.taskConnectSpin(self, self.form.spinLength, "Length")
+            SheetMetalTools.taskConnectEnum(self, self.form.comboBendPlane, "BendSide")
+            SheetMetalTools.taskConnectCheck(self, self.form.checkSymetric, "MidPlane", self.midplaneChanged)
+            SheetMetalTools.taskConnectCheck(self, self.form.checkRevDirection, "Reverse")
+
+        def isAllowedAlterSelection(self):
+            return True
+
+        def isAllowedAlterView(self):
+            return True
+        
+        def updateDisplay(self):
+            self.form.checkRevDirection.setVisible(self.obj.MidPlane is False)
+
+        def  midplaneChanged(self, value):
+            self.updateDisplay()
+
+        def accept(self):
+            SheetMetalTools.taskAccept(self)
+            SheetMetalTools.taskSaveDefaults(self.obj, smBaseDefaults, ["Radius", "Thickness"])
+            return True
+        
+        def reject(self):
+            SheetMetalTools.taskReject(self)
+
+        #def retranslateUi(self, SMBendTaskPanel):
+
 
     ##########################################################################################################
     # Command
@@ -250,27 +266,14 @@ if SheetMetalTools.isGuiLoaded():
             }
 
         def Activated(self):
-            doc = FreeCAD.ActiveDocument
-            view = Gui.ActiveDocument.ActiveView
-            activeBody = None
             selobj = Gui.Selection.getSelectionEx()[0].Object
-            if hasattr(view, "getActiveObject"):
-                activeBody = view.getActiveObject("pdbody")
-            # if not SheetMetalTools.smIsOperationLegal(activeBody, selobj):
-            #     return
-            doc.openTransaction("BaseBend")
-            if activeBody is None:
-                a = doc.addObject("Part::FeaturePython", "BaseBend")
-                SMBaseBend(a, selobj)
-                SMBaseViewProvider(a.ViewObject)
-            else:
-                # FreeCAD.Console.PrintLog("found active body: " + activeBody.Name)
-                a = doc.addObject("PartDesign::FeaturePython", "BaseBend")
-                SMBaseBend(a, selobj)
-                SMBaseViewProvider(a.ViewObject)
-                activeBody.addObject(a)
-            doc.recompute()
-            doc.commitTransaction()
+            newObj, activeBody = SheetMetalTools.smCreateNewObject(selobj, "BaseBend")
+            if newObj is None:
+                return
+            SMBaseBend(newObj, selobj)
+            SMBaseViewProvider(newObj.ViewObject)
+            SheetMetalTools.smAddNewObject(
+                selobj, newObj, activeBody, SMBaseBendTaskPanel)
             return
 
         def IsActive(self):

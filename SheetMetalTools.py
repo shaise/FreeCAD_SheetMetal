@@ -158,7 +158,8 @@ if isGuiLoaded():
                 smSingleSelObserver.button.toggle()
             if baseObject is not None:
                 baseObject.Visibility=True
-                obj.Visibility=False
+            obj.Visibility=False
+            prop.Visibility=True
             button.activeTypes = allowedTypes
             button.activeObject = obj
             button.activeProperty = selProperty
@@ -170,7 +171,8 @@ if isGuiLoaded():
             smSingleSelObserver.button = None
             if baseObject is not None:
                 baseObject.Visibility=False
-                obj.Visibility=True
+            obj.Visibility=True
+            prop.Visibility=False
             task.activeSelection = {}
             taskPopulateSelectionSingle(textbox, prop)
             button.setText(button.saveText)
@@ -212,7 +214,7 @@ if isGuiLoaded():
     def _taskUpdateValue(value, obj, objvar, callback):
         setattr(obj, objvar, value)
         try:  # avoid intermitant changes
-            obj.Document.recompute()
+            obj.recompute()
         except:
             pass
         if callback is not None:
@@ -220,22 +222,29 @@ if isGuiLoaded():
 
     def _taskEditFinished(obj):
         obj.Document.recompute()
+
+    def _getVarValue(obj, objvar):
+        if not hasattr(obj, objvar):
+            # Can happen if an old file is loaded and some props were renamed
+            obj.recompute()
+        return getattr(obj, objvar)
     
     def taskConnectSpin(task, formvar, objvar, callback = None):
-        formvar.setProperty("value", getattr(task.obj, objvar))
+        formvar.setProperty("value", _getVarValue(task.obj, objvar))
         Gui.ExpressionBinding(formvar).bind(task.obj, objvar)
         formvar.valueChanged.connect(lambda value: _taskUpdateValue(value, task.obj, objvar, callback))
         formvar.editingFinished.connect(lambda: _taskEditFinished(task.obj))
 
     def taskConnectCheck(task, formvar, objvar, callback = None):
-        formvar.setChecked(getattr(task.obj, objvar))
+        formvar.setChecked(_getVarValue(task.obj, objvar))
         if callback is not None:
             callback(formvar.isChecked())
         formvar.toggled.connect(lambda value: _taskUpdateValue(value, task.obj, objvar, callback))
 
     def taskConnectEnum(task, formvar, objvar, callback = None):
+        val = _getVarValue(task.obj, objvar)
         enumlist = task.obj.getEnumerationsOfProperty(objvar)
-        formvar.setProperty("currentIndex", enumlist.index(getattr(task.obj, objvar)))
+        formvar.setProperty("currentIndex", enumlist.index(val))
         formvar.currentIndexChanged.connect(lambda value: _taskUpdateValue(value, task.obj, objvar, callback))
 
     def taskAccept(task, addRemoveButton = None):
@@ -380,7 +389,8 @@ if isGuiLoaded():
 
         def unsetEdit(self, _vobj, _mode):
             Gui.Control.closeDialog()
-            self.Object.baseObject[0].ViewObject.Visibility = False
+            if hasattr(self.Object, "baseObject"):
+                self.Object.baseObject[0].ViewObject.Visibility = False
             self.Object.ViewObject.Visibility = True
             return False
 
@@ -484,6 +494,10 @@ def smAddProperty(obj, proptype, name, proptip, defval=None,
         obj.addProperty(proptype, name, paramgroup, proptip)
         if defval is not None:
             setattr(obj, name, defval)
+    # replaced name is either given or automatically search for 
+    #   old lower case version of the same parameter
+    if replacedname is None and name[0].isupper():
+        replacedname = name[0].lower() + name[1:]
     if replacedname is not None and hasattr(obj, replacedname):
         setattr(obj, name, getattr(obj, replacedname))
         obj.removeProperty(replacedname)
