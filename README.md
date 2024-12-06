@@ -99,6 +99,12 @@ Starting from FreeCAD 0.17 it can be installed via the [Addon Manager](https://g
 * FreeCAD Forum announcement/discussion [thread](https://forum.freecadweb.org/viewtopic.php?f=3&t=60818) 
 
 #### Release notes:
+* V0.6.01 06 Dec 2024:  Add GUI to BaseBend command.
+                      - Fix detection of basebend belonging to body or not.  
+                      - Update translations by [@hasecilu][hasecilu].  
+                      - Fix python compatibility by [@Syres916][Syres916].  
+                      - Extruded cutout fixes by [@sheetmetalman][sheetmetalman].  
+                      - Fix round relief apect ratio limitations.  
 * V0.6.00 03 Dec 2024:  Code refactoring, Remove duplication, Add GUI to most functions.  
 * V0.5.10 25 Nov 2024:  Extruded Cutout: add improvements and fixes by [@sheetmetalman][sheetmetalman].  
                       - Update translations from CrowdIn by [@hasecilu][hasecilu].  

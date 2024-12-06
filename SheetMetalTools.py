@@ -26,6 +26,7 @@
 import os
 import re
 import FreeCAD
+import Part
 from SheetMetalLogger import SMLogger
 
 translate = FreeCAD.Qt.translate
@@ -415,11 +416,13 @@ def smBelongToBody(item, body):
             return True
     return False
 
-def smIsPartDesign(obj):
-    return obj.TypeId.startswith("PartDesign::")
-
 def smIsSketchObject(obj):
     return obj.TypeId.startswith("Sketcher::")
+
+def smIsPartDesign(obj):
+    if smIsSketchObject(obj):
+        return isinstance(obj.getParent(), Part.BodyBase)
+    return obj.TypeId.startswith("PartDesign::")
 
 def smIsOperationLegal(body, selobj):
     # FreeCAD.Console.PrintLog(str(selobj) + " " + str(body) + " " + str(smBelongToBody(selobj, body)) + "\n")
