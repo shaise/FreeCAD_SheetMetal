@@ -292,7 +292,8 @@ if isGuiLoaded():
         viewConf = GetViewConfig(baseObj)
         SetViewConfig(newObj, viewConf)
         Gui.Selection.clearSelection()
-        newObj.baseObject[0].ViewObject.Visibility = False
+        #newObj.baseObject[0].ViewObject.Visibility = False
+        baseObj.ViewObject.Visibility = False
         dialog = taskPanel(newObj)
         FreeCAD.ActiveDocument.recompute()
         Gui.Control.showDialog(dialog)
