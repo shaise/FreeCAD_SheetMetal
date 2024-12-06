@@ -181,7 +181,7 @@ if SheetMetalTools.isGuiLoaded():
                 return False
     #    selobj = Gui.Selection.getSelection()[0]
             for selEdge in sel.SubObjects:
-                if isinstance(selEdge, Part.Edge):
+                if not isinstance(selEdge, Part.Edge):
                     return False
             return True
 
