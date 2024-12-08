@@ -30,7 +30,9 @@ from FreeCAD import Base
 # changes in modeling logic
 smElementMapVersion = "sm1."
 smEpsilon = SheetMetalTools.smEpsilon
-smExtrudeDefaults = {}
+
+# list of properties to be saved as defaults
+smExtrudeDefaultVars = ["Refine"]
 
 
 def smMakeFace(edge, dir, extLen, gap1=0.0, gap2=0.0, angle1=0.0, angle2=0.0, op=""):
@@ -321,7 +323,7 @@ class SMExtrudeWall:
             "App::PropertyBool", "Refine", "ParametersExt", _tip_
         ).Refine = True
         obj.Proxy = self
-        SheetMetalTools.taskRestoreDefaults(obj, smExtrudeDefaults)
+        SheetMetalTools.taskRestoreDefaults(obj, smExtrudeDefaultVars)
 
     def getElementMapVersion(self, _fp, ver, _prop, restored):
         if not restored:
@@ -409,7 +411,7 @@ if SheetMetalTools.isGuiLoaded():
 
         def accept(self):
             SheetMetalTools.taskAccept(self, self.form.AddRemove)
-            SheetMetalTools.taskSaveDefaults(self.obj, smExtrudeDefaults, ["Refine"])
+            SheetMetalTools.taskSaveDefaults(self.obj, smExtrudeDefaultVars)
             return True
 
         def reject(self):

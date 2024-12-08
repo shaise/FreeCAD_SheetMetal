@@ -28,7 +28,9 @@ import SheetMetalBendSolid
 from SheetMetalLogger import SMLogger
 
 smEpsilon = SheetMetalTools.smEpsilon
-BendOnLineDefaults = {}
+
+# list of properties to be saved as defaults
+BendOnLineDefaultVars = [("radius", "defaultRadius"), ("angle", "defaultFoldAngle")]
 
 def smthk(obj, foldface):
     normal = foldface.normalAt(0, 0)
@@ -287,6 +289,8 @@ class SMFoldWall:
         obj.addProperty(
             "App::PropertyEnumeration", "Position", "Parameters", _tip_
         ).Position = ["intersection of planes", "middle", "backward", "forward"]
+
+        SheetMetalTools.taskRestoreDefaults(obj, BendOnLineDefaultVars)
         obj.Proxy = self
 
     def execute(self, fp):
@@ -357,7 +361,7 @@ if SheetMetalTools.isGuiLoaded():
 
         def accept(self):
             SheetMetalTools.taskAccept(self)
-            SheetMetalTools.taskSaveDefaults(self.obj, BendOnLineDefaults, ["radius", "angle"])
+            SheetMetalTools.taskSaveDefaults(self.obj, BendOnLineDefaultVars)
             return True
 
         def reject(self):

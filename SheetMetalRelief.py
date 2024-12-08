@@ -32,7 +32,7 @@ import SheetMetalTools
 # changes in modeling logic
 smElementMapVersion = 'sm1.'
 smEpsilon = SheetMetalTools.smEpsilon
-smSolidCornerReliefDefaults = {}
+smSolidCornerReliefDefaultVars = [("relief", "defaultCornerRelief")]
 
 def smMakeFace(vertex, face, edges, relief):
 
@@ -124,7 +124,7 @@ class SMRelief:
         _tip_ = FreeCAD.Qt.translate("App::Property", "Base Object")
         obj.addProperty("App::PropertyLinkSub", "baseObject", "Parameters",
                         _tip_).baseObject = (selobj, sel_items)
-        SheetMetalTools.taskRestoreDefaults(obj, smSolidCornerReliefDefaults)
+        SheetMetalTools.taskRestoreDefaults(obj, smSolidCornerReliefDefaultVars)
         obj.Proxy = self
 
     def getElementMapVersion(self, _fp, ver, _prop, restored):
@@ -186,7 +186,7 @@ if SheetMetalTools.isGuiLoaded():
 
         def accept(self):
             SheetMetalTools.taskAccept(self, self.form.AddRemove)
-            SheetMetalTools.taskSaveDefaults(self.obj, smSolidCornerReliefDefaults, ["relief"])
+            SheetMetalTools.taskSaveDefaults(self.obj, smSolidCornerReliefDefaultVars)
             return True
         
         def reject(self):

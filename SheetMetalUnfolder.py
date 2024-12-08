@@ -103,10 +103,15 @@ if __name__ == '__main__':
 """
 
 
-import Part, FreeCAD, FreeCADGui, os, sys
+import os
+import sys
+import math
+import time
+import Part
+import FreeCAD
 from FreeCAD import Base
-import DraftVecUtils, math, time
 import Draft
+import SheetMetalTools
 
 # import traceback
 
@@ -465,11 +470,12 @@ class SheetTree(object):
         print("index Unfold list:")
         print(self.index_unfold_list)
 
-    def __init__(self, TheShape, f_idx, k_factor_lookup):
+    def __init__(self, TheShape, f_idx, k_factor_lookup, obj):
         self.cFaceTol = 0.002  # tolerance to detect counter-face vertices
         # this high tolerance was needed for more real parts
         self.root = None  # make_new_face_node adds the root node if parent_node == None
         self.__Shape = TheShape.copy()
+        self.obj = obj
         self.error_code = None
         self.failed_face_idx = None
         self.k_factor_lookup = k_factor_lookup
@@ -1152,8 +1158,8 @@ class SheetTree(object):
                         counter_found = False
 
                 if counter_found:
-                    if hasattr(FreeCADGui.Selection.getSelection()[0], "Refine"):
-                        if FreeCADGui.Selection.getSelection()[0].Refine is True:
+                    if hasattr(self.obj, "Refine"):
+                        if self.obj.Refine is True:
                             distance = self.__Shape.Faces[i].distToShape(
                                 self.__Shape.Faces[face_idx]
                             )[0]
@@ -1572,8 +1578,8 @@ class SheetTree(object):
                     if not self.handle_hole(
                         parent_node, face_idx, edge, child_face, child_index
                     ):
-                        if hasattr(FreeCADGui.Selection.getSelection()[0], "Refine"):
-                            if FreeCADGui.Selection.getSelection()[0].Refine is True:
+                        if hasattr(self.obj, "Refine"):
+                            if self.obj.Refine is True:
                                 if not self.handle_chamfer(
                                     face_idx, edge, child_face, child_face_idx
                                 ):
@@ -2880,71 +2886,21 @@ class SheetTree(object):
         return wire.copy(), False
 
 
-#  from Defeaturing WB: Export to Step
-def sew_Shape():
+def sew_Shape(obj):
     """checking Shape"""
 
-    doc = FreeCAD.ActiveDocument
-    docG = FreeCADGui.ActiveDocument
-
-    sel = FreeCADGui.Selection.getSelection()
-    if len(sel) == 1:
-        o = sel[0]
-        if hasattr(o, "Shape"):
-            sh = o.Shape.copy()
-            sh.sewShape()
-            sl = Part.Solid(sh)
-            docG.getObject(o.Name).Visibility = False
-            Part.show(sl)
-            ao = FreeCAD.ActiveDocument.ActiveObject
-            ao.Label = "Solid"
-            docG.ActiveObject.ShapeColor = docG.getObject(o.Name).ShapeColor
-            docG.ActiveObject.LineColor = docG.getObject(o.Name).LineColor
-            docG.ActiveObject.PointColor = docG.getObject(o.Name).PointColor
-            docG.ActiveObject.DiffuseColor = docG.getObject(o.Name).DiffuseColor
-            docG.ActiveObject.Transparency = docG.getObject(o.Name).Transparency
-    else:
-        FreeCAD.Console.PrintError("select only one object")
-
-
-def makeSolidExpSTEP():
-    doc = FreeCAD.ActiveDocument
-    docG = FreeCADGui.ActiveDocument
-    if doc is not None:
-        fname = doc.FileName
-        if len(fname) == 0:
-            fileNm = "untitled"
-        else:
-            fileNm = os.path.basename(fname)
-            fileNm = os.path.splitext(fileNm)[0]
-        tempdir = tempfile.gettempdir()  # get the current temporary directory
-        # print(tempdir)
-        # fileNm = os.path.basename(fname)
-        # tempfilepath = os.path.join(tempdir,fname.rstrip(".fcstd").rstrip(".FCStd") + u'_cp.stp')
-        tempfilepath = os.path.join(tempdir, fileNm + "_cp.stp")
-        print(tempfilepath)
-        sel = FreeCADGui.Selection.getSelection()
-        if len(sel) == 1:
-            __objs__ = []
-            __objs__.append(sel[0])
-            import ImportGui
-
-            stop
-            ImportGui.export(__objs__, tempfilepath)
-            del __objs__
-            # docG.getObject(sel[0].Name).Visibility = False
-            ImportGui.insert(tempfilepath, doc.Name)
-            FreeCADGui.SendMsgToActiveView("ViewFit")
-        else:
-            FreeCAD.Console.PrintError("Select only one object")
-    else:
-        FreeCAD.Console.PrintError("Select only one object")
-
+    if hasattr(obj, "Shape"):
+        sh = obj.Shape.copy()
+        sh.sewShape()
+        sl = Part.Solid(sh)
+        return sl
 
 ##
 
+def getUnfold(k_factor_lookup, solid, facename, kFactorStandard):
+    global KFACTORSTANDARD
+    KFACTORSTANDARD = kFactorStandard
 
-def getUnfold(k_factor_lookup, solid, subelement, facename):
     resPart = None
     normalVect = None
     folds = None
@@ -2953,14 +2909,15 @@ def getUnfold(k_factor_lookup, solid, subelement, facename):
     ob_Name = solid.Name
     err_code = 0
 
-    normalVect = subelement.normalAt(0, 0)
     FreeCAD.Console.PrintLog(f"name: {facename}\n ")
     f_number = int(facename.lstrip("Face")) - 1
+    face = solid.Shape.Faces[f_number]
+    normalVect = face.normalAt(0, 0)
 
     startzeit = time.process_time()
 
     TheTree = SheetTree(
-        solid.Shape, f_number, k_factor_lookup
+        solid.Shape, f_number, k_factor_lookup, solid
     )  # initializes the tree-structure
     if TheTree.error_code is None:
         TheTree.Bend_analysis(
@@ -3038,7 +2995,16 @@ def getUnfold(k_factor_lookup, solid, subelement, facename):
                 "Trying to repeat the unfold process again with the Sewed copied Shape\n"
             )
             FreeCAD.ActiveDocument.openTransaction("sanitize")
-            sew_Shape()
+            sewedShape = sew_Shape(solid)
+            solid.Visibility = False
+            ob = Part.show(sewedShape,"Solid")
+            ob.Label = solid.Label + "_copy"
+            if SheetMetalTools.isGuiLoaded():
+                ob.ViewObject.ShapeColor = solid.ViewObject.ShapeColor 
+                ob.ViewObject.LineColor = solid.ViewObject.LineColor 
+                ob.ViewObject.PointColor = solid.ViewObject.PointColor 
+                ob.ViewObject.DiffuseColor = solid.ViewObject.DiffuseColor 
+                ob.ViewObject.Transparency = solid.ViewObject.Transparency 
             FreeCAD.ActiveDocument.commitTransaction()
             ob = FreeCAD.ActiveDocument.ActiveObject
             ob_Name = ob.Name
@@ -3104,8 +3070,7 @@ def SMmakeSketchfromEdges(edges, name):
 
 def processUnfold(
     k_factor_lookup,
-    object,
-    referenceFace,
+    obj,
     faceName,
     genSketch=True,
     splitSketches=False,
@@ -3125,12 +3090,12 @@ def processUnfold(
     unfold_sketch_internal = None
 
     try:
-        shape, foldComp, norm, thename, err_cd, fSel, obN = getUnfold(
-            k_factor_lookup, object, referenceFace, faceName
+        shape, foldComp, norm, _thename, _err_cd, _fSel, _obN = getUnfold(
+            k_factor_lookup, obj, faceName, kFactorStandard
         )
         foldLines = foldComp.Edges
     except Exception as e:
-        exc_type, exc_obj, exc_tb = sys.exc_info()
+        _exc_type, _exc_obj, exc_tb = sys.exc_info()
         SMLogger.error(
             FreeCAD.Qt.translate("Logger", "exception at line ")
             + str(exc_tb.tb_lineno),
@@ -3175,7 +3140,7 @@ def processUnfold(
                     owEdgs = newface.OuterWire.Edges
                     faceEdgs = newface.Edges
                 except:
-                    exc_type, exc_obj, exc_tb = sys.exc_info()
+                    _exc_type, _exc_obj, exc_tb = sys.exc_info()
                     SMLogger.error(
                         FreeCAD.Qt.translate(
                             "Logger",

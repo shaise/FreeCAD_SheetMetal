@@ -27,7 +27,6 @@ import os
 import re
 import FreeCAD
 import Part
-from SheetMetalLogger import SMLogger
 
 translate = FreeCAD.Qt.translate
 
@@ -269,13 +268,41 @@ if isGuiLoaded():
         FreeCAD.ActiveDocument.recompute()
         Gui.ActiveDocument.resetEdit()
       
-    def taskSaveDefaults(obj, defaultDict, varList):
+    def taskSaveDefaults(obj, varList):
         for var in varList:
-            defaultDict[var] = getattr(obj, var)
+            if isinstance(var, tuple):
+                var, saveVar = var
+            else:
+                saveVar = "default" + var
+            val = getattr(obj, var)
+            if hasattr(val, "Value"):
+                val = val.Value
+            if isinstance(val, bool):
+                params.SetBool(saveVar, val)
+            elif isinstance(val, float):
+                params.SetFloat(saveVar, val)
+            elif isinstance(val, int):
+                params.SetInt(saveVar, val)
+            else:
+                params.SetString(saveVar, str(val))
 
-    def taskRestoreDefaults(obj, defaultDict):
-        for var, value in defaultDict.items():
-            setattr(obj, var, value)
+    def taskRestoreDefaults(obj, varList):
+        for var in varList:
+            if isinstance(var, tuple):
+                var, saveVar = var
+            else:
+                saveVar = "default" + var
+            val = getattr(obj, var)
+            if hasattr(val, "Value"):
+                val = val.Value
+            if isinstance(val, bool):
+                setattr(obj, var, params.GetBool(saveVar, val))
+            elif isinstance(val, float):
+                setattr(obj, var, params.GetFloat(saveVar, val))
+            elif isinstance(val, int):
+                setattr(obj, var, params.GetInt(saveVar, val))
+            else:
+                setattr(obj, var, params.GetString(saveVar, str(val)))
 
     def taskLoadUI(*args):
         if len(args) == 1:
@@ -300,14 +327,15 @@ if isGuiLoaded():
         Gui.Control.showDialog(dialog)
         return
     
-    def smCreateNewObject(baseObj, name):
+    def smCreateNewObject(baseObj, name, allowPartDesign = True):
         doc = FreeCAD.ActiveDocument
         activeBody = None
-        view = Gui.ActiveDocument.ActiveView
-        if hasattr(view, 'getActiveObject'):
-            activeBody = view.getActiveObject('pdbody')
-        if not smIsOperationLegal(activeBody, baseObj):
-            return None, None
+        if allowPartDesign:
+            view = Gui.ActiveDocument.ActiveView
+            if hasattr(view, 'getActiveObject'):
+                activeBody = view.getActiveObject('pdbody')
+            if not smIsOperationLegal(activeBody, baseObj):
+                return None, None
         doc.openTransaction(name)
         if activeBody is None or not smIsPartDesign(baseObj):
             newObj = doc.addObject("Part::FeaturePython", name)
@@ -483,8 +511,8 @@ def getElementFromTNP(tnpName):
         FreeCAD.Console.PrintWarning("Warning: Tnp Name still visible: " + tnpName + "\n")
     return names[len(names) - 1].lstrip('?')
 
-def smAddProperty(obj, proptype, name, proptip, defval=None, 
-                  paramgroup="Parameters", replacedname = None):
+def smAddProperty(obj, proptype, name, proptip, defval=None, paramgroup="Parameters", 
+                  replacedname = None, readOnly = False, isHiddden = False):
     """
     Add a property to a given object.
 
@@ -495,11 +523,16 @@ def smAddProperty(obj, proptype, name, proptip, defval=None,
     - proptip: The tooltip for the property. Need to be translated from outside.
     - defval: The default value for the property (optional).
     - paramgroup: The parameter group to which the property should belong (default is "Parameters").
+                  if group name is "Hidden", the property will not be shown in the property editor
     - replacedname: If a property is renamed, for backward compatibility, add the replaced name
                     to the old one so data can be extracted from it in old files
+    - readOnly: Property can not be edited
+    - isHiddden: Property is not shown in the property editor
     """
     if not hasattr(obj, name):
-        obj.addProperty(proptype, name, paramgroup, proptip)
+        if paramgroup == "Hidden":
+            isHiddden = True
+        obj.addProperty(proptype, name, paramgroup, proptip, read_only = readOnly, hidden = isHiddden)
         if defval is not None:
             setattr(obj, name, defval)
         # replaced name is either given or automatically search for 
@@ -525,9 +558,11 @@ def smAddDistanceProperty(obj, name, proptip, defval, paramgroup="Parameters"):
 def smAddAngleProperty(obj, name, proptip, defval, paramgroup="Parameters"):
     smAddProperty(obj, "App::PropertyAngle", name, proptip, defval, paramgroup)
 
-
 def smAddFloatProperty(obj, name, proptip, defval, paramgroup="Parameters"):
     smAddProperty(obj, "App::PropertyFloat", name, proptip, defval, paramgroup)
+
+def smAddStringProperty(obj, name, proptip, defval, paramgroup="Parameters"):
+    smAddProperty(obj, "App::PropertyString", name, proptip, defval, paramgroup)
 
 
 def smAddEnumProperty(
@@ -547,3 +582,42 @@ def smGetBodyOfItem(obj):
         parent, _ = obj.getParents()[0]
         return parent
     return None
+
+
+class SMLogger:
+    @classmethod
+    def error(cls, *args):
+        message = ""
+        for x in args:
+            message += str(x)
+        FreeCAD.Console.PrintError(message + "\n")
+
+    @classmethod
+    def log(cls, *args):
+        message = ""
+        for x in args:
+            message += str(x)
+        FreeCAD.Console.PrintLog(message + "\n")
+
+    @classmethod
+    def message(cls, *args):
+        message = ""
+        for x in args:
+            message += str(x)
+        FreeCAD.Console.PrintMessage(message + "\n")
+
+    @classmethod
+    def warning(cls, *args):
+        message = ""
+        for x in args:
+            message += str(x)
+        FreeCAD.Console.PrintWarning(message + "\n")
+
+class UnfoldException(Exception):
+    pass
+
+class BendException(Exception):
+    pass
+
+class TreeException(Exception):
+    pass

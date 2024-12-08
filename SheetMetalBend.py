@@ -33,7 +33,9 @@ smEpsilon = SheetMetalTools.smEpsilon
 # IMPORTANT: please remember to change the element map version in case of any
 # changes in modeling logic
 smElementMapVersion = "sm1."
-smAddBendDefaults = {}
+
+# list of properties to be saved as defaults
+smAddBendDefaultVars = [("radius", "defaultRadius")]
 
 
 def smGetClosestVert(vert, face):
@@ -115,7 +117,7 @@ class SMSolidBend:
             "App::PropertyLinkSub", "baseObject", "Parameters", _tip_
         ).baseObject = (selobj, sel_elements)
         obj.Proxy = self
-        SheetMetalTools.taskRestoreDefaults(obj, smAddBendDefaults)
+        SheetMetalTools.taskRestoreDefaults(obj, smAddBendDefaultVars)
 
     def _addProperties(self, obj):
         SheetMetalTools.smAddLengthProperty(
@@ -181,7 +183,7 @@ if SheetMetalTools.isGuiLoaded():
 
         def accept(self):
             SheetMetalTools.taskAccept(self, self.form.AddRemove)
-            SheetMetalTools.taskSaveDefaults(self.obj, smAddBendDefaults, ["radius"])
+            SheetMetalTools.taskSaveDefaults(self.obj, smAddBendDefaultVars)
             return True
         
         def reject(self):

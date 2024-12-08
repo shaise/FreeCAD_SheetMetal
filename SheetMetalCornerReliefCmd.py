@@ -27,7 +27,9 @@ import FreeCAD, Part, math, os, SheetMetalTools, SheetMetalBendSolid
 from SheetMetalLogger import SMLogger
 
 smEpsilon = SheetMetalTools.smEpsilon
-smCornerReliefDefaults = {}
+
+# list of properties to be saved as defaults
+smCornerReliefDefaultVars = ["Size", "SizeRatio", ("kfactor", "defaultKFactor")]
 
 def smthk(obj, foldface):
     normal = foldface.normalAt(0, 0)
@@ -473,6 +475,7 @@ class SMCornerRelief:
         obj.addProperty(
             "App::PropertyDistance", "YOffset", "Parameters1", _tip_
         ).YOffset = 0.0
+        SheetMetalTools.taskRestoreDefaults(obj, smCornerReliefDefaultVars)
         obj.Proxy = self
 
     def execute(self, fp):
@@ -584,8 +587,7 @@ if SheetMetalTools.isGuiLoaded():
 
         def accept(self):
             SheetMetalTools.taskAccept(self, self.form.AddRemove)
-            SheetMetalTools.taskSaveDefaults(self.obj, smCornerReliefDefaults, 
-                                             ["Size", "SizeRatio", "kfactor"])
+            SheetMetalTools.taskSaveDefaults(self.obj, smCornerReliefDefaultVars)
             return True
 
         def reject(self):

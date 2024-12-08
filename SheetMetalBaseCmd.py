@@ -29,7 +29,9 @@ import SheetMetalTools
 translate = FreeCAD.Qt.translate
 icons_path = SheetMetalTools.icons_path
 panels_path = SheetMetalTools.panels_path
-smBaseDefaults = {}
+
+# list of properties to be saved as defaults
+smBaseDefaultVars = ["Radius", "Thickness"]
 
 def modifiedWire(WireList, radius, thk, length, normal, Side, sign):
     # If sketch is one type, make a face by extruding & offset it to correct position
@@ -120,6 +122,7 @@ class SMBaseBend:
         ).BendSketch = sketch
         _tip_ = translate("App::Property", "Extrude Symmetric to Plane")
         self._addProperties(obj)
+        SheetMetalTools.taskRestoreDefaults(obj, smBaseDefaultVars)
         obj.Proxy = self
 
     def _addProperties(self, obj):
@@ -234,7 +237,7 @@ if SheetMetalTools.isGuiLoaded():
 
         def accept(self):
             SheetMetalTools.taskAccept(self)
-            SheetMetalTools.taskSaveDefaults(self.obj, smBaseDefaults, ["Radius", "Thickness"])
+            SheetMetalTools.taskSaveDefaults(self.obj, smBaseDefaultVars)
             return True
         
         def reject(self):

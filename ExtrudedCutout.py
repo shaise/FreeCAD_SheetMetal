@@ -30,7 +30,8 @@ import Part
 import SheetMetalTools
 from SheetMetalTools import SMException
 
-smExtrudedCutoutDefaults = {}
+# list of properties to be saved as defaults
+smExtrudedCutoutDefaultVars = []
 
 
 class ExtrudedCutout:
@@ -84,6 +85,7 @@ class ExtrudedCutout:
             FreeCAD.Qt.translate("SheetMetal", "Side of the cut"),
         ).CutSide = ["Inside", "Outside"]
         obj.CutSide = "Inside"  # Default value
+        SheetMetalTools.taskRestoreDefaults(obj, smExtrudedCutoutDefaultVars)
 
         obj.Proxy = self
 
@@ -482,7 +484,7 @@ if SheetMetalTools.isGuiLoaded():
 
         def accept(self):
             SheetMetalTools.taskAccept(self)
-            SheetMetalTools.taskSaveDefaults(self.obj, smExtrudedCutoutDefaults, [])
+            SheetMetalTools.taskSaveDefaults(self.obj, smExtrudedCutoutDefaultVars)
             self.obj.Sketch.ViewObject.hide() # Hide sketch after click OK button
             return True
         

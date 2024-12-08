@@ -31,7 +31,9 @@ import SheetMetalTools
 # IMPORTANT: please remember to change the element map version in case of any
 # changes in modeling logic
 smElementMapVersion = 'sm1.'
-smJunctionDefaults = {}
+
+# list of properties to be saved as defaults
+smJunctionDefaultVars = [("gap", "defaultJunctionGap")]
 
 
 def smJunction(gap=2.0, selEdgeNames='', MainObject=None):
@@ -80,7 +82,7 @@ class SMJunction:
         obj.addProperty("App::PropertyLinkSub", "baseObject", "Parameters",
                         _tip_).baseObject = (selobj, sel_items)
         obj.Proxy = self
-        SheetMetalTools.taskRestoreDefaults(obj, smJunctionDefaults)
+        SheetMetalTools.taskRestoreDefaults(obj, smJunctionDefaultVars)
 
     def getElementMapVersion(self, _fp, ver, _prop, restored):
         if not restored:
@@ -143,7 +145,7 @@ if SheetMetalTools.isGuiLoaded():
 
         def accept(self):
             SheetMetalTools.taskAccept(self, self.form.AddRemove)
-            SheetMetalTools.taskSaveDefaults(self.obj, smJunctionDefaults, ["gap"])
+            SheetMetalTools.taskSaveDefaults(self.obj, smJunctionDefaultVars)
             return True
         
         def reject(self):
