@@ -1859,10 +1859,13 @@ if SheetMetalTools.isGuiLoaded():
             if SheetMetalTools.is_autolink_enabled():
                 root = SheetMetalTools.getOriginalBendObject(newObj)
                 if root:
-                    newObj.setExpression("radius", root.Label + ".radius")
+                    if hasattr(root, "Radius"):
+                        newObj.setExpression("radius", root.Label + ".Radius")
+                    elif hasattr(root, "radius"):
+                        newObj.setExpression("radius", root.Label + ".radius")
             newObj.baseObject[0].ViewObject.Visibility = False
-            dialog = SMBendWallTaskPanel(newObj)
             doc.recompute()
+            dialog = SMBendWallTaskPanel(newObj)
             Gui.Control.showDialog(dialog)
             return
 
