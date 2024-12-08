@@ -27,7 +27,6 @@ import os
 import re
 import FreeCAD
 import Part
-from SheetMetalLogger import SMLogger
 
 translate = FreeCAD.Qt.translate
 
@@ -300,14 +299,15 @@ if isGuiLoaded():
         Gui.Control.showDialog(dialog)
         return
     
-    def smCreateNewObject(baseObj, name):
+    def smCreateNewObject(baseObj, name, allowPartDesign = True):
         doc = FreeCAD.ActiveDocument
         activeBody = None
-        view = Gui.ActiveDocument.ActiveView
-        if hasattr(view, 'getActiveObject'):
-            activeBody = view.getActiveObject('pdbody')
-        if not smIsOperationLegal(activeBody, baseObj):
-            return None, None
+        if allowPartDesign:
+            view = Gui.ActiveDocument.ActiveView
+            if hasattr(view, 'getActiveObject'):
+                activeBody = view.getActiveObject('pdbody')
+            if not smIsOperationLegal(activeBody, baseObj):
+                return None, None
         doc.openTransaction(name)
         if activeBody is None or not smIsPartDesign(baseObj):
             newObj = doc.addObject("Part::FeaturePython", name)
@@ -543,3 +543,42 @@ def smGetBodyOfItem(obj):
         parent, _ = obj.getParents()[0]
         return parent
     return None
+
+
+class SMLogger:
+    @classmethod
+    def error(cls, *args):
+        message = ""
+        for x in args:
+            message += str(x)
+        FreeCAD.Console.PrintError(message + "\n")
+
+    @classmethod
+    def log(cls, *args):
+        message = ""
+        for x in args:
+            message += str(x)
+        FreeCAD.Console.PrintLog(message + "\n")
+
+    @classmethod
+    def message(cls, *args):
+        message = ""
+        for x in args:
+            message += str(x)
+        FreeCAD.Console.PrintMessage(message + "\n")
+
+    @classmethod
+    def warning(cls, *args):
+        message = ""
+        for x in args:
+            message += str(x)
+        FreeCAD.Console.PrintWarning(message + "\n")
+
+class UnfoldException(Exception):
+    pass
+
+class BendException(Exception):
+    pass
+
+class TreeException(Exception):
+    pass

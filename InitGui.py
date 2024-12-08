@@ -23,39 +23,31 @@
 #
 ##############################################################################
 
-from PySide import QtCore
-import smwb_locator
 import os
-from engineering_mode import engineering_mode_enabled
 import FreeCAD
 from FreeCAD import Gui
-
-smWBpath = os.path.dirname(smwb_locator.__file__)
-smWB_icons_path = os.path.join(smWBpath, "Resources", "icons")
+import SheetMetalTools
 
 # add translations path
-LanguagePath = os.path.join(smWBpath, "Resources", "translations")
+SMWBPath = SheetMetalTools.mod_path
+SMIconPath = SheetMetalTools.icons_path
+
+LanguagePath = os.path.join(SMWBPath, "Resources", "translations")
 Gui.addLanguagePath(LanguagePath)
 Gui.updateLocale()
 
-global main_smWB_Icon
-main_smWB_Icon = os.path.join(smWB_icons_path, "SMLogo.svg")
-
 
 class SMWorkbench(Workbench):
-    global main_smWB_Icon
+    global SMIconPath
+    global SMWBPath
     global SHEETMETALWB_VERSION
-    global QtCore
-    global engineering_mode_enabled
-    global smWBpath
-    global smWB_icons_path
 
     MenuText = FreeCAD.Qt.translate("SheetMetal", "Sheet Metal")
     ToolTip = FreeCAD.Qt.translate(
         "SheetMetal",
         "Sheet Metal workbench allows for designing and unfolding sheet metal parts",
     )
-    Icon = main_smWB_Icon
+    Icon = os.path.join(SMIconPath, "SMLogo.svg")
 
     def Initialize(self):
         "This function is executed when FreeCAD starts"
@@ -90,10 +82,6 @@ class SMWorkbench(Workbench):
             "SheetMetal_Forming",
             "SheetMetal_BaseShape",
         ]  # A list of command names created in the line above
-        if engineering_mode_enabled():
-            self.list.insert(
-                self.list.index("SheetMetal_Unfold") + 1, "SheetMetal_UnattendedUnfold"
-            )
         self.appendToolbar(
             FreeCAD.Qt.translate("SheetMetal", "Sheet Metal"), self.list
         )  # creates a new toolbar with your commands
@@ -101,8 +89,8 @@ class SMWorkbench(Workbench):
             FreeCAD.Qt.translate("SheetMetal", "&Sheet Metal"), self.list
         )  # creates a new menu
         # self.appendMenu(["An existing Menu","My submenu"],self.list) # appends a submenu to an existing menu
-        Gui.addPreferencePage(os.path.join(smWBpath, "Resources/panels/SMprefs.ui"), "SheetMetal")
-        Gui.addIconPath(smWB_icons_path)
+        Gui.addPreferencePage(os.path.join(SMWBPath, "Resources/panels/SMprefs.ui"), "SheetMetal")
+        Gui.addIconPath(SMIconPath)
 
     def Activated(self):
         "This function is executed when the workbench is activated"
