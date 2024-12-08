@@ -498,13 +498,14 @@ def smAddProperty(obj, proptype, name, proptip, defval=None,
         obj.addProperty(proptype, name, paramgroup, proptip)
         if defval is not None:
             setattr(obj, name, defval)
-    # replaced name is either given or automatically search for 
-    #   old lower case version of the same parameter
-    if replacedname is None and name[0].isupper():
-        replacedname = name[0].lower() + name[1:]
-    if replacedname is not None and hasattr(obj, replacedname):
-        setattr(obj, name, getattr(obj, replacedname))
-        obj.removeProperty(replacedname)
+        # replaced name is either given or automatically search for 
+        #   old lower case version of the same parameter
+        if replacedname is None and name[0].isupper():
+            replacedname = name[0].lower() + name[1:]
+        if replacedname is not None and hasattr(obj, replacedname):
+            setattr(obj, name, getattr(obj, replacedname))
+            #obj.removeProperty(replacedname)
+            obj.setEditorMode(replacedname, 2) # Hide
     
 
 
