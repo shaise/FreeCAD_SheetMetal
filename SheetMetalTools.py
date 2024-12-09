@@ -421,6 +421,10 @@ def smIsSketchObject(obj):
 
 def smIsPartDesign(obj):
     if smIsSketchObject(obj):
+        if hasattr(obj, "getParents"): # FreeCAD Linkstage compatibility
+            if len(obj.getParents()) == 0:
+                return False
+            return isinstance(obj.getParents()[0][0], Part.BodyBase)
         return isinstance(obj.getParent(), Part.BodyBase)
     return obj.TypeId.startswith("PartDesign::")
 
