@@ -233,7 +233,6 @@ if SheetMetalTools.isGuiLoaded():
             self.formReady = False
             self.firstTime = False
             self.selOrigButton = None
-            self.spinPairs = []
             self.ShowAxisCross()
             self.setupUi()
 
@@ -244,9 +243,9 @@ if SheetMetalTools.isGuiLoaded():
             SheetMetalTools.taskConnectSpin(self, self.form.bHeightSpin, "height")
             SheetMetalTools.taskConnectSpin(self, self.form.bFlangeWidthSpin, "flangeWidth")
             SheetMetalTools.taskConnectSpin(self, self.form.bLengthSpin, "length")
+            SheetMetalTools.taskConnectEnum(self, self.form.shapeType, "shapeType", self.typeChanged)
+            SheetMetalTools.taskConnectCheck(self, self.form.chkFillGaps, "fillGaps")
 
-            self.form.shapeType.currentIndexChanged.connect(self.typeChanged)
-            self.form.chkFillGaps.stateChanged.connect(self.checkChanged)
             for origloc in origin_location_buttons:
                 buttname = 'push' + origloc
                 butt = self.form.findChild(QtGui.QPushButton, buttname)
@@ -284,16 +283,12 @@ if SheetMetalTools.isGuiLoaded():
             self.updateObj()
             self.obj.recompute()
 
-        def typeChanged(self):
+        def typeChanged(self, _value):
             self.updateEnableState()
-            self.spinValChanged()
 
         def origButtPressed(self, butt):
             # print(butt.objectName())
             self.setSelectedOrigButton(butt)
-            self.spinValChanged()
-
-        def checkChanged(self):
             self.spinValChanged()
 
         def ShowAxisCross(self):
@@ -304,17 +299,7 @@ if SheetMetalTools.isGuiLoaded():
             Gui.ActiveDocument.ActiveView.setAxisCross(self.hasAxisCross)
 
         def updateObj(self):
-            #spin = Gui.UiLoader().createWidget("Gui::QuantitySpinBox")
-            #SMLogger.log(str(self.form.bRadiusSpin.property('rawValue')))
-            for formvar, objvar in self.spinPairs:
-                setattr(self.obj, objvar, formvar.property("value"))
-            
-            selected_type = self.form.shapeType.currentText()
-            if selected_type not in base_shape_types:
-                selected_type = base_shape_types[self.form.shapeType.currentIndex()]
-            self.obj.shapeType = selected_type
             self.obj.originLoc = self.buttonToOriginType(self.selOrigButton)
-            self.obj.fillGaps = self.form.chkFillGaps.isChecked()
 
         def accept(self):
             doc = FreeCAD.ActiveDocument
