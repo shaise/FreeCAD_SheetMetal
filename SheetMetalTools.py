@@ -26,6 +26,8 @@
 import os
 import re
 import FreeCAD
+import importDXF
+import importSVG
 import Part
 
 translate = FreeCAD.Qt.translate
@@ -36,6 +38,8 @@ panels_path = os.path.join(mod_path, "Resources", "panels")
 language_path = os.path.join(mod_path, "translations")
 params = FreeCAD.ParamGet("User parameter:BaseApp/Preferences/Mod/SheetMetal")
 smEpsilon = 0.0000001
+smForceRecompute = False
+smObjectsToRecompute = set()
 
 class SMException(Exception):
     ''' Sheet Metal Custom Exception '''
@@ -151,6 +155,8 @@ if isGuiLoaded():
         
     def _taskToggleSingleSelMode(task, isChecked, button, textbox, obj, selProperty, allowedTypes):
         prop = getattr(obj, selProperty)
+        if isinstance(prop, tuple):
+            prop = prop[0]
         baseObject = obj.baseObject[0] if hasattr(obj, "baseObject") else None
         Gui.Selection.clearSelection()
         if isChecked:
@@ -211,17 +217,43 @@ if isGuiLoaded():
             button.toggle()
 
 
+    def _taskRecomputeObject(obj):
+        if hasattr(obj, "ManualRecompute") and obj.ManualRecompute:
+            return
+        obj.recompute()
+
+    def _taskRecomputeDocument(obj = None):
+        if obj is not None:
+            if hasattr(obj, "ManualRecompute") and obj.ManualRecompute:
+                return
+            obj.Document.recompute()
+        else:
+            FreeCAD.ActiveDocument.recompute()
+
     def _taskUpdateValue(value, obj, objvar, callback):
         setattr(obj, objvar, value)
         try:  # avoid intermitant changes
-            obj.recompute()
+            _taskRecomputeObject(obj)
+        except:
+            pass
+        if callback is not None:
+            callback(value)
+
+    def _taskUpdateColor(formvar, obj, objvar, callback):
+        value = formvar.property("color").name()
+        setattr(obj, objvar, value)
+        try:  # avoid intermitant changes
+            _taskRecomputeObject(obj)
         except:
             pass
         if callback is not None:
             callback(value)
 
     def _taskEditFinished(obj):
-        obj.Document.recompute()
+        if hasattr(obj, "Object"):
+            obj = obj.Object
+        if hasattr(obj, "Document"):
+            _taskRecomputeDocument(obj)
 
     def _getVarValue(obj, objvar):
         if not hasattr(obj, objvar):
@@ -229,23 +261,32 @@ if isGuiLoaded():
             obj.recompute()
         return getattr(obj, objvar)
     
-    def taskConnectSpin(task, formvar, objvar, callback = None):
-        formvar.setProperty("value", _getVarValue(task.obj, objvar))
-        Gui.ExpressionBinding(formvar).bind(task.obj, objvar)
-        formvar.valueChanged.connect(lambda value: _taskUpdateValue(value, task.obj, objvar, callback))
-        formvar.editingFinished.connect(lambda: _taskEditFinished(task.obj))
+    def taskConnectSpin(task, formvar, objvar, callback = None, customObj = None):
+        obj = task.obj if customObj is None else customObj
+        formvar.setProperty("value", _getVarValue(obj, objvar))
+        if customObj is None:
+            Gui.ExpressionBinding(formvar).bind(obj, objvar)
+        formvar.valueChanged.connect(lambda value: _taskUpdateValue(value, obj, objvar, callback))
+        formvar.editingFinished.connect(lambda: _taskEditFinished(obj))
 
-    def taskConnectCheck(task, formvar, objvar, callback = None):
-        formvar.setChecked(_getVarValue(task.obj, objvar))
+    def taskConnectCheck(task, formvar, objvar, callback = None, customObj = None):
+        obj = task.obj if customObj is None else customObj
+        formvar.setChecked(_getVarValue(obj, objvar))
         if callback is not None:
             callback(formvar.isChecked())
-        formvar.toggled.connect(lambda value: _taskUpdateValue(value, task.obj, objvar, callback))
+        formvar.toggled.connect(lambda value: _taskUpdateValue(value, obj, objvar, callback))
 
-    def taskConnectEnum(task, formvar, objvar, callback = None):
-        val = _getVarValue(task.obj, objvar)
-        enumlist = task.obj.getEnumerationsOfProperty(objvar)
+    def taskConnectEnum(task, formvar, objvar, callback = None, customObj = None, customList = None):
+        obj = task.obj if customObj is None else customObj
+        val = _getVarValue(obj, objvar)
+        enumlist = task.obj.getEnumerationsOfProperty(objvar) if customList is None else customList
         formvar.setProperty("currentIndex", enumlist.index(val))
-        formvar.currentIndexChanged.connect(lambda value: _taskUpdateValue(value, task.obj, objvar, callback))
+        formvar.currentIndexChanged.connect(lambda value: _taskUpdateValue(value, obj, objvar, callback))
+
+    def taskConnectColor(task, formvar, objvar, callback = None, customObj = None):
+        obj = task.obj if customObj is None else customObj
+        formvar.setProperty("color", _getVarValue(obj, objvar))
+        formvar.changed.connect(lambda: _taskUpdateColor(formvar, obj, objvar, callback))
 
     def taskAccept(task, addRemoveButton = None):
         if addRemoveButton is not None and addRemoveButton.isChecked():
@@ -296,13 +337,14 @@ if isGuiLoaded():
             if hasattr(val, "Value"):
                 val = val.Value
             if isinstance(val, bool):
-                setattr(obj, var, params.GetBool(saveVar, val))
+                newVal = params.GetBool(saveVar, val)
             elif isinstance(val, float):
-                setattr(obj, var, params.GetFloat(saveVar, val))
+                newVal = params.GetFloat(saveVar, val)
             elif isinstance(val, int):
-                setattr(obj, var, params.GetInt(saveVar, val))
+                newVal = params.GetInt(saveVar, val)
             else:
-                setattr(obj, var, params.GetString(saveVar, str(val)))
+                newVal = params.GetString(saveVar, str(val))
+            setattr(obj, var, newVal)
 
     def taskLoadUI(*args):
         if len(args) == 1:
@@ -313,7 +355,20 @@ if isGuiLoaded():
             path = os.path.join(panels_path, uiFile)
             forms.append(Gui.PySideUic.loadUi(path))
         return forms
-        
+    
+    def smGuiExportSketch(sketches, fileType, fileName):
+        filePath, _ = QtGui.QFileDialog.getSaveFileName(
+            Gui.getMainWindow(),
+            translate("SheetMetal","Export unfold sketch"),
+            fileName,                       # Default file path
+            f"Vector Files (*.{fileType})"  # File type filters
+        )
+        if filePath:
+            if fileType == "dxf":
+                importDXF.export(sketches, filePath)
+            else:
+                importSVG.export(sketches, filePath)
+    
     def smAddNewObject(baseObj, newObj, activeBody, taskPanel):
         if activeBody is not None:
             activeBody.addObject(newObj)
@@ -322,25 +377,25 @@ if isGuiLoaded():
         Gui.Selection.clearSelection()
         #newObj.baseObject[0].ViewObject.Visibility = False
         baseObj.ViewObject.Visibility = False
-        dialog = taskPanel(newObj)
         FreeCAD.ActiveDocument.recompute()
+        dialog = taskPanel(newObj)
         Gui.Control.showDialog(dialog)
         return
     
     def smCreateNewObject(baseObj, name, allowPartDesign = True):
         doc = FreeCAD.ActiveDocument
         activeBody = None
-        if allowPartDesign:
-            view = Gui.ActiveDocument.ActiveView
-            if hasattr(view, 'getActiveObject'):
-                activeBody = view.getActiveObject('pdbody')
-            if not smIsOperationLegal(activeBody, baseObj):
-                return None, None
-        doc.openTransaction(name)
-        if activeBody is None or not smIsPartDesign(baseObj):
+        view = Gui.ActiveDocument.ActiveView
+        if hasattr(view, 'getActiveObject'):
+            activeBody = view.getActiveObject('pdbody')
+        if not allowPartDesign or not smIsPartDesign(baseObj):
+            doc.openTransaction(name)
             newObj = doc.addObject("Part::FeaturePython", name)
             activeBody = None
         else:
+            if not smIsOperationLegal(activeBody, baseObj):
+                return None, None
+            doc.openTransaction(name)
             newObj = doc.addObject("PartDesign::FeaturePython", name)
         return (newObj, activeBody)
  
@@ -436,6 +491,14 @@ else:
 def smStripTrailingNumber(item):
     return re.sub(r'\d+$', '', item)
 
+def smAddToRecompute(obj):
+    smObjectsToRecompute.add(obj)
+
+def smRemoveFromRecompute(obj):
+    smObjectsToRecompute.discard(obj)
+
+    
+
 def smBelongToBody(item, body):
     if body is None:
         return False
@@ -447,13 +510,21 @@ def smBelongToBody(item, body):
 def smIsSketchObject(obj):
     return obj.TypeId.startswith("Sketcher::")
 
+def smGetParentBody(obj):
+    if hasattr(obj, "getParent"):
+        return obj.getParent()
+    if hasattr(obj, "getParents"): # probably FreeCadLink version
+        if len(obj.getParents()) == 0:
+            return False
+        return obj.getParents()[0][0]
+    return None
+
 def smIsPartDesign(obj):
     if smIsSketchObject(obj):
-        if hasattr(obj, "getParents"): # FreeCAD Linkstage compatibility
-            if len(obj.getParents()) == 0:
-                return False
-            return isinstance(obj.getParents()[0][0], Part.BodyBase)
-        return isinstance(obj.getParent(), Part.BodyBase)
+        parent = smGetParentBody(obj)
+        if parent is None:
+            return False
+        return isinstance(parent, Part.BodyBase)
     return obj.TypeId.startswith("PartDesign::")
 
 def smIsOperationLegal(body, selobj):
@@ -512,7 +583,7 @@ def getElementFromTNP(tnpName):
     return names[len(names) - 1].lstrip('?')
 
 def smAddProperty(obj, proptype, name, proptip, defval=None, paramgroup="Parameters", 
-                  replacedname = None, readOnly = False, isHiddden = False):
+                  replacedname = None, readOnly = False, isHiddden = False, attribs = 0):
     """
     Add a property to a given object.
 
@@ -532,7 +603,7 @@ def smAddProperty(obj, proptype, name, proptip, defval=None, paramgroup="Paramet
     if not hasattr(obj, name):
         if paramgroup == "Hidden":
             isHiddden = True
-        obj.addProperty(proptype, name, paramgroup, proptip, read_only = readOnly, hidden = isHiddden)
+        obj.addProperty(proptype, name, paramgroup, proptip, attribs, readOnly, isHiddden)
         if defval is not None:
             setattr(obj, name, defval)
         # replaced name is either given or automatically search for 
@@ -560,6 +631,9 @@ def smAddAngleProperty(obj, name, proptip, defval, paramgroup="Parameters"):
 
 def smAddFloatProperty(obj, name, proptip, defval, paramgroup="Parameters"):
     smAddProperty(obj, "App::PropertyFloat", name, proptip, defval, paramgroup)
+
+def smAddIntProperty(obj, name, proptip, defval, paramgroup="Parameters"):
+    smAddProperty(obj, "App::PropertyInteger", name, proptip, defval, paramgroup)
 
 def smAddStringProperty(obj, name, proptip, defval, paramgroup="Parameters"):
     smAddProperty(obj, "App::PropertyString", name, proptip, defval, paramgroup)

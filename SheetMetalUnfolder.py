@@ -103,7 +103,6 @@ if __name__ == '__main__':
 """
 
 
-import os
 import sys
 import math
 import time
@@ -168,6 +167,15 @@ unfold_error = {
     -1: ("Unknown error"),
 }
 
+def debug_print(msg, addNewLine = True):
+    if addNewLine:
+        msg += "\n"
+    FreeCAD.Console.PrintLog(msg)
+
+def warn_print(msg, addNewLine = True):
+    if addNewLine:
+        msg += "\n"
+    FreeCAD.Console.PrintWarning(msg)
 
 def equal_vector(vec1, vec2, p=5):
     # compares two vectors
@@ -194,7 +202,7 @@ def sk_distance(p0, p1):
 def sanitizeSkBsp(s_name, knot_tolerance):
     # s_name = 'Sketch001'
     s = FreeCAD.ActiveDocument.getObject(s_name)
-    FreeCAD.Console.PrintWarning("check to sanitize\n")
+    warn_print("check to sanitize")
     if "Sketcher" in s.TypeId:
         FreeCAD.ActiveDocument.openTransaction("Sanitizing")
         idx_to_del = []
@@ -250,8 +258,7 @@ def sanitizeSkBsp(s_name, knot_tolerance):
         j = 0
         # print(idx_to_del)
         if len(idx_to_del) > 0:
-            FreeCAD.Console.PrintMessage("sanitizing " + s.Label)
-            FreeCAD.Console.PrintMessage("\n")
+            debug_print("sanitizing " + s.Label)
             idx_to_del.sort()
             # print(idx_to_del)
             idx_to_del.reverse()
@@ -276,7 +283,7 @@ def radial_vector(point, axis_pnt, axis):
     chord = axis_pnt.sub(point)
     norm = axis.cross(chord)
     perp = axis.cross(norm)
-    # FreeCAD.Console.PrintLog( str(chord) + ' ' + str(norm) + ' ' + str(perp)+'\n')
+    # debug_print( str(chord) + ' ' + str(norm) + ' ' + str(perp))
     # test_line = Part.makeLine(axis_pnt.add(dist_rv),axis_pnt)
     # test_line = Part.makeLine(axis_pnt.add(perp),axis_pnt)
     # test_line = Part.makeLine(point, axis_pnt)
@@ -460,7 +467,7 @@ class SheetTree(object):
             self.new_wire = new_wire
 
     def dump(self):
-        FreeCAD.Console.PrintLog("Dumping tree:" + "\n")
+        debug_print("Dumping tree:")
         print("Root node:")
         print(self.root)
         print("f_list:")
@@ -482,7 +489,7 @@ class SheetTree(object):
         self.wire_replacements = []  # list of wires to be replaced during unfold shape creation
 
         if not self.__Shape.isValid():
-            FreeCAD.Console.PrintLog("The shape is not valid!" + "\n")
+            warn_print("The shape is not valid!")
             self.error_code = 4  # Starting: invalid shape
             self.failed_face_idx = f_idx
 
@@ -516,8 +523,8 @@ class SheetTree(object):
 
         theVol = self.__Shape.Volume
         if theVol < 0.0001:
-            FreeCAD.Console.PrintLog(
-                "Shape is not a real 3D-object or to small for a metal-sheet!" + "\n"
+            warn_print(
+                "Shape is not a real 3D-object or to small for a metal-sheet!"
             )
             self.error_code = 1
             self.failed_face_idx = f_idx
@@ -525,9 +532,7 @@ class SheetTree(object):
 
         # Make a first estimate of the thickness
         estimated_thickness = theVol / (self.__Shape.Area / 2.0)
-        FreeCAD.Console.PrintLog(
-            "approximate Thickness: " + str(estimated_thickness) + "\n"
-        )
+        debug_print("approximate Thickness: " + str(estimated_thickness))
         # Measure the real thickness of the initial face:
         # Use Orientation and Axis to make a measurement vector
 
@@ -538,10 +543,8 @@ class SheetTree(object):
         # print 'the object is a face! vertices: ', len(self.__Shape.Faces[f_idx].Vertexes)
         F_type = self.__Shape.Faces[f_idx].Surface
         # FIXME: through an error, if not Plane Object
-        FreeCAD.Console.PrintLog("It is a: " + str(F_type) + "\n")
-        FreeCAD.Console.PrintLog(
-            "Orientation: " + str(self.__Shape.Faces[f_idx].Orientation) + "\n"
-        )
+        debug_print("It is a: " + str(F_type))
+        debug_print("Orientation: " + str(self.__Shape.Faces[f_idx].Orientation))
 
         # Need a point on the surface to measure the thickness.
         # Sheet edges could be sloping, so there is a danger to measure
@@ -552,7 +555,7 @@ class SheetTree(object):
             # m_vec = m_vec.add(Base.Vector(Vvec.X, Vvec.Y, Vvec.Z))
             m_vec = m_vec.add(Vvec.Point)
         mvec = m_vec.multiply(1.0 / len(self.__Shape.Faces[f_idx].Vertexes))
-        FreeCAD.Console.PrintLog("mvec: " + str(mvec) + "\n")
+        debug_print("mvec: " + str(mvec))
 
         # if hasattr(self.__Shape.Faces[f_idx].Surface,'Position'):
         # s_Posi = self.__Shape.Faces[f_idx].Surface.Position
@@ -579,9 +582,7 @@ class SheetTree(object):
         # If the 3rd parameter is True a point on a face is considered as inside
         # if not self.__Shape.isInside(measure_pos, 0.00001, True):
         if not gotValidMeasurePosition:
-            FreeCAD.Console.PrintLog(
-                "Starting measure_pos for thickness measurement is outside!\n"
-            )
+            warn_print("Starting measure_pos for thickness measurement is outside!")
             self.error_code = 2
             self.failed_face_idx = f_idx
 
@@ -599,7 +600,7 @@ class SheetTree(object):
         lostShape = self.__Shape.copy()
         lLine = Meassure_axis.common(lostShape)
         lLine = Meassure_axis.common(self.__Shape)
-        FreeCAD.Console.PrintLog("lLine number edges: " + str(len(lLine.Edges)) + "\n")
+        debug_print("lLine number edges: " + str(len(lLine.Edges)))
         measVert = Part.Vertex(measure_pos)
         for mEdge in lLine.Edges:
             if equal_vertex(mEdge.Vertexes[0], measVert) or equal_vertex(
@@ -613,12 +614,11 @@ class SheetTree(object):
         ):
             self.error_code = 3
             self.failed_face_idx = f_idx
-            FreeCAD.Console.PrintLog(
+            warn_print(
                 "estimated thickness: "
                 + str(estimated_thickness)
                 + " measured thickness: "
                 + str(self.__thickness)
-                + "\n"
             )
             Part.show(lLine, "Measurement_Thickness_trial")
 
@@ -684,7 +684,7 @@ class SheetTree(object):
                                                 )
                                                 # self.index_list.remove(i) # remove this face from the index_list
                                                 # Part.show(self.f_list[i])
-        FreeCAD.Console.PrintLog("found_indices: " + str(found_indices) + "\n")
+        debug_print("found_indices: " + str(found_indices))
 
     def is_sheet_edge_face(self, ise_edge, tree_node):  # ise_edge: IsSheetEdge_edge
         # Idea: look at properties of neighbor face
@@ -796,7 +796,7 @@ class SheetTree(object):
         return dist
 
     def divideEdgeFace(self, fIdx, ise_edge, F_vert, tree_node):
-        FreeCAD.Console.PrintLog("Sheet edge face has more than 4 edges!\n")
+        debug_print("Sheet edge face has more than 4 edges!")
         # first find out where the Sheet edge face has no edge to the opposite side of the sheet
         # There is a need to cut the face.
         # make a cut-tool perpendicular to the ise_edge
@@ -923,7 +923,7 @@ class SheetTree(object):
 
         if F_type == "<Cylinder object>":
             ePar = theEdge.parameterAt(theEdge.Vertexes[eIdx])
-            FreeCAD.Console.PrintLog("Idx: " + str(eIdx) + " ePar: " + str(ePar) + "\n")
+            debug_print("Idx: " + str(eIdx) + " ePar: " + str(ePar))
             otherPar = theEdge.parameterAt(theEdge.Vertexes[otherIdx])
             tan_vec = theEdge.tangentAt(ePar)
             if ePar < otherPar:
@@ -1069,13 +1069,12 @@ class SheetTree(object):
         newNode.thickness = self.__thickness
         newNode.innerRadius = innerRadius
 
-        FreeCAD.Console.PrintLog(
+        debug_print(
             newNode.bend_dir
             + " Face"
             + str(newNode.idx + 1)
             + " k-factor: "
             + str(newNode.k_Factor)
-            + "\n"
         )
         newNode._trans_length = (
             innerRadius + newNode.k_Factor * self.__thickness
@@ -1164,9 +1163,7 @@ class SheetTree(object):
                                 self.__Shape.Faces[face_idx]
                             )[0]
                             if math.isclose(distance, self.__thickness):
-                                FreeCAD.Console.PrintLog(
-                                    "found counter-face" + str(i + 1) + "\n"
-                                )
+                                debug_print("found counter-face" + str(i + 1))
                                 counterFaceList.append([i, distance])
                                 gotCFace = True
                             else:
@@ -1188,19 +1185,16 @@ class SheetTree(object):
                             if (
                                 counterDistance < 2 * self.__thickness
                             ):  # FIXME: small stripes are a risk!
-                                FreeCAD.Console.PrintLog(
-                                    "found counter-face" + str(i + 1) + "\n"
-                                )
+                                debug_print("found counter-face" + str(i + 1))
                                 counterFaceList.append([i, counterDistance])
                                 gotCFace = True
                             else:
                                 counter_found = False
-                                FreeCAD.Console.PrintLog(
+                                debug_print(
                                     "faceMiddle: "
                                     + str(faceMiddle)
                                     + " counterMiddle: "
                                     + str(counterMiddle)
-                                    + "\n"
                                 )
                     else:
                         # need a mean point of the face to avoid false counter faces
@@ -1219,19 +1213,16 @@ class SheetTree(object):
                         if (
                             counterDistance < 2 * self.__thickness
                         ):  # FIXME: small stripes are a risk!
-                            FreeCAD.Console.PrintLog(
-                                "found counter-face" + str(i + 1) + "\n"
-                            )
+                            debug_print("found counter-face" + str(i + 1))
                             counterFaceList.append([i, counterDistance])
                             gotCFace = True
                         else:
                             counter_found = False
-                            FreeCAD.Console.PrintLog(
+                            debug_print(
                                 "faceMiddle: "
                                 + str(faceMiddle)
                                 + " counterMiddle: "
                                 + str(counterMiddle)
-                                + "\n"
                             )
 
             if gotCFace:
@@ -1350,7 +1341,7 @@ class SheetTree(object):
             newNode.axis = s_Axis
             newNode.bendCenter = s_Center
             edge_vec = P_edge.Vertexes[0].copy().Point
-            FreeCAD.Console.PrintLog("edge_vec: " + str(edge_vec) + "\n")
+            debug_print("edge_vec: " + str(edge_vec))
 
             if P_node.node_type == "Flat":
                 dist_c = edge_vec.distanceToPlane(
@@ -1382,14 +1373,13 @@ class SheetTree(object):
                 newNode.innerRadius = self.__Shape.Faces[face_idx].Surface.Radius
             newNode.distCenter = thick_test
             # print "Face idx: ", face_idx, " bend_dir: ", newNode.bend_dir
-            FreeCAD.Console.PrintLog(
+            debug_print(
                 "Face"
                 + str(face_idx + 1)
                 + " Type: "
                 + str(newNode.node_type)
                 + " bend_dir: "
                 + str(newNode.bend_dir)
-                + "\n"
             )
 
             # calculate mean point of face:
@@ -1420,10 +1410,9 @@ class SheetTree(object):
                 newNode.error_code = 13  # Analysis: counter face not found
                 self.error_code = 13
                 self.failed_face_idx = face_idx
-                FreeCAD.Console.PrintLog(
+                warn_print(
                     "No opposite face Debugging Thickness: "
                     + str(self.__thickness)
-                    + "\n"
                 )
                 Part.show(
                     self.__Shape.Faces[face_idx], "FailedFace" + str(face_idx + 1) + "_"
@@ -1512,9 +1501,7 @@ class SheetTree(object):
             newNode.error_code = 13  # Analysis: counter face not found
             self.error_code = 13
             self.failed_face_idx = face_idx
-            FreeCAD.Console.PrintLog(
-                "No counter-face Debugging Thickness: " + str(self.__thickness) + "\n"
-            )
+            warn_print("No counter-face Debugging Thickness: " + str(self.__thickness))
             Part.show(
                 self.__Shape.Faces[face_idx], "FailedFace" + str(face_idx + 1) + "_"
             )
@@ -1554,17 +1541,13 @@ class SheetTree(object):
                         # edge_list.append(n_edge)
                         wires_edge_lists[wire_idx].append(n_edge)
             if parent_node:
-                FreeCAD.Console.PrintLog(
-                    " Parent Face" + str(parent_node.idx + 1) + "\n"
-                )
-            FreeCAD.Console.PrintLog("The list: " + str(self.index_list) + "\n")
+                debug_print(" Parent Face" + str(parent_node.idx + 1))
+            debug_print("The list: " + str(self.index_list))
             parent_node = self.make_new_face_node(
                 face_idx, parent_node, parent_edge, wires_edge_lists
             )
             # Need also the edge_list in the node!
-            FreeCAD.Console.PrintLog(
-                "The list after make_new_face_node: " + str(self.index_list) + "\n"
-            )
+            debug_print("The list after make_new_face_node: " + str(self.index_list))
 
             # in the new code, only the list of child faces will be analyzed.
             removalList = []
@@ -1591,26 +1574,19 @@ class SheetTree(object):
                         else:
                             self.Bend_analysis(child_face_idx, parent_node, edge)
                 else:
-                    FreeCAD.Console.PrintLog(
-                        "remove child from List: " + str(child_info[0]) + "\n"
-                    )
+                    debug_print("remove child from List: " + str(child_info[0]))
                     parent_node.seam_edges.append(
                         child_info[1]
                     )  # give Information to the node, that it has a seam.
-                    FreeCAD.Console.PrintLog(
-                        "node faces before: " + str(parent_node.nfIndexes) + "\n"
-                    )
+                    debug_print("node faces before: " + str(parent_node.nfIndexes))
                     # do not make Faces at a detected seam!
                     # self.makeSeamFace(child_info[1], t_node)
                     removalList.append(child_info)
-                    FreeCAD.Console.PrintLog(
-                        "node faces with seam: " + str(parent_node.nfIndexes) + "\n"
-                    )
+                    debug_print("node faces with seam: " + str(parent_node.nfIndexes))
                     otherSeamNode = self.searchNode(child_info[0], self.root)
-                    FreeCAD.Console.PrintLog(
+                    debug_print(
                         "counterface on otherSeamNode: Face"
                         + str(otherSeamNode.c_face_idx + 1)
-                        + "\n"
                     )
                     # do not make Faces at a detected seam!
                     # self.makeSeamFace(child_info[1], otherSeamNode)
@@ -1622,7 +1598,6 @@ class SheetTree(object):
                 + str(self.error_code)
                 + " at Face"
                 + str(self.failed_face_idx + 1)
-                + "\n"
             )
 
     # Check if a face is a chamfer, and handle it as a special case.
@@ -2080,7 +2055,7 @@ class SheetTree(object):
 
     def searchNode(self, theIdx, sNode):
         # search for a Node with theIdx in sNode.idx
-        FreeCAD.Console.PrintLog("my Idx: " + str(sNode.idx) + "\n")
+        debug_print("my Idx: " + str(sNode.idx))
 
         if sNode.idx == theIdx:
             return sNode
@@ -2089,7 +2064,7 @@ class SheetTree(object):
             childFaces = []
             for n_node in sNode.child_list:
                 childFaces.append(n_node.idx)
-            FreeCAD.Console.PrintLog("my children: " + str(childFaces) + "\n")
+            debug_print("my children: " + str(childFaces))
 
             for n_node in sNode.child_list:
                 nextSearch = self.searchNode(theIdx, n_node)
@@ -2097,9 +2072,9 @@ class SheetTree(object):
                     result = nextSearch
                     break
         if result is not None:
-            FreeCAD.Console.PrintLog("This is the result: " + str(result.idx) + "\n")
+            debug_print("This is the result: " + str(result.idx))
         else:
-            FreeCAD.Console.PrintLog("This is the result: None\n")
+            debug_print("This is the result: None")
 
         return result
 
@@ -2254,14 +2229,13 @@ class SheetTree(object):
 
                 if "<Ellipse object>" in eType:
                     minPar, maxPar = fEdge.ParameterRange
-                    FreeCAD.Console.PrintLog(
+                    debug_print(
                         "the Parameterrange: "
                         + str(minPar)
                         + " to "
                         + str(maxPar)
                         + " Type: "
                         + str(eType)
-                        + "\n"
                     )
 
                     # compare minimal 1/curvature with curve-lenght to decide on division
@@ -2308,9 +2282,7 @@ class SheetTree(object):
                 elif (
                     "Circle" in eType
                 ):  # FIXME need to check if circle ends are at different radii!
-                    FreeCAD.Console.PrintLog(
-                        "j: " + str(j) + " eType: " + str(eType) + "\n"
-                    )
+                    debug_print("j: " + str(j) + " eType: " + str(eType))
                     parList = fEdge.ParameterRange
                     # print "the Parameterrange: ", parList[0], " , ", parList[1], " Type: ",eType
                     # axis_line = Part.makeLine(cent, cent + axis)
@@ -2394,12 +2366,11 @@ class SheetTree(object):
                         uEdge = uCurve.toShape()
                 else:
                     # print 'unbendFace, curve type not handled: ' + str(eType) + ' in Face' + str(fIdx+1)
-                    FreeCAD.Console.PrintLog(
+                    debug_print(
                         "unbendFace, curve type not handled: "
                         + str(eType)
                         + " in Face"
                         + str(fIdx + 1)
-                        + "\n"
                     )
                     self.error_code = 26
                     self.failed_face_idx = fIdx
@@ -2428,7 +2399,7 @@ class SheetTree(object):
         if len(edgeLists) == 1:
             eList = Part.__sortEdges__(edgeLists[0])
             myWire = Part.Wire(eList)
-            FreeCAD.Console.PrintLog("len eList: " + str(len(eList)) + "\n")
+            debug_print("len eList: " + str(len(eList)))
             # Part.show(myWire, 'Wire_Face'+str(fIdx+1)+'_' )
             if (len(myWire.Vertexes) == 2) and (len(myWire.Edges) == 3):
                 # print 'got sweep condition!'
@@ -2445,14 +2416,13 @@ class SheetTree(object):
                     # theFace = Part.makeFace(myWire, 'Part::FaceMakerSimple')
                 except:
                     exc_type, exc_obj, exc_tb = sys.exc_info()
-                    FreeCAD.Console.PrintLog(
+                    warn_print(
                         "got exception at Face: "
                         + str(fIdx + 1)
                         + " len eList: "
                         + str(len(eList))
                         + " at line "
                         + str(exc_tb.tb_lineno)
-                        + "\n"
                     )
                     # for w in eList:
                     # Part.show(w, 'exceptEdge')
@@ -2463,7 +2433,7 @@ class SheetTree(object):
                     theFace = Part.makeFilledFace(thirdWireList)
                 # Part.show(theFace, 'theFace'+ str(bend_node.idx+1)+'_')
         else:
-            FreeCAD.Console.PrintLog("len edgeLists: " + str(len(edgeLists)) + "\n")
+            debug_print("len edgeLists: " + str(len(edgeLists)))
             faces = []
             wires = []
             wireNumber = 0
@@ -2719,14 +2689,14 @@ class SheetTree(object):
         """This function creates a face at a seam of the sheet metal.
         It works currently only at a flat node.
         """
-        FreeCAD.Console.PrintLog("now make a seam Face\n")
+        debug_print("now make a seam Face")
         nextVert = sEdge.Vertexes[1]
         startVert = sEdge.Vertexes[0]
         start_idx = 0
         end_idx = 1
 
         search_List = theNode.nfIndexes[:]
-        FreeCAD.Console.PrintLog("This is the search_List: " + str(search_List) + "\n")
+        debug_print("This is the search_List: " + str(search_List))
         search_List.remove(theNode.idx)
         the_index = None
         next_idx = None
@@ -2751,16 +2721,15 @@ class SheetTree(object):
 
         # find the lastEdge
         last_idx = None
-        FreeCAD.Console.PrintLog("This is the search_List: " + str(search_List) + "\n")
+        debug_print("This is the search_List: " + str(search_List))
         for i in search_List:
             # Part.show(self.f_list[i])
             for theEdge in self.f_list[i].Edges:
-                FreeCAD.Console.PrintLog(
+                debug_print(
                     "Find last Edge in Face: "
                     + str(i)
                     + " at Edge: "
                     + str(theEdge)
-                    + "\n"
                 )
                 if len(theEdge.Vertexes) > 1:
                     if equal_vertex(theEdge.Vertexes[0], startVert):
@@ -2768,7 +2737,7 @@ class SheetTree(object):
                     if equal_vertex(theEdge.Vertexes[1], startVert):
                         last_idx = 0
                     if last_idx is not None:
-                        FreeCAD.Console.PrintLog("Test for the last Edge\n")
+                        debug_print("Test for the last Edge")
                         if self.isVertOpposite(theEdge.Vertexes[last_idx], theNode):
                             lastEdge = theEdge.copy()
                             search_List.remove(i)
@@ -2853,7 +2822,7 @@ class SheetTree(object):
                 # if len(node.seam_edges)>0:
                 #  for seamEdge in node.seam_edges:
                 #    self.makeSeamFace(seamEdge, node)
-        FreeCAD.Console.PrintLog("ufo finish face" + str(node.idx + 1) + "\n")
+        debug_print("ufo finish face" + str(node.idx + 1))
         return (theShell + nodeShell, theFoldLines + nodeFoldLines)
 
     # Build a copy of the face, replacing any wire that must be replaced
@@ -2909,7 +2878,7 @@ def getUnfold(k_factor_lookup, solid, facename, kFactorStandard):
     ob_Name = solid.Name
     err_code = 0
 
-    FreeCAD.Console.PrintLog(f"name: {facename}\n ")
+    debug_print(f"name: {facename}")
     f_number = int(facename.lstrip("Face")) - 1
     face = solid.Shape.Faces[f_number]
     normalVect = face.normalAt(0, 0)
@@ -2924,7 +2893,7 @@ def getUnfold(k_factor_lookup, solid, facename, kFactorStandard):
             f_number, None
         )  # traverses the shape and builds the tree-structure
         endzeit = time.process_time()
-        FreeCAD.Console.PrintLog("Analytical time: " + str(endzeit - startzeit) + "\n")
+        debug_print("Analytical time: " + str(endzeit - startzeit))
 
         if TheTree.error_code is None:
             # TheTree.showFaces()
@@ -2933,17 +2902,13 @@ def getUnfold(k_factor_lookup, solid, facename, kFactorStandard):
             )  # traverses the tree-structure
             if TheTree.error_code is None:
                 unfoldTime = time.process_time()
-                FreeCAD.Console.PrintLog(
-                    "time to run the unfold: " + str(unfoldTime - endzeit) + "\n"
-                )
+                debug_print("time to run the unfold: " + str(unfoldTime - endzeit))
                 folds = Part.Compound(foldLines)
                 # Part.show(folds, 'Fold_Lines')
                 try:
                     newShell = Part.Shell(theFaceList)
                 except:
-                    FreeCAD.Console.PrintLog(
-                        "couldn't join some faces, show only single faces!\n"
-                    )
+                    debug_print("couldn't join some faces, show only single faces!")
                     resPart = Part.Compound(theFaceList)
                     # for newFace in theFaceList:
                     # Part.show(newFace)
@@ -2951,23 +2916,19 @@ def getUnfold(k_factor_lookup, solid, facename, kFactorStandard):
                     try:
                         TheSolid = Part.Solid(newShell)
                         solidTime = time.process_time()
-                        FreeCAD.Console.PrintLog(
+                        debug_print(
                             "Time to make the solid: "
                             + str(solidTime - unfoldTime)
-                            + "\n"
                         )
                     except:
-                        FreeCAD.Console.PrintLog(
+                        debug_print(
                             "Couldn't make a solid, show only a shell, Faces in List: "
                             + str(len(theFaceList))
-                            + "\n"
                         )
                         resPart = newShell
                         # Part.show(newShell)
                         showTime = time.process_time()
-                        FreeCAD.Console.PrintLog(
-                            "Show time: " + str(showTime - unfoldTime) + "\n"
-                        )
+                        debug_print("Show time: " + str(showTime - unfoldTime))
                     else:
                         try:
                             cleanSolid = TheSolid.removeSplitter()
@@ -2978,33 +2939,28 @@ def getUnfold(k_factor_lookup, solid, facename, kFactorStandard):
                             # Part.show(TheSolid)
                             resPart = TheSolid
                         showTime = time.process_time()
-                        FreeCAD.Console.PrintLog(
+                        debug_print(
                             "Show time: "
                             + str(showTime - solidTime)
                             + " total time: "
                             + str(showTime - startzeit)
-                            + "\n"
                         )
 
     if TheTree.error_code is not None:
         if TheTree.error_code == 1:
-            FreeCAD.Console.PrintError(
-                "Error at Face" + str(TheTree.failed_face_idx + 1) + "\n"
-            )
-            FreeCAD.Console.PrintError(
-                "Trying to repeat the unfold process again with the Sewed copied Shape\n"
-            )
+            warn_print("Error at Face" + str(TheTree.failed_face_idx + 1))
+            warn_print("Trying to repeat the unfold process again with the Sewed copied Shape")
             FreeCAD.ActiveDocument.openTransaction("sanitize")
             sewedShape = sew_Shape(solid)
             solid.Visibility = False
             ob = Part.show(sewedShape,"Solid")
             ob.Label = solid.Label + "_copy"
             if SheetMetalTools.isGuiLoaded():
-                ob.ViewObject.ShapeColor = solid.ViewObject.ShapeColor 
-                ob.ViewObject.LineColor = solid.ViewObject.LineColor 
-                ob.ViewObject.PointColor = solid.ViewObject.PointColor 
-                ob.ViewObject.DiffuseColor = solid.ViewObject.DiffuseColor 
-                ob.ViewObject.Transparency = solid.ViewObject.Transparency 
+                ob.ViewObject.ShapeColor = solid.ViewObject.ShapeColor
+                ob.ViewObject.LineColor = solid.ViewObject.LineColor
+                ob.ViewObject.PointColor = solid.ViewObject.PointColor
+                ob.ViewObject.DiffuseColor = solid.ViewObject.DiffuseColor
+                ob.ViewObject.Transparency = solid.ViewObject.Transparency
             FreeCAD.ActiveDocument.commitTransaction()
             ob = FreeCAD.ActiveDocument.ActiveObject
             ob_Name = ob.Name
@@ -3012,18 +2968,17 @@ def getUnfold(k_factor_lookup, solid, facename, kFactorStandard):
             faceSel = facename
             err_code = TheTree.error_code
         else:
-            FreeCAD.Console.PrintError(
+            warn_print(
                 "Error "
                 + unfold_error[TheTree.error_code]
                 + " at Face"
                 + str(TheTree.failed_face_idx + 1)
-                + "\n"
             )
     else:
-        FreeCAD.Console.PrintLog("Unfold successful\n")
+        debug_print("Unfold successful")
 
     endzeit = time.process_time()
-    # FreeCAD.Console.PrintMessage("Analytical time: " + str(endzeit - startzeit) + "\n")
+    # debug_print("Analytical time: " + str(endzeit - startzeit))
     return resPart, folds, normalVect, theName, err_code, faceSel, ob_Name
 
 
@@ -3068,150 +3023,117 @@ def SMmakeSketchfromEdges(edges, name):
     return usk
 
 
-def processUnfold(
-    k_factor_lookup,
-    obj,
-    faceName,
-    genSketch=True,
+def getUnfoldSketches(
+    shape,
+    foldLines,
+    norm,
+    existingSketches,
     splitSketches=False,
     sketchColor="#000080",
     bendSketchColor="#c00000",
-    internalSketchColor="#ff5733",
-    transparency=0.7,
-    kFactorStandard="ansi",
+    internalSketchColor="#ff5733",        
 ):
-    global KFACTORSTANDARD
-    KFACTORSTANDARD = kFactorStandard
-
-    unfoldShape = None
     unfold_sketch = None
+
+    # locate the projection face
+    unfoldobj = shape
+    for face in shape.Faces:
+        fnorm = face.normalAt(0, 0)
+        isSameDir = abs(fnorm.dot(norm) - 1.0) < 0.00001
+        if isSameDir:
+            unfoldobj = face
+            break
+    edges = []
+    perimEdges = projectEx(unfoldobj, norm)[0]
+    edges.append(perimEdges)
+    if len(foldLines) > 0:
+        co = Part.makeCompound(foldLines)
+        foldEdges = projectEx(co, norm)[0]
+
+        if not splitSketches:
+            edges.append(foldEdges)
+    unfold_sketch = generateSketch(edges, "Unfold_Sketch", sketchColor, existingSketches)
+    sketches = [unfold_sketch]
+    if not splitSketches:
+        return sketches
+
     unfold_sketch_outline = None
     unfold_sketch_bend = None
     unfold_sketch_internal = None
+    tidy = False
+    newface = Part.makeFace(unfold_sketch.Shape, "Part::FaceMakerBullseye")
 
     try:
-        shape, foldComp, norm, _thename, _err_cd, _fSel, _obN = getUnfold(
-            k_factor_lookup, obj, faceName, kFactorStandard
-        )
-        foldLines = foldComp.Edges
-    except Exception as e:
+        owEdgs = newface.OuterWire.Edges
+        faceEdgs = newface.Edges
+    except:
         _exc_type, _exc_obj, exc_tb = sys.exc_info()
         SMLogger.error(
-            FreeCAD.Qt.translate("Logger", "exception at line ")
-            + str(exc_tb.tb_lineno),
-            e.args,
+            FreeCAD.Qt.translate(
+                "Logger",
+                "Exception at line {}"
+                ": Outline Sketch failed, re-trying after tidying up",
+            ).format(str(exc_tb.tb_lineno))
         )
-        SMLogger.error(e.args)
-        raise UnfoldException()
+        tidy = True
+        owEdgs = unfold_sketch.Shape.Edges
+        faceEdgs = unfold_sketch.Shape.Edges
 
-    if shape is None:
-        raise UnfoldException()
-
-    unfoldShape = FreeCAD.ActiveDocument.addObject("Part::Feature", "Unfold")
-    unfoldShape.Shape = shape
-
-    if genSketch:
-        # locate the projection face
-        unfoldobj = shape
-        for face in shape.Faces:
-            fnorm = face.normalAt(0, 0)
-            isSameDir = abs(fnorm.dot(norm) - 1.0) < 0.00001
-            if isSameDir:
-                unfoldobj = face
-                break
-        edges = []
-        perimEdges = projectEx(unfoldobj, norm)[0]
-        edges.append(perimEdges)
-        if len(foldLines) > 0:
-            co = Part.makeCompound(foldLines)
-            foldEdges = projectEx(co, norm)[0]
-
-            if not splitSketches:
-                edges.append(foldEdges)
-        unfold_sketch = generateSketch(edges, "Unfold_Sketch", sketchColor)
-        FreeCAD.ActiveDocument.recompute()
-
-        if splitSketches:
-            tidy = False
-            try:
-                newface = Part.makeFace(unfold_sketch.Shape, "Part::FaceMakerBullseye")
-
-                try:
-                    owEdgs = newface.OuterWire.Edges
-                    faceEdgs = newface.Edges
-                except:
-                    _exc_type, _exc_obj, exc_tb = sys.exc_info()
-                    SMLogger.error(
-                        FreeCAD.Qt.translate(
-                            "Logger",
-                            "Exception at line {}"
-                            ": Outline Sketch failed, re-trying after tidying up",
-                        ).format(str(exc_tb.tb_lineno))
-                    )
-                    tidy = True
-                    owEdgs = unfold_sketch.Shape.Edges
-                    faceEdgs = unfold_sketch.Shape.Edges
-                    FreeCAD.ActiveDocument.recompute()
-
-                unfold_sketch_outline = generateSketch(
-                    owEdgs, "Unfold_Sketch_Outline", sketchColor
-                )
-
-                if tidy:
-                    SMLogger.error(
-                        FreeCAD.Qt.translate(
-                            "Logger", "tidying up Unfold_Sketch_Outline"
-                        )
-                    )
-                intEdgs = []
-                idx = []
-                for i, e in enumerate(faceEdgs):
-                    for oe in owEdgs:
-                        if oe.hashCode() == e.hashCode():
-                            idx.append(i)
-                for i, e in enumerate(faceEdgs):
-                    if i not in idx:
-                        intEdgs.append(e)
-                if len(intEdgs) > 0:
-                    unfold_sketch_internal = generateSketch(
-                        intEdgs, "Unfold_Sketch_Internal", internalSketchColor
-                    )
-
-            except Exception as e:
-                print(e)
-                exc_type, exc_obj, exc_tb = sys.exc_info()
-                SMLogger.error(
-                    FreeCAD.Qt.translate(
-                        "Logger",
-                        "Exception at line {}: Outline Sketch not created",
-                    ).format(str(exc_tb.tb_lineno))
-                )
-
-        if len(foldLines) > 0 and splitSketches:
-            unfold_sketch_bend = generateSketch(
-                foldEdges, "Unfold_Sketch_bends", bendSketchColor
-            )
-
-    if FreeCAD.GuiUp:
-        unfoldShape.ViewObject.Transparency = transparency
-
-    return (
-        unfoldShape,
-        unfold_sketch,
-        unfold_sketch_outline,
-        unfold_sketch_bend,
-        unfold_sketch_internal,
+    unfold_sketch_outline = generateSketch(
+        owEdgs, "Unfold_Sketch_Outline", sketchColor, existingSketches
     )
+    sketches.append(unfold_sketch_outline)
+
+    if tidy:
+        SMLogger.error(
+            FreeCAD.Qt.translate(
+                "Logger", "tidying up Unfold_Sketch_Outline"
+            )
+        )
+    intEdgs = []
+    idx = []
+    for i, e in enumerate(faceEdgs):
+        for oe in owEdgs:
+            if oe.hashCode() == e.hashCode():
+                idx.append(i)
+    for i, e in enumerate(faceEdgs):
+        if i not in idx:
+            intEdgs.append(e)
+    if len(intEdgs) > 0:
+        unfold_sketch_internal = generateSketch(
+            intEdgs, "Unfold_Sketch_Internal", internalSketchColor, existingSketches
+        )
+        sketches.append(unfold_sketch_internal)
+
+    if len(foldLines) > 0 and splitSketches:
+        unfold_sketch_bend = generateSketch(
+            foldEdges, "Unfold_Sketch_bends", bendSketchColor, existingSketches
+        )
+        sketches.append(unfold_sketch_bend)
+
+    return sketches
 
 
-def generateSketch(edges, name, color):
+def generateSketch(edges, name, color, existingSketches = None):
     p = Part.makeCompound(edges)
+    doc = FreeCAD.ActiveDocument
+    # See if there is an existing sketch with the same name and use it insted of creating
+    if existingSketches is None:
+        existingSketchName = ""
+    else:
+        existingSketchName =  next((item for item in existingSketches if item.startswith(name)), "")
+    existingSketch = doc.getObject(existingSketchName)
+    if existingSketch is not None:
+        existingSketch.deleteAllGeometry()
+
     try:
         sk = Draft.makeSketch(
-            p.Edges, autoconstraints=True, addTo=None, delete=False, name=name
+            p.Edges, autoconstraints=True, addTo=existingSketch, delete=False, name=name
         )
-        sk.Label = name
+        if existingSketch is None:
+            sk.Label = name
     except:
+        print("====> alternate sketch method")
         doc = FreeCAD.ActiveDocument
         skb = doc.ActiveObject
         doc.removeObject(skb.Name)
@@ -3223,4 +3145,5 @@ def generateSketch(edges, name, color):
         sk.ViewObject.LineColor = rgb_color
         sk.ViewObject.PointColor = rgb_color
 
+    sk.recompute()
     return sk

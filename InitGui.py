@@ -73,6 +73,7 @@ class SMWorkbench(Workbench):
             "SheetMetal_Extrude",
             "SheetMetal_AddFoldWall",
             "SheetMetal_Unfold",
+            "SheetMetal_UnfoldUpdate",
             "SheetMetal_AddCornerRelief",
             "SheetMetal_AddRelief",
             "SheetMetal_AddJunction",
