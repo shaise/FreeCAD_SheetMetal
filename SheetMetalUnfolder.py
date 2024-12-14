@@ -3000,11 +3000,11 @@ def getUnfold(k_factor_lookup, solid, facename, kFactorStandard):
             ob = Part.show(sewedShape,"Solid")
             ob.Label = solid.Label + "_copy"
             if SheetMetalTools.isGuiLoaded():
-                ob.ViewObject.ShapeColor = solid.ViewObject.ShapeColor 
-                ob.ViewObject.LineColor = solid.ViewObject.LineColor 
-                ob.ViewObject.PointColor = solid.ViewObject.PointColor 
-                ob.ViewObject.DiffuseColor = solid.ViewObject.DiffuseColor 
-                ob.ViewObject.Transparency = solid.ViewObject.Transparency 
+                ob.ViewObject.ShapeColor = solid.ViewObject.ShapeColor
+                ob.ViewObject.LineColor = solid.ViewObject.LineColor
+                ob.ViewObject.PointColor = solid.ViewObject.PointColor
+                ob.ViewObject.DiffuseColor = solid.ViewObject.DiffuseColor
+                ob.ViewObject.Transparency = solid.ViewObject.Transparency
             FreeCAD.ActiveDocument.commitTransaction()
             ob = FreeCAD.ActiveDocument.ActiveObject
             ob_Name = ob.Name
@@ -3083,7 +3083,6 @@ def processUnfold(
     global KFACTORSTANDARD
     KFACTORSTANDARD = kFactorStandard
 
-    unfoldShape = None
     unfold_sketch = None
     unfold_sketch_outline = None
     unfold_sketch_bend = None
@@ -3107,8 +3106,8 @@ def processUnfold(
     if shape is None:
         raise UnfoldException()
 
-    unfoldShape = FreeCAD.ActiveDocument.addObject("Part::Feature", "Unfold")
-    unfoldShape.Shape = shape
+    # unfoldShape = FreeCAD.ActiveDocument.addObject("Part::Feature", "Unfold")
+    # unfoldShape.Shape = shape
 
     if genSketch:
         # locate the projection face
@@ -3192,11 +3191,11 @@ def processUnfold(
                 foldEdges, "Unfold_Sketch_bends", bendSketchColor
             )
 
-    if FreeCAD.GuiUp:
-        unfoldShape.ViewObject.Transparency = transparency
+    # if FreeCAD.GuiUp:
+    #     unfoldShape.ViewObject.Transparency = transparency
 
     return (
-        unfoldShape,
+        shape,
         unfold_sketch,
         unfold_sketch_outline,
         unfold_sketch_bend,

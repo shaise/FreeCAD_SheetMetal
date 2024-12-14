@@ -220,6 +220,16 @@ if isGuiLoaded():
         if callback is not None:
             callback(value)
 
+    def _taskUpdateColor(formvar, obj, objvar, callback):
+        value = formvar.property("color").name()
+        setattr(obj, objvar, value)
+        try:  # avoid intermitant changes
+            obj.recompute()
+        except:
+            pass
+        if callback is not None:
+            callback(value)
+
     def _taskEditFinished(obj):
         obj.Document.recompute()
 
@@ -229,23 +239,32 @@ if isGuiLoaded():
             obj.recompute()
         return getattr(obj, objvar)
     
-    def taskConnectSpin(task, formvar, objvar, callback = None):
-        formvar.setProperty("value", _getVarValue(task.obj, objvar))
-        Gui.ExpressionBinding(formvar).bind(task.obj, objvar)
-        formvar.valueChanged.connect(lambda value: _taskUpdateValue(value, task.obj, objvar, callback))
-        formvar.editingFinished.connect(lambda: _taskEditFinished(task.obj))
+    def taskConnectSpin(task, formvar, objvar, callback = None, customObj = None):
+        obj = task.obj if customObj is None else customObj
+        formvar.setProperty("value", _getVarValue(obj, objvar))
+        if customObj is None:
+            Gui.ExpressionBinding(formvar).bind(obj, objvar)
+        formvar.valueChanged.connect(lambda value: _taskUpdateValue(value, obj, objvar, callback))
+        formvar.editingFinished.connect(lambda: _taskEditFinished(obj))
 
-    def taskConnectCheck(task, formvar, objvar, callback = None):
-        formvar.setChecked(_getVarValue(task.obj, objvar))
+    def taskConnectCheck(task, formvar, objvar, callback = None, customObj = None):
+        obj = task.obj if customObj is None else customObj
+        formvar.setChecked(_getVarValue(obj, objvar))
         if callback is not None:
             callback(formvar.isChecked())
-        formvar.toggled.connect(lambda value: _taskUpdateValue(value, task.obj, objvar, callback))
+        formvar.toggled.connect(lambda value: _taskUpdateValue(value, obj, objvar, callback))
 
-    def taskConnectEnum(task, formvar, objvar, callback = None):
-        val = _getVarValue(task.obj, objvar)
-        enumlist = task.obj.getEnumerationsOfProperty(objvar)
+    def taskConnectEnum(task, formvar, objvar, callback = None, customObj = None, customList = None):
+        obj = task.obj if customObj is None else customObj
+        val = _getVarValue(obj, objvar)
+        enumlist = task.obj.getEnumerationsOfProperty(objvar) if customList is None else customList
         formvar.setProperty("currentIndex", enumlist.index(val))
-        formvar.currentIndexChanged.connect(lambda value: _taskUpdateValue(value, task.obj, objvar, callback))
+        formvar.currentIndexChanged.connect(lambda value: _taskUpdateValue(value, obj, objvar, callback))
+
+    def taskConnectColor(task, formvar, objvar, callback = None, customObj = None):
+        obj = task.obj if customObj is None else customObj
+        formvar.setProperty("color", _getVarValue(obj, objvar))
+        formvar.changed.connect(lambda: _taskUpdateColor(formvar, obj, objvar, callback))
 
     def taskAccept(task, addRemoveButton = None):
         if addRemoveButton is not None and addRemoveButton.isChecked():
@@ -560,6 +579,9 @@ def smAddAngleProperty(obj, name, proptip, defval, paramgroup="Parameters"):
 
 def smAddFloatProperty(obj, name, proptip, defval, paramgroup="Parameters"):
     smAddProperty(obj, "App::PropertyFloat", name, proptip, defval, paramgroup)
+
+def smAddIntProperty(obj, name, proptip, defval, paramgroup="Parameters"):
+    smAddProperty(obj, "App::PropertyInteger", name, proptip, defval, paramgroup)
 
 def smAddStringProperty(obj, name, proptip, defval, paramgroup="Parameters"):
     smAddProperty(obj, "App::PropertyString", name, proptip, defval, paramgroup)

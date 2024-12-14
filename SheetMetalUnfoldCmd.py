@@ -58,12 +58,13 @@ smElementMapVersion = "sm1."
 # list of properties to be saved as defaults
 smUnfoldDefaultVars = [
     "KFactorStandard", 
-    "UseManualKFactor"
+    "UseManualKFactor",
+    "UnfoldTransparency"
 ]
 smUnfoldNonSavedDefaultVars = [
     "GenerateSketch",
     "SketchColor",
-    "OutlineColor",
+    "InternalColor",
     "BendLineColor"
 ]
 
@@ -122,38 +123,84 @@ class SMUnfold:
                       "Enable manually defining K-Factor value, otherwise the lookup table is used"),
             False,
         )
+        SheetMetalTools.smAddBoolProperty(
+            obj,
+            "GenerateSketch",
+            translate("App::Property", 
+                      "Generate unfold sketch"),
+            False,
+        )
+        SheetMetalTools.smAddBoolProperty(
+            obj,
+            "SeparateSketchLayers",
+            translate("App::Property", 
+                      "Generate seperate unfold sketches for outline, innerlines and bend lines"),
+            False,
+        )
+        SheetMetalTools.smAddIntProperty(
+            obj,
+            "UnfoldTransparency",
+            translate("App::Property", "Unfold object transparency"),
+            50
+        )
         SheetMetalTools.smAddProperty(
             obj,
-            "Part::PropertyPartShape",
-            "FoldComp",
-            translate("App::Property", "Fold lines compound"),
+            "App::PropertyStringList",
+            "UnfoldSketchs",
+            translate("App::Property", "Generated sketchs"),
             None,
             "Hidden",
         )
         # setup non-saved properties
         self.GenerateSketch = False
         self.SketchColor = GENSKETCHCOLOR
-        self.OutlineColor = OUTLINESKETCHCOLOR
+        self.InternalColor = OUTLINESKETCHCOLOR
         self.BendLineColor = BENDLINESKETCHCOLOR
         SheetMetalTools.taskRestoreDefaults(self, smUnfoldNonSavedDefaultVars)
 
     def getElementMapVersion(self, _fp, ver, _prop, restored):
         if not restored:
             return smElementMapVersion + ver
+        
+    def onChanged(self, obj, prop):
+        print("====>", obj, "/", prop)
 
     def execute(self, fp):
         '''"Print a short message when doing a recomputation, this method is mandatory"'''
-        kf_lookup = {1: fp.KFactor}
+        kFactorTable = {1: fp.KFactor}
         if fp.MaterialSheet and fp.UseManualKFactor:
             lookupTable = SheetMetalKfactor.KFactorLookupTable(fp.MaterialSheet)
-            kf_lookup = lookupTable.k_factor_lookup
-        shape, foldComp, _norm, _name, _err_cd, _fSel, _obN = SheetMetalUnfolder.getUnfold(
-            k_factor_lookup=kf_lookup,
-            solid=fp.baseObject[0],
-            facename=fp.baseObject[1][0],
-            kFactorStandard=fp.KFactorStandard)
-        fp.Shape = shape
-        fp.FoldComp = foldComp
+            kFactorTable = lookupTable.k_factor_lookup
+        # shape, foldComp, _norm, _name, _err_cd, _fSel, _obN = SheetMetalUnfolder.getUnfold(
+        #     k_factor_lookup=kf_lookup,
+        #     solid=fp.baseObject[0],
+        #     facename=fp.baseObject[1][0],
+        #     kFactorStandard=fp.KFactorStandard)
+        for prop in fp.UnfoldSketchs:
+            item = fp.Document.getObject(prop)
+            if item is not None:
+                print ("===>",item.FullName)
+                fp.Document.removeObject(item.Name)
+
+        unfoldResult = SheetMetalUnfolder.processUnfold(
+            kFactorTable,
+            obj=fp.baseObject[0],
+            faceName=fp.baseObject[1][0],
+            genSketch=fp.GenerateSketch,
+            splitSketches=fp.SeparateSketchLayers,
+            sketchColor=fp.Proxy.SketchColor,
+            bendSketchColor=fp.Proxy.InternalColor,
+            internalSketchColor=fp.Proxy.BendLineColor,
+            transparency=fp.UnfoldTransparency,
+            kFactorStandard=fp.KFactorStandard,
+        )
+     
+        fp.Shape = unfoldResult[0]
+        sketchList = []
+        for sketch in unfoldResult[1:]:
+            if sketch is not None:
+                sketchList.append(sketch.Name)
+        fp.UnfoldSketchs = sketchList
 
 
 
@@ -180,8 +227,10 @@ if SheetMetalTools.isGuiLoaded():
         
         def claimChildren(self):
             objs = []
-            if hasattr(self, "Object") and hasattr(self.Object, "BendSketch"):
-                objs.append(self.Object.BendSketch)
+            o = self.Object
+            # for item in [o.UnfoldSketch, o.UnfoldSketchOutline, o.UnfoldSketchInternal, o.UnfoldSketchBends]:
+            #     if item is not None:
+            #         objs.append(item)
             return objs
 
         def getTaskPanel(self, obj):
@@ -240,22 +289,10 @@ if SheetMetalTools.isGuiLoaded():
                     return i
             return -1
 
-        def _getData(self):
-            kFactorStandard = "din" if self.form.kfactorDin.isChecked() else "ansi"
-
-            results = {
-                "exportType": self._getExportType(),
-                "genObjTransparency": self.form.transSpin.value(),
-                "genSketchColor": self.form.genColor.property("color").name(),
-                "bendSketchColor": self.form.bendColor.property("color").name(),
-                "intSketchColor": self.form.internalColor.property("color").name(),
-                "separateSketches": self.form.chkSeparate.isChecked(),
-                "genSketch": self.form.chkSketch.isChecked(),
-                "kFactorStandard": kFactorStandard,
-            }
-
+        def getKFactorTable(self):
+            result = None
             if self._isManualKSelected():
-                results["lookupTable"] = {1: self.form.kFactSpin.value()}
+                result = {1: self.form.kFactSpin.value()}
             elif self._isNoMdsSelected():
                 msg = FreeCAD.Qt.translate(
                     "Logger", "Unfold operation needs to know K-factor value(s) to be used."
@@ -269,38 +306,26 @@ if SheetMetalTools.isGuiLoaded():
                     "</ol>",
                 ).format(mds_help_url)
                 SheetMetalTools.smWarnDialog(msg)
-                return None
             else:
                 lookupTable = SheetMetalKfactor.KFactorLookupTable(
                     self.form.availableMds.currentText()
                 )
-                results["lookupTable"] = lookupTable.k_factor_lookup
-
-            return results
+                result = lookupTable.k_factor_lookup
+            return result
 
         def setupUi(self):
-            kFactorStandard = self.pg.GetString("kFactorStandard", "ansi")
-            if kFactorStandard == "ansi":
-                self.form.kfactorAnsi.setChecked(True)
-            else:
-                self.form.kfactorDin.setChecked(True)
+            self.form.kfactorAnsi.setChecked(self.obj.KFactorStandard == "ansi")
+            self.form.kfactorDin.setChecked(self.obj.KFactorStandard == "din")
+            self.SketchColor = GENSKETCHCOLOR
+            self.InternalColor = OUTLINESKETCHCOLOR
+            self.BendLineColor = BENDLINESKETCHCOLOR
+            SheetMetalTools.taskConnectColor(self, self.form.genColor, "SketchColor", customObj = self.obj.Proxy)
+            SheetMetalTools.taskConnectColor(self, self.form.bendColor, "BendLineColor", customObj = self.obj.Proxy)
+            SheetMetalTools.taskConnectColor(self, self.form.internalColor, "InternalColor", customObj = self.obj.Proxy)
+            SheetMetalTools.taskConnectCheck(self, self.form.chkSketch, "GenerateSketch", self.chkSketchChange)
+            SheetMetalTools.taskConnectCheck(self, self.form.chkSeparate, "SeparateSketchLayers", self.chkSketchChange)
 
-            self.form.chkSketch.stateChanged.connect(self.chkSketchChange)
-            self.form.chkSeparate.stateChanged.connect(self.chkSketchChange)
             self.form.availableMds.currentIndexChanged.connect(self.availableMdsChacnge)
-
-            self.form.chkSeparate.setChecked(self.pg.GetBool("separateSketches"))
-            self.form.chkSketch.setChecked(self.pg.GetBool("genSketch"))
-
-            self.form.genColor.setProperty(
-                "color", self.pg.GetString("genColor", GENSKETCHCOLOR)
-            )
-            self.form.bendColor.setProperty(
-                "color", self.pg.GetString("bendColor", OUTLINESKETCHCOLOR)
-            )
-            self.form.internalColor.setProperty(
-                "color", self.pg.GetString("internalColor", BENDLINESKETCHCOLOR)
-            )
 
             self.form.transSpin.setValue(self.pg.GetInt("genObjTransparency", 50))
             self.form.kFactSpin.setValue(self.pg.GetFloat("manualKFactor", KFACTOR))
@@ -313,7 +338,6 @@ if SheetMetalTools.isGuiLoaded():
             else:
                 self.form.svgExport.setChecked(True)
 
-            self.chkSketchChange()
             self.populateMdsList()
             self.availableMdsChacnge()
 
@@ -321,57 +345,60 @@ if SheetMetalTools.isGuiLoaded():
             FreeCAD.ActiveDocument.openTransaction("Unfold")
 
         def accept(self):
-            self._updateSelectedMds()
-            params = self._getData()
-            if params is None:
-                return
+            SheetMetalTools.taskAccept(self)
+            SheetMetalTools.taskSaveDefaults(self.obj, smUnfoldDefaultVars)
+            SheetMetalTools.taskSaveDefaults(self.obj.Proxy, smUnfoldNonSavedDefaultVars)
+            # self._updateSelectedMds()
+            # kFactorTable = self.getKFactorTable()
+            # if kFactorTable is None:
+            #     return
+            # try:
+            #     solid, faces = self.obj.baseObject
+            #     proxy = self.obj.Proxy
+            #     print(self.obj.UnfoldTransparency)
+            #     result = SheetMetalUnfolder.processUnfold(
+            #         kFactorTable,
+            #         solid,
+            #         faces[0],
+            #         genSketch=self.form.chkSketch.isChecked(),
+            #         splitSketches=self.form.chkSeparate.isChecked(),
+            #         sketchColor=proxy.SketchColor,
+            #         bendSketchColor=proxy.InternalColor,
+            #         internalSketchColor=proxy.BendLineColor,
+            #         transparency=self.obj.UnfoldTransparency,
+            #         kFactorStandard=self.obj.KFactorStandard,
+            #     )
+            #     if result:
+            #         self.doExport(result[1])
 
-            try:
-                solid, faces = self.obj.baseObject
-                proxy = self.obj.Proxy
-                result = SheetMetalUnfolder.processUnfold(
-                    params["lookupTable"],
-                    solid,
-                    faces[0],
-                    genSketch=self.form.chkSketch.isChecked(),
-                    splitSketches=self.form.chkSeparate.isChecked(),
-                    sketchColor=proxy.SketchColor,
-                    bendSketchColor=proxy.OutlineColor,
-                    internalSketchColor=proxy.BendLineColor,
-                    transparency=params["genObjTransparency"],
-                    kFactorStandard=self.obj.KFactorStandard,
-                )
-                if result:
-                    self.doExport(result[1])
+            #         FreeCAD.ActiveDocument.commitTransaction()
+            #         Gui.ActiveDocument.resetEdit()
+            #         Gui.Control.closeDialog()
+            #         FreeCAD.ActiveDocument.recompute()
+            #     else:
+            #         FreeCAD.ActiveDocument.abortTransaction()
+            #         Gui.Control.closeDialog()
+            #         FreeCAD.ActiveDocument.recompute()
 
-                    FreeCAD.ActiveDocument.commitTransaction()
-                    Gui.ActiveDocument.resetEdit()
-                    Gui.Control.closeDialog()
-                    FreeCAD.ActiveDocument.recompute()
-                else:
-                    FreeCAD.ActiveDocument.abortTransaction()
-                    Gui.Control.closeDialog()
-                    FreeCAD.ActiveDocument.recompute()
+            # except UnfoldException:
+            #     msg = (
+            #         FreeCAD.Qt.translate(
+            #             "QMessageBox",
+            #             "Unfold is failing.\n"
+            #             "Please try to select a different face to unfold your object\n\n"
+            #             "If the opposite face also fails then switch Refine to false on feature ",
+            #         )
+            #         + Gui.Selection.getSelection()[0].Name
+            #     )
+            #     QtGui.QMessageBox.question(
+            #         None,
+            #         FreeCAD.Qt.translate("QMessageBox", "Warning"),
+            #         msg,
+            #         QtGui.QMessageBox.Ok,
+            #     )
 
-            except UnfoldException:
-                msg = (
-                    FreeCAD.Qt.translate(
-                        "QMessageBox",
-                        "Unfold is failing.\n"
-                        "Please try to select a different face to unfold your object\n\n"
-                        "If the opposite face also fails then switch Refine to false on feature ",
-                    )
-                    + Gui.Selection.getSelection()[0].Name
-                )
-                QtGui.QMessageBox.question(
-                    None,
-                    FreeCAD.Qt.translate("QMessageBox", "Warning"),
-                    msg,
-                    QtGui.QMessageBox.Ok,
-                )
-
-            except Exception as e:
-                raise e
+            # except Exception as e:
+            #     raise e
 
         def reject(self):
             FreeCAD.ActiveDocument.abortTransaction()
@@ -424,7 +451,7 @@ if SheetMetalTools.isGuiLoaded():
             elif len(sheetnames) == 0:
                 self.form.availableMds.setCurrentIndex(1)
 
-        def chkSketchChange(self):
+        def chkSketchChange(self, _value):
             self.form.chkSeparate.setEnabled(self.form.chkSketch.isChecked())
             if self.form.chkSketch.isChecked():
                 self.form.dxfExport.show()
