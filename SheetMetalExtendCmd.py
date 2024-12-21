@@ -23,8 +23,12 @@
 #
 ###################################################################################
 
-import FreeCAD, Part, math, os, SheetMetalTools
+import math
+import os
+import FreeCAD
+import Part
 from FreeCAD import Base
+import SheetMetalTools
 
 # IMPORTANT: please remember to change the element map version in case of any
 # changes in modeling logic
@@ -57,20 +61,6 @@ def smMakeFace(edge, dir, extLen, gap1=0.0, gap2=0.0, angle1=0.0, angle2=0.0, op
     if hasattr(face, "mapShapes"):
         face.mapShapes([(edge, face)], None, op)
     return face
-
-
-def smFace(selItem, obj):
-    # find face if Edge Selected
-    if type(selItem) == Part.Edge:
-        Facelist = obj.ancestorsOfType(selItem, Part.Face)
-        if Facelist[0].Area < Facelist[1].Area:
-            selFace = Facelist[0]
-        else:
-            selFace = Facelist[1]
-    elif type(selItem) == Part.Face:
-        selFace = selItem
-    return selFace
-
 
 def smTouchFace(Face, obj, thk):
     # find face Modified During loop
@@ -175,10 +165,11 @@ def smExtrude(
     finalShape = selObject
     for selFaceName in selFaceNames:
         selItem = selObject.getElement(SheetMetalTools.getElementFromTNP(selFaceName))
-        selFace = smFace(selItem, selObject)
+        selFace = SheetMetalTools.smGetFaceByEdge(selItem, selObject)
 
         # find the narrow edge
-        thk = 999999.0
+        thk = 999999.
+        thkEdge = None
         for edge in selFace.Edges:
             if abs(edge.Length) < thk:
                 thk = abs(edge.Length)
@@ -253,6 +244,7 @@ def smExtrude(
             overlap_solid = wallSolid.common(SplitSolid2)
             # Part.show(overlap_solid, "overlap_solid")
 
+            overlap_solidlist = []
             if overlap_solid.Faces:
                 substract_face = smTouchFace(wallSolid, SplitSolid2, thk)
                 # Part.show(substract_face, "substract_face")

@@ -196,19 +196,6 @@ def smRestrict(var, fromVal, toVal):
     return var
 
 
-def smFace(selItem, obj):
-    # find face, if Edge Selected
-    if type(selItem) == Part.Edge:
-        Facelist = obj.ancestorsOfType(selItem, Part.Face)
-        if Facelist[0].Area < Facelist[1].Area:
-            selFace = Facelist[0]
-        else:
-            selFace = Facelist[1]
-    elif type(selItem) == Part.Face:
-        selFace = selItem
-    return selFace
-
-
 def smModifiedFace(Face, obj):
     # find face Modified During loop
     for face in obj.Faces:
@@ -217,15 +204,6 @@ def smModifiedFace(Face, obj):
             if face.Area == face_common.Faces[0].Area:
                 break
     return face
-
-
-def smGetEdge(Face, obj):
-    # find Edges that overlap
-    for edge in obj.Edges:
-        face_common = edge.common(Face)
-        if face_common.Edges:
-            break
-    return edge
 
 
 def LineAngle(edge1, edge2):
@@ -306,6 +284,7 @@ def getCornerPoint(edge1, edge2):
     e2 = edge2.Curve.toShape()
     # Part.show(e2,'e2')
     section = e1.section(e2)
+    cornerPoint = None
     if section.Vertexes:
         # Part.show(section,'section')
         cornerPoint = section.Vertexes[0].Point
@@ -426,7 +405,7 @@ def check_parallel(edge1, edge2):
 
 def sheet_thk(MainObject, selFaceName):
     selItem = MainObject.getElement(SheetMetalTools.getElementFromTNP(selFaceName))
-    selFace = smFace(selItem, MainObject)
+    selFace = SheetMetalTools.smGetFaceByEdge(selItem, MainObject)
     # find the narrow edge
     thk = 999999.0
     thkDir = None
@@ -480,7 +459,7 @@ def smEdge(selFaceName, MainObject):
     elif type(selItem) == Part.Edge:
         thk, thkDir = sheet_thk(MainObject, selFaceName)
         seledge = selItem
-        selFace = smFace(selItem, MainObject)
+        selFace = SheetMetalTools.smGetFaceByEdge(selItem, MainObject)
         p1 = seledge.valueAt(seledge.FirstParameter)
         p2 = seledge.valueAt(seledge.LastParameter)
         revAxisV = p2 - p1
@@ -774,6 +753,8 @@ def smMiter(
                         # Part.show(tranfacelist[j],'tranfacelist')
                         # Part.show(tranfacelist[i],'tranfacelist')
                         # Part.show(wallface_common,'wallface_common')
+                        vp1 = None
+                        vp2 = None
                         if wallface_common.Edges:
                             vp1 = wallface_common.Vertexes[0].Point
                             vp2 = wallface_common.Vertexes[1].Point
@@ -918,6 +899,7 @@ def smBend(
             pass
 
     # Add Bend Type details
+    inside = False
     if BendType == "Material Outside":
         offset = 0.0
         inside = False
@@ -945,6 +927,7 @@ def smBend(
     elif LengthSpec == "Outer Sharp":
         extLen -= (bendR + thk) / math.tan(math.radians(90.0 - bendA / 2))
 
+    nogaptrimedgelist = []
     if not (sketches):
         mainlist, trimedgelist, nogaptrimedgelist = getBendetail(
             selFaceNames, MainObject, bendR, bendA, flipped, offset, gap1, gap2
@@ -980,7 +963,7 @@ def smBend(
             gap2List,
             extend1List,
             extend2List,
-            reliefDList,
+            _reliefDList,
         ) = ([0.0], [0.0], [gap1], [gap2], [extend1], [extend2], [reliefD])
     agap1, agap2 = gap1, gap2
     # print([agap1,agap1])
@@ -1011,7 +994,7 @@ def smBend(
         Cface = smModifiedFace(Cface, resultSolid)
         # Part.show(Cface,'Cface')
         # main Length Edge
-        MlenEdge = smGetEdge(AlenEdge, resultSolid)
+        MlenEdge = SheetMetalTools.smGetIntersectingEdge(AlenEdge, resultSolid)
         # Part.show(MlenEdge,'MlenEdge')
         lenEdge = trimedgelist[i]
         noGap_lenEdge = nogaptrimedgelist[i]

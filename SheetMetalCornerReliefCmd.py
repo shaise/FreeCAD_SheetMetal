@@ -23,65 +23,17 @@
 #
 ###################################################################################
 
-import FreeCAD, Part, math, os, SheetMetalTools, SheetMetalBendSolid
-from SheetMetalLogger import SMLogger
+import math
+import os
+import FreeCAD
+import Part
+import SheetMetalTools
+import SheetMetalBendSolid
 
 smEpsilon = SheetMetalTools.smEpsilon
 
 # list of properties to be saved as defaults
 smCornerReliefDefaultVars = ["Size", "SizeRatio", ("kfactor", "defaultKFactor")]
-
-def smthk(obj, foldface):
-    normal = foldface.normalAt(0, 0)
-    theVol = obj.Volume
-    if theVol < 0.0001:
-        SMLogger.error(
-            FreeCAD.Qt.translate(
-                "Logger", "Shape is not a real 3D-object or to small for a metal-sheet!"
-            )
-        )
-    else:
-        # Make a first estimate of the thickness
-        estimated_thk = theVol / (obj.Area / 2.0)
-    #  p1 = foldface.CenterOfMass
-    for v in foldface.Vertexes:
-        p1 = v.Point
-        p2 = p1 + estimated_thk * -1.5 * normal
-        e1 = Part.makeLine(p1, p2)
-        thkedge = obj.common(e1)
-        thk = thkedge.Length
-        if thk > smEpsilon:
-            break
-    return thk
-
-
-def smCutFace(Face, obj):
-    # find face Modified During loop
-    for face in obj.Faces:
-        face_common = face.common(Face)
-        if face_common.Faces:
-            break
-    return face
-
-
-def smGetEdge(Face, obj):
-    # find Edges that overlap
-    for edge in obj.Edges:
-        face_common = edge.common(Face)
-        if face_common.Edges:
-            break
-    return edge
-
-
-def smGetEdgelist(Face, obj):
-    # find Edges that overlap
-    edgelist = []
-    for edge in obj.Edges:
-        face_common = edge.common(Face)
-        if face_common.Edges:
-            edgelist.append(edge)
-    return edgelist
-
 
 def makeSketch(relieftype, size, ratio, cent, normal, addvector):
     # create wire for face creation
@@ -101,19 +53,6 @@ def makeSketch(relieftype, size, ratio, cent, normal, addvector):
     # Part.show(sketch,'sketch')
     return sketch
 
-
-def equal_angle(ang1, ang2, p=5):
-    # compares two angles
-    result = False
-    if round(ang1 - ang2, p) == 0:
-        result = True
-    if round((ang1 - 2.0 * math.pi) - ang2, p) == 0:
-        result = True
-    if round(ang1 - (ang2 - 2.0 * math.pi), p) == 0:
-        result = True
-    return result
-
-
 def bendAngle(theFace, edge_vec):
     # Start to investigate the angles at self.__Shape.Faces[face_idx].ParameterRange[0]
     # Part.show(theFace,"theFace")
@@ -128,7 +67,7 @@ def bendAngle(theFace, edge_vec):
     edgeAngle, edgePar = theFace.Surface.parameter(edge_vec)
     # print('the angles: ', angle_0, ' ', angle_1, ' ', edgeAngle, ' ', edgeAngle - 2*math.pi)
 
-    if equal_angle(angle_0, edgeAngle):
+    if SheetMetalTools.smIsEqualAngle(angle_0, edgeAngle):
         angle_start = angle_0
         angle_end = angle_1
     else:
@@ -196,7 +135,7 @@ def getBendDetail(obj, edge1, edge2, kfactor):
             break
     # To get thk of sheet, top face normal, bend angle
     #  normal = largeface.normalAt(0,0)
-    thk = smthk(obj, largeface)
+    thk = SheetMetalTools.smGetThickness(obj, largeface)
     bendA = bendAngle(cylface, cornerPoint)
     # print([thk, bendA])
 
@@ -319,7 +258,7 @@ def smCornerR(
             TopFace = LargeFace
             # Part.show(TopFace,"TopFace")
             while BalanceFace.Faces:
-                BendEdgelist = smGetEdgelist(BalanceFace, TopFace)
+                BendEdgelist = SheetMetalTools.smGetAllIntersectingEdges(BalanceFace, TopFace)
                 for BendEdge in BendEdgelist:
                     # Part.show(BendEdge,"BendEdge")
                     edge_facelist = resultSolid.ancestorsOfType(BendEdge, Part.Face)
@@ -405,7 +344,7 @@ def smCornerR(
                 # Part.show(sketch_face,"sketch_face")
                 sketch_face.rotate(revAxisP, -revAxisV, bendA)
                 # Part.show(sketch_face,"Rsketch_face")
-                CylEdge = smGetEdge(sketch_face, cylface)
+                CylEdge = SheetMetalTools.smGetIntersectingEdge(sketch_face, cylface)
                 # Part.show(CylEdge,"CylEdge")
                 edgefacelist = resultSolid.ancestorsOfType(CylEdge, Part.Face)
                 for TopFace in edgefacelist:
@@ -439,8 +378,8 @@ def smCornerR(
 
 
 class SMCornerRelief:
+    '''"Add Corner Relief to Sheetmetal Bends"'''
     def __init__(self, obj, selobj, sel_items):
-        '''"Add Corner Relief to Sheetmetal Bends"'''
         _tip_ = FreeCAD.Qt.translate("App::Property", "Corner Relief Type")
         obj.addProperty(
             "App::PropertyEnumeration", "ReliefSketch", "Parameters", _tip_

@@ -290,19 +290,6 @@ def radial_vector(point, axis_pnt, axis):
     # Part.show(test_line)
     return perp.normalize()
 
-
-def equal_angle(ang1, ang2, p=5):
-    # compares two angles
-    result = False
-    if round(ang1 - ang2, p) == 0:
-        result = True
-    if round((ang1 - 2.0 * math.pi) - ang2, p) == 0:
-        result = True
-    if round(ang1 - (ang2 - 2.0 * math.pi), p) == 0:
-        result = True
-    return result
-
-
 def equal_edge(edg1, edg2, p=5):
     result = True
     if len(edg1.Vertexes) > 1:
@@ -1020,7 +1007,7 @@ class SheetTree(object):
 
         # print 'the angles: ', angle_0, ' ', angle_1, ' ', edgeAngle, ' ', edgeAngle - 2*math.pi
 
-        if equal_angle(angle_0, edgeAngle):
+        if SheetMetalTools.smIsEqualAngle(angle_0, edgeAngle):
             angle_start = angle_0
             angle_end = angle_1
         else:

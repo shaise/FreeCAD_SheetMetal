@@ -32,32 +32,6 @@ from SheetMetalLogger import SMLogger
 
 smEpsilon = SheetMetalTools.smEpsilon
 
-
-def smthk(obj, foldface):
-    normal = foldface.normalAt(0, 0)
-    theVol = obj.Volume
-    if theVol < 0.0001:
-        SMLogger.error(
-            FreeCAD.Qt.translate(
-                "Logger",
-                "Shape is not a real 3D-object or to small for a metal-sheet!"
-            )
-        )
-    else:
-        # Make a first estimate of the thickness
-        estimated_thk = theVol/(obj.Area / 2.0)
-    # p1 = foldface.CenterOfMass
-    for v in foldface.Vertexes:
-        p1 = v.Point
-        p2 = p1 + estimated_thk * -1.5 * normal
-        e1 = Part.makeLine(p1, p2)
-        thkedge = obj.common(e1)
-        thk = thkedge.Length
-        if thk > smEpsilon:
-            break
-    return thk
-
-
 def angleBetween(ve1, ve2):
     # Find angle between two vectors in degrees
     return math.degrees(ve1.getAngle(ve2))
@@ -174,7 +148,7 @@ class SMBendWall:
         base = fp.baseObject[0].Shape
         base_face = base.getElement(
             SheetMetalTools.getElementFromTNP(fp.baseObject[1][0]))
-        thk = smthk(base, base_face)
+        thk = SheetMetalTools.smGetThickness(base, base_face)
         fp.thickness = thk
         tool = fp.toolObject[0].Shape
         tool_faces = [tool.getElement(SheetMetalTools.getElementFromTNP(

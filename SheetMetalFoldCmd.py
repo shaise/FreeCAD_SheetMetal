@@ -32,36 +32,6 @@ smEpsilon = SheetMetalTools.smEpsilon
 # list of properties to be saved as defaults
 BendOnLineDefaultVars = [("radius", "defaultRadius"), ("angle", "defaultFoldAngle")]
 
-def smthk(obj, foldface):
-    normal = foldface.normalAt(0, 0)
-    theVol = obj.Volume
-    if theVol < 0.0001:
-        SMLogger.error(
-            FreeCAD.Qt.translate(
-                "Logger", "Shape is not a real 3D-object or to small for a metal-sheet!"
-            )
-        )
-    else:
-        # Make a first estimate of the thickness
-        estimated_thk = theVol / (foldface.Area)
-    #  p1 = foldface.CenterOfMass
-    p1 = foldface.Vertexes[0].Point
-    p2 = p1 + estimated_thk * -1.5 * normal
-    e1 = Part.makeLine(p1, p2)
-    thkedge = obj.common(e1)
-    thk = thkedge.Length
-    return thk
-
-
-def smCutFace(Face, obj):
-    # find face Modified During loop
-    for face in obj.Faces:
-        face_common = face.common(Face)
-        if face_common.Faces:
-            break
-    return face
-
-
 def smFold(
     bendR=0.8,
     bendA=90.0,
@@ -89,7 +59,7 @@ def smFold(
             foldface = FoldShape.getElement(SheetMetalTools.getElementFromTNP(selFaceNames[0]))
             tool = bendlinesketch.Shape.copy()
             normal = foldface.normalAt(0, 0)
-            thk = smthk(FoldShape, foldface)
+            thk = SheetMetalTools.smGetThickness(FoldShape, foldface)
             #print(thk)
 
             # if not(flipped) :
@@ -120,7 +90,7 @@ def smFold(
                 solid0 = cutSolid.childShapes()[0]
             else:
                 solid0 = cutSolid.childShapes()[1]
-            cutFaceDir = smCutFace(toolFaces.Faces[0], solid0)
+            cutFaceDir = SheetMetalTools.smGetIntersectingFace(toolFaces.Faces[0], solid0)
             # Part.show(cutFaceDir,"cutFaceDir")
             facenormal = cutFaceDir.Faces[0].normalAt(0, 0)
             # print(facenormal)

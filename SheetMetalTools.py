@@ -23,6 +23,7 @@
 #
 ##############################################################################
 
+import math
 import os
 import re
 import FreeCAD
@@ -656,6 +657,78 @@ def smGetBodyOfItem(obj):
         parent, _ = obj.getParents()[0]
         return parent
     return None
+
+def smGetThickness(obj, foldface):
+    normal = foldface.normalAt(0, 0)
+    theVol = obj.Volume
+    if theVol < 0.0001:
+        SMLogger.error(
+            FreeCAD.Qt.translate(
+                "Logger", "Shape is not a real 3D-object or too small for a metal-sheet!"
+            )
+        )
+        return 0
+
+    # Make a first estimate of the thickness
+    estimated_thk = theVol / (foldface.Area)
+    #  p1 = foldface.CenterOfMass
+    p1 = foldface.Vertexes[0].Point
+    p2 = p1 + estimated_thk * -1.5 * normal
+    e1 = Part.makeLine(p1, p2)
+    thkedge = obj.common(e1)
+    thk = thkedge.Length
+    return thk
+
+def smGetFaceByEdge(selItem, obj):
+    selFace = None
+    # find face if Edge Selected
+    if type(selItem) == Part.Edge:
+        Facelist = obj.ancestorsOfType(selItem, Part.Face)
+        if Facelist[0].Area < Facelist[1].Area:
+            selFace = Facelist[0]
+        else:
+            selFace = Facelist[1]
+    elif type(selItem) == Part.Face:
+        selFace = selItem
+    return selFace
+
+def smGetIntersectingFace(Face, obj):
+    # find Faces that overlap
+    face = None
+    for face in obj.Faces:
+        face_common = face.common(Face)
+        if face_common.Faces:
+            break
+    return face
+
+def smGetIntersectingEdge(Face, obj):
+    # find an Edge that overlap
+    edge = None
+    for edge in obj.Edges:
+        face_common = edge.common(Face)
+        if face_common.Edges:
+            break
+    return edge
+
+def smGetAllIntersectingEdges(Face, obj):
+    # find Edges that overlap
+    edgelist = []
+    for edge in obj.Edges:
+        face_common = edge.common(Face)
+        if face_common.Edges:
+            edgelist.append(edge)
+    return edgelist
+
+def smIsEqualAngle(ang1, ang2, p=5):
+    # compares two angles with a given precision
+    result = False
+    if round(ang1 - ang2, p) == 0:
+        result = True
+    if round((ang1 - 2.0 * math.pi) - ang2, p) == 0:
+        result = True
+    if round(ang1 - (ang2 - 2.0 * math.pi), p) == 0:
+        result = True
+    return result
 
 
 class SMLogger:
