@@ -357,20 +357,23 @@ if isGuiLoaded():
             forms.append(Gui.PySideUic.loadUi(path))
         return forms
     
-    def smGuiExportSketch(sketches, fileType, fileName):
-        filePath, _ = QtGui.QFileDialog.getSaveFileName(
-            Gui.getMainWindow(),
-            translate("SheetMetal","Export unfold sketch"),
-            fileName,                       # Default file path
-            f"Vector Files (*.{fileType})"  # File type filters
-        )
+    def smGuiExportSketch(sketches, fileType, fileName, useDialog = True):
+        if useDialog:
+            filePath, _ = QtGui.QFileDialog.getSaveFileName(
+                Gui.getMainWindow(),
+                translate("SheetMetal","Export unfold sketch"),
+                fileName,                       # Default file path
+                f"Vector Files (*.{fileType})"  # File type filters
+            )
+        else:
+            filePath = fileName
         if filePath:
             if fileType == "dxf":
                 importDXF.export(sketches, filePath)
             else:
                 importSVG.export(sketches, filePath)
     
-    def smAddNewObject(baseObj, newObj, activeBody, taskPanel):
+    def smAddNewObject(baseObj, newObj, activeBody, taskPanel = None):
         if activeBody is not None:
             activeBody.addObject(newObj)
         viewConf = GetViewConfig(baseObj)
@@ -379,8 +382,9 @@ if isGuiLoaded():
         #newObj.baseObject[0].ViewObject.Visibility = False
         baseObj.ViewObject.Visibility = False
         FreeCAD.ActiveDocument.recompute()
-        dialog = taskPanel(newObj)
-        Gui.Control.showDialog(dialog)
+        if taskPanel is not None:
+            dialog = taskPanel(newObj)
+            Gui.Control.showDialog(dialog)
         return
     
     def smCreateNewObject(baseObj, name, allowPartDesign = True):

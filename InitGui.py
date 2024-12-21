@@ -27,6 +27,7 @@ import os
 import FreeCAD
 from FreeCAD import Gui
 import SheetMetalTools
+from engineering_mode import engineering_mode_enabled
 
 # add translations path
 SMWBPath = SheetMetalTools.mod_path
@@ -41,6 +42,7 @@ class SMWorkbench(Workbench):
     global SMIconPath
     global SMWBPath
     global SHEETMETALWB_VERSION
+    global engineering_mode_enabled
 
     MenuText = FreeCAD.Qt.translate("SheetMetal", "Sheet Metal")
     ToolTip = FreeCAD.Qt.translate(
@@ -83,6 +85,10 @@ class SMWorkbench(Workbench):
             "SheetMetal_Forming",
             "SheetMetal_BaseShape",
         ]  # A list of command names created in the line above
+        if engineering_mode_enabled():
+            self.list.insert(
+                self.list.index("SheetMetal_Unfold") + 1, "SheetMetal_UnattendedUnfold"
+            )
         self.appendToolbar(
             FreeCAD.Qt.translate("SheetMetal", "Sheet Metal"), self.list
         )  # creates a new toolbar with your commands

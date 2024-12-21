@@ -99,9 +99,10 @@ Starting from FreeCAD 0.17 it can be installed via the [Addon Manager](https://g
 * FreeCAD Forum announcement/discussion [thread](https://forum.freecadweb.org/viewtopic.php?f=3&t=60818) 
 
 #### Release notes:
-* V0.6.10 20 Dec 2024:  Make unfold object parametric.
-* V0.6.02 14 Dec 2024:  Fix Base Shape UI error when using different language.
-* V0.6.01 06 Dec 2024:  Add GUI to BaseBend command.
+* V0.6.11 20 Dec 2024:  Reinstate unattended unfold command.  
+* V0.6.10 20 Dec 2024:  Make unfold object parametric.  
+* V0.6.02 14 Dec 2024:  Fix Base Shape UI error when using different language.  
+* V0.6.01 06 Dec 2024:  Add GUI to BaseBend command.  
                       - Fix detection of basebend belonging to body or not.  
                       - Update translations by [@hasecilu][hasecilu].  
                       - Fix python compatibility by [@Syres916][Syres916].  

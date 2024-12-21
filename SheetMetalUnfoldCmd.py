@@ -63,6 +63,27 @@ KFACTOR = 0.40
 
 
 ##########################################################################################################
+# Helper functions
+##########################################################################################################
+def smUnfoldExportSketches(obj, useDialog = True):
+    if len(obj.UnfoldSketches) == 0:
+        return
+    sketches = []
+    if len(obj.UnfoldSketches) == 1:
+        sketchNames = [obj.UnfoldSketches[0]]
+    else:
+        sketchNames = obj.UnfoldSketches[1:]
+    for name in sketchNames:
+        sketch = obj.Document.getObject(name)
+        if sketch is None:
+            return
+        sketches.append(sketch)
+    exptype = obj.Proxy.ExportType
+    filename = f"{FreeCAD.ActiveDocument.FileName[0:-6]}-{obj.Name}.{exptype}"
+    SheetMetalTools.smGuiExportSketch(sketches, exptype, filename, useDialog)
+
+
+##########################################################################################################
 # Object class
 ##########################################################################################################
 
@@ -368,22 +389,7 @@ if SheetMetalTools.isGuiLoaded():
             FreeCAD.ActiveDocument.recompute()
 
         def doExport(self):
-            obj = self.obj
-            if len(obj.UnfoldSketches) == 0:
-                return
-            sketches = []
-            if len(obj.UnfoldSketches) == 1:
-                sketchNames = [obj.UnfoldSketches[0]]
-            else:
-                sketchNames = obj.UnfoldSketches[1:]
-            for name in sketchNames:
-                sketch = obj.Document.getObject(name)
-                if sketch is None:
-                    return
-                sketches.append(sketch)
-            exptype = self.obj.Proxy.ExportType
-            filename = f"{FreeCAD.ActiveDocument.FileName[0:-6]}-{obj.Name}.{exptype}"
-            SheetMetalTools.smGuiExportSketch(sketches, exptype, filename)
+            smUnfoldExportSketches(self.obj)
 
         def populateMdsList(self):
             sheetnames = SheetMetalKfactor.getSpreadSheetNames()
@@ -514,5 +520,49 @@ if SheetMetalTools.isGuiLoaded():
         def IsActive(self):
             return len(SheetMetalTools.smObjectsToRecompute) > 0
 
+    class SMUnfoldUnattendedCommandClass:
+        """Unfold object"""
+
+        def GetResources(self):
+            __dir__ = os.path.dirname(__file__)
+            iconPath = os.path.join(__dir__, "Resources", "icons")
+            return {
+                "Pixmap": os.path.join(
+                    iconPath, "SheetMetal_UnfoldUnattended.svg"
+                ),  # the name of a svg file available in the resources
+                "MenuText": FreeCAD.Qt.translate("SheetMetal", "Unattended Unfold"),
+                "Accel": "U",
+                "ToolTip": FreeCAD.Qt.translate(
+                    "SheetMetal",
+                    "Flatten folded sheet metal object with default options\n"
+                    "1. Select flat face on sheetmetal shape.\n"
+                    "2. Click this command to unfold the object with last used parameters.",
+                ),
+            }
+
+        def Activated(self):
+            sel = Gui.Selection.getSelectionEx()[0]
+            selobj = sel.Object
+            newObj, activeBody = SheetMetalTools.smCreateNewObject(selobj, "Unfold", False)
+            if newObj is None:
+                return
+            SMUnfold(newObj, selobj, sel.SubElementNames)
+            SMUnfoldViewProvider(newObj.ViewObject)
+            SheetMetalTools.smAddNewObject(selobj, newObj, activeBody)
+            smUnfoldExportSketches(newObj, False)           
+            return
+
+        def IsActive(self):
+            if (
+                len(Gui.Selection.getSelection()) != 1
+                or len(Gui.Selection.getSelectionEx()[0].SubElementNames) != 1
+            ):
+                return False
+            selFace = Gui.Selection.getSelectionEx()[0].SubObjects[0]
+
+            return isinstance(selFace.Surface, Part.Plane)
+
+
+    Gui.addCommand("SheetMetal_UnattendedUnfold", SMUnfoldUnattendedCommandClass())
     Gui.addCommand("SheetMetal_Unfold", SMUnfoldCommandClass())
     Gui.addCommand("SheetMetal_UnfoldUpdate", SMRecomputeUnfoldsCommandClass())
