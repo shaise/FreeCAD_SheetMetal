@@ -172,7 +172,6 @@ class SMBaseBend:
         )
 
         fp.Shape = s
-        SheetMetalTools.smHideObjects(fp.BendSketch)
 
 
 ##########################################################################################################
@@ -222,6 +221,7 @@ if SheetMetalTools.isGuiLoaded():
             SheetMetalTools.taskConnectEnum(self, self.form.comboBendPlane, "BendSide")
             SheetMetalTools.taskConnectCheck(self, self.form.checkSymetric, "MidPlane", self.midplaneChanged)
             SheetMetalTools.taskConnectCheck(self, self.form.checkRevDirection, "Reverse")
+            obj.BendSketch.Visibility = True
 
         def isAllowedAlterSelection(self):
             return True
@@ -238,6 +238,7 @@ if SheetMetalTools.isGuiLoaded():
         def accept(self):
             SheetMetalTools.taskAccept(self)
             SheetMetalTools.taskSaveDefaults(self.obj, smBaseDefaultVars)
+            self.obj.BendSketch.Visibility = False
             return True
         
         def reject(self):
