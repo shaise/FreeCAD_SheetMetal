@@ -549,7 +549,9 @@ def smIsOperationLegal(body, selobj):
 def is_autolink_enabled():
     return params.GetInt("AutoLinkBendRadius", 0)
 
-def GetViewConfig(obj): 
+def GetViewConfig(obj):
+    if smIsSketchObject(obj):
+        return None
     viewconf = {} 
     if hasattr(obj.ViewObject, "ShapeColor"): 
         viewconf["objShapeCol"] = obj.ViewObject.ShapeColor 
