@@ -61,6 +61,9 @@
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
+        <property name="minimum" stdset="0">
+         <double>0.000001000000000</double>
+        </property>
        </widget>
       </item>
       <item row="2" column="2">
@@ -70,6 +73,9 @@
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
+        </property>
+        <property name="minimum" stdset="0">
+         <double>0.000001000000000</double>
         </property>
        </widget>
       </item>
