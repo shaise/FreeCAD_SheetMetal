@@ -550,6 +550,7 @@ if SheetMetalTools.isGuiLoaded():
             SMUnfoldViewProvider(newObj.ViewObject)
             SheetMetalTools.smAddNewObject(selobj, newObj, activeBody)
             smUnfoldExportSketches(newObj, False)           
+            selobj.Visibility = True
             return
 
         def IsActive(self):
