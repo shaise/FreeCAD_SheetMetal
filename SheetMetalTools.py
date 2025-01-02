@@ -267,8 +267,10 @@ if isGuiLoaded():
         formvar.setProperty("value", _getVarValue(obj, objvar))
         if customObj is None:
             Gui.ExpressionBinding(formvar).bind(obj, objvar)
+        # keyboardTracking is set to False to avoid recompute on every key press
+        formvar.setProperty("keyboardTracking",False)
         formvar.valueChanged.connect(lambda value: _taskUpdateValue(value, obj, objvar, callback))
-        formvar.editingFinished.connect(lambda: _taskEditFinished(obj))
+        #formvar.editingFinished.connect(lambda: _taskEditFinished(obj))
 
     def taskConnectCheck(task, formvar, objvar, callback = None, customObj = None):
         obj = task.obj if customObj is None else customObj
