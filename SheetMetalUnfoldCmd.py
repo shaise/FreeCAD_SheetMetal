@@ -261,6 +261,7 @@ if SheetMetalTools.isGuiLoaded():
             for itemName in self.Object.UnfoldSketches:
                 item = self.Object.Document.getObject(itemName)
                 if item is not None:
+                    item.recompute(True)
                     objs.append(item)
             return objs
 
@@ -549,7 +550,6 @@ if SheetMetalTools.isGuiLoaded():
             SMUnfold(newObj, selobj, sel.SubElementNames)
             SMUnfoldViewProvider(newObj.ViewObject)
             SheetMetalTools.smAddNewObject(selobj, newObj, activeBody)
-            smUnfoldExportSketches(newObj, False)           
             selobj.Visibility = True
             return
 
