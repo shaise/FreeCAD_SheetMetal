@@ -15,6 +15,7 @@
       <classname>SMWorkbench</classname>
       <subdirectory>./</subdirectory>
       <tag>sheetmetal</tag>
+      <depend>networkx</depend>
     </workbench>
   </content>
 
