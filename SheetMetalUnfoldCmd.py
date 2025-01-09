@@ -138,8 +138,7 @@ class SMUnfold:
         SheetMetalTools.smAddBoolProperty(
             obj,
             "ManualRecompute",
-            translate("SheetMetal", 
-                      "If set, object recomutation will be done on demand only"),
+            translate("SheetMetal", "If set, object recomputation will be done on demand only"),
             False,
         )
         SheetMetalTools.smAddBoolProperty(
@@ -151,15 +150,17 @@ class SMUnfold:
         SheetMetalTools.smAddBoolProperty(
             obj,
             "SeparateSketchLayers",
-            translate("SheetMetal", 
-                      "Generate seperate unfold sketches for outline, innerlines and bend lines"),
+            translate(
+                "SheetMetal",
+                "Generate separated unfold sketches for outline, inner lines and bend lines",
+            ),
             False,
         )
         SheetMetalTools.smAddProperty(
             obj,
             "App::PropertyStringList",
             "UnfoldSketches",
-            translate("SheetMetal", "Generated sketchs"),
+            translate("SheetMetal", "Generated sketches"),
             None,
             "Hidden",
             attribs = 8, # Output only - no recompute if changed
