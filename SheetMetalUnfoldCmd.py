@@ -33,11 +33,19 @@ import SheetMetalUnfolder
 
 from SheetMetalTools import SMLogger, UnfoldException
 from engineering_mode import engineering_mode_enabled
-try:
-    import SheetMetalNewUnfolder
-    from SheetMetalNewUnfolder import BendAllowanceCalculator
-    NewUnfolderAvailable = True
-except ImportError:
+
+from FreeCAD import Vector
+if hasattr(Vector, "isParallel"):
+    try:
+        import SheetMetalNewUnfolder
+        from SheetMetalNewUnfolder import BendAllowanceCalculator
+        NewUnfolderAvailable = True
+    except ImportError:
+        NewUnfolderAvailable = False
+        FreeCAD.Console.PrintWarning(
+            "New unfolder not available on versions pre FreeCAD 1.0. Using old Unfolder\n"
+        )
+else:
     NewUnfolderAvailable = False
     FreeCAD.Console.PrintWarning(
         "New unfolder not available on versions pre FreeCAD 1.0. Using old Unfolder\n"
