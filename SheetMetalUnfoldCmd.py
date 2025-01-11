@@ -33,6 +33,15 @@ import SheetMetalUnfolder
 
 from SheetMetalTools import SMLogger, UnfoldException
 from engineering_mode import engineering_mode_enabled
+try:
+    import SheetMetalNewUnfolder
+    from SheetMetalNewUnfolder import BendAllowanceCalculator
+    NewUnfolderAvailable = True
+except ImportError:
+    NewUnfolderAvailable = False
+    FreeCAD.Console.PrintWarning(
+        "New unfolder not available on versions pre FreeCAD 1.0. Using old Unfolder\n"
+    )
 
 translate = FreeCAD.Qt.translate
 
@@ -108,7 +117,6 @@ class SMUnfold:
         self.ExportType = "dxf"
         self.visibleSketches = []
         SheetMetalTools.taskRestoreDefaults(self, smUnfoldNonSavedDefaultVars)
-
         obj.Proxy = self
         self.UnfoldSketches = []
 
@@ -132,7 +140,7 @@ class SMUnfold:
             "App::PropertyString",
             "MaterialSheet",
             translate( "SheetMetal", "Material definition sheet" ),
-            "_none",
+            "_manual",
             readOnly = True
         )
         SheetMetalTools.smAddBoolProperty(
@@ -187,33 +195,65 @@ class SMUnfold:
             if not isVisible:
                 obj.Proxy.visibleSketches = visibleSketches
 
-    def execute(self, fp):
-        '''"Print a short message when doing a recomputation, this method is mandatory"'''
-        self._addProperties(fp)
-        if fp.ManualRecompute and not SheetMetalTools.smForceRecompute:
-            SheetMetalTools.smAddToRecompute(fp)
-            return False
-        kFactorTable = {1: fp.KFactor}
-        if fp.MaterialSheet != "_manual" and fp.MaterialSheet != "_none":
-            lookupTable = SheetMetalKfactor.KFactorLookupTable(fp.MaterialSheet)
-            kFactorTable = lookupTable.k_factor_lookup
-
-        shape, foldComp, norm, _thename, _err_cd, _fSel, _obN = SheetMetalUnfolder.getUnfold(
-            kFactorTable, fp.baseObject[0], fp.baseObject[1][0], fp.KFactorStandard
+    def newUnfolder(self, obj):
+        ''' Use new unfolder system '''
+        if obj.MaterialSheet in ["_manual", "_none"]:
+            bac = BendAllowanceCalculator.from_single_value(obj.KFactor)
+        else:
+            sheet = FreeCAD.ActiveDocument.getObject(obj.MaterialSheet)
+            bac = BendAllowanceCalculator.from_spreadsheet(sheet)
+        sel_face, unfolded_shape, bend_lines, root_normal = SheetMetalNewUnfolder.getUnfold(
+            bac, obj.baseObject[0], obj.baseObject[1][0]
         )
 
         sketches = []
-        if fp.GenerateSketch and shape is not None:
+        if obj.GenerateSketch and unfolded_shape is not None:
+            sketches = SheetMetalNewUnfolder.getUnfoldSketches(
+                sel_face,
+                unfolded_shape, 
+                bend_lines,
+                root_normal, 
+                obj.UnfoldSketches,
+                obj.SeparateSketchLayers,
+                obj.Proxy.SketchColor,
+                obj.Proxy.InternalColor,
+                obj.Proxy.BendLineColor,
+            )
+        return unfolded_shape, sketches
+
+    def oldUnfolder(self, obj):
+        ''' Use old unfolder system '''
+        kFactorTable = {1: obj.KFactor}
+        if obj.MaterialSheet != "_manual" and obj.MaterialSheet != "_none":
+            lookupTable = SheetMetalKfactor.KFactorLookupTable(obj.MaterialSheet)
+            kFactorTable = lookupTable.k_factor_lookup
+
+        shape, foldComp, norm, _thename, _err_cd, _fSel, _obN = SheetMetalUnfolder.getUnfold(
+            kFactorTable, obj.baseObject[0], obj.baseObject[1][0], obj.KFactorStandard
+        )
+
+        sketches = []
+        if obj.GenerateSketch and shape is not None:
             sketches = SheetMetalUnfolder.getUnfoldSketches(
                 shape, 
                 foldComp.Edges,
                 norm,
-                fp.UnfoldSketches,
-                fp.SeparateSketchLayers, 
-                fp.Proxy.SketchColor,
-                bendSketchColor=fp.Proxy.InternalColor,
-                internalSketchColor=fp.Proxy.BendLineColor,
+                obj.UnfoldSketches,
+                obj.SeparateSketchLayers, 
+                obj.Proxy.SketchColor,
+                bendSketchColor=obj.Proxy.InternalColor,
+                internalSketchColor=obj.Proxy.BendLineColor,
             )
+        return shape, sketches
+
+    def execute(self, fp):
+        '''"Print a short message when doing a recomputation, this method is mandatory"'''
+        self._addProperties(fp)
+
+        if not NewUnfolderAvailable or SheetMetalTools.use_old_unfolder():
+            shape, sketches = self.oldUnfolder(fp)
+        else:
+            shape, sketches = self.newUnfolder(fp)
      
         fp.Shape = shape
         parent = SheetMetalTools.smGetParentBody(fp)
@@ -262,7 +302,6 @@ if SheetMetalTools.isGuiLoaded():
             for itemName in self.Object.UnfoldSketches:
                 item = self.Object.Document.getObject(itemName)
                 if item is not None:
-                    item.recompute(True)
                     objs.append(item)
             return objs
 
@@ -371,8 +410,8 @@ if SheetMetalTools.isGuiLoaded():
             else:
                 FreeCAD.ActiveDocument.recompute()
             SheetMetalTools.smForceRecompute = False
-            if len(self.obj.UnfoldSketches) > 0:
-                FreeCAD.ActiveDocument.recompute()
+            # if len(self.obj.UnfoldSketches) > 0:
+            #     FreeCAD.ActiveDocument.recompute()
 
         def accept(self):
             if not self.checkKFactorValid():
@@ -479,7 +518,6 @@ if SheetMetalTools.isGuiLoaded():
             SMUnfoldViewProvider(newObj.ViewObject)
             SheetMetalTools.smAddNewObject(
                 selobj, newObj, activeBody, SMUnfoldTaskPanel)
-            return
 
         def IsActive(self):
             if (

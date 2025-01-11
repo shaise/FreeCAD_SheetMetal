@@ -3094,7 +3094,7 @@ def getUnfoldSketches(
 
     if len(foldLines) > 0 and splitSketches:
         unfold_sketch_bend = generateSketch(
-            foldEdges, "Unfold_Sketch_bends", bendSketchColor, existingSketches
+            foldEdges, "Unfold_Sketch_Bends", bendSketchColor, existingSketches
         )
         sketches.append(unfold_sketch_bend)
 

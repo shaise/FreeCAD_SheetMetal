@@ -551,6 +551,9 @@ def smIsOperationLegal(body, selobj):
 def is_autolink_enabled():
     return params.GetInt("AutoLinkBendRadius", 0)
 
+def use_old_unfolder():
+    return params.GetBool("UseOldUnfolder", False)
+
 def GetViewConfig(obj):
     if smIsSketchObject(obj):
         return None

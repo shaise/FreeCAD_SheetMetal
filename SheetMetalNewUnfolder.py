@@ -32,7 +32,7 @@ from typing import Self
 
 import FreeCAD
 import Part
-from Draft import makeSketch
+import Draft
 from FreeCAD import Matrix, Placement, Rotation, Vector
 from TechDraw import projectEx as project_shape_to_plane
 
@@ -448,23 +448,47 @@ class SketchExtraction:
 
     @staticmethod
     def edges_to_sketch_object(
-        edges: list[Part.Edge], object_name: str
+        edges: list[Part.Edge], 
+        object_name: str,
+        existing_sketches: list[str] = None,
+        color: str = "#00FF00"
     ) -> FreeCAD.DocumentObject:
         """Uses functionality from the Draft API to convert a list of edges into a
         Sketch document object. This allows the user to more easily make small
         changes to the sheet metal cutting pattern when prepping it
         for fabrication."""
         cleaned_up_edges = Edge2DCleanup.cleanup_sketch(edges, 0.1)
-        sk = makeSketch(
+        #cleaned_up_edges = edges
+
+        # See if there is an existing sketch with the same name, use it insted of creating
+        if existing_sketches is None:
+            existing_sketch_name = ""
+        else:
+            existing_sketch_name =  next((item for item in existing_sketches if item.startswith(object_name)), "")
+        existing_sketch = FreeCAD.ActiveDocument.getObject(existing_sketch_name)
+        if existing_sketch is not None:
+            existing_sketch.deleteAllGeometry()
+
+        sk = Draft.makeSketch(
             # NOTE: in testing, using the autoconstraint feature
             # caused errors with some shapes
             cleaned_up_edges,
             autoconstraints=False,
-            addTo=None,
-            delete=False,
-            name=object_name,
+            addTo = existing_sketch,
+            delete = False,
+            name = object_name,
         )
         sk.Label = object_name
+        sk.recompute()
+
+        if FreeCAD.GuiUp:
+            rgb_color = tuple(int(color[i : i + 2], 16) for i in (1, 3, 5))
+            v = FreeCAD.Version()
+            if v[0] == '0' and int(v[1]) < 21:
+                rgb_color = tuple(i / 255 for i in rgb_color)
+            sk.ViewObject.LineColor = rgb_color
+            sk.ViewObject.PointColor = rgb_color
+
         return sk
 
     @staticmethod
@@ -655,8 +679,12 @@ class Edge2DCleanup:
     replace bezier curves and other geometry types with lines and arcs"""
 
     @staticmethod
-    def bspline_to_single_arc(curve: Part.Edge) -> tuple[Part.Edge, float]:
-        line = Part.makeLine(curve.firstVertex().Point, curve.lastVertex().Point)
+    def bspline_to_line(curve: Part.Edge) -> tuple[Part.Edge, float]:
+        p1 = curve.firstVertex().Point
+        p2 = curve.lastVertex().Point
+        if p1.distanceToPoint(p2) < eps:
+            return Part.Edge(), float("inf")
+        line = Part.makeLine(p1, p2)
         max_err = Edge2DCleanup.check_err(curve, line)
         return line, max_err
 
@@ -679,13 +707,25 @@ class Edge2DCleanup:
         return max_err
 
     @staticmethod
-    def bspline_to_line(curve: Part.Edge) -> tuple[Part.Edge, float]:
+    def bspline_to_arc(curve: Part.Edge) -> tuple[Part.Edge, float]:
         point1 = curve.firstVertex().Point
-        point3 = curve.lastVertex().Point
         point2 = curve.valueAt(
             curve.FirstParameter + 0.5 * (curve.LastParameter - curve.FirstParameter)
         )
-        arc = Part.Arc(point1, point2, point3).toShape().Edges[0]
+        point3 = curve.lastVertex().Point
+        if point1.distanceToPoint(point3) < eps:
+            # full circle
+            point4 = curve.valueAt(
+                curve.FirstParameter
+                + 0.25 * (curve.LastParameter - curve.FirstParameter)
+            )
+            radius = point1.distanceToPoint(point2) / 2
+            center = point1 + 0.5 * (point2 - point1)
+            axis = (point1 - center).cross(point4 - center)
+            arc = Part.makeCircle(radius, center, axis)
+        else:
+            # partial circle
+            arc = Part.Arc(point1, point2, point3).toShape().Edges[0]
         max_err = Edge2DCleanup.check_err(curve, arc)
         return arc, max_err
 
@@ -693,24 +733,25 @@ class Edge2DCleanup:
     def cleanup_sketch(sketch: list[Part.Edge], tolerance: float) -> list[Part.Edge]:
         new_edge_list = []
         for edge in sketch:
-            if isinstance(edge.Curve, (Part.Line, Part.Arc)):
-                new_edge_list.append(edge)
-            else:
-                if isinstance(edge.Curve, Part.BSplineCurve):
-                    bspline = edge
-                else:
-                    bspline = edge.toNurbs().Edges[0]
-                line, max_err = Edge2DCleanup.bspline_to_line(bspline)
-                if max_err < tolerance:
-                    new_edge_list.append(line)
-                    continue
-                arc, max_err = Edge2DCleanup.bspline_to_single_arc(bspline)
-                if max_err < tolerance:
-                    new_edge_list.append(line)
-                    continue
-                new_edge_list.extend(
-                    a.toShape().Edges[0] for a in bspline.Curve.toBiArcs(tolerance)
-                )
+            match edge.Curve.TypeId:
+                case "Part::GeomLine" | "Part::GeomCircle":
+                    new_edge_list.append(edge)
+                case _:
+                    if isinstance(edge.Curve, Part.BSplineCurve):
+                        bspline = edge
+                    else:
+                        bspline = edge.toNurbs().Edges[0]
+                    new_edge, max_err = Edge2DCleanup.bspline_to_line(bspline)
+                    if max_err < tolerance:
+                        new_edge_list.append(new_edge)
+                        continue
+                    new_edge, max_err = Edge2DCleanup.bspline_to_arc(bspline)
+                    if max_err < tolerance:
+                        new_edge_list.append(new_edge)
+                        continue
+                    new_edge_list.extend(
+                        a.toShape().Edges[0] for a in bspline.Curve.toBiArcs(tolerance)
+                    )
         return new_edge_list
 
 
@@ -1056,76 +1097,65 @@ def unfold(
     return solid, bend_lines
 
 
-def gui_unfold(bac: BendAllowanceCalculator) -> None:
-    """This is the main entry-point for the unfolder.
-    It grabs a selected sheet metal part and reference face from the active
-    FreeCAD document, and creates new objects showing the unfold results."""
-    # the user must select a single flat face of a sheet metal part in the
-    # active document
-    selection = FreeCAD.Gui.Selection.getCompleteSelection()[0]
-    selected_object = selection.Object
-    object_placement = selected_object.getGlobalPlacement().toMatrix()
-    shp = selected_object.Shape.transformed(object_placement.inverse())
-    root_face_index = int(selection.SubElementNames[0][4:]) - 1
+def getUnfold(
+        bac: BendAllowanceCalculator, solid: Part.Feature, facename : str
+    ) -> tuple[Part.Face, Part.Shape, Part.Compound, FreeCAD.Vector]:
+    object_placement = solid.Placement.toMatrix()
+    shp = solid.Shape.transformed(object_placement.inverse())   
+    root_face_index = int(facename[4:]) - 1
     unfolded_shape, bend_lines = unfold(shp, root_face_index, bac)
-    # show the unfolded solid in the active document
-    unfold_doc_obj = Part.show(unfolded_shape, selected_object.Label + "_Unfold")
-    unfold_vobj = unfold_doc_obj.ViewObject
-    unfold_doc_obj.Placement = Placement(object_placement)
-    # set appearance
-    unfold_vobj.ShapeAppearance = selected_object.ViewObject.ShapeAppearance
-    unfold_vobj.Transparency = 70  # FIXME: hardcoded value
     root_normal = shp.Faces[root_face_index].normalAt(0, 0)
+    return shp.Faces[root_face_index], unfolded_shape, bend_lines, root_normal
+
+def getUnfoldSketches(
+    selected_face: Part.Face,
+    unfolded_shape: Part.Shape,
+    bend_lines: Part.Compound,
+    root_normal: FreeCAD.Vector,
+    existing_sketches: list[str],
+    split_sketches: bool = False,
+    sketch_color: str = "#000080",
+    bend_sketch_color: str = "#c00000",
+    internal_sketch_solor: str ="#ff5733"      
+) -> list[Part.Feature]:
     sketch_profile, inner_wires, hole_wires = SketchExtraction.extract_manually(
         unfolded_shape, root_normal
     )
-    SEPERATE_SKETCHES = False  # FIXME: hardcoded value
-    if not SEPERATE_SKETCHES:
-        sketch_profile = Part.makeCompound([sketch_profile, *inner_wires, *hole_wires])
+    # create transform to move the sketch profiles nicely to the origin
+    sketch_align_transform = SketchExtraction.move_to_origin(
+        sketch_profile, selected_face
+    )
+
+    if not split_sketches:
+        sketch_profile = Part.makeCompound([sketch_profile, *inner_wires, *hole_wires, bend_lines])
         inner_wires = None
         hole_wires = None
-    # move the sketch profiles nicely to the origin
-    sketch_align_transform = SketchExtraction.move_to_origin(
-        sketch_profile, shp.Faces[root_face_index]
-    )
+        bend_lines = None
     sketch_profile = sketch_profile.transformed(sketch_align_transform)
     # organize the unfold sketch layers in a group
     sketch_doc_obj = SketchExtraction.edges_to_sketch_object(
-        sketch_profile.Edges, selected_object.Label + "_UnfoldProfile"
+        sketch_profile.Edges, "Unfold_Sketch", existing_sketches, sketch_color
     )
-    sketch_objects_list = [
-        sketch_doc_obj,
-    ]
-    sketch_color = (255, 0, 0, 0)  # FIXME: hardcoded value
-    sketch_doc_obj.ViewObject.LineColor = sketch_color
-    sketch_doc_obj.ViewObject.PointColor = sketch_color
+    sketch_objects_list = [sketch_doc_obj]
     # bend lines are sometimes not present
-    if bend_lines.Edges:
+    if bend_lines and bend_lines.Edges:
         bend_lines = bend_lines.transformed(sketch_align_transform)
         bend_lines_doc_obj = SketchExtraction.edges_to_sketch_object(
-            bend_lines.Edges, selected_object.Label + "_UnfoldBendLines"
+            bend_lines.Edges, "Unfold_Sketch_Bends", existing_sketches, bend_sketch_color
         )
-        bend_color = (0, 255, 0, 0)  # FIXME: hardcoded value
-        bend_lines_doc_obj.ViewObject.LineColor = bend_color
-        bend_lines_doc_obj.ViewObject.PointColor = bend_color
         bend_lines_doc_obj.ViewObject.DrawStyle = "Dashdot"
         sketch_objects_list.append(bend_lines_doc_obj)
     # inner lines are sometimes not present
     if inner_wires:
         inner_lines = Part.makeCompound(inner_wires).transformed(sketch_align_transform)
         inner_lines_doc_obj = SketchExtraction.edges_to_sketch_object(
-            inner_lines.Edges, selected_object.Label + "_UnfoldInnerLines"
+            inner_lines.Edges, "Unfold_Sketch_Internal", existing_sketches, internal_sketch_solor
         )
-        inner_color = (0, 0, 255, 0)  # FIXME: hardcoded value
-        inner_lines_doc_obj.ViewObject.LineColor = inner_color
-        inner_lines_doc_obj.ViewObject.PointColor = inner_color
         sketch_objects_list.append(inner_lines_doc_obj)
     if hole_wires:
         hole_lines = Part.makeCompound(hole_wires).transformed(sketch_align_transform)
         hole_lines_doc_obj = SketchExtraction.edges_to_sketch_object(
-            hole_lines.Edges, selected_object.Label + "_UnfoldHoles"
+            hole_lines.Edges, "Unfold_Sketch_Holes", existing_sketches, internal_sketch_solor
         )
-        hole_color = (255, 255, 0, 0)  # FIXME: hardcoded value
-        hole_lines_doc_obj.ViewObject.LineColor = hole_color
-        hole_lines_doc_obj.ViewObject.PointColor = hole_color
         sketch_objects_list.append(hole_lines_doc_obj)
+    return sketch_objects_list
