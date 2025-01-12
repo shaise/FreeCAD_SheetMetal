@@ -598,6 +598,8 @@ def getElementFromTNP(tnpName):
 def smIsParallel(v1, v2):
     return abs(abs(v1.normalize().dot(v2.normalize())) - 1.0) < smEpsilon
 
+def smIsNormal(v1, v2):
+    return abs(v1.dot(v2)) < smEpsilon
 
 def smAddProperty(obj, proptype, name, proptip, defval=None, paramgroup="Parameters", 
                   replacedname = None, readOnly = False, isHiddden = False, attribs = 0):

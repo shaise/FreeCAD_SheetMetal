@@ -151,7 +151,7 @@ class TangentFaces:
         # returns True if the cylinder is tangent to the plane
         # (there is 'line contact' between the surfaces)
         return (
-            p.Axis.isNormal(c.Axis, eps_angular)
+            SheetMetalTools.smIsNormal(p.Axis, c.Axis)
             and abs(abs(c.Center.distanceToPlane(p.Position, p.Axis)) - c.Radius) < eps
         )
 
@@ -191,7 +191,7 @@ class TangentFaces:
                 or abs(c.Radius - abs(t.MajorRadius + t.MinorRadius)) < eps
             )
         ) or (
-            c.Axis.isNormal(t.Axis, eps_angular)
+            SheetMetalTools.smIsNormal(c.Axis, t.Axis)
             and abs(abs(t.Center.distanceToLine(c.Center, c.Axis)) - t.MajorRadius)
             < eps
             and abs(c.Radius - t.MinorRadius) < eps
@@ -222,7 +222,7 @@ class TangentFaces:
             )
         ) or (
             abs(s.Radius - t.MinorRadius) < eps
-            and t.Axis.isNormal(s.Center - t.Center, eps_angular)
+            and SheetMetalTools.smIsNormal(t.Axis, s.Center - t.Center)
             and abs(t.Center.distanceToPoint(s.Center) - t.MajorRadius) < eps
         )
 
