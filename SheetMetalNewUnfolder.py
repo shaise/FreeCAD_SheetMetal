@@ -108,7 +108,11 @@ class EstimateThickness:
             for f in shape.Faces
             if f.hashCode() != ref_face.hashCode()
             and f.Surface.TypeId == "Part::GeomPlane"
-            and ref_face.Surface.Axis.isParallel(f.Surface.Axis, eps_angular)
+            and abs(
+                abs(ref_face.Surface.Axis.normalize().dot(f.Surface.Axis.normalize()))
+                - 1.0
+            )
+            < eps
         ]
         if not candidates:
             return 0.0
@@ -142,7 +146,7 @@ class TangentFaces:
         # returns True if the two planes have similar normals and the base
         # point of the first plane is (nearly) coincident with the second plane
         return (
-            p1.Axis.isParallel(p2.Axis, eps_angular)
+            abs(abs(p1.Axis.normalize().dot(p2.Axis.normalize())) - 1.0) < eps
             and p1.Position.distanceToPlane(p2.Position, p2.Axis) < eps
         )
 
@@ -160,7 +164,7 @@ class TangentFaces:
         # returns True if the two cylinders have parallel axis' and those axis'
         # are separated by a distance of approximately r1 + r2
         return (
-            c1.Axis.isParallel(c2.Axis, eps_angular)
+            abs(abs(c1.Axis.normalize().dot(c2.Axis.normalize())) - 1.0) < eps
             and abs(
                 c1.Center.distanceToLine(c2.Center, c2.Axis) - (c1.Radius + c2.Radius)
             )
@@ -172,7 +176,7 @@ class TangentFaces:
         # Imagine a donut sitting flat on a table.
         # That's our tangency condition for a plane and a toroid.
         return (
-            p.Axis.isParallel(t.Axis, eps_angular)
+            abs(abs(p.Axis.normalize().dot(t.Axis.normalize())) - 1.0) < eps
             and abs(abs(t.Center.distanceToPlane(p.Position, p.Axis)) - t.MinorRadius)
             < eps
         )
@@ -184,7 +188,7 @@ class TangentFaces:
         # - a donut shoved onto a shaft with no wiggle room
         # - a cylinder with an axis tangent to the central circle of the donut
         return (
-            c.Axis.isParallel(t.Axis, eps_angular)
+            abs(abs(c.Axis.normalize().dot(t.Axis.normalize())) - 1.0) < eps
             and c.Center.distanceToLine(t.Center, t.Axis) < eps
             and (
                 abs(c.Radius - abs(t.MajorRadius - t.MinorRadius)) < eps
@@ -230,7 +234,7 @@ class TangentFaces:
     def compare_torus_torus(t1: Part.Toroid, t2: Part.Toroid) -> bool:
         return (
             t1.Center.distanceToLine(t2.Center, t2.Axis) < eps
-            and t1.Axis.isParallel(t2.Axis, eps_angular)
+            and abs(abs(t1.Axis.normalize().dot(t2.Axis.normalize())) - 1.0) < eps
             and abs(
                 t1.Center.distanceToPoint(t2.Center) ** 2
                 + (t1.MajorRadius - t2.MajorRadius) ** 2
@@ -283,7 +287,7 @@ class TangentFaces:
     @staticmethod
     def compare_torus_cone(t: Part.Toroid, cn: Part.Cone) -> bool:
         return (
-            t.Axis.isParallel(cn.Axis, eps_angular)
+            abs(abs(t.Axis.normalize().dot(cn.Axis.normalize())) - 1.0) < eps
             and cn.Apex.distanceToLine(t.Center, t.Axis) < eps
             and (
                 abs(
@@ -448,23 +452,25 @@ class SketchExtraction:
 
     @staticmethod
     def edges_to_sketch_object(
-        edges: list[Part.Edge], 
+        edges: list[Part.Edge],
         object_name: str,
         existing_sketches: list[str] = None,
-        color: str = "#00FF00"
+        color: str = "#00FF00",
     ) -> FreeCAD.DocumentObject:
         """Uses functionality from the Draft API to convert a list of edges into a
         Sketch document object. This allows the user to more easily make small
         changes to the sheet metal cutting pattern when prepping it
         for fabrication."""
         cleaned_up_edges = Edge2DCleanup.cleanup_sketch(edges, 0.1)
-        #cleaned_up_edges = edges
+        # cleaned_up_edges = edges
 
         # See if there is an existing sketch with the same name, use it insted of creating
         if existing_sketches is None:
             existing_sketch_name = ""
         else:
-            existing_sketch_name =  next((item for item in existing_sketches if item.startswith(object_name)), "")
+            existing_sketch_name = next(
+                (item for item in existing_sketches if item.startswith(object_name)), ""
+            )
         existing_sketch = FreeCAD.ActiveDocument.getObject(existing_sketch_name)
         if existing_sketch is not None:
             existing_sketch.deleteAllGeometry()
@@ -474,9 +480,9 @@ class SketchExtraction:
             # caused errors with some shapes
             cleaned_up_edges,
             autoconstraints=False,
-            addTo = existing_sketch,
-            delete = False,
-            name = object_name,
+            addTo=existing_sketch,
+            delete=False,
+            name=object_name,
         )
         sk.Label = object_name
         sk.recompute()
@@ -484,7 +490,7 @@ class SketchExtraction:
         if FreeCAD.GuiUp:
             rgb_color = tuple(int(color[i : i + 2], 16) for i in (1, 3, 5))
             v = FreeCAD.Version()
-            if v[0] == '0' and int(v[1]) < 21:
+            if v[0] == "0" and int(v[1]) < 21:
                 rgb_color = tuple(i / 255 for i in rgb_color)
             sk.ViewObject.LineColor = rgb_color
             sk.ViewObject.PointColor = rgb_color
@@ -1098,14 +1104,15 @@ def unfold(
 
 
 def getUnfold(
-        bac: BendAllowanceCalculator, solid: Part.Feature, facename : str
-    ) -> tuple[Part.Face, Part.Shape, Part.Compound, FreeCAD.Vector]:
+    bac: BendAllowanceCalculator, solid: Part.Feature, facename: str
+) -> tuple[Part.Face, Part.Shape, Part.Compound, FreeCAD.Vector]:
     object_placement = solid.Placement.toMatrix()
-    shp = solid.Shape.transformed(object_placement.inverse())   
+    shp = solid.Shape.transformed(object_placement.inverse())
     root_face_index = int(facename[4:]) - 1
     unfolded_shape, bend_lines = unfold(shp, root_face_index, bac)
     root_normal = shp.Faces[root_face_index].normalAt(0, 0)
     return shp.Faces[root_face_index], unfolded_shape, bend_lines, root_normal
+
 
 def getUnfoldSketches(
     selected_face: Part.Face,
@@ -1116,7 +1123,7 @@ def getUnfoldSketches(
     split_sketches: bool = False,
     sketch_color: str = "#000080",
     bend_sketch_color: str = "#c00000",
-    internal_sketch_solor: str ="#ff5733"      
+    internal_sketch_solor: str = "#ff5733",
 ) -> list[Part.Feature]:
     sketch_profile, inner_wires, hole_wires = SketchExtraction.extract_manually(
         unfolded_shape, root_normal
@@ -1127,7 +1134,9 @@ def getUnfoldSketches(
     )
 
     if not split_sketches:
-        sketch_profile = Part.makeCompound([sketch_profile, *inner_wires, *hole_wires, bend_lines])
+        sketch_profile = Part.makeCompound(
+            [sketch_profile, *inner_wires, *hole_wires, bend_lines]
+        )
         inner_wires = None
         hole_wires = None
         bend_lines = None
@@ -1141,7 +1150,10 @@ def getUnfoldSketches(
     if bend_lines and bend_lines.Edges:
         bend_lines = bend_lines.transformed(sketch_align_transform)
         bend_lines_doc_obj = SketchExtraction.edges_to_sketch_object(
-            bend_lines.Edges, "Unfold_Sketch_Bends", existing_sketches, bend_sketch_color
+            bend_lines.Edges,
+            "Unfold_Sketch_Bends",
+            existing_sketches,
+            bend_sketch_color,
         )
         bend_lines_doc_obj.ViewObject.DrawStyle = "Dashdot"
         sketch_objects_list.append(bend_lines_doc_obj)
@@ -1149,13 +1161,19 @@ def getUnfoldSketches(
     if inner_wires:
         inner_lines = Part.makeCompound(inner_wires).transformed(sketch_align_transform)
         inner_lines_doc_obj = SketchExtraction.edges_to_sketch_object(
-            inner_lines.Edges, "Unfold_Sketch_Internal", existing_sketches, internal_sketch_solor
+            inner_lines.Edges,
+            "Unfold_Sketch_Internal",
+            existing_sketches,
+            internal_sketch_solor,
         )
         sketch_objects_list.append(inner_lines_doc_obj)
     if hole_wires:
         hole_lines = Part.makeCompound(hole_wires).transformed(sketch_align_transform)
         hole_lines_doc_obj = SketchExtraction.edges_to_sketch_object(
-            hole_lines.Edges, "Unfold_Sketch_Holes", existing_sketches, internal_sketch_solor
+            hole_lines.Edges,
+            "Unfold_Sketch_Holes",
+            existing_sketches,
+            internal_sketch_solor,
         )
         sketch_objects_list.append(hole_lines_doc_obj)
     return sketch_objects_list
