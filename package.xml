@@ -16,6 +16,7 @@
       <subdirectory>./</subdirectory>
       <tag>sheetmetal</tag>
       <depend>networkx</depend>
+      <depend>typing-extensions</depend>
     </workbench>
   </content>
 
