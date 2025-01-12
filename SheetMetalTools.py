@@ -39,7 +39,6 @@ panels_path = os.path.join(mod_path, "Resources", "panels")
 language_path = os.path.join(mod_path, "translations")
 params = FreeCAD.ParamGet("User parameter:BaseApp/Preferences/Mod/SheetMetal")
 smEpsilon = FreeCAD.Base.Precision.approximation()
-print("======> Epsilon:", + smEpsilon)
 smForceRecompute = False
 smObjectsToRecompute = set()
 
