@@ -38,7 +38,8 @@ icons_path = os.path.join(mod_path, "Resources", "icons")
 panels_path = os.path.join(mod_path, "Resources", "panels")
 language_path = os.path.join(mod_path, "translations")
 params = FreeCAD.ParamGet("User parameter:BaseApp/Preferences/Mod/SheetMetal")
-smEpsilon = 0.0000001
+smEpsilon = FreeCAD.Base.Precision.approximation()
+print("======> Epsilon:", + smEpsilon)
 smForceRecompute = False
 smObjectsToRecompute = set()
 
@@ -593,6 +594,10 @@ def getElementFromTNP(tnpName):
     if len(names) > 1:
         FreeCAD.Console.PrintWarning("Warning: Tnp Name still visible: " + tnpName + "\n")
     return names[len(names) - 1].lstrip('?')
+
+def smIsParallel(v1, v2):
+    return abs(abs(v1.normalize().dot(v2.normalize())) - 1.0) < smEpsilon
+
 
 def smAddProperty(obj, proptype, name, proptip, defval=None, paramgroup="Parameters", 
                   replacedname = None, readOnly = False, isHiddden = False, attribs = 0):

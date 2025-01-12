@@ -33,6 +33,7 @@ from typing import Self
 import FreeCAD
 import Part
 import Draft
+import SheetMetalTools
 from FreeCAD import Matrix, Placement, Rotation, Vector
 from TechDraw import projectEx as project_shape_to_plane
 
@@ -108,11 +109,7 @@ class EstimateThickness:
             for f in shape.Faces
             if f.hashCode() != ref_face.hashCode()
             and f.Surface.TypeId == "Part::GeomPlane"
-            and abs(
-                abs(ref_face.Surface.Axis.normalize().dot(f.Surface.Axis.normalize()))
-                - 1.0
-            )
-            < eps
+            and SheetMetalTools.smIsParallel(ref_face.Surface.Axis, f.Surface.Axis)
         ]
         if not candidates:
             return 0.0
@@ -146,7 +143,7 @@ class TangentFaces:
         # returns True if the two planes have similar normals and the base
         # point of the first plane is (nearly) coincident with the second plane
         return (
-            abs(abs(p1.Axis.normalize().dot(p2.Axis.normalize())) - 1.0) < eps
+            SheetMetalTools.smIsParallel(p1.Axis, p2.Axis)
             and p1.Position.distanceToPlane(p2.Position, p2.Axis) < eps
         )
 
@@ -164,7 +161,7 @@ class TangentFaces:
         # returns True if the two cylinders have parallel axis' and those axis'
         # are separated by a distance of approximately r1 + r2
         return (
-            abs(abs(c1.Axis.normalize().dot(c2.Axis.normalize())) - 1.0) < eps
+            SheetMetalTools.smIsParallel(c1.Axis, c2.Axis)
             and abs(
                 c1.Center.distanceToLine(c2.Center, c2.Axis) - (c1.Radius + c2.Radius)
             )
@@ -176,7 +173,7 @@ class TangentFaces:
         # Imagine a donut sitting flat on a table.
         # That's our tangency condition for a plane and a toroid.
         return (
-            abs(abs(p.Axis.normalize().dot(t.Axis.normalize())) - 1.0) < eps
+            SheetMetalTools.smIsParallel(p.Axis, t.Axis)
             and abs(abs(t.Center.distanceToPlane(p.Position, p.Axis)) - t.MinorRadius)
             < eps
         )
@@ -188,7 +185,7 @@ class TangentFaces:
         # - a donut shoved onto a shaft with no wiggle room
         # - a cylinder with an axis tangent to the central circle of the donut
         return (
-            abs(abs(c.Axis.normalize().dot(t.Axis.normalize())) - 1.0) < eps
+            SheetMetalTools.smIsParallel(c.Axis, t.Axis)
             and c.Center.distanceToLine(t.Center, t.Axis) < eps
             and (
                 abs(c.Radius - abs(t.MajorRadius - t.MinorRadius)) < eps
@@ -234,7 +231,7 @@ class TangentFaces:
     def compare_torus_torus(t1: Part.Toroid, t2: Part.Toroid) -> bool:
         return (
             t1.Center.distanceToLine(t2.Center, t2.Axis) < eps
-            and abs(abs(t1.Axis.normalize().dot(t2.Axis.normalize())) - 1.0) < eps
+            and SheetMetalTools.smIsParallel(t1.Axis, t2.Axis)
             and abs(
                 t1.Center.distanceToPoint(t2.Center) ** 2
                 + (t1.MajorRadius - t2.MajorRadius) ** 2
@@ -287,7 +284,7 @@ class TangentFaces:
     @staticmethod
     def compare_torus_cone(t: Part.Toroid, cn: Part.Cone) -> bool:
         return (
-            abs(abs(t.Axis.normalize().dot(cn.Axis.normalize())) - 1.0) < eps
+            SheetMetalTools.smIsParallel(t.Axis, cn.Axis)
             and cn.Apex.distanceToLine(t.Center, t.Axis) < eps
             and (
                 abs(
