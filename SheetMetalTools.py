@@ -39,7 +39,6 @@ panels_path = os.path.join(mod_path, "Resources", "panels")
 language_path = os.path.join(mod_path, "translations")
 params = FreeCAD.ParamGet("User parameter:BaseApp/Preferences/Mod/SheetMetal")
 smEpsilon = FreeCAD.Base.Precision.approximation()
-print("======> Epsilon:", + smEpsilon)
 smForceRecompute = False
 smObjectsToRecompute = set()
 
@@ -598,6 +597,8 @@ def getElementFromTNP(tnpName):
 def smIsParallel(v1, v2):
     return abs(abs(v1.normalize().dot(v2.normalize())) - 1.0) < smEpsilon
 
+def smIsNormal(v1, v2):
+    return abs(v1.dot(v2)) < smEpsilon
 
 def smAddProperty(obj, proptype, name, proptip, defval=None, paramgroup="Parameters", 
                   replacedname = None, readOnly = False, isHiddden = False, attribs = 0):

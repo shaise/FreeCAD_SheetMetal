@@ -28,7 +28,6 @@ from itertools import combinations
 from math import degrees, log10, pi, radians, sin, tan
 from operator import mul as multiply_operator
 from statistics import StatisticsError, mode
-from typing import Self
 
 import FreeCAD
 import Part
@@ -152,7 +151,7 @@ class TangentFaces:
         # returns True if the cylinder is tangent to the plane
         # (there is 'line contact' between the surfaces)
         return (
-            p.Axis.isNormal(c.Axis, eps_angular)
+            SheetMetalTools.smIsNormal(p.Axis, c.Axis)
             and abs(abs(c.Center.distanceToPlane(p.Position, p.Axis)) - c.Radius) < eps
         )
 
@@ -192,7 +191,7 @@ class TangentFaces:
                 or abs(c.Radius - abs(t.MajorRadius + t.MinorRadius)) < eps
             )
         ) or (
-            c.Axis.isNormal(t.Axis, eps_angular)
+            SheetMetalTools.smIsNormal(c.Axis, t.Axis)
             and abs(abs(t.Center.distanceToLine(c.Center, c.Axis)) - t.MajorRadius)
             < eps
             and abs(c.Radius - t.MinorRadius) < eps
@@ -223,7 +222,7 @@ class TangentFaces:
             )
         ) or (
             abs(s.Radius - t.MinorRadius) < eps
-            and t.Axis.isNormal(s.Center - t.Center, eps_angular)
+            and SheetMetalTools.smIsNormal(t.Axis, s.Center - t.Center)
             and abs(t.Center.distanceToPoint(s.Center) - t.MajorRadius) < eps
         )
 
@@ -424,7 +423,7 @@ class BendDirection(Enum):
     DOWN = auto()
 
     @staticmethod
-    def from_face(bent_face: Part.Face) -> Self:
+    def from_face(bent_face: Part.Face):
         """Cylindrical faces may be convex or concave, and the boundary
         representation can be forward or reversed. the bend direction may be
         determined according to these values."""
@@ -570,7 +569,7 @@ class BendAllowanceCalculator:
         self.k_factor_values = None
 
     @classmethod
-    def from_single_value(cls, k_factor: float) -> Self:
+    def from_single_value(cls, k_factor: float):
         """one k-factor for all radius:thickness ratios"""
         instance = cls()
         instance.k_factor_standard = cls.KFactorStandard.ANSI
@@ -624,7 +623,7 @@ class BendAllowanceCalculator:
         DIN = auto()
 
     @classmethod
-    def from_spreadsheet(cls, sheet: FreeCAD.DocumentObject) -> Self:
+    def from_spreadsheet(cls, sheet: FreeCAD.DocumentObject):
         instance = cls()
         r_t_header = sheet.getContents("A1")
         r_t_header = "".join(c for c in r_t_header if c not in "' ").lower()
