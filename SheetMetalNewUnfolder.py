@@ -785,13 +785,12 @@ def build_graph_of_tangent_faces(shp: Part.Shape, root: int) -> nx.Graph:
     for c in nx.connected_components(graph_of_shape_faces):
         if root in c:
             return graph_of_shape_faces.subgraph(c).copy()
-    # raise and error if there is nothing tangent to the seed face
-    errmsg = (
-        "No faces were found that are tangent to the selected face. "
-        "Try selecting a different face, and/"
-        "or confirm that the shape is a watertight solid."
-    )
-    raise RuntimeError(errmsg)
+    # If there is nothing tangent to the root face, return a graph with one
+    # node and no edges.
+    # This is useful for dxf/svg export of flat plates for manufacturing.
+    single_face_graph = nx.Graph()
+    single_face_graph.add_node(root)
+    return single_face_graph
 
 
 def unroll_cylinder(
@@ -1094,7 +1093,12 @@ def unfold(
     solid_components = [f.extrude(extrude_vec) for f in list_of_faces]
     # note that the multiFuse function can also accept a tolerance/fuzz value
     # argument. In testing, supplying such a value did not change performance
-    solid = solid_components[0].multiFuse(solid_components[1:]).removeSplitter()
+    if len(solid_components) > 1:
+        solid = solid_components[0].multiFuse(solid_components[1:]).removeSplitter()
+    else:
+        # Trying to run multifuse with only a single shape tends to generate
+        # OCC warnings, so don't do that.
+        solid = solid_components[0]
     bend_lines = Part.makeCompound(list_of_bend_lines)
     return solid, bend_lines
 
