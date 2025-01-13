@@ -99,6 +99,7 @@ Starting from FreeCAD 0.17 it can be installed via the [Addon Manager](https://g
 * FreeCAD Forum announcement/discussion [thread](https://forum.freecadweb.org/viewtopic.php?f=3&t=60818) 
 
 #### Release notes:
+* V0.7.01 13 Jan 2025:  New Unfolder compatibility with FC0.21 and LS3 by [@alexneufeld][alexneufeld] and [@Syres916][Syres916].  
 * V0.7.00 11 Jan 2025:  New SheetMetal Unfolder! by [@alexneufeld][alexneufeld].  
                       - Unfolder backward compatibility fixes by [@GS90][GS90].  
                       - Typo fixes by [@hasecilu][hasecilu].  

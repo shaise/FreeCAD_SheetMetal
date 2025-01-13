@@ -34,24 +34,20 @@ import SheetMetalUnfolder
 from SheetMetalTools import SMLogger, UnfoldException
 from engineering_mode import engineering_mode_enabled
 
-from FreeCAD import Vector
-if hasattr(Vector, "isParallel"):
-    try:
-        import SheetMetalNewUnfolder
-        from SheetMetalNewUnfolder import BendAllowanceCalculator
-        NewUnfolderAvailable = True
-    except ImportError:
-        NewUnfolderAvailable = False
-        FreeCAD.Console.PrintWarning(
-            "New unfolder not available on versions pre FreeCAD 1.0. Using old Unfolder\n"
-        )
-else:
+translate = FreeCAD.Qt.translate
+
+try:
+    import SheetMetalNewUnfolder
+    from SheetMetalNewUnfolder import BendAllowanceCalculator
+    NewUnfolderAvailable = True
+except ImportError:
     NewUnfolderAvailable = False
     FreeCAD.Console.PrintWarning(
-        "New unfolder not available on versions pre FreeCAD 1.0. Using old Unfolder\n"
+        translate( "SheetMetal", 
+            "Networkx dependency is missing or FreeCAD is too old. Reverting to old Unfolder\n"
+        )
     )
 
-translate = FreeCAD.Qt.translate
 
 # IMPORTANT: please remember to change the element map version in case of any
 # changes in modeling logic
