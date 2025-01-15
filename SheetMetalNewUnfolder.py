@@ -56,6 +56,33 @@ class EstimateThickness:
     of a solid-modelled sheet metal part."""
 
     @staticmethod
+    def from_normal_edges(shp: Part.Shape, selected_face: int) -> float:
+        """Get the modal length of all straight edges that share a vertex with
+        the selected root face, and are orinted in line with the root faces
+        normal direction. Edges that meet this criteria usually correspond to
+        the sheet thickness."""
+        num_places = abs(int(log10(eps)))
+        root_face = shp.Faces[selected_face]
+        normal = root_face.Surface.Axis
+        # Checking membership of an edge in a shape directly won't work.
+        # We must compare via hashCodes instead.
+        root_face_edge_hashes = [e.hashCode() for e in root_face.Edges]
+        length_values = []
+        for v in root_face.Vertexes:
+            for e in shp.ancestorsOfType(v, Part.Edge):
+                if (
+                    e.hashCode() not in root_face_edge_hashes
+                    and e.Curve.TypeId == "Part::GeomLine"
+                    and SheetMetalTools.smIsParallel(e.Curve.Direction, normal)
+                ):
+                    length_values.append(round(e.Length, num_places))
+        try:
+            thickness_value = mode(length_values)
+            return thickness_value
+        except StatisticsError:
+            return 0.0
+
+    @staticmethod
     def from_cylinders(shp: Part.Shape) -> float:
         """In a typical sheet metal part, the solid model has lots of bends, each
         bend having 2 concentric cylindrical faces. If we take the modal
@@ -121,9 +148,11 @@ class EstimateThickness:
 
     @staticmethod
     def using_best_method(shape: Part.Shape, selected_face: int) -> float:
-        thickness = EstimateThickness.from_cylinders(shape)
+        thickness = EstimateThickness.from_normal_edges(shape, selected_face)
         if not thickness:
             thickness = EstimateThickness.from_face(shape, selected_face)
+        if not thickness:
+            thickness = EstimateThickness.from_cylinders(shape)
         if not thickness:
             errmsg = "Couldn't estimate thickness for shape!"
             raise RuntimeError(errmsg)
