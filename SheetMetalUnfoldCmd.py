@@ -203,7 +203,7 @@ class SMUnfold:
     def newUnfolder(self, obj):
         ''' Use new unfolder system '''
         if obj.MaterialSheet in ["_manual", "_none"]:
-            bac = BendAllowanceCalculator.from_single_value(obj.KFactor)
+            bac = BendAllowanceCalculator.from_single_value(obj.KFactor, obj.KFactorStandard)
         else:
             sheet = FreeCAD.ActiveDocument.getObject(obj.MaterialSheet)
             bac = BendAllowanceCalculator.from_spreadsheet(sheet)
@@ -403,10 +403,23 @@ if SheetMetalTools.isGuiLoaded():
             self.form.pushExport.clicked.connect(self.doExport)
             self.form.availableMds.currentIndexChanged.connect(self.availableMdsChacnge)
             self.form.dxfExport.toggled.connect(self.exportTypeChanged)
+            self.form.kfactorAnsi.toggled.connect(self.kfactorStdChanged)
 
             self.availableMdsChacnge()
             self.chkSketchChange()
             # self.form.update()
+
+        def kfactorStdChanged(self):
+            if self.form.kfactorAnsi.isChecked():
+                self.obj.KFactorStandard = "ansi"
+                self.obj.KFactor = self.obj.KFactor / 2.0
+                self.form.floatKFactor.setProperty("value", self.obj.KFactor) 
+                self.form.floatKFactor.setProperty("maximum", 1.0)
+            else:
+                self.obj.KFactorStandard = "din"
+                self.obj.KFactor = self.obj.KFactor * 2.0
+                self.form.floatKFactor.setProperty("maximum", 2.0)
+                self.form.floatKFactor.setProperty("value", self.obj.KFactor) 
 
         def recomputeObject(self, closeTask = False):
             SheetMetalTools.smForceRecompute = True

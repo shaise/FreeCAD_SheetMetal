@@ -99,6 +99,7 @@ Starting from FreeCAD 0.17 it can be installed via the [Addon Manager](https://g
 * FreeCAD Forum announcement/discussion [thread](https://forum.freecadweb.org/viewtopic.php?f=3&t=60818) 
 
 #### Release notes:
+* V0.7.03 15 Jan 2025:  Fix ansi/din support.  
 * V0.7.02 15 Jan 2025:  Fix thickness detection by [@alexneufeld][alexneufeld].  
                       - Improve detection of missing networkx dependency
 * V0.7.01 13 Jan 2025:  New Unfolder compatibility with FC0.21 and LS3 by [@alexneufeld][alexneufeld] and [@Syres916][Syres916].  

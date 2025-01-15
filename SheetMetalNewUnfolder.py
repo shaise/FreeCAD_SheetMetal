@@ -598,10 +598,10 @@ class BendAllowanceCalculator:
         self.k_factor_values = None
 
     @classmethod
-    def from_single_value(cls, k_factor: float):
+    def from_single_value(cls, k_factor: float, kfactor_standard: str):
         """one k-factor for all radius:thickness ratios"""
         instance = cls()
-        instance.k_factor_standard = cls.KFactorStandard.ANSI
+        instance.k_factor_standard = cls.KFactorStandard.ANSI if kfactor_standard == "ansi" else cls.KFactorStandard.DIN
         instance.radius_thickness_values = [
             1.0,
         ]
@@ -698,7 +698,7 @@ class BendAllowanceCalculator:
 
     def _convert_to_ansi_kfactor(self, k_factor: float) -> float:
         if self.k_factor_standard == self.KFactorStandard.DIN:
-            return 2 * k_factor
+            return k_factor / 2.0
         else:
             return k_factor
 
