@@ -1895,12 +1895,10 @@ Si la cara opuesta también falla, cambie Refine a falso en la característica <
     <message>
         <location filename="../../SketchOnSheetMetalCmd.py" line="428"/>
         <source>Extruded cut from Sketch On Sheet metal faces
-NOTE: Deprecated. Use Extruded Cutout function
 1. Select a flat face on sheet metal and
 2. Select a sketch on same face to create sheetmetal extruded cut.
 3. Use Property editor to modify other parameters</source>
         <translation>Corte extruido de croquis en caras de chapa metálica
-NOTA: OBSOLETO. Use la función Recorte Extruido
 1. Seleccione una cara plana en la chapa metálica y
 2. Seleccione un croquis en la misma cara para crear un corte extruido en chapa metálica.
 3. Use el editor de propiedades para modificar otros parámetros</translation>

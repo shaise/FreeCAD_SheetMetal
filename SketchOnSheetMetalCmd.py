@@ -353,7 +353,6 @@ if SheetMetalTools.isGuiLoaded():
                 "ToolTip": FreeCAD.Qt.translate(
                     "SheetMetal",
                     "Extruded cut from Sketch On Sheet metal faces\n"
-                    "NOTE: Deprecated. Use Extruded Cutout function\n"
                     "1. Select a flat face on sheet metal and\n"
                     "2. Select a sketch on same face to create sheetmetal extruded cut.\n"
                     "3. Use Property editor to modify other parameters",

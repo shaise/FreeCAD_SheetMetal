@@ -1857,7 +1857,6 @@ If the opposite face also fails then switch Refine to false on feature </source>
     <message>
         <location filename="../../SketchOnSheetMetalCmd.py" line="428"/>
         <source>Extruded cut from Sketch On Sheet metal faces
-NOTE: Deprecated. Use Extruded Cutout function
 1. Select a flat face on sheet metal and
 2. Select a sketch on same face to create sheetmetal extruded cut.
 3. Use Property editor to modify other parameters</source>
