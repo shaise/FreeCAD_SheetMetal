@@ -26,6 +26,7 @@
 import math
 import os
 import re
+import importlib
 import FreeCAD
 import importDXF
 import importSVG
@@ -747,6 +748,9 @@ def smIsEqualAngle(ang1, ang2, p=5):
         result = True
     return result
 
+def smIsNetworkxAvailable():
+    spec = importlib.util.find_spec("networkx")
+    return spec is not None
 
 class SMLogger:
     @classmethod

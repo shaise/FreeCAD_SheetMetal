@@ -36,15 +36,16 @@ from engineering_mode import engineering_mode_enabled
 
 translate = FreeCAD.Qt.translate
 
-try:
+if SheetMetalTools.smIsNetworkxAvailable():
     import SheetMetalNewUnfolder
     from SheetMetalNewUnfolder import BendAllowanceCalculator
     NewUnfolderAvailable = True
-except ImportError:
+else:
     NewUnfolderAvailable = False
     FreeCAD.Console.PrintWarning(
         translate( "SheetMetal", 
-            "Networkx dependency is missing or FreeCAD is too old. Reverting to old Unfolder\n"
+            "Networkx dependency is missing and required for the new Unfolder\n"
+            "Try uninstalling SheetMetal, refresh Addon Manager's cache, and reinstall\n"
         )
     )
 
