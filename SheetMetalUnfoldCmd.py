@@ -381,8 +381,7 @@ if SheetMetalTools.isGuiLoaded():
             return True
 
         def setupUi(self):
-            self.form.kfactorAnsi.setChecked(self.obj.KFactorStandard == "ansi")
-            self.form.kfactorDin.setChecked(self.obj.KFactorStandard == "din")
+            self.updateKFactor(True)
             if self.obj.Proxy.ExportType == "dxf":
                 self.form.dxfExport.setChecked(True)
             else:
@@ -410,18 +409,27 @@ if SheetMetalTools.isGuiLoaded():
             self.availableMdsChacnge()
             self.chkSketchChange()
             # self.form.update()
-
+        
+        def updateKFactor(self, updateCheck):
+            if self.obj.KFactorStandard == "ansi":
+                if updateCheck:
+                    self.form.kfactorAnsi.setChecked(True)
+                self.form.floatKFactor.setProperty("value", self.obj.KFactor) 
+                self.form.floatKFactor.setProperty("maximum", 1.0)
+            else:
+                if updateCheck:
+                    self.form.kfactorDin.setChecked(True)
+                self.form.floatKFactor.setProperty("maximum", 2.0)
+                self.form.floatKFactor.setProperty("value", self.obj.KFactor) 
+            
         def kfactorStdChanged(self):
             if self.form.kfactorAnsi.isChecked():
                 self.obj.KFactorStandard = "ansi"
                 self.obj.KFactor = self.obj.KFactor / 2.0
-                self.form.floatKFactor.setProperty("value", self.obj.KFactor) 
-                self.form.floatKFactor.setProperty("maximum", 1.0)
             else:
                 self.obj.KFactorStandard = "din"
                 self.obj.KFactor = self.obj.KFactor * 2.0
-                self.form.floatKFactor.setProperty("maximum", 2.0)
-                self.form.floatKFactor.setProperty("value", self.obj.KFactor) 
+            self.updateKFactor(False)
 
         def recomputeObject(self, closeTask = False):
             SheetMetalTools.smForceRecompute = True
