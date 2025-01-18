@@ -381,58 +381,62 @@ class TangentFaces:
         if needs_swap:
             s2, s1 = s1, s2
         cls = TangentFaces
-        match s1.TypeId, s2.TypeId:
+        if s1.TypeId == "Part::GeomPlane":
             # plane
-            case "Part::GeomPlane", "Part::GeomPlane":
+            if s2.TypeId == "Part::GeomPlane":
                 return cls.compare_plane_plane(s1, s2)
-            case "Part::GeomPlane", "Part::GeomCylinder":
+            elif s2.TypeId == "Part::GeomCylinder":
                 return cls.compare_plane_cylinder(s1, s2)
-            case "Part::GeomPlane", "Part::GeomToroid":
+            elif s2.TypeId == "Part::GeomToroid":
                 return cls.compare_plane_torus(s1, s2)
-            case "Part::GeomPlane", "Part::GeomSphere":
+            elif s2.TypeId == "Part::GeomSphere":
                 return cls.compare_plane_sphere(s1, s2)
-            case "Part::GeomPlane", "Part::GeomSurfaceOfExtrusion":
+            elif s2.TypeId == "Part::GeomSurfaceOfExtrusion":
                 return cls.compare_plane_extrusion(s1, s2)
-            case "Part::GeomPlane", "Part::GeomCone":
+            elif s2.TypeId == "Part::GeomCone":
                 return cls.compare_plane_cone(s1, s2)
             # cylinder
-            case "Part::GeomCylinder", "Part::GeomCylinder":
+        elif s1.TypeId == "Part::GeomCylinder":
+            if s2.TypeId == "Part::GeomCylinder":
                 return cls.compare_cylinder_cylinder(s1, s2)
-            case "Part::GeomCylinder", "Part::GeomToroid":
+            elif s2.TypeId == "Part::GeomToroid":
                 return cls.compare_cylinder_torus(s1, s2)
-            case "Part::GeomCylinder", "Part::GeomSphere":
+            elif s2.TypeId == "Part::GeomSphere":
                 return cls.compare_cylinder_sphere(s1, s2)
-            case "Part::GeomCylinder", "Part::GeomSurfaceOfExtrusion":
+            elif s2.TypeId == "Part::GeomSurfaceOfExtrusion":
                 return cls.compare_cylinder_extrusion(s1, s2)
-            case "Part::GeomCylinder", "Part::GeomCone":
+            elif s2.TypeId == "Part::GeomCone":
                 return cls.compare_cylinder_cone(s1, s2)
+        elif s1.TypeId == "Part::GeomToroid":
             # torus
-            case "Part::GeomToroid", "Part::GeomToroid":
+            if s2.TypeId == "Part::GeomToroid":
                 return cls.compare_torus_torus(s1, s2)
-            case "Part::GeomToroid", "Part::GeomSphere":
+            elif s2.TypeId == "Part::GeomSphere":
                 return cls.compare_torus_sphere(s1, s2)
-            case "Part::GeomToroid", "Part::SurfaceOfExtrusion":
+            elif s2.TypeId == "Part::GeomSurfaceOfExtrusion":
                 return cls.compare_torus_extrusion(s1, s2)
-            case "Part::GeomToroid", "Part::GeomCone":
+            elif s2.TypeId == "Part::GeomCone":
                 return cls.compare_torus_cone(s1, s2)
+        elif s1.TypeId == "Part::GeomSphere":
             # sphere
-            case "Part::GeomSphere", "Part::GeomSphere":
+            if s2.TypeId == "Part::GeomSphere":
                 return cls.compare_sphere_sphere(s1, s2)
-            case "Part::GeomSphere", "Part.GeomSurfaceOfExtrusion":
+            elif s2.TypeId == "Part::GeomSurfaceOfExtrusion":
                 return cls.compare_sphere_extrusion(s1, s2)
-            case "Part::GeomSphere", "Part.GeomCone":
+            elif s2.TypeId == "Part::GeomCone":
                 return cls.compare_sphere_cone(s1, s2)
+        elif s1.TypeId == "Part::GeomSurfaceOfExtrusion":
             # extrusion
-            case "Part::GeomSurfaceOfExtrusion", "Part::GeomSurfaceOfExtrusion":
+            if s2.TypeId == "Part::GeomSurfaceOfExtrusion":
                 return cls.compare_extrusion_extrusion(s1, s2)
-            case "Part::GeomSurfaceOfExtrusion", "Part::GeomCone":
+            elif s2.TypeId == "Part::GeomCone":
                 return cls.compare_extrusion_cone(s1, s2)
+        elif s1.TypeId == "Part::GeomCone":
             # cone
-            case "Part::GeomCone", "Part::GeomCone":
+            if s2.TypeId == "Part::GeomCone":
                 return cls.compare_cone_cone(s1, s2)
-            # all other cases
-            case _:
-                return False
+        # all other cases
+        return False
 
 
 class UVRef(Enum):
@@ -764,25 +768,24 @@ class Edge2DCleanup:
     def cleanup_sketch(sketch: list[Part.Edge], tolerance: float) -> list[Part.Edge]:
         new_edge_list = []
         for edge in sketch:
-            match edge.Curve.TypeId:
-                case "Part::GeomLine" | "Part::GeomCircle":
-                    new_edge_list.append(edge)
-                case _:
-                    if isinstance(edge.Curve, Part.BSplineCurve):
-                        bspline = edge
-                    else:
-                        bspline = edge.toNurbs().Edges[0]
-                    new_edge, max_err = Edge2DCleanup.bspline_to_line(bspline)
-                    if max_err < tolerance:
-                        new_edge_list.append(new_edge)
-                        continue
-                    new_edge, max_err = Edge2DCleanup.bspline_to_arc(bspline)
-                    if max_err < tolerance:
-                        new_edge_list.append(new_edge)
-                        continue
-                    new_edge_list.extend(
-                        a.toShape().Edges[0] for a in bspline.Curve.toBiArcs(tolerance)
-                    )
+            if edge.Curve.TypeId in ["Part::GeomLine", "Part::GeomCircle"]:
+                new_edge_list.append(edge)
+            else:
+                if isinstance(edge.Curve, Part.BSplineCurve):
+                    bspline = edge
+                else:
+                    bspline = edge.toNurbs().Edges[0]
+                new_edge, max_err = Edge2DCleanup.bspline_to_line(bspline)
+                if max_err < tolerance:
+                    new_edge_list.append(new_edge)
+                    continue
+                new_edge, max_err = Edge2DCleanup.bspline_to_arc(bspline)
+                if max_err < tolerance:
+                    new_edge_list.append(new_edge)
+                    continue
+                new_edge_list.extend(
+                    a.toShape().Edges[0] for a in bspline.Curve.toBiArcs(tolerance)
+                )
         return new_edge_list
 
 
@@ -884,17 +887,16 @@ def unroll_cylinder(
     # required depends on the initial orientation and the UV parameters.
     # The correct flip conditions were figured out by brute force
     # (checking each possible permutation).
-    match refpos:
-        case UVRef.BOTTOM_LEFT:
-            fixed_face = face
-        case UVRef.BOTTOM_RIGHT:
-            fixed_face = face.mirror(mirror_base_pos, Vector(0, 1))
-        case UVRef.TOP_LEFT:
-            fixed_face = face.mirror(mirror_base_pos, Vector(1, 0))
-        case UVRef.TOP_RIGHT:
-            fixed_face = face.mirror(mirror_base_pos, Vector(0, 1)).mirror(
-                mirror_base_pos, Vector(1, 0)
-            )
+    if refpos == UVRef.BOTTOM_LEFT:
+        fixed_face = face
+    elif refpos == UVRef.BOTTOM_RIGHT:
+        fixed_face = face.mirror(mirror_base_pos, Vector(0, 1))
+    elif refpos == UVRef.TOP_LEFT:
+        fixed_face = face.mirror(mirror_base_pos, Vector(1, 0))
+    elif refpos == UVRef.TOP_RIGHT:
+        fixed_face = face.mirror(mirror_base_pos, Vector(0, 1)).mirror(
+            mirror_base_pos, Vector(1, 0)
+        )
     # Draw a bend line a little bit longer than the original face,
     # then trim away the excess.
     bent_volume = fixed_face.translated(Vector(0, 0, -0.5)).extrude(Vector(0, 0, 1))
