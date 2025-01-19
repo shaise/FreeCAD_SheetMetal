@@ -69,7 +69,7 @@ def smFold(
             # adaptive   адаптивний
             if position == "intersection of planes" :
                 kfactor = (( bendR ) * math.tan(math.radians(bendA / 2.0)) * 180 / (bendA / 2.0) / math.pi - bendR ) / thk
-                print (kfactor)
+                # print (kfactor)
 
             unfoldLength = (bendR + kfactor * thk) * bendA * math.pi / 180.0
             neutralRadius = bendR + kfactor * thk
@@ -295,7 +295,6 @@ if SheetMetalTools.isGuiLoaded():
 
     icons_path = SheetMetalTools.icons_path
 
-
     class SMFoldViewProvider(SheetMetalTools.SMViewProvider):
         ''' Part WB style ViewProvider '''        
         def getIcon(self):
@@ -303,6 +302,13 @@ if SheetMetalTools.isGuiLoaded():
         
         def getTaskPanel(self, obj):
             return SMFoldOnLineTaskPanel(obj)
+        
+        def claimChildren(self):
+            objs = []
+            if not SheetMetalTools.smIsPartDesign(self.Object) and hasattr(self.Object, "baseObject"):
+                objs.append(self.Object.baseObject[0])
+            objs.append(self.Object.BendLine)
+            return objs
 
     class SMFoldPDViewProvider(SMFoldViewProvider):
         ''' Part Design WB style ViewProvider - backward compatibility only''' 

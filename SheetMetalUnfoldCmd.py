@@ -25,6 +25,7 @@
 ###############################################################################
 
 import os
+import sys
 import Part
 import FreeCAD
 import SheetMetalKfactor
@@ -35,8 +36,15 @@ from SheetMetalTools import SMLogger, UnfoldException
 from engineering_mode import engineering_mode_enabled
 
 translate = FreeCAD.Qt.translate
-
-if SheetMetalTools.smIsNetworkxAvailable():
+if sys.version_info.major == 3 and sys.version_info.minor < 10:
+    NewUnfolderAvailable = False
+    FreeCAD.Console.PrintWarning(
+        translate( "SheetMetal", 
+            "Python version is too old for the new unfolder\n"
+            "Reverting to the old one\n"
+        )
+    )
+elif SheetMetalTools.smIsNetworkxAvailable():
     import SheetMetalNewUnfolder
     from SheetMetalNewUnfolder import BendAllowanceCalculator
     NewUnfolderAvailable = True
