@@ -1176,7 +1176,7 @@ def getUnfoldSketches(
     split_sketches: bool = False,
     sketch_color: str = "#000080",
     bend_sketch_color: str = "#c00000",
-    internal_sketch_solor: str = "#ff5733",
+    internal_sketch_color: str = "#ff5733",
 ) -> list[Part.Feature]:
     sketch_profile, inner_wires, hole_wires = SketchExtraction.extract_manually(
         unfolded_shape, root_normal
@@ -1217,7 +1217,7 @@ def getUnfoldSketches(
             inner_lines.Edges,
             "Unfold_Sketch_Internal",
             existing_sketches,
-            internal_sketch_solor,
+            internal_sketch_color,
         )
         sketch_objects_list.append(inner_lines_doc_obj)
     if hole_wires:
@@ -1226,7 +1226,7 @@ def getUnfoldSketches(
             hole_lines.Edges,
             "Unfold_Sketch_Holes",
             existing_sketches,
-            internal_sketch_solor,
+            internal_sketch_color,
         )
         sketch_objects_list.append(hole_lines_doc_obj)
     return sketch_objects_list
