@@ -510,28 +510,28 @@ class SketchExtraction:
         for edge in cleaned_up_edges:
             startpoint = edge.firstVertex().Point
             endpoint = edge.lastVertex().Point
-            match edge.Curve.TypeId:
-                case "Part::GeomLine":
-                    sketch.addGeometry(Part.LineSegment(startpoint, endpoint))
-                case "Part::GeomCircle":
-                    if startpoint.distanceToPoint(endpoint) < eps:
-                        # full circle
-                        sketch.addGeometry(
-                            Part.Circle(
-                                edge.Curve.Center, Vector(0, 0, 1), edge.Curve.Radius
-                            )
+            curvetype = edge.Curve.TypeId
+            if curvetype == "Part::GeomLine":
+                sketch.addGeometry(Part.LineSegment(startpoint, endpoint))
+            elif curvetype == "Part::GeomCircle":
+                if startpoint.distanceToPoint(endpoint) < eps:
+                    # full circle
+                    sketch.addGeometry(
+                        Part.Circle(
+                            edge.Curve.Center, Vector(0, 0, 1), edge.Curve.Radius
                         )
-                    else:
-                        # arc
-                        pmin, pmax = edge.ParameterRange
-                        midpoint = edge.valueAt(pmin + 0.5 * (pmax - pmin))
-                        sketch.addGeometry(Part.Arc(startpoint, midpoint, endpoint))
-                case _:
-                    errmsg = (
-                        "Unuseable curve type found during sketch creation: "
-                        + edge.Curve.TypeId
                     )
-                    raise RuntimeError(errmsg)
+                else:
+                    # arc
+                    pmin, pmax = edge.ParameterRange
+                    midpoint = edge.valueAt(pmin + 0.5 * (pmax - pmin))
+                    sketch.addGeometry(Part.Arc(startpoint, midpoint, endpoint))
+            else:
+                errmsg = (
+                    "Unuseable curve type found during sketch creation: "
+                    + curvetype
+                )
+                raise RuntimeError(errmsg)
         sketch.Label = object_name
         sketch.recompute()
         # if the gui is running, change the color of the sketch lines and vertices
