@@ -61,6 +61,47 @@
     </widget>
    </item>
    <item>
+    <layout class="QHBoxLayout" name="materalDefinitionSheetLayout">
+     <item>
+      <widget class="QLabel" name="label_6">
+       <property name="text">
+        <string>Position</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QComboBox" name="comboPosition">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <item>
+        <property name="text">
+         <string>Intersection of Planes</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Middle</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Backward</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Forward</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
       <widget class="QCheckBox" name="checkFlipDir">

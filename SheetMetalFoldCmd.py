@@ -69,7 +69,7 @@ def smFold(
             # adaptive   адаптивний
             if position == "intersection of planes" :
                 kfactor = (( bendR ) * math.tan(math.radians(bendA / 2.0)) * 180 / (bendA / 2.0) / math.pi - bendR ) / thk
-                # print (kfactor)
+                FreeCAD.Console.PrintLog("Intersection of planes K-factor is set to " + str(kfactor) + "\n")
 
             unfoldLength = (bendR + kfactor * thk) * bendA * math.pi / 180.0
             neutralRadius = bendR + kfactor * thk
@@ -324,6 +324,7 @@ if SheetMetalTools.isGuiLoaded():
                 self, self.form.buttBaseObject, self.form.txtBaseObject, obj, "baseObject", ["Face"])
             SheetMetalTools.taskConnectSelectionSingle(
                 self, self.form.buttBendLine, self.form.txtBendLine, obj, "BendLine", ("Sketcher::SketchObject", []))
+            SheetMetalTools.taskConnectEnum(self, self.form.comboPosition, "Position")
             SheetMetalTools.taskConnectSpin(self, self.form.unitBendRadius, "radius")
             SheetMetalTools.taskConnectSpin(self, self.form.unitBendAngle, "angle")
             SheetMetalTools.taskConnectCheck(self, self.form.checkFlipDir, "invertbend")
