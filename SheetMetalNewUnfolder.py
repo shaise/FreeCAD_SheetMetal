@@ -31,7 +31,6 @@ from statistics import StatisticsError, mode
 
 import FreeCAD
 import Part
-import Draft
 import SheetMetalTools
 from FreeCAD import Matrix, Placement, Rotation, Vector
 from TechDraw import projectEx as project_shape_to_plane
@@ -486,45 +485,64 @@ class SketchExtraction:
         existing_sketches: list[str] = None,
         color: str = "#00FF00",
     ) -> FreeCAD.DocumentObject:
-        """Uses functionality from the Draft API to convert a list of edges into a
-        Sketch document object. This allows the user to more easily make small
-        changes to the sheet metal cutting pattern when prepping it
-        for fabrication."""
+        """Converts a list of edges to an un-constrained sketch object.
+        This allows the user to more easily make small changes to the sheet
+        metal cutting pattern when prepping it for fabrication."""
         cleaned_up_edges = Edge2DCleanup.cleanup_sketch(edges, 0.1)
-        # cleaned_up_edges = edges
-
-        # See if there is an existing sketch with the same name, use it insted of creating
+        # See if there is an existing sketch with the same name,
+        # use it insted of creating a new one.
         if existing_sketches is None:
             existing_sketch_name = ""
         else:
             existing_sketch_name = next(
                 (item for item in existing_sketches if item.startswith(object_name)), ""
             )
-        existing_sketch = FreeCAD.ActiveDocument.getObject(existing_sketch_name)
-        if existing_sketch is not None:
-            existing_sketch.deleteAllGeometry()
+        sketch = FreeCAD.ActiveDocument.getObject(existing_sketch_name)
+        if sketch is not None:
+            sketch.deleteAllGeometry()
+        else:
+            # if there is not already an existing sketch, create one.
+            sketch = FreeCAD.ActiveDocument.addObject(
+                "Sketcher::SketchObject", object_name
+            )
+            sketch.Placement = Placement()
 
-        sk = Draft.makeSketch(
-            # NOTE: in testing, using the autoconstraint feature
-            # caused errors with some shapes
-            cleaned_up_edges,
-            autoconstraints=False,
-            addTo=existing_sketch,
-            delete=False,
-            name=object_name,
-        )
-        sk.Label = object_name
-        sk.recompute()
-
+        for edge in cleaned_up_edges:
+            startpoint = edge.firstVertex().Point
+            endpoint = edge.lastVertex().Point
+            match edge.Curve.TypeId:
+                case "Part::GeomLine":
+                    sketch.addGeometry(Part.LineSegment(startpoint, endpoint))
+                case "Part::GeomCircle":
+                    if startpoint.distanceToPoint(endpoint) < eps:
+                        # full circle
+                        sketch.addGeometry(
+                            Part.Circle(
+                                edge.Curve.Center, Vector(0, 0, 1), edge.Curve.Radius
+                            )
+                        )
+                    else:
+                        # arc
+                        pmin, pmax = edge.ParameterRange
+                        midpoint = edge.valueAt(pmin + 0.5 * (pmax - pmin))
+                        sketch.addGeometry(Part.Arc(startpoint, midpoint, endpoint))
+                case _:
+                    errmsg = (
+                        "Unuseable curve type found during sketch creation: "
+                        + edge.Curve.TypeId
+                    )
+                    raise RuntimeError(errmsg)
+        sketch.Label = object_name
+        sketch.recompute()
+        # if the gui is running, change the color of the sketch lines and vertices
         if FreeCAD.GuiUp:
             rgb_color = tuple(int(color[i : i + 2], 16) for i in (1, 3, 5))
             v = FreeCAD.Version()
             if v[0] == "0" and int(v[1]) < 21:
                 rgb_color = tuple(i / 255 for i in rgb_color)
-            sk.ViewObject.LineColor = rgb_color
-            sk.ViewObject.PointColor = rgb_color
-
-        return sk
+            sketch.ViewObject.LineColor = rgb_color
+            sketch.ViewObject.PointColor = rgb_color
+        return sketch
 
     @staticmethod
     def wire_is_a_hole(w: Part.Wire) -> bool:
@@ -605,7 +623,11 @@ class BendAllowanceCalculator:
     def from_single_value(cls, k_factor: float, kfactor_standard: str):
         """one k-factor for all radius:thickness ratios"""
         instance = cls()
-        instance.k_factor_standard = cls.KFactorStandard.ANSI if kfactor_standard == "ansi" else cls.KFactorStandard.DIN
+        instance.k_factor_standard = (
+            cls.KFactorStandard.ANSI
+            if kfactor_standard == "ansi"
+            else cls.KFactorStandard.DIN
+        )
         instance.radius_thickness_values = [
             1.0,
         ]
