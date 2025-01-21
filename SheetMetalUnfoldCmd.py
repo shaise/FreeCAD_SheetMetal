@@ -94,7 +94,7 @@ def smUnfoldExportSketches(obj, useDialog = True):
     if len(obj.UnfoldSketches) == 1:
         sketchNames = [obj.UnfoldSketches[0]]
     else:
-        sketchNames = obj.UnfoldSketches[1:]
+        sketchNames = obj.UnfoldSketches
     for name in sketchNames:
         sketch = obj.Document.getObject(name)
         if sketch is None:
