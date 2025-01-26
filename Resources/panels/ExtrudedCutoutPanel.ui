@@ -17,7 +17,7 @@
    </sizepolicy>
   </property>
   <property name="windowTitle">
-   <string>Extruded Cutout Parameters</string>
+   <string>Extruded Cutout properties</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>

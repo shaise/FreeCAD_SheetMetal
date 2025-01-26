@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Bend sharp corner Parameters</string>
+   <string>Bend sharp corner properties</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>

@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Fold on sketch line parameters</string>
+   <string>Fold on sketch line properties</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>

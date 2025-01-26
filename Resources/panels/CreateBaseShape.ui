@@ -17,7 +17,7 @@
    </sizepolicy>
   </property>
   <property name="windowTitle">
-   <string>Generate Sheet Metal base shape</string>
+   <string>Sketched base shape properties</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
