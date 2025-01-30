@@ -167,7 +167,10 @@ if isGuiLoaded():
             if baseObject is not None:
                 baseObject.Visibility=True
             obj.Visibility=False
-            prop.Visibility=True
+            try:
+                prop.Visibility=True
+            except:
+                pass
             button.activeTypes = allowedTypes
             button.activeObject = obj
             button.activeProperty = selProperty
