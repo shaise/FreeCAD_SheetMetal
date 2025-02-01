@@ -2381,11 +2381,6 @@ if SheetMetalTools.isGuiLoaded():
             self.form.Offset.setEnabled(self.obj.BendType == "Offset")
             SheetMetalTools.taskPopulateSelectionList(self.form.tree, self.obj.baseObject)
 
-            # Updates of offset face reference mode
-            self.form.frameOffOff.setVisible(self.obj.OffsetType == "Offset")
-            self.form.frameOffType.setVisible(self.obj.OffsetFaceRefMode == True)
-            self.form.frameOffFaceRef.setVisible(self.obj.BendType == "Offset")
-
             # Make the button of angle face reference mode act like a checkbox:
             if self.obj.AngleFaceRefMode == True:
                 self.form.SelAngleFace.setChecked(True)
@@ -2435,7 +2430,7 @@ if SheetMetalTools.isGuiLoaded():
             # Updates of offset face reference mode
             self.form.frameOffFaceRef.setVisible(self.obj.BendType == "Offset")
             self.form.frameOffType.setVisible(self.obj.BendType == "Offset" and self.obj.OffsetFaceRefMode == True)
-            self.form.frameOffOff.setVisible(self.obj.BendType == "Offset" and self.obj.OffsetType == "Offset")
+            self.form.frameOffOff.setVisible(self.obj.BendType == "Offset" and self.obj.OffsetType == "Offset" and self.obj.OffsetFaceRefMode == True)
 
             self.obj.Document.recompute()
 
