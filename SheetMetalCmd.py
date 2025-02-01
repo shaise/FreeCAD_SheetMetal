@@ -321,7 +321,6 @@ def offsetFaceDistance (smFace, refFace, refEdge, thkFace): # Calculations for O
     refPlane = Part.Plane(refFace.CenterOfMass, refFace.normalAt(0,0))
 
     interLine = smPlane.intersect(refPlane)[0] # Intersection line between the planes of sheet metal and the reference
-    #offsetDist = interLine.toShape().distToShape(refEdge)[0]
     offsetDist = get_lowest_normal_distance_to_line(thkFace, interLine) # Get the distance between the intersection of the planes and the edge
 
     # Test if is necessary negative offset:
@@ -2030,10 +2029,7 @@ class SMBendWall:
         # print(gap1_list, gap2_list)
 
         # Calculate the angle based on reference face:
-        if fp.AngleFaceReference is None:
-            pass
-            #fp.AngleFaceReference = fp.baseObject
-        elif fp.AngleFaceRefMode == True:
+        if fp.AngleFaceRefMode == True:
             smObj, smSelItemName = fp.baseObject
             smSelItemName = smSelItemName[0]
             smFace, refEdge, thkFace = GetSMComparisonFace(smObj,smSelItemName) # Get the sheet metal reference face
@@ -2042,17 +2038,53 @@ class SMBendWall:
             refFace = refObj.Shape.getElement(refFace)
 
             # Angle calculation
-            refFaceNormal = refFace.normalAt(0,0).normalize()
+            try: # Get the face for 3D angle:
+                rotFace = thkFace.copy()
+
+                normalEdges = []
+
+                for edge1 in thkFace.Edges:
+                    edgeAvert1, edgeAvert2 = refEdge.Vertexes
+                    if edge1.Vertexes[0].isEqual(edgeAvert1) and edge1.Vertexes[1].isEqual(edgeAvert2):
+                        pass
+                    elif edge1.Vertexes[1].isEqual(edgeAvert1) and edge1.Vertexes[0].isEqual(edgeAvert2):
+                        pass
+                    else:
+                        normalEdges.append(edge1)
+
+                rotEdge = normalEdges[0]
+                rotAx3Dang = rotEdge.Vertexes[1].Point - rotEdge.Vertexes[0].Point
+
+                rotFace.rotate(rotEdge.Vertexes[0].Point, rotAx3Dang, 90)
+
+                projPlane = Part.Plane(rotFace.CenterOfMass, rotFace.normalAt(0,0).normalize())
+                refPlane = Part.Plane(refFace.CenterOfMass, refFace.normalAt(0,0).normalize())
+                angEdge = refFace.common(projPlane.intersect(refPlane)[0], 1e-6)
+
+                refAngPlane = projPlane.copy()
+                rotAx3Dang = angEdge.Vertexes[1].Point - angEdge.Vertexes[0].Point
+                rotPlac = FreeCAD.Placement(rotEdge.Vertexes[0].Point, rotAx3Dang, 90)
+                refAngPlane.rotate(rotPlac)
+
+                refFaceNormal = refAngPlane.normal(0,0).normalize()
+            except:
+                refFaceNormal = refFace.normalAt(0,0).normalize()
+                pass
+
             smFaceNor = smFace.normalAt(0,0).normalize()
             thkFaceNor = thkFace.normalAt(0,0).normalize()
 
-            if thkFaceNor.getAngle(refFaceNormal) < thkFaceNor.getAngle(-refFaceNormal):
-                refNormal = refFaceNormal
+            if refFaceNormal.isEqual(smFaceNor, 1e-6) or refFaceNormal.isEqual(-smFaceNor, 1e-6):
+                angleParFace = 180
             else:
-                refNormal = -refFaceNormal
-            
-            angleParFace = smFaceNor.getAngle(refNormal)
-            angleParFace = round(math.degrees(angleParFace),6)
+                if thkFaceNor.getAngle(refFaceNormal) < thkFaceNor.getAngle(-refFaceNormal):
+                    refNormal = refFaceNormal
+                else:
+                    refNormal = -refFaceNormal
+                
+                angleParFace = smFaceNor.getAngle(refNormal)
+                angleParFace = round(math.degrees(angleParFace),6)
+
             fp.angle.Value = angleParFace + fp.RelativeAngleToRef.Value
 
             if fp.invert == True:
@@ -2062,10 +2094,7 @@ class SMBendWall:
                 fp.angle.Value = 180 - fp.angle.Value + fp.RelativeAngleToRef.Value
 
         # Calculate the offset based on reference face:
-        if fp.OffsetFaceReference is None:
-            pass
-            #fp.OffsetFaceReference = fp.baseObject
-        elif fp.BendType == "Offset" and fp.OffsetFaceRefMode == True:
+        if fp.BendType == "Offset" and fp.OffsetFaceRefMode == True:
             smObj, smSelItemName = fp.baseObject
             smSelItemName = smSelItemName[0]
             smFace, refEdge, thkFace = GetSMComparisonFace(smObj,smSelItemName) # Get the sheet metal reference face and edge
@@ -2073,18 +2102,54 @@ class SMBendWall:
             refFace = refFace[0]
             refFace = refObj.Shape.getElement(refFace)
             
-            # New angle calculation
-            refFaceNormal = refFace.normalAt(0,0).normalize()
+            # Angle calculation
+            try: # Get the face for 3D angle:
+                rotFace = thkFace.copy()
+
+                normalEdges = []
+
+                for edge1 in thkFace.Edges:
+                    edgeAvert1, edgeAvert2 = refEdge.Vertexes
+                    if edge1.Vertexes[0].isEqual(edgeAvert1) and edge1.Vertexes[1].isEqual(edgeAvert2):
+                        pass
+                    elif edge1.Vertexes[1].isEqual(edgeAvert1) and edge1.Vertexes[0].isEqual(edgeAvert2):
+                        pass
+                    else:
+                        normalEdges.append(edge1)
+
+                rotEdge = normalEdges[0]
+                rotAx3Dang = rotEdge.Vertexes[1].Point - rotEdge.Vertexes[0].Point
+
+                rotFace.rotate(rotEdge.Vertexes[0].Point, rotAx3Dang, 90)
+
+                projPlane = Part.Plane(rotFace.CenterOfMass, rotFace.normalAt(0,0).normalize())
+                refPlane = Part.Plane(refFace.CenterOfMass, refFace.normalAt(0,0).normalize())
+                angEdge = refFace.common(projPlane.intersect(refPlane)[0], 1e-6)
+
+                refAngPlane = projPlane.copy()
+                rotAx3Dang = angEdge.Vertexes[1].Point - angEdge.Vertexes[0].Point
+                rotPlac = FreeCAD.Placement(rotEdge.Vertexes[0].Point, rotAx3Dang, 90)
+                refAngPlane.rotate(rotPlac)
+
+                refFaceNormal = refAngPlane.normal(0,0).normalize()
+            except:
+                refFaceNormal = refFace.normalAt(0,0).normalize()
+                pass
+
             smFaceNor = smFace.normalAt(0,0).normalize()
             thkFaceNor = thkFace.normalAt(0,0).normalize()
 
-            if thkFaceNor.getAngle(refFaceNormal) < thkFaceNor.getAngle(-refFaceNormal):
-                refNormal = refFaceNormal
+            if refFaceNormal.isEqual(smFaceNor, 1e-6) or refFaceNormal.isEqual(-smFaceNor, 1e-6):
+                angleParFace = 180
             else:
-                refNormal = -refFaceNormal
+                if thkFaceNor.getAngle(refFaceNormal) < thkFaceNor.getAngle(-refFaceNormal):
+                    refNormal = refFaceNormal
+                else:
+                    refNormal = -refFaceNormal
+                
+                angleParFace = smFaceNor.getAngle(refNormal)
+                angleParFace = round(math.degrees(angleParFace),6)
             
-            angleParFace = smFaceNor.getAngle(refNormal)
-            angleParFace = round(math.degrees(angleParFace),6)
             angleParFace = angleParFace + fp.RelativeAngleToRef.Value
 
             if fp.invert == True:
@@ -2094,7 +2159,7 @@ class SMBendWall:
                 angleParFace = 180 - angleParFace
 
             # Calculate the distance for the wall position:
-            try: # This 'try' is needed when the reference face isn't aligned (eg if its not just parallel rotated)
+            try: # This 'try' is needed when the reference face is 3D angle rotated
                 angleParFace = angleParFace[0]
             except:
                 pass
