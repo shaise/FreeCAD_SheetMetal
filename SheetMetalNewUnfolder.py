@@ -1303,8 +1303,17 @@ def getUnfold(
 ) -> tuple[Part.Face, Part.Shape, Part.Compound, Vector]:
     object_placement = solid.Placement.toMatrix()
     shp = solid.Shape.transformed(object_placement.inverse())
-    subshape = shp.getElement(facename)
-    root_face_index = shp.findSubShape(subshape)[1] - 1
+    if hasattr(shp, "findSubShape"):
+        # FreeCAD version >= 1.0
+        subshape = shp.getElement(facename)
+        root_face_index = shp.findSubShape(subshape)[1] - 1
+    else:
+        # FreeCAD version <= 0.21
+        try:
+            root_face_index = int(facename[4:]) - 1
+        except ValueError:
+            errmsg = f"Invalid shape name: {facename}"
+            raise RuntimeError(errmsg)
     sketch_lines, bend_lines = unfold(shp, root_face_index, bac)
     sketch_align_transform = SketchExtraction.move_to_origin(
         Part.makeCompound(sketch_lines), shp.Faces[root_face_index]
