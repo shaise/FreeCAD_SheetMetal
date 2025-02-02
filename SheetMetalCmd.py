@@ -2102,7 +2102,7 @@ class SMBendWall:
             smFace, refEdge, thkFace = GetSMComparisonFace(smObj,smSelItemName) # Get the sheet metal reference face
             refObj, refFace = fp.AngleFaceReference
 
-            if len(fnmatch.filter([refObj.Name], 'DatumPlane*')) > 0:
+            if len(fnmatch.filter([refObj.Name], '*Plane*')) > 0:
                 #Create a reference rectangular face to use instead of a datum
                 datump1 = FreeCAD.Vector(0, 0, 0) # Vertexes of the ref face
                 datump2 = FreeCAD.Vector(10, 0, 0)
@@ -2139,7 +2139,7 @@ class SMBendWall:
             smFace, refEdge, thkFace = GetSMComparisonFace(smObj,smSelItemName) # Get the sheet metal reference face and edge
             refObj, refFace = fp.OffsetFaceReference
 
-            if len(fnmatch.filter([refObj.Name], 'DatumPlane*')) > 0:
+            if len(fnmatch.filter([refObj.Name], '*Plane*')) > 0:
                 #Create a reference rectangular face to use instead of a datum
                 datump1 = FreeCAD.Vector(0, 0, 0) # Vertexes of the ref face
                 datump2 = FreeCAD.Vector(10, 0, 0)
@@ -2551,7 +2551,7 @@ if SheetMetalTools.isGuiLoaded():
             # Get the sheet metal object:
             try:
                 for obj in Gui.Selection.getSelectionEx():
-                    if not len(fnmatch.filter([obj.ObjectName], 'DatumPlane*')) > 0:
+                    if not len(fnmatch.filter([obj.ObjectName], '*Plane*')) > 0:
                         for subElem in obj.SubElementNames:
                             if type(obj.Object.Shape.getElement(subElem)) == Part.Edge:
                                 sel = obj
@@ -2578,7 +2578,7 @@ if SheetMetalTools.isGuiLoaded():
             checkRefFace = False
             for obj in Gui.Selection.getSelectionEx():
                 for subObj in obj.SubObjects:
-                    if type(subObj) == Part.Face and not len(fnmatch.filter([obj.ObjectName], 'DatumPlane*')) > 0:
+                    if type(subObj) == Part.Face and not len(fnmatch.filter([obj.ObjectName], '*Plane*')) > 0:
                         faceCount = faceCount + 1
                         if faceCount == 1:
                             for subObjName in obj.SubElementNames:
@@ -2587,7 +2587,7 @@ if SheetMetalTools.isGuiLoaded():
                                     checkRefFace = True
                         else:
                             print("If more than one face is selected, only the first is used for reference to angle and offset.")
-                if len(fnmatch.filter([obj.ObjectName], 'DatumPlane*')) > 0 and faceCount == 0:
+                if len(fnmatch.filter([obj.ObjectName], '*Plane*')) > 0 and faceCount == 0:
                     refAngOffset = obj.Object
                     checkRefFace = True
 
