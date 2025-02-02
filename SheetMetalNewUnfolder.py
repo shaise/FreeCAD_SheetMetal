@@ -1303,7 +1303,8 @@ def getUnfold(
 ) -> tuple[Part.Face, Part.Shape, Part.Compound, Vector]:
     object_placement = solid.Placement.toMatrix()
     shp = solid.Shape.transformed(object_placement.inverse())
-    root_face_index = int(facename[4:]) - 1
+    subshape = shp.getElement(facename)
+    root_face_index = shp.findSubShape(subshape)[1] - 1
     sketch_lines, bend_lines = unfold(shp, root_face_index, bac)
     sketch_align_transform = SketchExtraction.move_to_origin(
         Part.makeCompound(sketch_lines), shp.Faces[root_face_index]
@@ -1321,7 +1322,7 @@ def getUnfold(
     bend_lines_compound = Part.makeCompound(bend_lines)
     trimmed_bend_lines = bend_lines_compound.common(
         unbent_solid.translated(Vector(0.0, 0.0, 0.5 * thickness))
-    )
+    ).transformed(sketch_align_transform.inverse())
     return shp.Faces[root_face_index], inplace_unbend, trimmed_bend_lines, root_normal
 
 
@@ -1359,8 +1360,7 @@ def getUnfoldSketches(
     sketch_objects_list = [sketch_doc_obj]
     # bend lines are sometimes not present
     if bend_lines and bend_lines.Edges:
-        # bend lines are already positioned correctly,
-        # don't apply the alignment transform here.
+        bend_lines = bend_lines.transformed(sketch_align_transform)
         bend_lines_doc_obj = SketchExtraction.edges_to_sketch_object(
             bend_lines.Edges,
             "Unfold_Sketch_Bends",
