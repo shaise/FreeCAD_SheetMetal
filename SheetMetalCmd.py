@@ -2308,7 +2308,7 @@ if SheetMetalTools.isGuiLoaded():
 
             # Connections for Offset face referenced mode
             SheetMetalTools.taskConnectSelectionSingle(
-                self, self.form.hideButtWorkaround02, self.form.OffsetFaceRef, obj, "OffsetFaceReference", ["Face"])
+                self, self.form.hideButtWorkaround02, self.form.OffsetFaceRef, obj, "OffsetFaceReference", ["Face", "Plane"])
             self.form.hideButtWorkaround02.setVisible(False)
             selFaceIcon = icons_path + "\Face-selection.svg"
             self.form.SelOffsetFace.setIcon(QtGui.QIcon(selFaceIcon))
@@ -2319,7 +2319,7 @@ if SheetMetalTools.isGuiLoaded():
 
             # Connections for Angle face referenced mode
             SheetMetalTools.taskConnectSelectionSingle(
-                self, self.form.hideButtWorkaround01, self.form.AngleFaceRef, obj, "AngleFaceReference", ["Face"])
+                self, self.form.hideButtWorkaround01, self.form.AngleFaceRef, obj, "AngleFaceReference", ["Face", "Plane"])
             self.form.hideButtWorkaround01.setVisible(False)
             self.form.SelAngleFace.setIcon(QtGui.QIcon(selFaceIcon))
             self.form.SelAngleFace.released.connect(self.angleFaceModeButton)
