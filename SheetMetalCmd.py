@@ -27,6 +27,7 @@ import FreeCAD, Part, math
 import SheetMetalTools
 import PySide
 from PySide import QtGui, QtCore
+import fnmatch
 
 # IMPORTANT: please remember to change the element map version in case of any
 # changes in modeling logic
@@ -343,6 +344,72 @@ def offsetFaceDistance (smFace, refFace, refEdge, thkFace): # Calculations for O
     offsetDist = round(offsetDist,6)
 
     return offsetDist
+
+def relatAngleCalc (thkFace, refEdge, refFace, smFace): # Calculations for Angle and Offset face reference modes
+    """
+    Find the relative angle to apply for a sheet metal wall (aka flange),
+    considering the thickness where the wall gonna be, the edge opposite to the wall bend side,
+    the face that the wall gonna be parallel to and the sheet metal face side in opposition to
+    the wall bend side.
+    Parameters:
+        thkFace: thickness attached to the created wall
+        refEdge: edge commom to thkFace and to a sheet metal face side
+        refFace: a face used as reference for bend angle
+        smFace: a sheet metal face side in opposition to the wall bend side wich has a edge common with thkFace
+    Returns:
+        angleParFace: angle between the refFace and the smFace
+    """
+
+    try: # Get the face for 3D angle:
+        # Get the edge perpendicular to sheet metal side face
+        normalEdges = []
+        for edge1 in thkFace.Edges:
+            edgeAvert1, edgeAvert2 = refEdge.Vertexes
+            edgeBvert1, edgeBvert2 = edge1.Vertexes
+
+            vecAng1 = edgeAvert1.Point - edgeAvert2.Point
+            vecAng2 = edgeBvert1.Point - edgeBvert2.Point
+
+            if math.degrees(vecAng1.getAngle(vecAng2)) == 90:
+                normalEdges.append(edge1)
+
+        # Create one face as reference to project a line that represents the correct angle between the sheet metal and reference face
+        rotFace = thkFace.copy()
+        rotEdge = normalEdges[0]
+        rotAx3Dang = rotEdge.Vertexes[1].Point - rotEdge.Vertexes[0].Point
+
+        rotFace.rotate(rotEdge.Vertexes[0].Point, rotAx3Dang, 90)
+
+        projPlane = Part.Plane(rotFace.CenterOfMass, rotFace.normalAt(0,0).normalize())
+        refPlane = Part.Plane(refFace.CenterOfMass, refFace.normalAt(0,0).normalize())
+        angEdge = refFace.common(projPlane.intersect(refPlane)[0], 1e-6) # Edge that represents the correct angle
+
+        # Create a plane rotated at correct angle to be used to angle calculation after
+        refAngPlane = projPlane.copy()
+        rotAx3Dang = angEdge.Vertexes[1].Point - angEdge.Vertexes[0].Point
+        rotPlac = FreeCAD.Placement(rotEdge.Vertexes[0].Point, rotAx3Dang, 90)
+        refAngPlane.rotate(rotPlac)
+
+        refFaceNormal = refAngPlane.normal(0,0).normalize()
+    except:
+        refFaceNormal = refFace.normalAt(0,0).normalize()
+        pass
+
+    smFaceNor = smFace.normalAt(0,0).normalize()
+    thkFaceNor = thkFace.normalAt(0,0).normalize()
+
+    if refFaceNormal.isEqual(smFaceNor, 1e-6) or refFaceNormal.isEqual(-smFaceNor, 1e-6):
+        angleParFace = 180
+    else:
+        if thkFaceNor.getAngle(refFaceNormal) < thkFaceNor.getAngle(-refFaceNormal):
+            refNormal = refFaceNormal
+        else:
+            refNormal = -refFaceNormal
+        
+        angleParFace = smFaceNor.getAngle(refNormal)
+        angleParFace = round(math.degrees(angleParFace),6)
+
+    return angleParFace
 
 def smStrEdge(e):
     return (
@@ -2029,61 +2096,33 @@ class SMBendWall:
         # print(gap1_list, gap2_list)
 
         # Calculate the angle based on reference face:
-        if fp.AngleFaceRefMode == True:
+        if fp.AngleFaceRefMode == True and fp.AngleFaceReference != None:
             smObj, smSelItemName = fp.baseObject
             smSelItemName = smSelItemName[0]
             smFace, refEdge, thkFace = GetSMComparisonFace(smObj,smSelItemName) # Get the sheet metal reference face
             refObj, refFace = fp.AngleFaceReference
-            refFace = refFace[0]
-            refFace = refObj.Shape.getElement(refFace)
+
+            if len(fnmatch.filter([refObj.Name], 'DatumPlane*')) > 0:
+                #Create a reference rectangular face to use instead of a datum
+                datump1 = FreeCAD.Vector(0, 0, 0) # Vertexes of the ref face
+                datump2 = FreeCAD.Vector(10, 0, 0)
+                datump3 = FreeCAD.Vector(10, 10, 0)
+                datump4 = FreeCAD.Vector(0, 10, 0)
+                datumEdge1 = Part.LineSegment(datump1, datump2).toShape() # Edges of the ref face
+                datumEdge2 = Part.LineSegment(datump2, datump3).toShape()
+                datumEdge3 = Part.LineSegment(datump3, datump4).toShape()
+                datumEdge4 = Part.LineSegment(datump4, datump1).toShape()
+                datumWire = Part.Wire([datumEdge1, datumEdge2, datumEdge3, datumEdge4])  # Wire of the ref face
+                datumFace = Part.Face(datumWire)  # Face of the ref face
+                datumFace.Placement = refObj.Shape.Placement  # Put the face on the same place of datum
+
+                refFace = datumFace
+            else:
+                refFace = refFace[0]
+                refFace = refObj.Shape.getElement(refFace)
 
             # Angle calculation
-            try: # Get the face for 3D angle:
-                rotFace = thkFace.copy()
-
-                normalEdges = []
-
-                for edge1 in thkFace.Edges:
-                    edgeAvert1, edgeAvert2 = refEdge.Vertexes
-                    if edge1.Vertexes[0].isEqual(edgeAvert1) and edge1.Vertexes[1].isEqual(edgeAvert2):
-                        pass
-                    elif edge1.Vertexes[1].isEqual(edgeAvert1) and edge1.Vertexes[0].isEqual(edgeAvert2):
-                        pass
-                    else:
-                        normalEdges.append(edge1)
-
-                rotEdge = normalEdges[0]
-                rotAx3Dang = rotEdge.Vertexes[1].Point - rotEdge.Vertexes[0].Point
-
-                rotFace.rotate(rotEdge.Vertexes[0].Point, rotAx3Dang, 90)
-
-                projPlane = Part.Plane(rotFace.CenterOfMass, rotFace.normalAt(0,0).normalize())
-                refPlane = Part.Plane(refFace.CenterOfMass, refFace.normalAt(0,0).normalize())
-                angEdge = refFace.common(projPlane.intersect(refPlane)[0], 1e-6)
-
-                refAngPlane = projPlane.copy()
-                rotAx3Dang = angEdge.Vertexes[1].Point - angEdge.Vertexes[0].Point
-                rotPlac = FreeCAD.Placement(rotEdge.Vertexes[0].Point, rotAx3Dang, 90)
-                refAngPlane.rotate(rotPlac)
-
-                refFaceNormal = refAngPlane.normal(0,0).normalize()
-            except:
-                refFaceNormal = refFace.normalAt(0,0).normalize()
-                pass
-
-            smFaceNor = smFace.normalAt(0,0).normalize()
-            thkFaceNor = thkFace.normalAt(0,0).normalize()
-
-            if refFaceNormal.isEqual(smFaceNor, 1e-6) or refFaceNormal.isEqual(-smFaceNor, 1e-6):
-                angleParFace = 180
-            else:
-                if thkFaceNor.getAngle(refFaceNormal) < thkFaceNor.getAngle(-refFaceNormal):
-                    refNormal = refFaceNormal
-                else:
-                    refNormal = -refFaceNormal
-                
-                angleParFace = smFaceNor.getAngle(refNormal)
-                angleParFace = round(math.degrees(angleParFace),6)
+            angleParFace = relatAngleCalc(thkFace,refEdge,refFace,smFace)
 
             fp.angle.Value = angleParFace + fp.RelativeAngleToRef.Value
 
@@ -2094,61 +2133,33 @@ class SMBendWall:
                 fp.angle.Value = 180 - fp.angle.Value + fp.RelativeAngleToRef.Value
 
         # Calculate the offset based on reference face:
-        if fp.BendType == "Offset" and fp.OffsetFaceRefMode == True:
+        if fp.BendType == "Offset" and fp.OffsetFaceRefMode == True and fp.OffsetFaceReference != None:
             smObj, smSelItemName = fp.baseObject
             smSelItemName = smSelItemName[0]
             smFace, refEdge, thkFace = GetSMComparisonFace(smObj,smSelItemName) # Get the sheet metal reference face and edge
             refObj, refFace = fp.OffsetFaceReference
-            refFace = refFace[0]
-            refFace = refObj.Shape.getElement(refFace)
+
+            if len(fnmatch.filter([refObj.Name], 'DatumPlane*')) > 0:
+                #Create a reference rectangular face to use instead of a datum
+                datump1 = FreeCAD.Vector(0, 0, 0) # Vertexes of the ref face
+                datump2 = FreeCAD.Vector(10, 0, 0)
+                datump3 = FreeCAD.Vector(10, 10, 0)
+                datump4 = FreeCAD.Vector(0, 10, 0)
+                datumEdge1 = Part.LineSegment(datump1, datump2).toShape() # Edges of the ref face
+                datumEdge2 = Part.LineSegment(datump2, datump3).toShape()
+                datumEdge3 = Part.LineSegment(datump3, datump4).toShape()
+                datumEdge4 = Part.LineSegment(datump4, datump1).toShape()
+                datumWire = Part.Wire([datumEdge1, datumEdge2, datumEdge3, datumEdge4])  # Wire of the ref face
+                datumFace = Part.Face(datumWire)  # Face of the ref face
+                datumFace.Placement = refObj.Shape.Placement  # Put the face on the same place of datum
+                
+                refFace = datumFace
+            else:
+                refFace = refFace[0]
+                refFace = refObj.Shape.getElement(refFace)
             
             # Angle calculation
-            try: # Get the face for 3D angle:
-                rotFace = thkFace.copy()
-
-                normalEdges = []
-
-                for edge1 in thkFace.Edges:
-                    edgeAvert1, edgeAvert2 = refEdge.Vertexes
-                    if edge1.Vertexes[0].isEqual(edgeAvert1) and edge1.Vertexes[1].isEqual(edgeAvert2):
-                        pass
-                    elif edge1.Vertexes[1].isEqual(edgeAvert1) and edge1.Vertexes[0].isEqual(edgeAvert2):
-                        pass
-                    else:
-                        normalEdges.append(edge1)
-
-                rotEdge = normalEdges[0]
-                rotAx3Dang = rotEdge.Vertexes[1].Point - rotEdge.Vertexes[0].Point
-
-                rotFace.rotate(rotEdge.Vertexes[0].Point, rotAx3Dang, 90)
-
-                projPlane = Part.Plane(rotFace.CenterOfMass, rotFace.normalAt(0,0).normalize())
-                refPlane = Part.Plane(refFace.CenterOfMass, refFace.normalAt(0,0).normalize())
-                angEdge = refFace.common(projPlane.intersect(refPlane)[0], 1e-6)
-
-                refAngPlane = projPlane.copy()
-                rotAx3Dang = angEdge.Vertexes[1].Point - angEdge.Vertexes[0].Point
-                rotPlac = FreeCAD.Placement(rotEdge.Vertexes[0].Point, rotAx3Dang, 90)
-                refAngPlane.rotate(rotPlac)
-
-                refFaceNormal = refAngPlane.normal(0,0).normalize()
-            except:
-                refFaceNormal = refFace.normalAt(0,0).normalize()
-                pass
-
-            smFaceNor = smFace.normalAt(0,0).normalize()
-            thkFaceNor = thkFace.normalAt(0,0).normalize()
-
-            if refFaceNormal.isEqual(smFaceNor, 1e-6) or refFaceNormal.isEqual(-smFaceNor, 1e-6):
-                angleParFace = 180
-            else:
-                if thkFaceNor.getAngle(refFaceNormal) < thkFaceNor.getAngle(-refFaceNormal):
-                    refNormal = refFaceNormal
-                else:
-                    refNormal = -refFaceNormal
-                
-                angleParFace = smFaceNor.getAngle(refNormal)
-                angleParFace = round(math.degrees(angleParFace),6)
+            angleParFace = relatAngleCalc(thkFace,refEdge,refFace,smFace)
             
             angleParFace = angleParFace + fp.RelativeAngleToRef.Value
 
@@ -2540,10 +2551,11 @@ if SheetMetalTools.isGuiLoaded():
             # Get the sheet metal object:
             try:
                 for obj in Gui.Selection.getSelectionEx():
-                    for subElem in obj.SubElementNames:
-                        if type(obj.Object.Shape.getElement(subElem)) == Part.Edge:
-                            sel = obj
-                            break
+                    if not len(fnmatch.filter([obj.ObjectName], 'DatumPlane*')) > 0:
+                        for subElem in obj.SubElementNames:
+                            if type(obj.Object.Shape.getElement(subElem)) == Part.Edge:
+                                sel = obj
+                                break
             except:
                 raise Exception("At least one edge must be selected to create a wall.")
 
@@ -2566,7 +2578,7 @@ if SheetMetalTools.isGuiLoaded():
             checkRefFace = False
             for obj in Gui.Selection.getSelectionEx():
                 for subObj in obj.SubObjects:
-                    if type(subObj) == Part.Face:
+                    if type(subObj) == Part.Face and not len(fnmatch.filter([obj.ObjectName], 'DatumPlane*')) > 0:
                         faceCount = faceCount + 1
                         if faceCount == 1:
                             for subObjName in obj.SubElementNames:
@@ -2575,6 +2587,9 @@ if SheetMetalTools.isGuiLoaded():
                                     checkRefFace = True
                         else:
                             print("If more than one face is selected, only the first is used for reference to angle and offset.")
+                if len(fnmatch.filter([obj.ObjectName], 'DatumPlane*')) > 0 and faceCount == 0:
+                    refAngOffset = obj.Object
+                    checkRefFace = True
 
             ##############################################################
 
