@@ -167,10 +167,8 @@ if isGuiLoaded():
             if baseObject is not None:
                 baseObject.Visibility=True
             obj.Visibility=False
-            try:
+            if prop is not None:
                 prop.Visibility=True
-            except:
-                pass
             button.activeTypes = allowedTypes
             button.activeObject = obj
             button.activeProperty = selProperty
@@ -183,7 +181,8 @@ if isGuiLoaded():
             if baseObject is not None:
                 baseObject.Visibility=False
             obj.Visibility=True
-            prop.Visibility=False
+            if prop is not None:
+                prop.Visibility=False
             task.activeSelection = {}
             taskPopulateSelectionSingle(textbox, prop)
             button.setText(button.saveText)
