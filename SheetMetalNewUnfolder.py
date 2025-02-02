@@ -864,7 +864,11 @@ class Edge2DCleanup:
         """Given a list of edges, finds pairs of edges with endpoints that are
         nearly (but not exactly) coincident.
         Returns a list of wires with improved coincidence between edges"""
-        list_of_lists_of_edges = Part.sortEdges(edgelist, fuzzvalue)
+        try:
+            list_of_lists_of_edges = Part.sortEdges(edgelist, fuzzvalue)
+        except Part.OCCError:
+            # the optional fuzz-value argument is not available in FreeCAD version <= 0.21
+            list_of_lists_of_edges = Part.sortEdges(edgelist)
         wires = []
         for list_of_edges in list_of_lists_of_edges:
             # skip tiny edge segments
