@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>338</width>
+    <width>298</width>
     <height>643</height>
    </rect>
   </property>
@@ -17,7 +17,7 @@
    </sizepolicy>
   </property>
   <property name="windowTitle">
-   <string>Flange Parameters</string>
+   <string>Flange properties</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_5">
    <item>
@@ -37,7 +37,7 @@
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout">
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_4">
+        <layout class="QHBoxLayout" name="layouEdgeSelectButton">
          <property name="topMargin">
           <number>0</number>
          </property>
@@ -167,7 +167,7 @@
              <number>4</number>
             </property>
             <item>
-             <widget class="QLabel" name="label_6">
+             <widget class="QLabel" name="labelLength">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
                 <horstretch>0</horstretch>
@@ -295,7 +295,7 @@
                  <number>0</number>
                 </property>
                 <item>
-                 <widget class="QLabel" name="label_5">
+                 <widget class="QLabel" name="labelOffFromRef">
                   <property name="sizePolicy">
                    <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
                     <horstretch>0</horstretch>
@@ -366,7 +366,7 @@
                  <number>0</number>
                 </property>
                 <item>
-                 <widget class="QLabel" name="label_22">
+                 <widget class="QLabel" name="labelOffset">
                   <property name="sizePolicy">
                    <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
                     <horstretch>0</horstretch>
@@ -465,7 +465,7 @@
                 <number>4</number>
                </property>
                <item>
-                <widget class="QLabel" name="label_7">
+                <widget class="QLabel" name="labelWallPos">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
                    <horstretch>0</horstretch>
@@ -631,7 +631,7 @@
                    <number>1</number>
                   </property>
                   <item>
-                   <widget class="QLabel" name="label_21">
+                   <widget class="QLabel" name="labelOffsetPos">
                     <property name="text">
                      <string>Offset position</string>
                     </property>
@@ -736,7 +736,7 @@
              <number>1</number>
             </property>
             <item>
-             <widget class="QLabel" name="label_4">
+             <widget class="QLabel" name="labelBendRadius">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
                 <horstretch>0</horstretch>
@@ -808,7 +808,7 @@
                 <number>4</number>
                </property>
                <item>
-                <widget class="QLabel" name="label_8">
+                <widget class="QLabel" name="labelBendAng">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
                    <horstretch>0</horstretch>
@@ -1068,7 +1068,7 @@
            </widget>
           </item>
           <item row="5" column="1" colspan="2">
-           <widget class="QFrame" name="horizLine02_2">
+           <widget class="QFrame" name="horizLineWallPos">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
               <horstretch>0</horstretch>
@@ -1103,7 +1103,7 @@
           <item row="1" column="1" colspan="2">
            <layout class="QHBoxLayout" name="lengthModeLayout">
             <item>
-             <widget class="QLabel" name="label_3">
+             <widget class="QLabel" name="labelLengthMode">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
                 <horstretch>0</horstretch>
@@ -1183,7 +1183,7 @@
               </item>
               <item>
                <property name="text">
-                <string>Outer sharp</string>
+                <string>Outer Sharp</string>
                </property>
               </item>
               <item>
@@ -1244,7 +1244,7 @@
            </widget>
           </item>
           <item row="3" column="1" colspan="2">
-           <widget class="QFrame" name="horizLine01">
+           <widget class="QFrame" name="horizLineBendAng">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
               <horstretch>0</horstretch>
