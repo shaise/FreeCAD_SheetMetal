@@ -2327,7 +2327,7 @@ if SheetMetalTools.isGuiLoaded():
             SheetMetalTools.taskConnectSpin(self, self.form.RelativeAngle, "RelativeAngleToRef")
 
             # Button reversed wall:
-            iconRevWall = icons_path + "\InvRev.svg" # Icon path
+            iconRevWall = icons_path + "\Invert.svg" # Icon path
             self.form.buttRevWall.setIcon(QtGui.QIcon(iconRevWall)) # Set icon on button
             self.form.buttRevWall.clicked.connect(self.revWall) # Button click action
 
