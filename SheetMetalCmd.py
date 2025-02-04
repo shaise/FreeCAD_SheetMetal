@@ -27,7 +27,6 @@ import FreeCAD, Part, math
 import SheetMetalTools
 import PySide
 from PySide import QtGui, QtCore
-import fnmatch
 
 # IMPORTANT: please remember to change the element map version in case of any
 # changes in modeling logic
@@ -115,7 +114,7 @@ def GetSMComparisonFace (smObj, smSelItemName): # Calculations for Angle and Off
         return faces_connected_to
 
     # Get relevant faces on the object:
-    if type(smSelItem) == Part.Face:
+    if type(smSelItem) == Part.Face: # Use a face as reference since it's was possible on past version
         faces = facesConnectedToFace(smObj, smSelItem)
         thkFace = smSelItem
     else:
@@ -137,7 +136,7 @@ def GetSMComparisonFace (smObj, smSelItemName): # Calculations for Angle and Off
     parallel_faces = Part.Shell(parallel_faces)
 
     # Get only the relevant parallel faces:
-    if type(smSelItem) == Part.Face:
+    if type(smSelItem) == Part.Face: # Use a face as reference since it's was possible on past version
         newParFaces = []
         for edge1 in smSelItem.Edges:
             for face in parallel_faces.Faces:
@@ -175,7 +174,7 @@ def GetSMComparisonFace (smObj, smSelItemName): # Calculations for Angle and Off
                 thkFace = face # Get the thickness face
 
     # Get sheet metal face for comparison with the reference face
-    if type(smSelItem) == Part.Face:
+    if type(smSelItem) == Part.Face: # Use a face as reference since it's was possible on past version
         refVector = FreeCAD.Vector(0,0,0)
         centerA = newParFaces[0].BoundBox.Center
         centerB = newParFaces[1].BoundBox.Center
@@ -267,10 +266,6 @@ def GetSMComparisonFace (smObj, smSelItemName): # Calculations for Angle and Off
         for edge2 in thkFace.Edges:
             if edge1.isSame(edge2):
                 thkEdge = edge2
-
-    #Part.show(Part.Compound(faces), "Faces") ### Debug
-    #Part.show(extFace, "SMFaceRef") ### Debug
-    #Part.show(thkFace, "thkFace") ### Debug
 
     return extFace, thkEdge, thkFace
 
@@ -393,7 +388,6 @@ def relatAngleCalc (thkFace, refEdge, refFace, smFace): # Calculations for Angle
         refFaceNormal = refAngPlane.normal(0,0).normalize()
     except:
         refFaceNormal = refFace.normalAt(0,0).normalize()
-        pass
 
     smFaceNor = smFace.normalAt(0,0).normalize()
     thkFaceNor = thkFace.normalAt(0,0).normalize()
@@ -1973,10 +1967,6 @@ class SMBendWall:
             "ParametersPerforation",
         )
 
-        #############################################################
-        ###  Properties for Offset and Angle face reference modes ###
-        #############################################################
-
         SheetMetalTools.smAddBoolProperty(
             obj,
             "OffsetFaceRefMode",
@@ -2040,10 +2030,6 @@ class SMBendWall:
             "ParametersEx"
         )
 
-        #############################################################
-        #############################################################
-        #############################################################
-
     def getElementMapVersion(self, _fp, ver, _prop, restored):
         if not restored:
             return smElementMapVersion + ver
@@ -2102,8 +2088,8 @@ class SMBendWall:
             smFace, refEdge, thkFace = GetSMComparisonFace(smObj,smSelItemName) # Get the sheet metal reference face
             refObj, refFace = fp.AngleFaceReference
 
-            if len(fnmatch.filter([refObj.Name], '*Plane*')) > 0:
-                #Create a reference rectangular face to use instead of a datum
+            if "Plane" in refObj.TypeId:
+                #Create a reference rectangular face to use instead of a datum/origin plane
                 datump1 = FreeCAD.Vector(0, 0, 0) # Vertexes of the ref face
                 datump2 = FreeCAD.Vector(10, 0, 0)
                 datump3 = FreeCAD.Vector(10, 10, 0)
@@ -2139,8 +2125,8 @@ class SMBendWall:
             smFace, refEdge, thkFace = GetSMComparisonFace(smObj,smSelItemName) # Get the sheet metal reference face and edge
             refObj, refFace = fp.OffsetFaceReference
 
-            if len(fnmatch.filter([refObj.Name], '*Plane*')) > 0:
-                #Create a reference rectangular face to use instead of a datum
+            if "Plane" in refObj.TypeId:
+                # Create a reference rectangular face to use instead of a datum/origin plane
                 datump1 = FreeCAD.Vector(0, 0, 0) # Vertexes of the ref face
                 datump2 = FreeCAD.Vector(10, 0, 0)
                 datump3 = FreeCAD.Vector(10, 10, 0)
@@ -2307,8 +2293,7 @@ if SheetMetalTools.isGuiLoaded():
             SheetMetalTools.taskConnectSpin(self, self.form.perforateMaxTabLen, "NonperforationMaxLength")
 
             # Connections for Offset face referenced mode
-            SheetMetalTools.taskConnectSelectionSingle(
-                self, self.form.hideButtWorkaround02, self.form.OffsetFaceRef, obj, "OffsetFaceReference", ["Face", "Plane"])
+            self.form.hideButtWorkaround02.clicked.connect(lambda: self.selectAngleOffsetGeo(self.form.OffsetFaceRef))
             self.form.hideButtWorkaround02.setVisible(False)
             selFaceIcon = icons_path + "\Face-selection.svg"
             self.form.SelOffsetFace.setIcon(QtGui.QIcon(selFaceIcon))
@@ -2318,12 +2303,10 @@ if SheetMetalTools.isGuiLoaded():
             SheetMetalTools.taskConnectSpin(self, self.form.OffsetTypeOffset, "OffsetTypeOffset")
 
             # Connections for Angle face referenced mode
-            SheetMetalTools.taskConnectSelectionSingle(
-                self, self.form.hideButtWorkaround01, self.form.AngleFaceRef, obj, "AngleFaceReference", ["Face", "Plane"])
+            self.form.hideButtWorkaround01.clicked.connect(lambda: self.selectAngleOffsetGeo(self.form.AngleFaceRef))
             self.form.hideButtWorkaround01.setVisible(False)
             self.form.SelAngleFace.setIcon(QtGui.QIcon(selFaceIcon))
             self.form.SelAngleFace.released.connect(self.angleFaceModeButton)
-            self.form.AngleFaceRef.textChanged.connect(self.angleFaceObj)
             SheetMetalTools.taskConnectSpin(self, self.form.RelativeAngle, "RelativeAngleToRef")
 
             # Button reversed wall:
@@ -2361,9 +2344,50 @@ if SheetMetalTools.isGuiLoaded():
             self.form.OffsetTypes.setItemIcon(2, QtGui.QIcon(iconPosThkOut))
             self.form.OffsetTypes.setItemIcon(3, QtGui.QIcon(iconPosOffset))
 
+            self.activeRefGeom = None # Variable to track which property should be filled when in selection mode. And used to rename the form field (of face reference) only when necessary
+        
+        def selectAngleOffsetGeo(self, targetField): # Trigger selection of angle and offset reference geometry
+            """Trigger selection of angle and offset reference geometry"""
+            self.activeRefGeom = targetField # Store the target field
+            Gui.Selection.clearSelection()  # Clear previous selection
+            Gui.Selection.addObserver(self)  # Start observing selection
+            self.activeRefGeom.setText("Select a face as reference...")
+            self.obj.baseObject[0].ViewObject.show()
+            self.obj.ViewObject.hide()
+
+        def addSelection(self, document, object, subname, position): # Companion of "selectAngleOffsetGeo" function
+            """Called when a selection is made."""
+            selected_obj = FreeCAD.ActiveDocument.getObject(object)
+
+            if not selected_obj or not subname: # Debug if a user clicks empty space instead of a valid object
+                self.activeRefGeom.setText("Invalid selection. Select one face as reference")
+
+            if "Plane" in selected_obj.TypeId or "Face" in subname:
+                selected_text = f"{selected_obj.Name}.{subname}"
+                if self.activeRefGeom:
+                    self.activeRefGeom.setText(selected_text)
+                    if self.activeRefGeom.objectName() == "AngleFaceRef":
+                        self.obj.AngleFaceReference = selected_obj, subname # Fill the property of geometry reference for Angle
+                        Gui.Selection.removeObserver(self) # Stop observing after selection
+                        self.activeRefGeom = None
+                        self.obj.baseObject[0].ViewObject.hide()
+                        self.obj.ViewObject.show()
+                    elif self.activeRefGeom.objectName() == "OffsetFaceRef":
+                        self.obj.OffsetFaceReference = selected_obj, subname # Fill the property of geometry reference for Offset
+                        Gui.Selection.removeObserver(self) # Stop observing after selection
+                        self.activeRefGeom = None
+                        self.obj.baseObject[0].ViewObject.hide()
+                        self.obj.ViewObject.show()
+                    
+                    self.updateForm()
+            else:
+                if Gui.Control.activeDialog():
+                    self.activeRefGeom.setText("Invalid. Select a face as reference")
+
         def onBendOffset(self,test): # Turn bend type to 'Offset', on case of automatic face reference selection
             if test == True:
                 self.obj.BendType = "Offset"
+
                 self.updateForm()
 
         def unfWall(self): # Button to unfold the wall
@@ -2386,7 +2410,8 @@ if SheetMetalTools.isGuiLoaded():
             self.obj.AngleFaceRefMode = not self.obj.AngleFaceRefMode
 
             if self.obj.AngleFaceRefMode == False:
-                pass
+                self.obj.baseObject[0].ViewObject.hide()
+                self.obj.ViewObject.show()
             else:
                 self.form.hideButtWorkaround01.click()
             
@@ -2396,18 +2421,12 @@ if SheetMetalTools.isGuiLoaded():
             self.form.frameRelatAngle.setVisible(isAngFaceRef)
             self.updateForm()
 
-        def angleFaceObj(self): # To show again the angle object reference, cause it's automatically hide after selecting it
-            if self.obj.AngleFaceReference != None:
-                if self.obj.baseObject[0] == self.obj.AngleFaceReference[0]:
-                    pass
-                else:
-                    self.obj.AngleFaceReference[0].ViewObject.show()
-
         def offsetFaceModeButton(self): # Make the offset face button check offset face mode
             self.obj.OffsetFaceRefMode = not self.obj.OffsetFaceRefMode
 
             if self.obj.OffsetFaceRefMode == False:
-                pass
+                self.obj.baseObject[0].ViewObject.hide()
+                self.obj.ViewObject.show()
             else:
                 self.form.hideButtWorkaround02.click()
 
@@ -2508,6 +2527,25 @@ if SheetMetalTools.isGuiLoaded():
             self.form.frameOffType.setVisible(self.obj.BendType == "Offset" and self.obj.OffsetFaceRefMode == True)
             self.form.frameOffOff.setVisible(self.obj.BendType == "Offset" and self.obj.OffsetType == "Offset" and self.obj.OffsetFaceRefMode == True)
 
+            # Fill property of angle and offset face reference:
+            try:
+                if self.activeRefGeom == None:
+                    if self.obj.AngleFaceReference != None:
+                        strAngRef = f"{self.obj.AngleFaceReference[0].Name}.{self.obj.AngleFaceReference[1][0]}"
+                        self.form.AngleFaceRef.setText(strAngRef)
+
+                    if self.obj.OffsetFaceReference != None:
+                        strOffsetRef = f"{self.obj.OffsetFaceReference[0].Name}.{self.obj.OffsetFaceReference[1][0]}"
+                        self.form.OffsetFaceRef.setText(strOffsetRef)
+            except:
+                if self.obj.AngleFaceReference != None:
+                    strAngRef = f"{self.obj.AngleFaceReference[0].Name}.{self.obj.AngleFaceReference[1][0]}"
+                    self.form.AngleFaceRef.setText(strAngRef)
+
+                if self.obj.OffsetFaceReference != None:
+                    strOffsetRef = f"{self.obj.OffsetFaceReference[0].Name}.{self.obj.OffsetFaceReference[1][0]}"
+                    self.form.OffsetFaceRef.setText(strOffsetRef)
+
             self.obj.Document.recompute()
 
         def perforateChanged(self, isPerforate):
@@ -2551,7 +2589,7 @@ if SheetMetalTools.isGuiLoaded():
             # Get the sheet metal object:
             try:
                 for obj in Gui.Selection.getSelectionEx():
-                    if not len(fnmatch.filter([obj.ObjectName], '*Plane*')) > 0:
+                    if not "Plane" in obj.Object.TypeId:
                         for subElem in obj.SubElementNames:
                             if type(obj.Object.Shape.getElement(subElem)) == Part.Edge:
                                 sel = obj
@@ -2561,7 +2599,6 @@ if SheetMetalTools.isGuiLoaded():
 
             selobj = sel.Object
 
-            ##############################################################
             selSubNames = list(sel.SubElementNames)
             selSubObjs = sel.SubObjects
 
@@ -2578,7 +2615,7 @@ if SheetMetalTools.isGuiLoaded():
             checkRefFace = False
             for obj in Gui.Selection.getSelectionEx():
                 for subObj in obj.SubObjects:
-                    if type(subObj) == Part.Face and not len(fnmatch.filter([obj.ObjectName], '*Plane*')) > 0:
+                    if type(subObj) == Part.Face and not "Plane" in obj.Object.TypeId:
                         faceCount = faceCount + 1
                         if faceCount == 1:
                             for subObjName in obj.SubElementNames:
@@ -2587,11 +2624,12 @@ if SheetMetalTools.isGuiLoaded():
                                     checkRefFace = True
                         else:
                             print("If more than one face is selected, only the first is used for reference to angle and offset.")
-                if len(fnmatch.filter([obj.ObjectName], '*Plane*')) > 0 and faceCount == 0:
-                    refAngOffset = obj.Object
+                if "Plane" in obj.Object.TypeId and faceCount == 0:
+                    if obj.Object.TypeId == "App::Plane":
+                        refAngOffset = [obj.Object, ""]
+                    else:
+                        refAngOffset = [obj.Object, obj.SubElementNames[0]]
                     checkRefFace = True
-
-            ##############################################################
 
             viewConf = SheetMetalTools.GetViewConfig(selobj)
             if hasattr(view, "getActiveObject"):
