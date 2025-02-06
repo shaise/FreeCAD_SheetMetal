@@ -2310,30 +2310,30 @@ if SheetMetalTools.isGuiLoaded():
             SheetMetalTools.taskConnectSpin(self, self.form.RelativeAngle, "RelativeAngleToRef")
 
             # Button reversed wall:
-            iconRevWall = icons_path + "\Invert.svg" # Icon path
+            iconRevWall = os.path.join(icons_path, "Invert.svg") # Icon path
             self.form.buttRevWall.setIcon(QtGui.QIcon(iconRevWall)) # Set icon on button
             self.form.buttRevWall.clicked.connect(self.revWall) # Button click action
 
             # Button unfold wall:
-            iconUnfWall = icons_path + "\SheetMetal_Unfold.svg" # Icon path
+            iconUnfWall = os.path.join(icons_path, "SheetMetal_Unfold.svg") # Icon path
             self.form.buttUnfold.setIcon(QtGui.QIcon(iconUnfWall)) # Set icon on button
             self.form.buttUnfold.clicked.connect(self.unfWall) # Button click action
 
             # ComboBox length spec:
-            iconLenLeg = icons_path + "\SheetMetal_WallLenLeg.svg" # Icon path
-            iconLenOut = icons_path + "\SheetMetal_WallLenOut.svg"
-            iconLenInn = icons_path + "\SheetMetal_WallLenInn.svg"
-            iconLenTang = icons_path + "\SheetMetal_WallLenTang.svg"
+            iconLenLeg = os.path.join(icons_path, "SheetMetal_WallLenLeg.svg") # Icon path
+            iconLenOut = os.path.join(icons_path, "SheetMetal_WallLenOut.svg")
+            iconLenInn = os.path.join(icons_path, "SheetMetal_WallLenInn.svg")
+            iconLenTang = os.path.join(icons_path, "SheetMetal_WallLenTang.svg")
             self.form.LengthSpec.setItemIcon(0, QtGui.QIcon(iconLenLeg)) # Set icon on item list
             self.form.LengthSpec.setItemIcon(1, QtGui.QIcon(iconLenOut))
             self.form.LengthSpec.setItemIcon(2, QtGui.QIcon(iconLenInn))
             self.form.LengthSpec.setItemIcon(3, QtGui.QIcon(iconLenTang))
 
             # ComboBox wall position
-            iconPosMatOut = icons_path + "\SheetMetal_WallPosMatOut.svg" # Icon path
-            iconPosIns = icons_path + "\SheetMetal_WallPosMatIns.svg"
-            iconPosThkOut = icons_path + "\SheetMetal_WallPosThkOut.svg"
-            iconPosOffset = icons_path + "\SheetMetal_WallPosOffset.svg"
+            iconPosMatOut = os.path.join(icons_path, "SheetMetal_WallPosMatOut.svg") # Icon path
+            iconPosIns = os.path.join(icons_path, "SheetMetal_WallPosMatIns.svg")
+            iconPosThkOut = os.path.join(icons_path, "SheetMetal_WallPosThkOut.svg")
+            iconPosOffset = os.path.join(icons_path, "SheetMetal_WallPosOffset.svg")
             self.form.BendType.setItemIcon(0, QtGui.QIcon(iconPosMatOut)) # Set icon on item list
             self.form.BendType.setItemIcon(1, QtGui.QIcon(iconPosIns))
             self.form.BendType.setItemIcon(2, QtGui.QIcon(iconPosThkOut))
@@ -2546,7 +2546,10 @@ if SheetMetalTools.isGuiLoaded():
                     strOffsetRef = f"{self.obj.OffsetFaceReference[0].Name}.{self.obj.OffsetFaceReference[1][0]}"
                     self.form.OffsetFaceRef.setText(strOffsetRef)
 
+            self.obj.recompute() # Updates the angle in model
             self.obj.Document.recompute()
+            self.form.Angle.setProperty("value", getattr(self.obj, "angle")) # Updates the value of angle form field when the face reference is activated
+            self.form.Offset.setProperty("value", getattr(self.obj, "offset")) # Updates the value of offset form field when the face reference is activated
 
         def perforateChanged(self, isPerforate):
             self.form.groupPerforate.setEnabled(isPerforate)
