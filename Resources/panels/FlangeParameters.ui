@@ -161,7 +161,538 @@
           <property name="verticalSpacing">
            <number>4</number>
           </property>
-          <item row="0" column="1" colspan="2">
+          <item row="4" column="1" colspan="3">
+           <widget class="QWidget" name="angleGroup" native="true">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <layout class="QGridLayout" name="groupAngle">
+             <property name="leftMargin">
+              <number>0</number>
+             </property>
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <property name="rightMargin">
+              <number>0</number>
+             </property>
+             <property name="bottomMargin">
+              <number>0</number>
+             </property>
+             <property name="spacing">
+              <number>1</number>
+             </property>
+             <item row="1" column="0">
+              <layout class="QHBoxLayout" name="angleLayout">
+               <property name="spacing">
+                <number>4</number>
+               </property>
+               <item>
+                <widget class="QLabel" name="labelBendAng">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="minimumSize">
+                  <size>
+                   <width>65</width>
+                   <height>0</height>
+                  </size>
+                 </property>
+                 <property name="text">
+                  <string>Bend angle</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="Gui::QuantitySpinBox" name="Angle" native="true">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="unit" stdset="0">
+                  <string notr="true">deg</string>
+                 </property>
+                 <property name="minimum" stdset="0">
+                  <double>-360.000000000000000</double>
+                 </property>
+                 <property name="maximum" stdset="0">
+                  <double>360.000000000000000</double>
+                 </property>
+                 <property name="value" stdset="0">
+                  <double>90.000000000000000</double>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QToolButton" name="SelAngleFace">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="minimumSize">
+                  <size>
+                   <width>28</width>
+                   <height>28</height>
+                  </size>
+                 </property>
+                 <property name="maximumSize">
+                  <size>
+                   <width>28</width>
+                   <height>28</height>
+                  </size>
+                 </property>
+                 <property name="baseSize">
+                  <size>
+                   <width>28</width>
+                   <height>28</height>
+                  </size>
+                 </property>
+                 <property name="toolTip">
+                  <string>Face reference</string>
+                 </property>
+                 <property name="text">
+                  <string/>
+                 </property>
+                 <property name="icon">
+                  <iconset>
+                   <normalon>Icons:Face-selection.svg</normalon>
+                  </iconset>
+                 </property>
+                 <property name="iconSize">
+                  <size>
+                   <width>24</width>
+                   <height>24</height>
+                  </size>
+                 </property>
+                 <property name="checkable">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QPushButton" name="hideButtWorkaround01">
+                 <property name="text">
+                  <string>reference face</string>
+                 </property>
+                 <property name="visible">
+                  <bool>false</bool>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item row="2" column="0">
+              <widget class="QWidget" name="frameRelatAngle" native="true">
+               <layout class="QVBoxLayout" name="verticalLayout_7">
+                <property name="spacing">
+                 <number>1</number>
+                </property>
+                <property name="leftMargin">
+                 <number>0</number>
+                </property>
+                <property name="topMargin">
+                 <number>0</number>
+                </property>
+                <property name="rightMargin">
+                 <number>0</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>0</number>
+                </property>
+                <item>
+                 <widget class="QWidget" name="frameRefFaceAng" native="true">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="minimumSize">
+                   <size>
+                    <width>0</width>
+                    <height>32</height>
+                   </size>
+                  </property>
+                  <property name="baseSize">
+                   <size>
+                    <width>0</width>
+                    <height>32</height>
+                   </size>
+                  </property>
+                  <layout class="QHBoxLayout" name="frameRelativeAngle">
+                   <property name="spacing">
+                    <number>4</number>
+                   </property>
+                   <property name="leftMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="topMargin">
+                    <number>4</number>
+                   </property>
+                   <property name="rightMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="bottomMargin">
+                    <number>4</number>
+                   </property>
+                   <item>
+                    <widget class="QLabel" name="labelFaceAngleRef">
+                     <property name="sizePolicy">
+                      <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+                       <horstretch>0</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
+                     </property>
+                     <property name="minimumSize">
+                      <size>
+                       <width>65</width>
+                       <height>0</height>
+                      </size>
+                     </property>
+                     <property name="text">
+                      <string>Reference</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QLineEdit" name="AngleFaceRef">
+                     <property name="enabled">
+                      <bool>false</bool>
+                     </property>
+                     <property name="sizePolicy">
+                      <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                       <horstretch>0</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
+                     </property>
+                     <property name="minimumSize">
+                      <size>
+                       <width>50</width>
+                       <height>28</height>
+                      </size>
+                     </property>
+                     <property name="baseSize">
+                      <size>
+                       <width>0</width>
+                       <height>28</height>
+                      </size>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </widget>
+                </item>
+                <item>
+                 <layout class="QHBoxLayout" name="horizontalLayout_3">
+                  <item>
+                   <widget class="QLabel" name="labelRelatAngle">
+                    <property name="sizePolicy">
+                     <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+                      <horstretch>0</horstretch>
+                      <verstretch>0</verstretch>
+                     </sizepolicy>
+                    </property>
+                    <property name="minimumSize">
+                     <size>
+                      <width>0</width>
+                      <height>28</height>
+                     </size>
+                    </property>
+                    <property name="baseSize">
+                     <size>
+                      <width>0</width>
+                      <height>28</height>
+                     </size>
+                    </property>
+                    <property name="layoutDirection">
+                     <enum>Qt::LayoutDirection::RightToLeft</enum>
+                    </property>
+                    <property name="text">
+                     <string>Relative angle</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="Gui::QuantitySpinBox" name="RelativeAngle" native="true">
+                    <property name="minimumSize">
+                     <size>
+                      <width>0</width>
+                      <height>28</height>
+                     </size>
+                    </property>
+                    <property name="baseSize">
+                     <size>
+                      <width>0</width>
+                      <height>28</height>
+                     </size>
+                    </property>
+                    <property name="unit" stdset="0">
+                     <string notr="true">deg</string>
+                    </property>
+                    <property name="minimum" stdset="0">
+                     <double>-360.000000000000000</double>
+                    </property>
+                    <property name="maximum" stdset="0">
+                     <double>360.000000000000000</double>
+                    </property>
+                    <property name="value" stdset="0">
+                     <double>90.000000000000000</double>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </item>
+               </layout>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item row="2" column="1" colspan="3">
+           <layout class="QHBoxLayout" name="radiusLayout">
+            <property name="spacing">
+             <number>1</number>
+            </property>
+            <item>
+             <widget class="QLabel" name="labelBendRadius">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="minimumSize">
+               <size>
+                <width>68</width>
+                <height>28</height>
+               </size>
+              </property>
+              <property name="baseSize">
+               <size>
+                <width>0</width>
+                <height>28</height>
+               </size>
+              </property>
+              <property name="text">
+               <string>Bend radius</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="Gui::QuantitySpinBox" name="Radius" native="true">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="unit" stdset="0">
+               <string notr="true">mm</string>
+              </property>
+              <property name="minimum" stdset="0">
+               <double>0.000000000000000</double>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item row="3" column="1" colspan="3">
+           <widget class="QFrame" name="horizLineBendAng">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="frameShape">
+             <enum>QFrame::Shape::HLine</enum>
+            </property>
+            <property name="frameShadow">
+             <enum>QFrame::Shadow::Sunken</enum>
+            </property>
+            <layout class="QVBoxLayout" name="verticalLayout_6">
+             <property name="spacing">
+              <number>0</number>
+             </property>
+             <property name="leftMargin">
+              <number>0</number>
+             </property>
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <property name="rightMargin">
+              <number>0</number>
+             </property>
+             <property name="bottomMargin">
+              <number>0</number>
+             </property>
+            </layout>
+           </widget>
+          </item>
+          <item row="1" column="1" colspan="3">
+           <layout class="QHBoxLayout" name="lengthModeLayout">
+            <item>
+             <widget class="QLabel" name="labelLengthMode">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="minimumSize">
+               <size>
+                <width>70</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="baseSize">
+               <size>
+                <width>0</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="text">
+               <string>Length mode</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QComboBox" name="LengthSpec">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>28</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>28</height>
+               </size>
+              </property>
+              <property name="sizeIncrement">
+               <size>
+                <width>0</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="baseSize">
+               <size>
+                <width>0</width>
+                <height>28</height>
+               </size>
+              </property>
+              <property name="font">
+               <font>
+                <pointsize>9</pointsize>
+               </font>
+              </property>
+              <property name="currentIndex">
+               <number>0</number>
+              </property>
+              <property name="sizeAdjustPolicy">
+               <enum>QComboBox::SizeAdjustPolicy::AdjustToContentsOnFirstShow</enum>
+              </property>
+              <property name="iconSize">
+               <size>
+                <width>28</width>
+                <height>28</height>
+               </size>
+              </property>
+              <item>
+               <property name="text">
+                <string>Leg</string>
+               </property>
+               <property name="icon">
+                <iconset>
+                 <normalon>Icons:SheetMetal_WallLenLeg.svg</normalon>
+                </iconset>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Outer Sharp</string>
+               </property>
+               <property name="icon">
+                <iconset>
+                 <normalon>Icons:SheetMetal_WallLenOut.svg</normalon>
+                </iconset>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Inner Sharp</string>
+               </property>
+               <property name="icon">
+                <iconset>
+                 <normalon>Icons:SheetMetal_WallLenInn.svg</normalon>
+                </iconset>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Tangential</string>
+               </property>
+               <property name="icon">
+                <iconset>
+                 <normalon>Icons:SheetMetal_WallLenTang.svg</normalon>
+                </iconset>
+               </property>
+              </item>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item row="5" column="1" colspan="3">
+           <widget class="QFrame" name="horizLineWallPos">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="frameShape">
+             <enum>QFrame::Shape::HLine</enum>
+            </property>
+            <property name="frameShadow">
+             <enum>QFrame::Shadow::Sunken</enum>
+            </property>
+            <layout class="QVBoxLayout" name="horizLine02">
+             <property name="spacing">
+              <number>0</number>
+             </property>
+             <property name="leftMargin">
+              <number>0</number>
+             </property>
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <property name="rightMargin">
+              <number>0</number>
+             </property>
+             <property name="bottomMargin">
+              <number>0</number>
+             </property>
+            </layout>
+           </widget>
+          </item>
+          <item row="0" column="1" colspan="3">
            <layout class="QHBoxLayout" name="lengthLayout">
             <property name="spacing">
              <number>4</number>
@@ -251,7 +782,20 @@
             </item>
            </layout>
           </item>
-          <item row="6" column="1" colspan="2">
+          <item row="7" column="3">
+           <spacer name="horizontalSpacer_4">
+            <property name="orientation">
+             <enum>Qt::Orientation::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item row="6" column="1" colspan="3">
            <widget class="QFrame" name="offsetGroup">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
@@ -463,6 +1007,9 @@
                  <widget class="QPushButton" name="hideButtWorkaround02">
                   <property name="text">
                    <string>reference face</string>
+                  </property>
+                  <property name="visible">
+                   <bool>false</bool>
                   </property>
                  </widget>
                 </item>
@@ -768,592 +1315,10 @@
            </widget>
           </item>
           <item row="7" column="2">
-           <spacer name="horizontalSpacer_4">
-            <property name="orientation">
-             <enum>Qt::Orientation::Horizontal</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>40</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item row="2" column="1" colspan="2">
-           <layout class="QHBoxLayout" name="radiusLayout">
-            <property name="spacing">
-             <number>1</number>
-            </property>
-            <item>
-             <widget class="QLabel" name="labelBendRadius">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="minimumSize">
-               <size>
-                <width>68</width>
-                <height>28</height>
-               </size>
-              </property>
-              <property name="baseSize">
-               <size>
-                <width>0</width>
-                <height>28</height>
-               </size>
-              </property>
-              <property name="text">
-               <string>Bend radius</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="Gui::QuantitySpinBox" name="Radius" native="true">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="unit" stdset="0">
-               <string notr="true">mm</string>
-              </property>
-              <property name="minimum" stdset="0">
-               <double>0.000000000000000</double>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
-          <item row="4" column="1" colspan="2">
-           <widget class="QWidget" name="angleGroup" native="true">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <layout class="QGridLayout" name="groupAngle">
-             <property name="leftMargin">
-              <number>0</number>
-             </property>
-             <property name="topMargin">
-              <number>0</number>
-             </property>
-             <property name="rightMargin">
-              <number>0</number>
-             </property>
-             <property name="bottomMargin">
-              <number>0</number>
-             </property>
-             <property name="spacing">
-              <number>1</number>
-             </property>
-             <item row="1" column="0">
-              <layout class="QHBoxLayout" name="angleLayout">
-               <property name="spacing">
-                <number>4</number>
-               </property>
-               <item>
-                <widget class="QLabel" name="labelBendAng">
-                 <property name="sizePolicy">
-                  <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
-                   <horstretch>0</horstretch>
-                   <verstretch>0</verstretch>
-                  </sizepolicy>
-                 </property>
-                 <property name="minimumSize">
-                  <size>
-                   <width>65</width>
-                   <height>0</height>
-                  </size>
-                 </property>
-                 <property name="text">
-                  <string>Bend angle</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="Gui::QuantitySpinBox" name="Angle" native="true">
-                 <property name="sizePolicy">
-                  <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-                   <horstretch>0</horstretch>
-                   <verstretch>0</verstretch>
-                  </sizepolicy>
-                 </property>
-                 <property name="unit" stdset="0">
-                  <string notr="true">deg</string>
-                 </property>
-                 <property name="minimum" stdset="0">
-                  <double>-360.000000000000000</double>
-                 </property>
-                 <property name="maximum" stdset="0">
-                  <double>360.000000000000000</double>
-                 </property>
-                 <property name="value" stdset="0">
-                  <double>90.000000000000000</double>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QToolButton" name="SelAngleFace">
-                 <property name="sizePolicy">
-                  <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                   <horstretch>0</horstretch>
-                   <verstretch>0</verstretch>
-                  </sizepolicy>
-                 </property>
-                 <property name="minimumSize">
-                  <size>
-                   <width>28</width>
-                   <height>28</height>
-                  </size>
-                 </property>
-                 <property name="maximumSize">
-                  <size>
-                   <width>28</width>
-                   <height>28</height>
-                  </size>
-                 </property>
-                 <property name="baseSize">
-                  <size>
-                   <width>28</width>
-                   <height>28</height>
-                  </size>
-                 </property>
-                 <property name="toolTip">
-                  <string>Face reference</string>
-                 </property>
-                 <property name="text">
-                  <string/>
-                 </property>
-                 <property name="icon">
-                  <iconset>
-                   <normalon>Icons:Face-selection.svg</normalon>
-                  </iconset>
-                 </property>
-                 <property name="iconSize">
-                  <size>
-                   <width>24</width>
-                   <height>24</height>
-                  </size>
-                 </property>
-                 <property name="checkable">
-                  <bool>true</bool>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QPushButton" name="hideButtWorkaround01">
-                 <property name="text">
-                  <string>reference face</string>
-                 </property>
-                </widget>
-               </item>
-              </layout>
-             </item>
-             <item row="2" column="0">
-              <widget class="QWidget" name="frameRelatAngle" native="true">
-               <layout class="QVBoxLayout" name="verticalLayout_7">
-                <property name="spacing">
-                 <number>1</number>
-                </property>
-                <property name="leftMargin">
-                 <number>0</number>
-                </property>
-                <property name="topMargin">
-                 <number>0</number>
-                </property>
-                <property name="rightMargin">
-                 <number>0</number>
-                </property>
-                <property name="bottomMargin">
-                 <number>0</number>
-                </property>
-                <item>
-                 <widget class="QWidget" name="frameRefFaceAng" native="true">
-                  <property name="sizePolicy">
-                   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-                    <horstretch>0</horstretch>
-                    <verstretch>0</verstretch>
-                   </sizepolicy>
-                  </property>
-                  <property name="minimumSize">
-                   <size>
-                    <width>0</width>
-                    <height>32</height>
-                   </size>
-                  </property>
-                  <property name="baseSize">
-                   <size>
-                    <width>0</width>
-                    <height>32</height>
-                   </size>
-                  </property>
-                  <layout class="QHBoxLayout" name="frameRelativeAngle">
-                   <property name="spacing">
-                    <number>4</number>
-                   </property>
-                   <property name="leftMargin">
-                    <number>0</number>
-                   </property>
-                   <property name="topMargin">
-                    <number>4</number>
-                   </property>
-                   <property name="rightMargin">
-                    <number>0</number>
-                   </property>
-                   <property name="bottomMargin">
-                    <number>4</number>
-                   </property>
-                   <item>
-                    <widget class="QLabel" name="labelFaceAngleRef">
-                     <property name="sizePolicy">
-                      <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
-                       <horstretch>0</horstretch>
-                       <verstretch>0</verstretch>
-                      </sizepolicy>
-                     </property>
-                     <property name="minimumSize">
-                      <size>
-                       <width>65</width>
-                       <height>0</height>
-                      </size>
-                     </property>
-                     <property name="text">
-                      <string>Reference</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QLineEdit" name="AngleFaceRef">
-                     <property name="enabled">
-                      <bool>false</bool>
-                     </property>
-                     <property name="sizePolicy">
-                      <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                       <horstretch>0</horstretch>
-                       <verstretch>0</verstretch>
-                      </sizepolicy>
-                     </property>
-                     <property name="minimumSize">
-                      <size>
-                       <width>50</width>
-                       <height>28</height>
-                      </size>
-                     </property>
-                     <property name="baseSize">
-                      <size>
-                       <width>0</width>
-                       <height>28</height>
-                      </size>
-                     </property>
-                    </widget>
-                   </item>
-                  </layout>
-                 </widget>
-                </item>
-                <item>
-                 <layout class="QHBoxLayout" name="horizontalLayout_3">
-                  <item>
-                   <widget class="QLabel" name="labelRelatAngle">
-                    <property name="sizePolicy">
-                     <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
-                      <horstretch>0</horstretch>
-                      <verstretch>0</verstretch>
-                     </sizepolicy>
-                    </property>
-                    <property name="minimumSize">
-                     <size>
-                      <width>0</width>
-                      <height>28</height>
-                     </size>
-                    </property>
-                    <property name="baseSize">
-                     <size>
-                      <width>0</width>
-                      <height>28</height>
-                     </size>
-                    </property>
-                    <property name="layoutDirection">
-                     <enum>Qt::LayoutDirection::RightToLeft</enum>
-                    </property>
-                    <property name="text">
-                     <string>Relative angle</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item>
-                   <widget class="Gui::QuantitySpinBox" name="RelativeAngle" native="true">
-                    <property name="minimumSize">
-                     <size>
-                      <width>0</width>
-                      <height>28</height>
-                     </size>
-                    </property>
-                    <property name="baseSize">
-                     <size>
-                      <width>0</width>
-                      <height>28</height>
-                     </size>
-                    </property>
-                    <property name="unit" stdset="0">
-                     <string notr="true">deg</string>
-                    </property>
-                    <property name="minimum" stdset="0">
-                     <double>-360.000000000000000</double>
-                    </property>
-                    <property name="maximum" stdset="0">
-                     <double>360.000000000000000</double>
-                    </property>
-                    <property name="value" stdset="0">
-                     <double>90.000000000000000</double>
-                    </property>
-                   </widget>
-                  </item>
-                 </layout>
-                </item>
-               </layout>
-              </widget>
-             </item>
-            </layout>
-           </widget>
-          </item>
-          <item row="5" column="1" colspan="2">
-           <widget class="QFrame" name="horizLineWallPos">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="frameShape">
-             <enum>QFrame::Shape::HLine</enum>
-            </property>
-            <property name="frameShadow">
-             <enum>QFrame::Shadow::Sunken</enum>
-            </property>
-            <layout class="QVBoxLayout" name="horizLine02">
-             <property name="spacing">
-              <number>0</number>
-             </property>
-             <property name="leftMargin">
-              <number>0</number>
-             </property>
-             <property name="topMargin">
-              <number>0</number>
-             </property>
-             <property name="rightMargin">
-              <number>0</number>
-             </property>
-             <property name="bottomMargin">
-              <number>0</number>
-             </property>
-            </layout>
-           </widget>
-          </item>
-          <item row="1" column="1" colspan="2">
-           <layout class="QHBoxLayout" name="lengthModeLayout">
-            <item>
-             <widget class="QLabel" name="labelLengthMode">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="minimumSize">
-               <size>
-                <width>70</width>
-                <height>0</height>
-               </size>
-              </property>
-              <property name="baseSize">
-               <size>
-                <width>0</width>
-                <height>0</height>
-               </size>
-              </property>
-              <property name="text">
-               <string>Length mode</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QComboBox" name="LengthSpec">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="minimumSize">
-               <size>
-                <width>0</width>
-                <height>28</height>
-               </size>
-              </property>
-              <property name="maximumSize">
-               <size>
-                <width>16777215</width>
-                <height>28</height>
-               </size>
-              </property>
-              <property name="sizeIncrement">
-               <size>
-                <width>0</width>
-                <height>0</height>
-               </size>
-              </property>
-              <property name="baseSize">
-               <size>
-                <width>0</width>
-                <height>28</height>
-               </size>
-              </property>
-              <property name="font">
-               <font>
-                <pointsize>9</pointsize>
-               </font>
-              </property>
-              <property name="currentIndex">
-               <number>0</number>
-              </property>
-              <property name="sizeAdjustPolicy">
-               <enum>QComboBox::SizeAdjustPolicy::AdjustToContentsOnFirstShow</enum>
-              </property>
-              <property name="iconSize">
-               <size>
-                <width>28</width>
-                <height>28</height>
-               </size>
-              </property>
-              <item>
-               <property name="text">
-                <string>Leg</string>
-               </property>
-               <property name="icon">
-                <iconset>
-                 <normalon>Icons:SheetMetal_WallLenLeg.svg</normalon>
-                </iconset>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Outer Sharp</string>
-               </property>
-               <property name="icon">
-                <iconset>
-                 <normalon>Icons:SheetMetal_WallLenOut.svg</normalon>
-                </iconset>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Inner Sharp</string>
-               </property>
-               <property name="icon">
-                <iconset>
-                 <normalon>Icons:SheetMetal_WallLenInn.svg</normalon>
-                </iconset>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Tangential</string>
-               </property>
-               <property name="icon">
-                <iconset>
-                 <normalon>Icons:SheetMetal_WallLenTang.svg</normalon>
-                </iconset>
-               </property>
-              </item>
-             </widget>
-            </item>
-           </layout>
-          </item>
-          <item row="7" column="1">
-           <widget class="QPushButton" name="buttUnfold">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="minimumSize">
-             <size>
-              <width>28</width>
-              <height>28</height>
-             </size>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>80</width>
-              <height>28</height>
-             </size>
-            </property>
-            <property name="baseSize">
-             <size>
-              <width>0</width>
-              <height>28</height>
-             </size>
-            </property>
-            <property name="toolTip">
-             <string>Unfold the wall</string>
-            </property>
+           <widget class="QCheckBox" name="UnfoldCheckbox">
             <property name="text">
-             <string> Unfold</string>
+             <string>Unfold</string>
             </property>
-            <property name="icon">
-             <iconset>
-              <normalon>Icons:SheetMetal_Unfold.svg</normalon>
-             </iconset>
-            </property>
-            <property name="iconSize">
-             <size>
-              <width>24</width>
-              <height>24</height>
-             </size>
-            </property>
-            <property name="checkable">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="1" colspan="2">
-           <widget class="QFrame" name="horizLineBendAng">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="frameShape">
-             <enum>QFrame::Shape::HLine</enum>
-            </property>
-            <property name="frameShadow">
-             <enum>QFrame::Shadow::Sunken</enum>
-            </property>
-            <layout class="QVBoxLayout" name="verticalLayout_6">
-             <property name="spacing">
-              <number>0</number>
-             </property>
-             <property name="leftMargin">
-              <number>0</number>
-             </property>
-             <property name="topMargin">
-              <number>0</number>
-             </property>
-             <property name="rightMargin">
-              <number>0</number>
-             </property>
-             <property name="bottomMargin">
-              <number>0</number>
-             </property>
-            </layout>
            </widget>
           </item>
          </layout>
