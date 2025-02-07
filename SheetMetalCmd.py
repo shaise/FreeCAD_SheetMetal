@@ -2146,10 +2146,10 @@ class SMBendWall:
             # Angle calculation
             angleParFace = relatAngleCalc(thkFace,refEdge,refFace,smFace)
             
-            angleParFace = angleParFace + fp.RelativeAngleToRef.Value
+            angleParFace = angleParFace
 
             if fp.invert == True:
-                angleParFace = 180 - angleParFace + fp.RelativeAngleToRef.Value
+                angleParFace = 180 - angleParFace
             
             if fp.SupplAngleRef == True: # Supplementary angle option
                 angleParFace = 180 - angleParFace
