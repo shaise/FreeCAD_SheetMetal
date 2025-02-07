@@ -233,6 +233,11 @@
               <property name="text">
                <string/>
               </property>
+              <property name="icon">
+               <iconset>
+                <normalon>Icons:Invert.svg</normalon>
+               </iconset>
+              </property>
               <property name="iconSize">
                <size>
                 <width>24</width>
@@ -438,6 +443,11 @@
                   <property name="text">
                    <string/>
                   </property>
+                  <property name="icon">
+                   <iconset>
+                    <normalon>Icons:Face-selection.svg</normalon>
+                   </iconset>
+                  </property>
                   <property name="iconSize">
                    <size>
                     <width>24</width>
@@ -522,20 +532,40 @@
                   <property name="text">
                    <string>Material Outside</string>
                   </property>
+                  <property name="icon">
+                   <iconset>
+                    <normalon>Icons:SheetMetal_WallPosMatOut.svg</normalon>
+                   </iconset>
+                  </property>
                  </item>
                  <item>
                   <property name="text">
                    <string>Material Inside</string>
+                  </property>
+                  <property name="icon">
+                   <iconset>
+                    <normalon>Icons:SheetMetal_WallPosMatIns.svg</normalon>
+                   </iconset>
                   </property>
                  </item>
                  <item>
                   <property name="text">
                    <string>Thickness Outside</string>
                   </property>
+                  <property name="icon">
+                   <iconset>
+                    <normalon>Icons:SheetMetal_WallPosThkOut.svg</normalon>
+                   </iconset>
+                  </property>
                  </item>
                  <item>
                   <property name="text">
                    <string>Offset</string>
+                  </property>
+                  <property name="icon">
+                   <iconset>
+                    <normalon>Icons:SheetMetal_WallPosOffset.svg</normalon>
+                   </iconset>
                   </property>
                  </item>
                 </widget>
@@ -673,10 +703,10 @@
                      <enum>Qt::FocusPolicy::WheelFocus</enum>
                     </property>
                     <property name="currentText">
-                     <string>Material Inside</string>
+                     <string>Material Outside</string>
                     </property>
                     <property name="currentIndex">
-                     <number>1</number>
+                     <number>0</number>
                     </property>
                     <property name="sizeAdjustPolicy">
                      <enum>QComboBox::SizeAdjustPolicy::AdjustToContentsOnFirstShow</enum>
@@ -691,20 +721,40 @@
                      <property name="text">
                       <string>Material Outside</string>
                      </property>
+                     <property name="icon">
+                      <iconset>
+                       <normalon>Icons:SheetMetal_WallPosMatOut.svg</normalon>
+                      </iconset>
+                     </property>
                     </item>
                     <item>
                      <property name="text">
                       <string>Material Inside</string>
+                     </property>
+                     <property name="icon">
+                      <iconset>
+                       <normalon>Icons:SheetMetal_WallPosMatIns.svg</normalon>
+                      </iconset>
                      </property>
                     </item>
                     <item>
                      <property name="text">
                       <string>Thickness Outside</string>
                      </property>
+                     <property name="icon">
+                      <iconset>
+                       <normalon>Icons:SheetMetal_WallPosThkOut.svg</normalon>
+                      </iconset>
+                     </property>
                     </item>
                     <item>
                      <property name="text">
                       <string>Offset</string>
+                     </property>
+                     <property name="icon">
+                      <iconset>
+                       <normalon>Icons:SheetMetal_WallPosOffset.svg</normalon>
+                      </iconset>
                      </property>
                     </item>
                    </widget>
@@ -879,6 +929,11 @@
                  </property>
                  <property name="text">
                   <string/>
+                 </property>
+                 <property name="icon">
+                  <iconset>
+                   <normalon>Icons:Face-selection.svg</normalon>
+                  </iconset>
                  </property>
                  <property name="iconSize">
                   <size>
@@ -1165,7 +1220,7 @@
                </font>
               </property>
               <property name="currentIndex">
-               <number>1</number>
+               <number>0</number>
               </property>
               <property name="sizeAdjustPolicy">
                <enum>QComboBox::SizeAdjustPolicy::AdjustToContentsOnFirstShow</enum>
@@ -1180,20 +1235,40 @@
                <property name="text">
                 <string>Leg</string>
                </property>
+               <property name="icon">
+                <iconset>
+                 <normalon>Icons:SheetMetal_WallLenLeg.svg</normalon>
+                </iconset>
+               </property>
               </item>
               <item>
                <property name="text">
                 <string>Outer Sharp</string>
+               </property>
+               <property name="icon">
+                <iconset>
+                 <normalon>Icons:SheetMetal_WallLenOut.svg</normalon>
+                </iconset>
                </property>
               </item>
               <item>
                <property name="text">
                 <string>Inner Sharp</string>
                </property>
+               <property name="icon">
+                <iconset>
+                 <normalon>Icons:SheetMetal_WallLenInn.svg</normalon>
+                </iconset>
+               </property>
               </item>
               <item>
                <property name="text">
                 <string>Tangential</string>
+               </property>
+               <property name="icon">
+                <iconset>
+                 <normalon>Icons:SheetMetal_WallLenTang.svg</normalon>
+                </iconset>
                </property>
               </item>
              </widget>
@@ -1231,6 +1306,11 @@
             </property>
             <property name="text">
              <string> Unfold</string>
+            </property>
+            <property name="icon">
+             <iconset>
+              <normalon>Icons:SheetMetal_Unfold.svg</normalon>
+             </iconset>
             </property>
             <property name="iconSize">
              <size>
