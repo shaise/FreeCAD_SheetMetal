@@ -2258,8 +2258,10 @@ if SheetMetalTools.isGuiLoaded():
         """A TaskPanel for the Sheetmetal"""
 
         def __init__(self, obj, checkRefFace=False):
+            QtCore.QDir.addSearchPath('Icons', SheetMetalTools.icons_path)
             self.obj = obj
             self.form = SheetMetalTools.taskLoadUI("FlangeParameters.ui")
+            obj.Proxy._addProperties(obj) # Make sure all properties ared added
             self.updateForm()
             self.checkRefFace = self.onBendOffset(checkRefFace) # Turn bend type to 'Offset', on case of automatic face reference selection
 
@@ -2295,8 +2297,6 @@ if SheetMetalTools.isGuiLoaded():
             # Connections for Offset face referenced mode
             self.form.hideButtWorkaround02.clicked.connect(lambda: self.selectAngleOffsetGeo(self.form.OffsetFaceRef))
             self.form.hideButtWorkaround02.setVisible(False)
-            selFaceIcon = icons_path + "\Face-selection.svg"
-            self.form.SelOffsetFace.setIcon(QtGui.QIcon(selFaceIcon))
             self.form.SelOffsetFace.released.connect(self.offsetFaceModeButton)
             self.form.OffsetFaceRef.textChanged.connect(self.offsetFaceObj)
             SheetMetalTools.taskConnectEnum(self, self.form.OffsetTypes, "OffsetType", self.OffsetTypeChanged)
@@ -2305,47 +2305,17 @@ if SheetMetalTools.isGuiLoaded():
             # Connections for Angle face referenced mode
             self.form.hideButtWorkaround01.clicked.connect(lambda: self.selectAngleOffsetGeo(self.form.AngleFaceRef))
             self.form.hideButtWorkaround01.setVisible(False)
-            self.form.SelAngleFace.setIcon(QtGui.QIcon(selFaceIcon))
             self.form.SelAngleFace.released.connect(self.angleFaceModeButton)
             SheetMetalTools.taskConnectSpin(self, self.form.RelativeAngle, "RelativeAngleToRef")
 
             # Button reversed wall:
-            iconRevWall = os.path.join(icons_path, "Invert.svg") # Icon path
-            self.form.buttRevWall.setIcon(QtGui.QIcon(iconRevWall)) # Set icon on button
             self.form.buttRevWall.clicked.connect(self.revWall) # Button click action
 
             # Button unfold wall:
-            iconUnfWall = os.path.join(icons_path, "SheetMetal_Unfold.svg") # Icon path
-            self.form.buttUnfold.setIcon(QtGui.QIcon(iconUnfWall)) # Set icon on button
             self.form.buttUnfold.clicked.connect(self.unfWall) # Button click action
 
-            # ComboBox length spec:
-            iconLenLeg = os.path.join(icons_path, "SheetMetal_WallLenLeg.svg") # Icon path
-            iconLenOut = os.path.join(icons_path, "SheetMetal_WallLenOut.svg")
-            iconLenInn = os.path.join(icons_path, "SheetMetal_WallLenInn.svg")
-            iconLenTang = os.path.join(icons_path, "SheetMetal_WallLenTang.svg")
-            self.form.LengthSpec.setItemIcon(0, QtGui.QIcon(iconLenLeg)) # Set icon on item list
-            self.form.LengthSpec.setItemIcon(1, QtGui.QIcon(iconLenOut))
-            self.form.LengthSpec.setItemIcon(2, QtGui.QIcon(iconLenInn))
-            self.form.LengthSpec.setItemIcon(3, QtGui.QIcon(iconLenTang))
-
-            # ComboBox wall position
-            iconPosMatOut = os.path.join(icons_path, "SheetMetal_WallPosMatOut.svg") # Icon path
-            iconPosIns = os.path.join(icons_path, "SheetMetal_WallPosMatIns.svg")
-            iconPosThkOut = os.path.join(icons_path, "SheetMetal_WallPosThkOut.svg")
-            iconPosOffset = os.path.join(icons_path, "SheetMetal_WallPosOffset.svg")
-            self.form.BendType.setItemIcon(0, QtGui.QIcon(iconPosMatOut)) # Set icon on item list
-            self.form.BendType.setItemIcon(1, QtGui.QIcon(iconPosIns))
-            self.form.BendType.setItemIcon(2, QtGui.QIcon(iconPosThkOut))
-            self.form.BendType.setItemIcon(3, QtGui.QIcon(iconPosOffset))
-            # ComboBox offset wall position icons:
-            self.form.OffsetTypes.setItemIcon(0, QtGui.QIcon(iconPosMatOut)) # Set icon on item list
-            self.form.OffsetTypes.setItemIcon(1, QtGui.QIcon(iconPosIns))
-            self.form.OffsetTypes.setItemIcon(2, QtGui.QIcon(iconPosThkOut))
-            self.form.OffsetTypes.setItemIcon(3, QtGui.QIcon(iconPosOffset))
-
             self.activeRefGeom = None # Variable to track which property should be filled when in selection mode. And used to rename the form field (of face reference) only when necessary
-        
+
         def selectAngleOffsetGeo(self, targetField): # Trigger selection of angle and offset reference geometry
             """Trigger selection of angle and offset reference geometry"""
             self.activeRefGeom = targetField # Store the target field
@@ -2417,10 +2387,6 @@ if SheetMetalTools.isGuiLoaded():
             
             self.updateForm()
 
-        def angleFaceMode(self, isAngFaceRef): # Updates of angle face reference mode
-            self.form.frameRelatAngle.setVisible(isAngFaceRef)
-            self.updateForm()
-
         def offsetFaceModeButton(self): # Make the offset face button check offset face mode
             self.obj.OffsetFaceRefMode = not self.obj.OffsetFaceRefMode
 
@@ -2430,10 +2396,6 @@ if SheetMetalTools.isGuiLoaded():
             else:
                 self.form.hideButtWorkaround02.click()
 
-            self.updateForm()
-
-        def offsetFaceMode(self, isOffFaceRef): # Updates of offset face reference mode
-            self.form.frameOffType.setVisible(isOffFaceRef)
             self.updateForm()
 
         def OffsetTypeChanged(self, value): # Updates of offset face reference mode
@@ -2493,16 +2455,10 @@ if SheetMetalTools.isGuiLoaded():
                 self.form.frameOffType.setVisible(False)
 
             # Disable offset spinbox when offset face mode is on:
-            if self.obj.OffsetFaceRefMode == True:
-                self.form.Offset.setEnabled(False)
-            else:
-                self.form.Offset.setEnabled(True)
+            self.form.Offset.setEnabled(not self.obj.OffsetFaceRefMode)
 
             # Disable angle spinbox when angle face mode is on:
-            if self.obj.AngleFaceRefMode == True:
-                self.form.Angle.setEnabled(False)
-            else:
-                self.form.Angle.setEnabled(True)
+            self.form.Angle.setEnabled(not self.obj.AngleFaceRefMode)
 
             # Advanced parameters update
             if self.obj.reliefType == "Rectangle":
@@ -2511,16 +2467,10 @@ if SheetMetalTools.isGuiLoaded():
                 self.form.reliefRound.setChecked(True)
 
             # Button flip the wall - updates check:
-            if self.obj.invert == True:
-                self.form.buttRevWall.setChecked(True)
-            else:
-                self.form.buttRevWall.setChecked(False)
+            self.form.buttRevWall.setChecked(self.obj.invert)
 
             # Button unfold the wall - updates check:
-            if self.obj.unfold == True:
-                self.form.buttUnfold.setChecked(True)
-            else:
-                self.form.buttUnfold.setChecked(False)
+            self.form.buttUnfold.setChecked(self.obj.unfold)
 
             # Updates of offset face reference mode
             self.form.frameOffFaceRef.setVisible(self.obj.BendType == "Offset")
