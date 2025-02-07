@@ -25,8 +25,7 @@
 
 import FreeCAD, Part, math
 import SheetMetalTools
-import PySide
-from PySide import QtGui, QtCore
+from PySide import QtCore
 
 # IMPORTANT: please remember to change the element map version in case of any
 # changes in modeling logic
@@ -2258,10 +2257,11 @@ if SheetMetalTools.isGuiLoaded():
         """A TaskPanel for the Sheetmetal"""
 
         def __init__(self, obj, checkRefFace=False):
-            QtCore.QDir.addSearchPath('Icons', SheetMetalTools.icons_path)
+            QtCore.QDir.addSearchPath('Icons', icons_path)
             self.obj = obj
             self.form = SheetMetalTools.taskLoadUI("FlangeParameters.ui")
             obj.Proxy._addProperties(obj) # Make sure all properties ared added
+            self.activeRefGeom = None # Variable to track which property should be filled when in selection mode. And used to rename the form field (of face reference) only when necessary
             self.updateForm()
             self.checkRefFace = self.onBendOffset(checkRefFace) # Turn bend type to 'Offset', on case of automatic face reference selection
 
@@ -2274,6 +2274,7 @@ if SheetMetalTools.isGuiLoaded():
             SheetMetalTools.taskConnectSpin(self, self.form.Angle, "angle")
             SheetMetalTools.taskConnectSpin(self, self.form.Length, "length")
             SheetMetalTools.taskConnectEnum(self, self.form.LengthSpec, "LengthSpec")
+            SheetMetalTools.taskConnectCheck(self, self.form.UnfoldCheckbox, "unfold")
             SheetMetalTools.taskConnectSpin(self, self.form.gap1, "gap1")
             SheetMetalTools.taskConnectSpin(self, self.form.gap2, "gap2")
             SheetMetalTools.taskConnectSpin(self, self.form.extend1, "extend1")
@@ -2296,25 +2297,17 @@ if SheetMetalTools.isGuiLoaded():
 
             # Connections for Offset face referenced mode
             self.form.hideButtWorkaround02.clicked.connect(lambda: self.selectAngleOffsetGeo(self.form.OffsetFaceRef))
-            self.form.hideButtWorkaround02.setVisible(False)
             self.form.SelOffsetFace.released.connect(self.offsetFaceModeButton)
-            self.form.OffsetFaceRef.textChanged.connect(self.offsetFaceObj)
-            SheetMetalTools.taskConnectEnum(self, self.form.OffsetTypes, "OffsetType", self.OffsetTypeChanged)
-            SheetMetalTools.taskConnectSpin(self, self.form.OffsetTypeOffset, "OffsetTypeOffset")
+            SheetMetalTools.taskConnectEnum(self, self.form.OffsetTypes, "OffsetType", self.updateForm)
+            SheetMetalTools.taskConnectSpin(self, self.form.OffsetTypeOffset, "OffsetTypeOffset", self.updateForm)
 
             # Connections for Angle face referenced mode
             self.form.hideButtWorkaround01.clicked.connect(lambda: self.selectAngleOffsetGeo(self.form.AngleFaceRef))
-            self.form.hideButtWorkaround01.setVisible(False)
             self.form.SelAngleFace.released.connect(self.angleFaceModeButton)
-            SheetMetalTools.taskConnectSpin(self, self.form.RelativeAngle, "RelativeAngleToRef")
+            SheetMetalTools.taskConnectSpin(self, self.form.RelativeAngle, "RelativeAngleToRef", self.updateForm)
 
             # Button reversed wall:
             self.form.buttRevWall.clicked.connect(self.revWall) # Button click action
-
-            # Button unfold wall:
-            self.form.buttUnfold.clicked.connect(self.unfWall) # Button click action
-
-            self.activeRefGeom = None # Variable to track which property should be filled when in selection mode. And used to rename the form field (of face reference) only when necessary
 
         def selectAngleOffsetGeo(self, targetField): # Trigger selection of angle and offset reference geometry
             """Trigger selection of angle and offset reference geometry"""
@@ -2357,23 +2350,10 @@ if SheetMetalTools.isGuiLoaded():
         def onBendOffset(self,test): # Turn bend type to 'Offset', on case of automatic face reference selection
             if test == True:
                 self.obj.BendType = "Offset"
-
                 self.updateForm()
 
-        def unfWall(self): # Button to unfold the wall
-            if self.obj.unfold == True:
-                self.obj.unfold = False
-            else:
-                self.obj.unfold = True
-
-            self.updateForm()
-
-        def revWall(self): # Button to filp the wall
-            if self.obj.invert == True:
-                self.obj.invert = False
-            else:
-                self.obj.invert = True
-
+        def revWall(self): # Button to flip the wall side
+            self.obj.invert = not self.obj.invert
             self.updateForm()
         
         def angleFaceModeButton(self): # Make the angle face button check angle face mode
@@ -2397,17 +2377,7 @@ if SheetMetalTools.isGuiLoaded():
                 self.form.hideButtWorkaround02.click()
 
             self.updateForm()
-
-        def OffsetTypeChanged(self, value): # Updates of offset face reference mode
-            self.updateForm()
-
-        def offsetFaceObj(self): # To show again the offset object reference, cause it's automatically hide after selecting it
-            if self.obj.OffsetFaceReference != None:
-                if self.obj.baseObject[0] == self.obj.OffsetFaceReference[0]:
-                    pass
-                else:
-                    self.obj.OffsetFaceReference[0].ViewObject.show()
-        
+     
         def isAllowedAlterSelection(self):
             return True
 
@@ -2434,31 +2404,9 @@ if SheetMetalTools.isGuiLoaded():
             )
             self.obj.Document.recompute()
 
-        def updateForm(self):
+        def updateForm(self, value=None): # I inserted the 'value' parameter just to easily use this function as a callback in form connections
             self.form.Offset.setEnabled(self.obj.BendType == "Offset")
             SheetMetalTools.taskPopulateSelectionList(self.form.tree, self.obj.baseObject)
-
-            # Make the button of angle face reference mode act like a checkbox:
-            if self.obj.AngleFaceRefMode == True:
-                self.form.SelAngleFace.setChecked(True)
-                self.form.frameRelatAngle.setVisible(True)
-            else:
-                self.form.SelAngleFace.setChecked(False)
-                self.form.frameRelatAngle.setVisible(False)
-
-            # Make the button of offset face reference mode act like a checkbox:
-            if self.obj.OffsetFaceRefMode == True:
-                self.form.SelOffsetFace.setChecked(True)
-                self.form.frameOffType.setVisible(True)
-            else:
-                self.form.SelOffsetFace.setChecked(False)
-                self.form.frameOffType.setVisible(False)
-
-            # Disable offset spinbox when offset face mode is on:
-            self.form.Offset.setEnabled(not self.obj.OffsetFaceRefMode)
-
-            # Disable angle spinbox when angle face mode is on:
-            self.form.Angle.setEnabled(not self.obj.AngleFaceRefMode)
 
             # Advanced parameters update
             if self.obj.reliefType == "Rectangle":
@@ -2466,11 +2414,22 @@ if SheetMetalTools.isGuiLoaded():
             else:
                 self.form.reliefRound.setChecked(True)
 
+            # Make the button of angle face reference mode act like a checkbox:
+            self.form.SelAngleFace.setChecked(self.obj.AngleFaceRefMode)
+            self.form.frameRelatAngle.setVisible(self.obj.AngleFaceRefMode)
+
+            # Make the button of offset face reference mode act like a checkbox:
+            self.form.SelOffsetFace.setChecked(self.obj.OffsetFaceRefMode)
+            self.form.frameOffType.setVisible(self.obj.OffsetFaceRefMode)
+
+            # Disable offset spinbox when offset face mode is on:
+            self.form.Offset.setEnabled(not self.obj.OffsetFaceRefMode)
+
+            # Disable angle spinbox when angle face mode is on:
+            self.form.Angle.setEnabled(not self.obj.AngleFaceRefMode)
+
             # Button flip the wall - updates check:
             self.form.buttRevWall.setChecked(self.obj.invert)
-
-            # Button unfold the wall - updates check:
-            self.form.buttUnfold.setChecked(self.obj.unfold)
 
             # Updates of offset face reference mode
             self.form.frameOffFaceRef.setVisible(self.obj.BendType == "Offset")
@@ -2478,23 +2437,13 @@ if SheetMetalTools.isGuiLoaded():
             self.form.frameOffOff.setVisible(self.obj.BendType == "Offset" and self.obj.OffsetType == "Offset" and self.obj.OffsetFaceRefMode == True)
 
             # Fill property of angle and offset face reference:
-            try:
-                if self.activeRefGeom == None:
-                    if self.obj.AngleFaceReference != None:
-                        strAngRef = f"{self.obj.AngleFaceReference[0].Name}.{self.obj.AngleFaceReference[1][0]}"
-                        self.form.AngleFaceRef.setText(strAngRef)
+            if self.activeRefGeom == None and self.obj.AngleFaceReference != None:
+                strAngRef = f"{self.obj.AngleFaceReference[0].Name}.{self.obj.AngleFaceReference[1][0]}"
+                self.form.AngleFaceRef.setText(strAngRef)
 
-                    if self.obj.OffsetFaceReference != None:
-                        strOffsetRef = f"{self.obj.OffsetFaceReference[0].Name}.{self.obj.OffsetFaceReference[1][0]}"
-                        self.form.OffsetFaceRef.setText(strOffsetRef)
-            except:
-                if self.obj.AngleFaceReference != None:
-                    strAngRef = f"{self.obj.AngleFaceReference[0].Name}.{self.obj.AngleFaceReference[1][0]}"
-                    self.form.AngleFaceRef.setText(strAngRef)
-
-                if self.obj.OffsetFaceReference != None:
-                    strOffsetRef = f"{self.obj.OffsetFaceReference[0].Name}.{self.obj.OffsetFaceReference[1][0]}"
-                    self.form.OffsetFaceRef.setText(strOffsetRef)
+            if self.activeRefGeom == None and self.obj.OffsetFaceReference != None:
+                strOffsetRef = f"{self.obj.OffsetFaceReference[0].Name}.{self.obj.OffsetFaceReference[1][0]}"
+                self.form.OffsetFaceRef.setText(strOffsetRef)
 
             self.obj.recompute() # Updates the angle in model
             self.obj.Document.recompute()
