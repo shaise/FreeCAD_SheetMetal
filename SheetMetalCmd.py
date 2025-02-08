@@ -2388,11 +2388,9 @@ if SheetMetalTools.isGuiLoaded():
             if self.obj.BendType == "Offset":
                 self.form.Offset.setEnabled(True)
             else:
-                self.form.Offset.setEnabled(False)
-                
+                self.form.Offset.setEnabled(False)        
                 self.obj.OffsetType = "Material Inside"
                 self.form.OffsetTypes.setCurrentIndex(1)
-                self.OffsetTypeChanged("Material Inside")
 
             # Updates of offset face reference mode
             self.form.frameOffFaceRef.setVisible(self.obj.BendType == "Offset")
