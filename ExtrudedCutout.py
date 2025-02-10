@@ -43,7 +43,7 @@ class ExtrudedCutout:
             "ExtrudedCutout",
             FreeCAD.Qt.translate("SheetMetal", "The sketch for the cut"),
         ).Sketch = sketch
-        self._addProperties(
+        self.addVerifyProperties(
             obj, selected_face
         )  # Add other properties (is necessary this way to not cause errors on old files)
         obj.setEditorMode("ImproveLevel", 2)  # Hide by default
@@ -89,7 +89,7 @@ class ExtrudedCutout:
 
         obj.Proxy = self
 
-    def _addProperties(self, obj, selected_face = None):
+    def addVerifyProperties(self, obj, selected_face = None):
         SheetMetalTools.smAddProperty(
             obj,
             "App::PropertyLinkSub",
@@ -161,7 +161,7 @@ class ExtrudedCutout:
     def execute(self, fp):
         '''Perform the cut when the object is recomputed'''
 
-        self._addProperties(fp)
+        self.addVerifyProperties(fp)
 
         try:
             # Ensure the Sketch and baseObject properties are valid
@@ -435,6 +435,7 @@ if SheetMetalTools.isGuiLoaded():
             self.form = SheetMetalTools.taskLoadUI("ExtrudedCutoutPanel.ui")
             self.LengthAText = FreeCAD.Qt.translate("SheetMetal", "Side A Length")
             self.LengthText = FreeCAD.Qt.translate("SheetMetal", "Length")
+            obj.Proxy.addVerifyProperties(obj) # Make sure all properties are added
             self.updateDisplay()
 
             SheetMetalTools.taskConnectSelectionSingle(

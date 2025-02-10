@@ -341,20 +341,20 @@ if SheetMetalTools.isGuiLoaded():
 
 
     class AddSketchOnSheetCommandClass:
-        """Add Sketch On Sheet metal command"""
+        """Add Wrap cutout command"""
 
         def GetResources(self):
             return {
                 "Pixmap": os.path.join(
                     icons_path, "SheetMetal_SketchOnSheet.svg"
                 ),  # the name of a svg file available in the resources
-                "MenuText": FreeCAD.Qt.translate("SheetMetal", "Sketch On Sheet metal"),
+                "MenuText": FreeCAD.Qt.translate("SheetMetal", "Wrap Cutout"),
                 "Accel": "M, S",
                 "ToolTip": FreeCAD.Qt.translate(
                     "SheetMetal",
-                    "Extruded cut from Sketch On Sheet metal faces\n"
+                    "Wrap cutout from a Sketch On Sheet metal faces\n"
                     "1. Select a flat face on sheet metal and\n"
-                    "2. Select a sketch on same face to create sheetmetal extruded cut.\n"
+                    "2. Select a sketch on same face to create sheetmetal wrapped cut.\n"
                     "3. Use Property editor to modify other parameters",
                 ),
             }

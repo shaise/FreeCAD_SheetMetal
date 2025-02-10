@@ -417,6 +417,9 @@ class SMCornerRelief:
         SheetMetalTools.taskRestoreDefaults(obj, smCornerReliefDefaultVars)
         obj.Proxy = self
 
+    def addVerifyProperties(self, obj):
+        pass
+
     def execute(self, fp):
         '''"Print a short message when doing a recomputation, this method is mandatory"'''
 
@@ -465,6 +468,7 @@ if SheetMetalTools.isGuiLoaded():
         def __init__(self, obj):
             self.obj = obj
             self.form = SheetMetalTools.taskLoadUI("CornerReliefPanel.ui")
+            obj.Proxy.addVerifyProperties(obj) # Make sure all properties are added
             self.updateForm()
             SheetMetalTools.taskConnectSelection(
                 self.form.AddRemove, self.form.tree, self.obj, ["Edge"])

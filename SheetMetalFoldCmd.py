@@ -263,6 +263,9 @@ class SMFoldWall:
         SheetMetalTools.taskRestoreDefaults(obj, BendOnLineDefaultVars)
         obj.Proxy = self
 
+    def addVerifyProperties(self, obj):
+        pass
+
     def execute(self, fp):
         '''"Print a short message when doing a recomputation, this method is mandatory"'''
 
@@ -320,6 +323,7 @@ if SheetMetalTools.isGuiLoaded():
             self.obj = obj
             self.activeSelection = {}
             self.form = SheetMetalTools.taskLoadUI("BendOnLinePanel.ui")
+            obj.Proxy.addVerifyProperties(obj) # Make sure all properties are added
             SheetMetalTools.taskConnectSelectionSingle(
                 self, self.form.buttBaseObject, self.form.txtBaseObject, obj, "baseObject", ["Face"])
             SheetMetalTools.taskConnectSelectionSingle(

@@ -120,7 +120,7 @@ class SMUnfold:
             translate( "App::Property", "Base Object" ),
             (selobj, sel_elements),
         )
-        self._addProperties(obj)
+        self.addVerifyProperties(obj)
         SheetMetalTools.taskRestoreDefaults(obj, smUnfoldDefaultVars)
         # setup transient properties
         self.SketchColor = GENSKETCHCOLOR
@@ -133,7 +133,7 @@ class SMUnfold:
         obj.Proxy = self
         self.UnfoldSketches = []
 
-    def _addProperties(self, obj):
+    def addVerifyProperties(self, obj):
         SheetMetalTools.smAddProperty(
             obj,
             "App::PropertyFloatConstraint",
@@ -263,7 +263,7 @@ class SMUnfold:
 
     def execute(self, fp):
         '''"Print a short message when doing a recomputation, this method is mandatory"'''
-        self._addProperties(fp)
+        self.addVerifyProperties(fp)
 
         if not NewUnfolderAvailable or SheetMetalTools.use_old_unfolder():
             shape, sketches = self.oldUnfolder(fp)
@@ -333,6 +333,7 @@ if SheetMetalTools.isGuiLoaded():
             QtCore.QDir.addSearchPath('Icons', SheetMetalTools.icons_path)
             self.obj = obj
             self.form = SheetMetalTools.taskLoadUI("UnfoldOptions.ui")
+            obj.Proxy.addVerifyProperties(obj) # Make sure all properties are added
             self.setupUi()
 
         def _boolToState(self, bool):

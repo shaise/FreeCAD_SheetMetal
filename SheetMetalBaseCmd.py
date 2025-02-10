@@ -121,11 +121,11 @@ class SMBaseBend:
             "App::PropertyLink", "BendSketch", "Parameters", _tip_
         ).BendSketch = sketch
         _tip_ = translate("App::Property", "Extrude Symmetric to Plane")
-        self._addProperties(obj)
+        self.addVerifyProperties(obj)
         SheetMetalTools.taskRestoreDefaults(obj, smBaseDefaultVars)
         obj.Proxy = self
 
-    def _addProperties(self, obj):
+    def addVerifyProperties(self, obj):
         SheetMetalTools.smAddLengthProperty(
             obj,
             "Radius",
@@ -160,7 +160,7 @@ class SMBaseBend:
 
     def execute(self, fp):
         '''"Print a short message when doing a recomputation, this method is mandatory"'''
-        self._addProperties(fp)
+        self.addVerifyProperties(fp)
         s = smBase(
             thk=fp.Thickness.Value,
             length=fp.Length.Value,
@@ -211,6 +211,7 @@ if SheetMetalTools.isGuiLoaded():
         def __init__(self, obj):
             self.obj = obj
             self.form = SheetMetalTools.taskLoadUI("CreateBaseShape.ui")
+            obj.Proxy.addVerifyProperties(obj) # Make sure all properties are added
             self.updateDisplay()
             SheetMetalTools.taskConnectSelectionSingle(
                 self, self.form.pushSketch, self.form.txtSketch, obj, "BendSketch", ("Sketcher::SketchObject", [])
