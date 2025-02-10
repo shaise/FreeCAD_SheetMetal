@@ -1264,10 +1264,10 @@ def smBend(
         offset = 0.0
         inside = False
     elif BendType == "Material Inside":
-        offset = -(thk + bendR)
+        offset = -(thk + bendR) * abs(math.tan(math.radians(bendA * 0.5)))
         inside = True
     elif BendType == "Thickness Outside":
-        offset = -bendR
+        offset = -bendR * abs(math.tan(math.radians(bendA * 0.5)))
         inside = True
     elif BendType == "Offset":
         if offset < 0.0:
@@ -1278,14 +1278,14 @@ def smBend(
     if LengthSpec == "Leg":
         pass
     elif LengthSpec == "Tangential":
-        if bendA >= 90.0:
+        if bendA >= 90.0 or bendA <= -90.0:
             extLen -= thk + bendR
         else:
-            extLen -= (bendR + thk) / math.tan(math.radians(90.0 - bendA / 2))
+            extLen -= (bendR + thk) / abs(math.tan(math.radians(90.0 - bendA / 2)))
     elif LengthSpec == "Inner Sharp":
-        extLen -= (bendR) / math.tan(math.radians(90.0 - bendA / 2))
+        extLen -= (bendR) / abs(math.tan(math.radians(90.0 - bendA / 2)))
     elif LengthSpec == "Outer Sharp":
-        extLen -= (bendR + thk) / math.tan(math.radians(90.0 - bendA / 2))
+        extLen -= (bendR + thk) / abs(math.tan(math.radians(90.0 - bendA / 2)))
 
     nogaptrimedgelist = []
     if not (sketches):
