@@ -25,7 +25,7 @@
 
 import FreeCAD, Part, math
 import SheetMetalTools
-from PySide import QtCore
+from PySide import QtCore, QtGui
 
 # IMPORTANT: please remember to change the element map version in case of any
 # changes in modeling logic
@@ -2327,28 +2327,31 @@ if SheetMetalTools.isGuiLoaded():
 
             if "Plane" in selected_obj.TypeId or "Face" in subname:
                 selected_text = f"{selected_obj.Name}.{subname}"
-                if self.activeRefGeom:
-                    self.activeRefGeom.setText(selected_text)
-                    if self.activeRefGeom.objectName() == "AngleFaceRef":
-                        self.obj.AngleFaceReference = selected_obj, subname # Fill the property of geometry reference for Angle
-                        Gui.Selection.removeObserver(self) # Stop observing after selection
-                        self.activeRefGeom = None
-                        self.obj.baseObject[0].ViewObject.hide()
-                        self.obj.ViewObject.show()
-                    elif self.activeRefGeom.objectName() == "OffsetFaceRef":
-                        self.obj.OffsetFaceReference = selected_obj, subname # Fill the property of geometry reference for Offset
-                        Gui.Selection.removeObserver(self) # Stop observing after selection
-                        self.activeRefGeom = None
-                        self.obj.baseObject[0].ViewObject.hide()
-                        self.obj.ViewObject.show()
-                    
-                    self.updateForm()
+                try:
+                    if self.activeRefGeom:
+                        self.activeRefGeom.setText(selected_text)
+                        if self.activeRefGeom.objectName() == "AngleFaceRef":
+                            self.obj.AngleFaceReference = selected_obj, subname # Fill the property of geometry reference for Angle
+                            Gui.Selection.removeObserver(self) # Stop observing after selection
+                            self.activeRefGeom = None
+                            self.obj.baseObject[0].ViewObject.hide()
+                            self.obj.ViewObject.show()
+                        elif self.activeRefGeom.objectName() == "OffsetFaceRef":
+                            self.obj.OffsetFaceReference = selected_obj, subname # Fill the property of geometry reference for Offset
+                            Gui.Selection.removeObserver(self) # Stop observing after selection
+                            self.activeRefGeom = None
+                            self.obj.baseObject[0].ViewObject.hide()
+                            self.obj.ViewObject.show()
+                        
+                        self.updateForm()
+                except:
+                    pass
             else:
                 if Gui.Control.activeDialog():
-                    self.activeRefGeom.setText("Invalid. Select a face as reference")
+                    self.activeRefGeom.setText("Invalid. Select one face as reference")
 
         def onBendOffset(self,test): # Turn bend type to 'Offset', on case of automatic face reference selection
-            if test == True:
+            if test:
                 self.obj.BendType = "Offset"
                 self.updateForm()
 
@@ -2388,7 +2391,7 @@ if SheetMetalTools.isGuiLoaded():
             if self.obj.BendType == "Offset":
                 self.form.Offset.setEnabled(True)
             else:
-                self.form.Offset.setEnabled(False)        
+                self.form.Offset.setEnabled(False)
                 self.obj.OffsetType = "Material Inside"
                 self.form.OffsetTypes.setCurrentIndex(1)
 
