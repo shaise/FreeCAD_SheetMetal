@@ -232,7 +232,7 @@
                 </widget>
                </item>
                <item>
-                <widget class="QToolButton" name="SelAngleFace">
+                <widget class="QPushButton" name="SelAngleFace">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                    <horstretch>0</horstretch>
@@ -241,7 +241,7 @@
                  </property>
                  <property name="minimumSize">
                   <size>
-                   <width>28</width>
+                   <width>30</width>
                    <height>28</height>
                   </size>
                  </property>
@@ -260,13 +260,18 @@
                  <property name="toolTip">
                   <string>Face reference</string>
                  </property>
+                 <property name="styleSheet">
+                  <string notr="true">margin: 0px;
+padding: 0px;
+min-width: 28px;</string>
+                 </property>
                  <property name="text">
                   <string/>
                  </property>
                  <property name="icon">
                   <iconset>
-                   <normalon>Icons:Face-selection.svg</normalon>
-                  </iconset>
+                   <normaloff>Icons:FaceSelection_On.svg</normaloff>
+                   <normalon>Icons:FaceSelection_Off.svg</normalon>Icons:FaceSelection_On.svg</iconset>
                  </property>
                  <property name="iconSize">
                   <size>
@@ -281,11 +286,11 @@
                </item>
                <item>
                 <widget class="QPushButton" name="hideButtWorkaround01">
-                 <property name="text">
-                  <string>reference face</string>
-                 </property>
                  <property name="visible">
                   <bool>false</bool>
+                 </property>
+                 <property name="text">
+                  <string>reference face</string>
                  </property>
                 </widget>
                </item>
@@ -514,11 +519,41 @@
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>1</height>
+             </size>
+            </property>
+            <property name="sizeIncrement">
+             <size>
+              <width>0</width>
+              <height>1</height>
+             </size>
+            </property>
+            <property name="baseSize">
+             <size>
+              <width>0</width>
+              <height>1</height>
+             </size>
+            </property>
+            <property name="autoFillBackground">
+             <bool>false</bool>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">background-color: rgb(170, 170, 170);</string>
+            </property>
             <property name="frameShape">
              <enum>QFrame::Shape::HLine</enum>
             </property>
             <property name="frameShadow">
              <enum>QFrame::Shadow::Sunken</enum>
+            </property>
+            <property name="lineWidth">
+             <number>1</number>
+            </property>
+            <property name="midLineWidth">
+             <number>0</number>
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_6">
              <property name="spacing">
@@ -667,6 +702,27 @@
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>1</height>
+             </size>
+            </property>
+            <property name="sizeIncrement">
+             <size>
+              <width>0</width>
+              <height>1</height>
+             </size>
+            </property>
+            <property name="baseSize">
+             <size>
+              <width>0</width>
+              <height>1</height>
+             </size>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">background-color: rgb(170, 170, 170);</string>
+            </property>
             <property name="frameShape">
              <enum>QFrame::Shape::HLine</enum>
             </property>
@@ -733,7 +789,7 @@
              </widget>
             </item>
             <item>
-             <widget class="QToolButton" name="buttRevWall">
+             <widget class="QPushButton" name="buttRevWall">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                 <horstretch>0</horstretch>
@@ -742,7 +798,7 @@
               </property>
               <property name="minimumSize">
                <size>
-                <width>28</width>
+                <width>30</width>
                 <height>28</height>
                </size>
               </property>
@@ -761,13 +817,18 @@
               <property name="toolTip">
                <string>Reverse the wall</string>
               </property>
+              <property name="styleSheet">
+               <string notr="true">margin: 0px;
+padding: 0px;
+min-width: 28px;</string>
+              </property>
               <property name="text">
                <string/>
               </property>
               <property name="icon">
                <iconset>
-                <normalon>Icons:Invert.svg</normalon>
-               </iconset>
+                <normaloff>Icons:Invert_On.svg</normaloff>
+                <normalon>Icons:Invert_Off.svg</normalon>Icons:Invert_On.svg</iconset>
               </property>
               <property name="iconSize">
                <size>
@@ -795,6 +856,13 @@
             </property>
            </spacer>
           </item>
+          <item row="7" column="2">
+           <widget class="QCheckBox" name="UnfoldCheckbox">
+            <property name="text">
+             <string>Unfold</string>
+            </property>
+           </widget>
+          </item>
           <item row="6" column="1" colspan="3">
            <widget class="QFrame" name="offsetGroup">
             <property name="sizePolicy">
@@ -803,8 +871,17 @@
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
+            <property name="autoFillBackground">
+             <bool>false</bool>
+            </property>
             <property name="styleSheet">
              <string notr="true"/>
+            </property>
+            <property name="frameShadow">
+             <enum>QFrame::Shadow::Plain</enum>
+            </property>
+            <property name="lineWidth">
+             <number>0</number>
             </property>
             <layout class="QGridLayout" name="gridLayout_7">
              <property name="sizeConstraint">
@@ -956,7 +1033,7 @@
                  </widget>
                 </item>
                 <item>
-                 <widget class="QToolButton" name="SelOffsetFace">
+                 <widget class="QPushButton" name="SelOffsetFace">
                   <property name="sizePolicy">
                    <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                     <horstretch>0</horstretch>
@@ -965,7 +1042,7 @@
                   </property>
                   <property name="minimumSize">
                    <size>
-                    <width>28</width>
+                    <width>30</width>
                     <height>28</height>
                    </size>
                   </property>
@@ -984,13 +1061,18 @@
                   <property name="toolTip">
                    <string>Face reference</string>
                   </property>
+                  <property name="styleSheet">
+                   <string notr="true">margin: 0px;
+padding: 0px;
+min-width: 28px;</string>
+                  </property>
                   <property name="text">
                    <string/>
                   </property>
                   <property name="icon">
                    <iconset>
-                    <normalon>Icons:Face-selection.svg</normalon>
-                   </iconset>
+                    <normaloff>Icons:FaceSelection_On.svg</normaloff>
+                    <normalon>Icons:FaceSelection_Off.svg</normalon>Icons:FaceSelection_On.svg</iconset>
                   </property>
                   <property name="iconSize">
                    <size>
@@ -1005,119 +1087,16 @@
                 </item>
                 <item>
                  <widget class="QPushButton" name="hideButtWorkaround02">
-                  <property name="text">
-                   <string>reference face</string>
-                  </property>
                   <property name="visible">
                    <bool>false</bool>
+                  </property>
+                  <property name="text">
+                   <string>reference face</string>
                   </property>
                  </widget>
                 </item>
                </layout>
               </widget>
-             </item>
-             <item row="1" column="0">
-              <layout class="QHBoxLayout" name="bendTypeLayout">
-               <property name="spacing">
-                <number>4</number>
-               </property>
-               <item>
-                <widget class="QLabel" name="labelWallPos">
-                 <property name="sizePolicy">
-                  <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
-                   <horstretch>0</horstretch>
-                   <verstretch>0</verstretch>
-                  </sizepolicy>
-                 </property>
-                 <property name="maximumSize">
-                  <size>
-                   <width>66</width>
-                   <height>16777215</height>
-                  </size>
-                 </property>
-                 <property name="text">
-                  <string>Wall position</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QComboBox" name="BendType">
-                 <property name="sizePolicy">
-                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                   <horstretch>0</horstretch>
-                   <verstretch>0</verstretch>
-                  </sizepolicy>
-                 </property>
-                 <property name="minimumSize">
-                  <size>
-                   <width>0</width>
-                   <height>28</height>
-                  </size>
-                 </property>
-                 <property name="maximumSize">
-                  <size>
-                   <width>16777215</width>
-                   <height>28</height>
-                  </size>
-                 </property>
-                 <property name="baseSize">
-                  <size>
-                   <width>0</width>
-                   <height>28</height>
-                  </size>
-                 </property>
-                 <property name="currentIndex">
-                  <number>0</number>
-                 </property>
-                 <property name="iconSize">
-                  <size>
-                   <width>28</width>
-                   <height>28</height>
-                  </size>
-                 </property>
-                 <item>
-                  <property name="text">
-                   <string>Material Outside</string>
-                  </property>
-                  <property name="icon">
-                   <iconset>
-                    <normalon>Icons:SheetMetal_WallPosMatOut.svg</normalon>
-                   </iconset>
-                  </property>
-                 </item>
-                 <item>
-                  <property name="text">
-                   <string>Material Inside</string>
-                  </property>
-                  <property name="icon">
-                   <iconset>
-                    <normalon>Icons:SheetMetal_WallPosMatIns.svg</normalon>
-                   </iconset>
-                  </property>
-                 </item>
-                 <item>
-                  <property name="text">
-                   <string>Thickness Outside</string>
-                  </property>
-                  <property name="icon">
-                   <iconset>
-                    <normalon>Icons:SheetMetal_WallPosThkOut.svg</normalon>
-                   </iconset>
-                  </property>
-                 </item>
-                 <item>
-                  <property name="text">
-                   <string>Offset</string>
-                  </property>
-                  <property name="icon">
-                   <iconset>
-                    <normalon>Icons:SheetMetal_WallPosOffset.svg</normalon>
-                   </iconset>
-                  </property>
-                 </item>
-                </widget>
-               </item>
-              </layout>
              </item>
              <item row="3" column="0">
               <widget class="QWidget" name="frameOffType" native="true">
@@ -1311,14 +1290,116 @@
                </layout>
               </widget>
              </item>
+             <item row="1" column="0">
+              <layout class="QHBoxLayout" name="bendTypeLayout">
+               <property name="spacing">
+                <number>1</number>
+               </property>
+               <item>
+                <widget class="QLabel" name="labelWallPos">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="minimumSize">
+                  <size>
+                   <width>68</width>
+                   <height>0</height>
+                  </size>
+                 </property>
+                 <property name="maximumSize">
+                  <size>
+                   <width>66</width>
+                   <height>16777215</height>
+                  </size>
+                 </property>
+                 <property name="text">
+                  <string>Wall position</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QComboBox" name="BendType">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="minimumSize">
+                  <size>
+                   <width>0</width>
+                   <height>28</height>
+                  </size>
+                 </property>
+                 <property name="maximumSize">
+                  <size>
+                   <width>16777215</width>
+                   <height>28</height>
+                  </size>
+                 </property>
+                 <property name="baseSize">
+                  <size>
+                   <width>0</width>
+                   <height>28</height>
+                  </size>
+                 </property>
+                 <property name="currentIndex">
+                  <number>0</number>
+                 </property>
+                 <property name="iconSize">
+                  <size>
+                   <width>28</width>
+                   <height>28</height>
+                  </size>
+                 </property>
+                 <item>
+                  <property name="text">
+                   <string>Material Outside</string>
+                  </property>
+                  <property name="icon">
+                   <iconset>
+                    <normalon>Icons:SheetMetal_WallPosMatOut.svg</normalon>
+                   </iconset>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>Material Inside</string>
+                  </property>
+                  <property name="icon">
+                   <iconset>
+                    <normalon>Icons:SheetMetal_WallPosMatIns.svg</normalon>
+                   </iconset>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>Thickness Outside</string>
+                  </property>
+                  <property name="icon">
+                   <iconset>
+                    <normalon>Icons:SheetMetal_WallPosThkOut.svg</normalon>
+                   </iconset>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>Offset</string>
+                  </property>
+                  <property name="icon">
+                   <iconset>
+                    <normalon>Icons:SheetMetal_WallPosOffset.svg</normalon>
+                   </iconset>
+                  </property>
+                 </item>
+                </widget>
+               </item>
+              </layout>
+             </item>
             </layout>
-           </widget>
-          </item>
-          <item row="7" column="2">
-           <widget class="QCheckBox" name="UnfoldCheckbox">
-            <property name="text">
-             <string>Unfold</string>
-            </property>
            </widget>
           </item>
          </layout>
