@@ -25,6 +25,7 @@
 
 import FreeCAD, Part, math
 import SheetMetalTools
+from PySide import QtCore, QtGui
 
 # IMPORTANT: please remember to change the element map version in case of any
 # changes in modeling logic
@@ -43,6 +44,365 @@ smAddWallDefaultVars = [
 ]
 
 translate = FreeCAD.Qt.translate
+
+def GetSMComparisonFace (smObj, smSelItemName): # Calculations for Angle and Offset face reference modes
+    """
+    Find the sheet metal face reference to find the angle and offset with another face.
+    Find the thickness edge coincident with sheet metal reference face.
+    Find the thickness face.
+    
+    Parameters:
+        smObj: sheet metal part.
+        smSelItemName: selected item to create the wall/flange (can be face or edge).
+    
+    Returns:
+        FaceReference, ThicknessEdgeCoincident, ThicknessFace
+    """
+
+    smSelItem = smObj.Shape.getElement(smSelItemName)
+    smObj = smObj.Shape
+    thickness = sheet_thk(smObj,smSelItemName)[0]
+    thickness = round(thickness, 4)
+
+    def faces_with_edge(obj, edge):
+        """
+        Finds all faces in the given object that contain the specified edge.
+        
+        Parameters:
+            obj: The FreeCAD object to analyze.
+            edge: The specific edge to search for.
+        
+        Returns:
+            FacesWithEdge(list)
+        """
+
+        faces_with_edge = []
+        for face in obj.Faces:
+            for edgeFace in face.Edges:
+                if edgeFace.isSame(edge):
+                    faces_with_edge.append(face)
+        return faces_with_edge
+
+    def facesConnectedToFace(obj, smThkFace):
+        """
+        Finds all faces in the given object that are connected to the given face.
+        
+        Parameters:
+            obj: The FreeCAD object to analyze.
+            smThkFace: The specific face to find connected faces to.
+            
+        Returns:
+            FacesConnectedToface(list)
+        """
+        smFaces = obj.Faces
+        faces_connected_to = []
+
+        for edge1 in smThkFace.Edges:
+            for face in smFaces:
+                # Ensure the face is not the same as the selected face by comparing geometry
+                if face.isSame(smThkFace):
+                    continue
+                
+                # Check if the face shares the same edge
+                for edge2 in face.Edges:
+                    if edge1.isSame(edge2):
+                        if face not in faces_connected_to:
+                            faces_connected_to.append(face)
+                        break  # Stop checking other edges of this face since it's already added
+
+        return faces_connected_to
+
+    # Get relevant faces on the object:
+    if type(smSelItem) == Part.Face: # Use a face as reference since it's was possible on past version
+        faces = facesConnectedToFace(smObj, smSelItem)
+        thkFace = smSelItem
+    else:
+        faces = faces_with_edge(smObj, smSelItem)
+
+    # Find pairs of parallel faces
+    smAllFaces = smObj.Faces
+    parallel_faces = []
+    for i, face1 in enumerate(smAllFaces):
+        for j, face2 in enumerate(smAllFaces):
+            if i >= j:
+                continue
+            if face1.normalAt(0, 0).isEqual(face2.normalAt(0, 0).multiply(-1), 1e-6):
+                distance_info = face1.distToShape(face2)
+                distance = distance_info[0]
+                if abs(distance - thickness) <= 1e-5:
+                    parallel_faces.extend([face1, face2])
+
+    parallel_faces = Part.Shell(parallel_faces)
+
+    # Get only the relevant parallel faces:
+    if type(smSelItem) == Part.Face: # Use a face as reference since it's was possible on past version
+        newParFaces = []
+        for edge1 in smSelItem.Edges:
+            for face in parallel_faces.Faces:
+                for edge2 in face.Edges:
+                    if edge1.isSame(edge2):
+                        newParFaces.append(face)
+
+    else:
+        for face1 in faces:
+            for face2 in parallel_faces.Faces:
+                if face1.isEqual(face2):
+                    oneParFace = face1
+        
+        normal_vector = oneParFace.normalAt(0,0).normalize()
+
+        for face in parallel_faces.Faces:
+            if normal_vector.isEqual(face.normalAt(0, 0).normalize().multiply(-1), 1e-6): # Test to find a face with opposite normal
+                distance = oneParFace.distToShape(face)[0]
+                if abs(distance - thickness) <= 1e-5:
+                    try: # Is necessary 'try' and 'except','cause rounded surfaces offset can lead to errors if offset is bigger than it's radius
+                        checkFace = face.makeOffsetShape(-distance, 0)
+                        checkCut = oneParFace.cut(checkFace)
+                        if checkCut.Area < 1e-6: # Test to ensure the opposite face is, in fact, the other side of the sheet metal part
+                            otherParFace = face
+                            extFace = otherParFace # Get sheet metal face for comparison with the reference face
+                    except:
+                        continue
+    
+        newParFaces = [oneParFace, otherParFace]
+
+        for face in faces:
+            if face.isEqual(newParFaces[0]) or face1.isEqual(newParFaces[1]):
+                pass
+            else:
+                thkFace = face # Get the thickness face
+
+    # Get sheet metal face for comparison with the reference face
+    if type(smSelItem) == Part.Face: # Use a face as reference since it's was possible on past version
+        refVector = FreeCAD.Vector(0,0,0)
+        centerA = newParFaces[0].BoundBox.Center
+        centerB = newParFaces[1].BoundBox.Center
+
+        distA = centerA.distanceToPoint(refVector)
+        distB = centerB.distanceToPoint(refVector)
+
+        if distA > distB:
+            extFace = newParFaces[0]
+
+            refVectorXY = FreeCAD.Vector(extFace.normalAt(0,0).x, extFace.normalAt(0,0).y, 0)
+            angleTest = math.degrees(extFace.normalAt(0,0).getAngle(refVectorXY))
+            refVectorZ = FreeCAD.Vector(0,0,extFace.normalAt(0,0).z)
+            angleTestZ = math.degrees(extFace.normalAt(0,0).getAngle(refVectorZ))
+
+            extFaceNormal = False
+            if extFace.normalAt(0,0).x <= 0 and extFace.normalAt(0,0).y <= 0:
+                extFaceNormal = True
+            elif extFace.normalAt(0,0).x >= 0 and extFace.normalAt(0,0).y >= 0:
+                extFaceNormal = True
+            
+            if extFaceNormal == True and ((angleTest == 0.0 or angleTest == 180) or (angleTestZ == 0.0 or angleTestZ == 180)):
+                extFace = newParFaces[1]
+                if thkFace.Orientation == "Reversed":
+                    extFace = newParFaces[0]
+        elif distA < distB:
+            extFace = newParFaces[1]
+
+            refVectorXY = FreeCAD.Vector(extFace.normalAt(0,0).x, extFace.normalAt(0,0).y, 0)
+            angleTest = math.degrees(extFace.normalAt(0,0).getAngle(refVectorXY))
+            refVectorZ = FreeCAD.Vector(0,0,extFace.normalAt(0,0).z)
+            angleTestZ = math.degrees(extFace.normalAt(0,0).getAngle(refVectorZ))
+
+            extFaceNormal = False
+            if extFace.normalAt(0,0).x <= 0 and extFace.normalAt(0,0).y <= 0:
+                extFaceNormal = True
+            elif extFace.normalAt(0,0).x >= 0 and extFace.normalAt(0,0).y >= 0:
+                extFaceNormal = True
+
+            if extFaceNormal == True and ((angleTest == 0.0 or angleTest == 180) or (angleTestZ == 0.0 or angleTestZ == 180)):
+                extFace = newParFaces[0]
+                if thkFace.Orientation == "Reversed":
+                    extFace = newParFaces[0]
+
+        if distA == distB:
+            valueA = centerA.x + centerA.y + centerA.z
+            valueB = centerB.x + centerB.y + centerB.z
+            if valueA < valueB:
+                extFace = newParFaces[0]
+
+                refVectorXY = FreeCAD.Vector(extFace.normalAt(0,0).x, extFace.normalAt(0,0).y, 0)
+                angleTest = math.degrees(extFace.normalAt(0,0).getAngle(refVectorXY))
+                refVectorZ = FreeCAD.Vector(0,0,extFace.normalAt(0,0).z)
+                angleTestZ = math.degrees(extFace.normalAt(0,0).getAngle(refVectorZ))
+
+                extFaceNormal = False
+                if extFace.normalAt(0,0).x <= 0 and extFace.normalAt(0,0).y <= 0:
+                    extFaceNormal = True
+                elif extFace.normalAt(0,0).x >= 0 and extFace.normalAt(0,0).y >= 0:
+                    extFaceNormal = True
+                
+                if extFaceNormal == True and ((angleTest == 0.0 or angleTest == 180) or (angleTestZ == 0.0 or angleTestZ == 180)):
+                    extFace = newParFaces[1]
+                    if thkFace.Orientation == "Reversed":
+                        extFace = newParFaces[0]
+            else:
+                extFace = newParFaces[1]
+
+                refVectorXY = FreeCAD.Vector(extFace.normalAt(0,0).x, extFace.normalAt(0,0).y, 0)
+                angleTest = math.degrees(extFace.normalAt(0,0).getAngle(refVectorXY))
+                refVectorZ = FreeCAD.Vector(0,0,extFace.normalAt(0,0).z)
+                angleTestZ = math.degrees(extFace.normalAt(0,0).getAngle(refVectorZ))
+
+                extFaceNormal = False
+                if extFace.normalAt(0,0).x <= 0 and extFace.normalAt(0,0).y <= 0:
+                    extFaceNormal = True
+                elif extFace.normalAt(0,0).x >= 0 and extFace.normalAt(0,0).y >= 0:
+                    extFaceNormal = True
+                
+                if extFaceNormal == True and ((angleTest == 0.0 or angleTest == 180) or (angleTestZ == 0.0 or angleTestZ == 180)):
+                    extFace = newParFaces[0]
+                    if thkFace.Orientation == "Reversed":
+                        extFace = newParFaces[0]
+
+        thkFace = smSelItem # Get thickness face
+
+    # Get the edge coincident between the sheet metal face reference and the thickness face:
+    for edge1 in extFace.Edges:
+        for edge2 in thkFace.Edges:
+            if edge1.isSame(edge2):
+                thkEdge = edge2
+
+    return extFace, thkEdge, thkFace
+
+def offsetFaceDistance (smFace, refFace, refEdge, thkFace): # Calculations for Offset face reference mode
+    """
+    Calculate the distance between the intersection of the planes of sheet metal object and the edge of face thickness.
+
+    Parameters:
+        smFace: sheet metal surface that is opposite the wall
+        refFace: any reference surface
+        refEdge: edge that is coincident with thkFace and the smFace
+        thkFace: face of the thickness where the wall gonna be
+    Returns:
+        OffsetDistance (can be positive or negative value)
+    """
+    
+    def get_lowest_normal_distance_to_line(face, infinite_line):
+        """
+        Calculate the lowest normal distance from a face to an infinite line.
+        
+        Parameters:
+            face (Part.Face): The face object.
+            infinite_line (Part.Line): The infinite line object.
+        
+        Returns:
+            float: The lowest normal distance.
+        """
+        # Find the closest point on the face to the infinite line
+        closest_point_face = face.distToShape(infinite_line.toShape())[1][0][0]
+        
+        # Get the normal vector at the closest point on the face
+        u, v = face.Surface.parameter(closest_point_face)
+        normal = face.normalAt(u, v)
+        
+        # Create a line along the normal direction
+        normal_line = Part.Line(closest_point_face, closest_point_face.add(normal))
+        
+        # Find the intersection of the normal line with the infinite line
+        intersection = normal_line.toShape().distToShape(infinite_line.toShape())
+        intersection_point = intersection[1][0][0]  # Closest point on the infinite line
+        
+        # Calculate the distance between the closest point and the intersection point
+        distance = closest_point_face.distanceToPoint(intersection_point)
+        
+        return distance
+
+    # Create planes from smFace and refFace
+    smPlane = Part.Plane(smFace.CenterOfMass, smFace.normalAt(0,0))
+    refPlane = Part.Plane(refFace.CenterOfMass, refFace.normalAt(0,0))
+
+    interLine = smPlane.intersect(refPlane)[0] # Intersection line between the planes of sheet metal and the reference
+    offsetDist = get_lowest_normal_distance_to_line(thkFace, interLine) # Get the distance between the intersection of the planes and the edge
+
+    # Test if is necessary negative offset:
+    negOff = False
+
+    refFaceNormal = refFace.normalAt(0,0).normalize()
+    thkFaceNormal = thkFace.normalAt(0,0).normalize()
+
+    denom = refFaceNormal.dot(thkFaceNormal)
+
+    if abs(denom) < 1e-6:
+        negOff = True
+
+    if refFaceNormal.dot(refFace.BoundBox.Center - thkFace.BoundBox.Center)/denom < 0:
+        negOff = True
+
+    if negOff == True:
+        offsetDist = -offsetDist
+
+    offsetDist = round(offsetDist,6)
+
+    return offsetDist
+
+def relatAngleCalc (thkFace, refEdge, refFace, smFace): # Calculations for Angle and Offset face reference modes
+    """
+    Find the relative angle to apply for a sheet metal wall (aka flange),
+    considering the thickness where the wall gonna be, the edge opposite to the wall bend side,
+    the face that the wall gonna be parallel to and the sheet metal face side in opposition to
+    the wall bend side.
+    Parameters:
+        thkFace: thickness attached to the created wall
+        refEdge: edge commom to thkFace and to a sheet metal face side
+        refFace: a face used as reference for bend angle
+        smFace: a sheet metal face side in opposition to the wall bend side wich has a edge common with thkFace
+    Returns:
+        angleParFace: angle between the refFace and the smFace
+    """
+
+    try: # Get the face for 3D angle:
+        # Get the edge perpendicular to sheet metal side face
+        normalEdges = []
+        for edge1 in thkFace.Edges:
+            edgeAvert1, edgeAvert2 = refEdge.Vertexes
+            edgeBvert1, edgeBvert2 = edge1.Vertexes
+
+            vecAng1 = edgeAvert1.Point - edgeAvert2.Point
+            vecAng2 = edgeBvert1.Point - edgeBvert2.Point
+
+            if math.degrees(vecAng1.getAngle(vecAng2)) == 90:
+                normalEdges.append(edge1)
+
+        # Create one face as reference to project a line that represents the correct angle between the sheet metal and reference face
+        rotFace = thkFace.copy()
+        rotEdge = normalEdges[0]
+        rotAx3Dang = rotEdge.Vertexes[1].Point - rotEdge.Vertexes[0].Point
+
+        rotFace.rotate(rotEdge.Vertexes[0].Point, rotAx3Dang, 90)
+
+        projPlane = Part.Plane(rotFace.CenterOfMass, rotFace.normalAt(0,0).normalize())
+        refPlane = Part.Plane(refFace.CenterOfMass, refFace.normalAt(0,0).normalize())
+        angEdge = refFace.common(projPlane.intersect(refPlane)[0], 1e-6) # Edge that represents the correct angle
+
+        # Create a plane rotated at correct angle to be used to angle calculation after
+        refAngPlane = projPlane.copy()
+        rotAx3Dang = angEdge.Vertexes[1].Point - angEdge.Vertexes[0].Point
+        rotPlac = FreeCAD.Placement(rotEdge.Vertexes[0].Point, rotAx3Dang, 90)
+        refAngPlane.rotate(rotPlac)
+
+        refFaceNormal = refAngPlane.normal(0,0).normalize()
+    except:
+        refFaceNormal = refFace.normalAt(0,0).normalize()
+
+    smFaceNor = smFace.normalAt(0,0).normalize()
+    thkFaceNor = thkFace.normalAt(0,0).normalize()
+
+    if refFaceNormal.isEqual(smFaceNor, 1e-6) or refFaceNormal.isEqual(-smFaceNor, 1e-6):
+        angleParFace = 180
+    else:
+        if thkFaceNor.getAngle(refFaceNormal) < thkFaceNor.getAngle(-refFaceNormal):
+            refNormal = refFaceNormal
+        else:
+            refNormal = -refFaceNormal
+        
+        angleParFace = smFaceNor.getAngle(refNormal)
+        angleParFace = round(math.degrees(angleParFace),6)
+
+    return angleParFace
 
 def smStrEdge(e):
     return (
@@ -1366,9 +1726,9 @@ def smBend(
 
 
 class SMBendWall:
-    def __init__(self, obj, selobj, sel_items):
+    def __init__(self, obj, selobj, sel_items, refAngOffset=None, checkRefFace=False):
         '''"Add Wall with radius bend"'''
-        self._addProperties(obj)
+        self._addProperties(obj, refAngOffset, checkRefFace)
 
         _tip_ = translate("App::Property", "Base Object")
         obj.addProperty(
@@ -1377,7 +1737,7 @@ class SMBendWall:
         obj.Proxy = self
         SheetMetalTools.taskRestoreDefaults(obj, smAddWallDefaultVars)
 
-    def _addProperties(self, obj):
+    def _addProperties(self, obj, refAngOffset=None, checkRefFace=False):
         SheetMetalTools.smAddLengthProperty(
             obj, "radius", translate("App::Property", "Bend Radius"), 1.0
         )
@@ -1606,6 +1966,69 @@ class SMBendWall:
             "ParametersPerforation",
         )
 
+        SheetMetalTools.smAddBoolProperty(
+            obj,
+            "OffsetFaceRefMode",
+            "Enable face reference for offset",
+            checkRefFace,
+            "ParametersEx"
+        )
+
+        SheetMetalTools.smAddProperty(
+            obj,
+            "App::PropertyLinkSub",
+            "OffsetFaceReference",
+            "Face reference for offset",
+            refAngOffset,
+            "ParametersEx"
+        )
+
+        SheetMetalTools.smAddBoolProperty(
+            obj,
+            "AngleFaceRefMode",
+            "Enable face reference for angle",
+            checkRefFace,
+            "ParametersEx"
+        )
+
+        SheetMetalTools.smAddProperty(
+            obj,
+            "App::PropertyLinkSub",
+            "AngleFaceReference",
+            "Face reference for angle",
+            refAngOffset,
+            "ParametersEx"
+        )
+
+        SheetMetalTools.smAddAngleProperty(
+            obj, "RelativeAngleToRef", "Relative angle to the face reference", 0.0, "ParametersEx"
+        )
+
+        SheetMetalTools.smAddEnumProperty(
+            obj,
+            "OffsetType",
+            "Offset Type",
+            ["Material Outside", "Material Inside", "Thickness Outside", "Offset"],
+            "Material Inside",
+            "ParametersEx"
+        )
+
+        SheetMetalTools.smAddDistanceProperty(
+            obj,
+            "OffsetTypeOffset",
+            "Works when offset face reference is on. It offsets by a normal distance from the offsets reference face.",
+            0.0,
+            "ParametersEx",
+        )
+
+        SheetMetalTools.smAddBoolProperty(
+            obj,
+            "SupplAngleRef",
+            "Supplementary angle reference",
+            False,
+            "ParametersEx"
+        )
+
     def getElementMapVersion(self, _fp, ver, _prop, restored):
         if not restored:
             return smElementMapVersion + ver
@@ -1656,6 +2079,113 @@ class SMBendWall:
         gap1_list[0] = fp.gap1.Value
         gap2_list[0] = fp.gap2.Value
         # print(gap1_list, gap2_list)
+
+        # Calculate the angle based on reference face:
+        if fp.AngleFaceRefMode == True and fp.AngleFaceReference != None:
+            smObj, smSelItemName = fp.baseObject
+            smSelItemName = smSelItemName[0]
+            smFace, refEdge, thkFace = GetSMComparisonFace(smObj,smSelItemName) # Get the sheet metal reference face
+            refObj, refFace = fp.AngleFaceReference
+
+            if "Plane" in refObj.TypeId:
+                #Create a reference rectangular face to use instead of a datum/origin plane
+                datump1 = FreeCAD.Vector(0, 0, 0) # Vertexes of the ref face
+                datump2 = FreeCAD.Vector(10, 0, 0)
+                datump3 = FreeCAD.Vector(10, 10, 0)
+                datump4 = FreeCAD.Vector(0, 10, 0)
+                datumEdge1 = Part.LineSegment(datump1, datump2).toShape() # Edges of the ref face
+                datumEdge2 = Part.LineSegment(datump2, datump3).toShape()
+                datumEdge3 = Part.LineSegment(datump3, datump4).toShape()
+                datumEdge4 = Part.LineSegment(datump4, datump1).toShape()
+                datumWire = Part.Wire([datumEdge1, datumEdge2, datumEdge3, datumEdge4])  # Wire of the ref face
+                datumFace = Part.Face(datumWire)  # Face of the ref face
+                datumFace.Placement = refObj.Shape.Placement  # Put the face on the same place of datum
+
+                refFace = datumFace
+            else:
+                refFace = refFace[0]
+                refFace = refObj.Shape.getElement(refFace)
+
+            # Angle calculation
+            angleParFace = relatAngleCalc(thkFace,refEdge,refFace,smFace)
+
+            fp.angle.Value = angleParFace + fp.RelativeAngleToRef.Value
+
+            if fp.invert == True:
+                fp.angle.Value = 180 - angleParFace + fp.RelativeAngleToRef.Value
+
+            if fp.SupplAngleRef == True: # Supplementary angle option
+                fp.angle.Value = 180 - fp.angle.Value + fp.RelativeAngleToRef.Value
+
+        # Calculate the offset based on reference face:
+        if fp.BendType == "Offset" and fp.OffsetFaceRefMode == True and fp.OffsetFaceReference != None:
+            smObj, smSelItemName = fp.baseObject
+            smSelItemName = smSelItemName[0]
+            smFace, refEdge, thkFace = GetSMComparisonFace(smObj,smSelItemName) # Get the sheet metal reference face and edge
+            refObj, refFace = fp.OffsetFaceReference
+
+            if "Plane" in refObj.TypeId:
+                # Create a reference rectangular face to use instead of a datum/origin plane
+                datump1 = FreeCAD.Vector(0, 0, 0) # Vertexes of the ref face
+                datump2 = FreeCAD.Vector(10, 0, 0)
+                datump3 = FreeCAD.Vector(10, 10, 0)
+                datump4 = FreeCAD.Vector(0, 10, 0)
+                datumEdge1 = Part.LineSegment(datump1, datump2).toShape() # Edges of the ref face
+                datumEdge2 = Part.LineSegment(datump2, datump3).toShape()
+                datumEdge3 = Part.LineSegment(datump3, datump4).toShape()
+                datumEdge4 = Part.LineSegment(datump4, datump1).toShape()
+                datumWire = Part.Wire([datumEdge1, datumEdge2, datumEdge3, datumEdge4])  # Wire of the ref face
+                datumFace = Part.Face(datumWire)  # Face of the ref face
+                datumFace.Placement = refObj.Shape.Placement  # Put the face on the same place of datum
+                
+                refFace = datumFace
+            else:
+                refFace = refFace[0]
+                refFace = refObj.Shape.getElement(refFace)
+            
+            # Angle calculation
+            angleParFace = relatAngleCalc(thkFace,refEdge,refFace,smFace)
+            
+            angleParFace = angleParFace
+
+            if fp.invert == True:
+                angleParFace = 180 - angleParFace
+            
+            if fp.SupplAngleRef == True: # Supplementary angle option
+                angleParFace = 180 - angleParFace
+
+            # Calculate the distance for the wall position:
+            try: # This 'try' is needed when the reference face is 3D angle rotated
+                angleParFace = angleParFace[0]
+            except:
+                pass
+
+            radAngle = math.radians(angleParFace) # Get radians of the bend angle
+            halfSuplAngle = math.radians((180-angleParFace)/2) # Get radians of half supplementary angle
+
+            if fp.OffsetType == "Material Inside": # Calculate the distance for the wall to be inside
+                distWall = (((fp.radius.Value + thk) * math.sqrt(2 - 2 * math.cos(radAngle)))/2)/math.sin(halfSuplAngle)
+
+            if fp.OffsetType == "Material Outside": # Calculate the distance for the wall (and bend radius) to be outside
+                distWall = 0.0
+
+            if fp.OffsetType == "Thickness Outside": # Calculate the distance for the wall to be one thickness outside
+                wallThkAngle = math.radians(90 - angleParFace) # Get radians of the complementary angle
+                distThkOut = thk/math.cos(wallThkAngle)
+                distWall = (((fp.radius.Value + thk) * math.sqrt(2 - 2 * math.cos(radAngle)))/2)/math.sin(halfSuplAngle) - distThkOut
+
+            if fp.OffsetType == "Offset": # Calculate the distance for the wall to be normal distanced from the reference face
+                wallThkAngle = math.radians(90 - angleParFace) # Get radians of the complementary angle
+                distOffsetOut = (thk + fp.OffsetTypeOffset.Value)/math.cos(wallThkAngle)
+                distWall = (((fp.radius.Value + thk) * math.sqrt(2 - 2 * math.cos(radAngle)))/2)/math.sin(halfSuplAngle) - distOffsetOut
+
+            if fp.invert == True and fp.OffsetType != "Material Outside":
+                complAngle = math.radians(90 - angleParFace) # Get radians of the complementary angle
+                distInvertComp = math.sin(complAngle) * (thk/math.cos(complAngle))
+
+                distWall = distWall + distInvertComp
+
+            fp.offset.Value = offsetFaceDistance(smFace, refFace, refEdge, thkFace) - distWall
 
         for i, Length in enumerate(LengthList):
             s, f = smBend(
@@ -1726,14 +2256,18 @@ if SheetMetalTools.isGuiLoaded():
     class SMBendWallTaskPanel:
         """A TaskPanel for the Sheetmetal"""
 
-        def __init__(self, obj):
+        def __init__(self, obj, checkRefFace=False):
+            QtCore.QDir.addSearchPath('Icons', icons_path)
             self.obj = obj
             self.form = SheetMetalTools.taskLoadUI("FlangeParameters.ui")
+            obj.Proxy._addProperties(obj) # Make sure all properties ared added
+            self.activeRefGeom = None # Variable to track which property should be filled when in selection mode. And used to rename the form field (of face reference) only when necessary
             self.updateForm()
+            self.checkRefFace = self.onBendOffset(checkRefFace) # Turn bend type to 'Offset', on case of automatic face reference selection
 
             # flange parameters connects
             SheetMetalTools.taskConnectSelection(
-                self.form.AddRemove, self.form.tree, self.obj, ["Face", "Edge"])
+                self.form.AddRemove, self.form.tree, self.obj, ["Edge"])
             SheetMetalTools.taskConnectEnum(self, self.form.BendType, "BendType", self.bendTypeUpdated)
             SheetMetalTools.taskConnectSpin(self, self.form.Offset, "offset")
             SheetMetalTools.taskConnectSpin(self, self.form.Radius, "radius")
@@ -1741,7 +2275,6 @@ if SheetMetalTools.isGuiLoaded():
             SheetMetalTools.taskConnectSpin(self, self.form.Length, "length")
             SheetMetalTools.taskConnectEnum(self, self.form.LengthSpec, "LengthSpec")
             SheetMetalTools.taskConnectCheck(self, self.form.UnfoldCheckbox, "unfold")
-            SheetMetalTools.taskConnectCheck(self, self.form.ReversedCheckbox, "invert")
             SheetMetalTools.taskConnectSpin(self, self.form.gap1, "gap1")
             SheetMetalTools.taskConnectSpin(self, self.form.gap2, "gap2")
             SheetMetalTools.taskConnectSpin(self, self.form.extend1, "extend1")
@@ -1760,8 +2293,94 @@ if SheetMetalTools.isGuiLoaded():
             SheetMetalTools.taskConnectSpin(self, self.form.perforateAngle, "PerforationAngle")            
             SheetMetalTools.taskConnectSpin(self, self.form.perforateInitialCutLen, "PerforationInitialLength")            
             SheetMetalTools.taskConnectSpin(self, self.form.perforateMaxCutLen, "PerforationMaxLength")            
-            SheetMetalTools.taskConnectSpin(self, self.form.perforateMaxTabLen, "NonperforationMaxLength")            
+            SheetMetalTools.taskConnectSpin(self, self.form.perforateMaxTabLen, "NonperforationMaxLength")
 
+            # Connections for Offset face referenced mode
+            self.form.hideButtWorkaround02.clicked.connect(lambda: self.selectAngleOffsetGeo(self.form.OffsetFaceRef))
+            self.form.SelOffsetFace.released.connect(self.offsetFaceModeButton)
+            SheetMetalTools.taskConnectEnum(self, self.form.OffsetTypes, "OffsetType", self.updateForm)
+            SheetMetalTools.taskConnectSpin(self, self.form.OffsetTypeOffset, "OffsetTypeOffset", self.updateForm)
+
+            # Connections for Angle face referenced mode
+            self.form.hideButtWorkaround01.clicked.connect(lambda: self.selectAngleOffsetGeo(self.form.AngleFaceRef))
+            self.form.SelAngleFace.released.connect(self.angleFaceModeButton)
+            SheetMetalTools.taskConnectSpin(self, self.form.RelativeAngle, "RelativeAngleToRef", self.updateForm)
+
+            # Button reversed wall:
+            self.form.buttRevWall.clicked.connect(self.revWall) # Button click action
+
+        def selectAngleOffsetGeo(self, targetField): # Trigger selection of angle and offset reference geometry
+            """Trigger selection of angle and offset reference geometry"""
+            self.activeRefGeom = targetField # Store the target field
+            Gui.Selection.clearSelection()  # Clear previous selection
+            Gui.Selection.addObserver(self)  # Start observing selection
+            self.activeRefGeom.setText("Select a face as reference...")
+            self.obj.baseObject[0].ViewObject.show()
+            self.obj.ViewObject.hide()
+
+        def addSelection(self, document, object, subname, position): # Companion of "selectAngleOffsetGeo" function
+            """Called when a selection is made."""
+            selected_obj = FreeCAD.ActiveDocument.getObject(object)
+
+            if not selected_obj or not subname: # Debug if a user clicks empty space instead of a valid object
+                self.activeRefGeom.setText("Invalid selection. Select one face as reference")
+
+            if "Plane" in selected_obj.TypeId or "Face" in subname:
+                selected_text = f"{selected_obj.Name}.{subname}"
+                try:
+                    if self.activeRefGeom:
+                        self.activeRefGeom.setText(selected_text)
+                        if self.activeRefGeom.objectName() == "AngleFaceRef":
+                            self.obj.AngleFaceReference = selected_obj, subname # Fill the property of geometry reference for Angle
+                            Gui.Selection.removeObserver(self) # Stop observing after selection
+                            self.activeRefGeom = None
+                            self.obj.baseObject[0].ViewObject.hide()
+                            self.obj.ViewObject.show()
+                        elif self.activeRefGeom.objectName() == "OffsetFaceRef":
+                            self.obj.OffsetFaceReference = selected_obj, subname # Fill the property of geometry reference for Offset
+                            Gui.Selection.removeObserver(self) # Stop observing after selection
+                            self.activeRefGeom = None
+                            self.obj.baseObject[0].ViewObject.hide()
+                            self.obj.ViewObject.show()
+                        
+                        self.updateForm()
+                except:
+                    pass
+            else:
+                if Gui.Control.activeDialog():
+                    self.activeRefGeom.setText("Invalid. Select one face as reference")
+
+        def onBendOffset(self,test): # Turn bend type to 'Offset', on case of automatic face reference selection
+            if test:
+                self.obj.BendType = "Offset"
+                self.updateForm()
+
+        def revWall(self): # Button to flip the wall side
+            self.obj.invert = not self.obj.invert
+            self.updateForm()
+        
+        def angleFaceModeButton(self): # Make the angle face button check angle face mode
+            self.obj.AngleFaceRefMode = not self.obj.AngleFaceRefMode
+
+            if self.obj.AngleFaceRefMode == False:
+                self.obj.baseObject[0].ViewObject.hide()
+                self.obj.ViewObject.show()
+            else:
+                self.form.hideButtWorkaround01.click()
+            
+            self.updateForm()
+
+        def offsetFaceModeButton(self): # Make the offset face button check offset face mode
+            self.obj.OffsetFaceRefMode = not self.obj.OffsetFaceRefMode
+
+            if self.obj.OffsetFaceRefMode == False:
+                self.obj.baseObject[0].ViewObject.hide()
+                self.obj.ViewObject.show()
+            else:
+                self.form.hideButtWorkaround02.click()
+
+            self.updateForm()
+     
         def isAllowedAlterSelection(self):
             return True
 
@@ -1773,6 +2392,12 @@ if SheetMetalTools.isGuiLoaded():
                 self.form.Offset.setEnabled(True)
             else:
                 self.form.Offset.setEnabled(False)
+                self.obj.OffsetType = "Material Inside"
+                self.form.OffsetTypes.setCurrentIndex(1)
+
+            # Updates of offset face reference mode
+            self.form.frameOffFaceRef.setVisible(self.obj.BendType == "Offset")
+            self.form.frameOffType.setVisible(self.obj.BendType == "Offset" and self.obj.OffsetFaceRefMode == True)
 
         def reliefTypeUpdated(self):
             self.obj.reliefType = (
@@ -1780,7 +2405,7 @@ if SheetMetalTools.isGuiLoaded():
             )
             self.obj.Document.recompute()
 
-        def updateForm(self):
+        def updateForm(self, value=None): # I inserted the 'value' parameter just to easily use this function as a callback in form connections
             self.form.Offset.setEnabled(self.obj.BendType == "Offset")
             SheetMetalTools.taskPopulateSelectionList(self.form.tree, self.obj.baseObject)
 
@@ -1789,6 +2414,42 @@ if SheetMetalTools.isGuiLoaded():
                 self.form.reliefRectangle.setChecked(True)
             else:
                 self.form.reliefRound.setChecked(True)
+
+            # Make the button of angle face reference mode act like a checkbox:
+            self.form.SelAngleFace.setChecked(self.obj.AngleFaceRefMode)
+            self.form.frameRelatAngle.setVisible(self.obj.AngleFaceRefMode)
+
+            # Make the button of offset face reference mode act like a checkbox:
+            self.form.SelOffsetFace.setChecked(self.obj.OffsetFaceRefMode)
+            self.form.frameOffType.setVisible(self.obj.OffsetFaceRefMode)
+
+            # Disable offset spinbox when offset face mode is on:
+            self.form.Offset.setEnabled(not self.obj.OffsetFaceRefMode)
+
+            # Disable angle spinbox when angle face mode is on:
+            self.form.Angle.setEnabled(not self.obj.AngleFaceRefMode)
+
+            # Button flip the wall - updates check:
+            self.form.buttRevWall.setChecked(self.obj.invert)
+
+            # Updates of offset face reference mode
+            self.form.frameOffFaceRef.setVisible(self.obj.BendType == "Offset")
+            self.form.frameOffType.setVisible(self.obj.BendType == "Offset" and self.obj.OffsetFaceRefMode == True)
+            self.form.frameOffOff.setVisible(self.obj.BendType == "Offset" and self.obj.OffsetType == "Offset" and self.obj.OffsetFaceRefMode == True)
+
+            # Fill property of angle and offset face reference:
+            if self.activeRefGeom == None and self.obj.AngleFaceReference != None:
+                strAngRef = f"{self.obj.AngleFaceReference[0].Name}.{self.obj.AngleFaceReference[1][0]}"
+                self.form.AngleFaceRef.setText(strAngRef)
+
+            if self.activeRefGeom == None and self.obj.OffsetFaceReference != None:
+                strOffsetRef = f"{self.obj.OffsetFaceReference[0].Name}.{self.obj.OffsetFaceReference[1][0]}"
+                self.form.OffsetFaceRef.setText(strOffsetRef)
+
+            self.obj.recompute() # Updates the angle in model
+            self.obj.Document.recompute()
+            self.form.Angle.setProperty("value", getattr(self.obj, "angle")) # Updates the value of angle form field when the face reference is activated
+            self.form.Offset.setProperty("value", getattr(self.obj, "offset")) # Updates the value of offset form field when the face reference is activated
 
         def perforateChanged(self, isPerforate):
             self.form.groupPerforate.setEnabled(isPerforate)
@@ -1827,8 +2488,52 @@ if SheetMetalTools.isGuiLoaded():
             doc = FreeCAD.ActiveDocument
             view = Gui.ActiveDocument.ActiveView
             activeBody = None
-            sel = Gui.Selection.getSelectionEx()[0]
+
+            # Get the sheet metal object:
+            try:
+                for obj in Gui.Selection.getSelectionEx():
+                    if not "Plane" in obj.Object.TypeId:
+                        for subElem in obj.SubElementNames:
+                            if type(obj.Object.Shape.getElement(subElem)) == Part.Edge:
+                                sel = obj
+                                break
+            except:
+                raise Exception("At least one edge must be selected to create a wall.")
+
             selobj = sel.Object
+
+            selSubNames = list(sel.SubElementNames)
+            selSubObjs = sel.SubObjects
+
+            # Remove faces for wall creation reference: ('cause only edges should be used as reference to create walls)
+            for subObjName in selSubNames:
+                if type(selobj.Shape.getElement(subObjName)) == Part.Face:
+                    selSubNames.remove(subObjName)
+                    if len(selSubNames) < 1:
+                        raise Exception("At least one edge must be selected to create a wall.")
+            
+            # Get only one selected face to use for reference to angle and offset:
+            faceCount = 0
+            refAngOffset = None
+            checkRefFace = False
+            for obj in Gui.Selection.getSelectionEx():
+                for subObj in obj.SubObjects:
+                    if type(subObj) == Part.Face and not "Plane" in obj.Object.TypeId:
+                        faceCount = faceCount + 1
+                        if faceCount == 1:
+                            for subObjName in obj.SubElementNames:
+                                if obj.Object.Shape.getElement(subObjName).isEqual(subObj):
+                                    refAngOffset = [obj.Object, subObjName]
+                                    checkRefFace = True
+                        else:
+                            print("If more than one face is selected, only the first is used for reference to angle and offset.")
+                if "Plane" in obj.Object.TypeId and faceCount == 0:
+                    if obj.Object.TypeId == "App::Plane":
+                        refAngOffset = [obj.Object, ""]
+                    else:
+                        refAngOffset = [obj.Object, obj.SubElementNames[0]]
+                    checkRefFace = True
+
             viewConf = SheetMetalTools.GetViewConfig(selobj)
             if hasattr(view, "getActiveObject"):
                 activeBody = view.getActiveObject("pdbody")
@@ -1837,12 +2542,12 @@ if SheetMetalTools.isGuiLoaded():
             doc.openTransaction("Bend")
             if activeBody is None or not SheetMetalTools.smIsPartDesign(selobj):
                 newObj = doc.addObject("Part::FeaturePython", "Bend")
-                SMBendWall(newObj, selobj, sel.SubElementNames)
+                SMBendWall(newObj, selobj, selSubNames, refAngOffset, checkRefFace)
                 SMViewProviderTree(newObj.ViewObject)
             else:
                 # FreeCAD.Console.PrintLog("found active body: " + activeBody.Name)
                 newObj = doc.addObject("PartDesign::FeaturePython", "Bend")
-                SMBendWall(newObj, selobj, sel.SubElementNames)
+                SMBendWall(newObj, selobj, selSubNames, refAngOffset, checkRefFace)
                 SMViewProviderFlat(newObj.ViewObject)
                 activeBody.addObject(newObj)
             SheetMetalTools.SetViewConfig(newObj, viewConf)
@@ -1856,7 +2561,7 @@ if SheetMetalTools.isGuiLoaded():
                         newObj.setExpression("radius", root.Label + ".radius")
             newObj.baseObject[0].ViewObject.Visibility = False
             doc.recompute()
-            dialog = SMBendWallTaskPanel(newObj)
+            dialog = SMBendWallTaskPanel(newObj, checkRefFace) # 'checkRefFace' turn bendtype to 'Offset' when face reference is before the command
             Gui.Control.showDialog(dialog)
             return
 
