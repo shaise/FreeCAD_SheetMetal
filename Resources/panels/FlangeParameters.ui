@@ -183,7 +183,7 @@
               <number>0</number>
              </property>
              <property name="spacing">
-              <number>1</number>
+              <number>4</number>
              </property>
              <item row="1" column="0">
               <layout class="QHBoxLayout" name="angleLayout">
@@ -200,8 +200,14 @@
                  </property>
                  <property name="minimumSize">
                   <size>
-                   <width>65</width>
-                   <height>0</height>
+                   <width>66</width>
+                   <height>30</height>
+                  </size>
+                 </property>
+                 <property name="baseSize">
+                  <size>
+                   <width>0</width>
+                   <height>30</height>
                   </size>
                  </property>
                  <property name="text">
@@ -216,6 +222,18 @@
                    <horstretch>0</horstretch>
                    <verstretch>0</verstretch>
                   </sizepolicy>
+                 </property>
+                 <property name="minimumSize">
+                  <size>
+                   <width>0</width>
+                   <height>30</height>
+                  </size>
+                 </property>
+                 <property name="baseSize">
+                  <size>
+                   <width>0</width>
+                   <height>30</height>
+                  </size>
                  </property>
                  <property name="unit" stdset="0">
                   <string notr="true">deg</string>
@@ -298,9 +316,15 @@ min-width: 28px;</string>
              </item>
              <item row="2" column="0">
               <widget class="QWidget" name="frameRelatAngle" native="true">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
                <layout class="QVBoxLayout" name="verticalLayout_7">
                 <property name="spacing">
-                 <number>1</number>
+                 <number>4</number>
                 </property>
                 <property name="leftMargin">
                  <number>0</number>
@@ -325,30 +349,30 @@ min-width: 28px;</string>
                   <property name="minimumSize">
                    <size>
                     <width>0</width>
-                    <height>32</height>
+                    <height>30</height>
                    </size>
                   </property>
                   <property name="baseSize">
                    <size>
                     <width>0</width>
-                    <height>32</height>
+                    <height>30</height>
                    </size>
                   </property>
                   <layout class="QHBoxLayout" name="frameRelativeAngle">
                    <property name="spacing">
-                    <number>4</number>
+                    <number>0</number>
                    </property>
                    <property name="leftMargin">
                     <number>0</number>
                    </property>
                    <property name="topMargin">
-                    <number>4</number>
+                    <number>0</number>
                    </property>
                    <property name="rightMargin">
                     <number>0</number>
                    </property>
                    <property name="bottomMargin">
-                    <number>4</number>
+                    <number>0</number>
                    </property>
                    <item>
                     <widget class="QLabel" name="labelFaceAngleRef">
@@ -360,8 +384,14 @@ min-width: 28px;</string>
                      </property>
                      <property name="minimumSize">
                       <size>
-                       <width>65</width>
-                       <height>0</height>
+                       <width>70</width>
+                       <height>30</height>
+                      </size>
+                     </property>
+                     <property name="baseSize">
+                      <size>
+                       <width>0</width>
+                       <height>30</height>
                       </size>
                      </property>
                      <property name="text">
@@ -375,7 +405,7 @@ min-width: 28px;</string>
                       <bool>false</bool>
                      </property>
                      <property name="sizePolicy">
-                      <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                      <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                        <horstretch>0</horstretch>
                        <verstretch>0</verstretch>
                       </sizepolicy>
@@ -383,13 +413,13 @@ min-width: 28px;</string>
                      <property name="minimumSize">
                       <size>
                        <width>50</width>
-                       <height>28</height>
+                       <height>30</height>
                       </size>
                      </property>
                      <property name="baseSize">
                       <size>
                        <width>0</width>
-                       <height>28</height>
+                       <height>30</height>
                       </size>
                      </property>
                     </widget>
@@ -398,64 +428,111 @@ min-width: 28px;</string>
                  </widget>
                 </item>
                 <item>
-                 <layout class="QHBoxLayout" name="horizontalLayout_3">
-                  <item>
-                   <widget class="QLabel" name="labelRelatAngle">
-                    <property name="sizePolicy">
-                     <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
-                      <horstretch>0</horstretch>
-                      <verstretch>0</verstretch>
-                     </sizepolicy>
-                    </property>
-                    <property name="minimumSize">
-                     <size>
-                      <width>0</width>
-                      <height>28</height>
-                     </size>
-                    </property>
-                    <property name="baseSize">
-                     <size>
-                      <width>0</width>
-                      <height>28</height>
-                     </size>
-                    </property>
-                    <property name="layoutDirection">
-                     <enum>Qt::LayoutDirection::RightToLeft</enum>
-                    </property>
-                    <property name="text">
-                     <string>Relative angle</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item>
-                   <widget class="Gui::QuantitySpinBox" name="RelativeAngle" native="true">
-                    <property name="minimumSize">
-                     <size>
-                      <width>0</width>
-                      <height>28</height>
-                     </size>
-                    </property>
-                    <property name="baseSize">
-                     <size>
-                      <width>0</width>
-                      <height>28</height>
-                     </size>
-                    </property>
-                    <property name="unit" stdset="0">
-                     <string notr="true">deg</string>
-                    </property>
-                    <property name="minimum" stdset="0">
-                     <double>-360.000000000000000</double>
-                    </property>
-                    <property name="maximum" stdset="0">
-                     <double>360.000000000000000</double>
-                    </property>
-                    <property name="value" stdset="0">
-                     <double>90.000000000000000</double>
-                    </property>
-                   </widget>
-                  </item>
-                 </layout>
+                 <widget class="QWidget" name="layoutRelatAng" native="true">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="minimumSize">
+                   <size>
+                    <width>0</width>
+                    <height>30</height>
+                   </size>
+                  </property>
+                  <property name="baseSize">
+                   <size>
+                    <width>0</width>
+                    <height>30</height>
+                   </size>
+                  </property>
+                  <layout class="QHBoxLayout" name="horizontalLayout_3">
+                   <property name="spacing">
+                    <number>0</number>
+                   </property>
+                   <property name="leftMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="topMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="rightMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="bottomMargin">
+                    <number>0</number>
+                   </property>
+                   <item>
+                    <widget class="QLabel" name="labelRelatAngle">
+                     <property name="sizePolicy">
+                      <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+                       <horstretch>0</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
+                     </property>
+                     <property name="minimumSize">
+                      <size>
+                       <width>70</width>
+                       <height>30</height>
+                      </size>
+                     </property>
+                     <property name="maximumSize">
+                      <size>
+                       <width>16777215</width>
+                       <height>16777215</height>
+                      </size>
+                     </property>
+                     <property name="baseSize">
+                      <size>
+                       <width>0</width>
+                       <height>30</height>
+                      </size>
+                     </property>
+                     <property name="layoutDirection">
+                      <enum>Qt::LayoutDirection::RightToLeft</enum>
+                     </property>
+                     <property name="text">
+                      <string>Relative angle</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="Gui::QuantitySpinBox" name="RelativeAngle" native="true">
+                     <property name="sizePolicy">
+                      <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                       <horstretch>0</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
+                     </property>
+                     <property name="minimumSize">
+                      <size>
+                       <width>0</width>
+                       <height>30</height>
+                      </size>
+                     </property>
+                     <property name="baseSize">
+                      <size>
+                       <width>0</width>
+                       <height>30</height>
+                      </size>
+                     </property>
+                     <property name="unit" stdset="0">
+                      <string notr="true">deg</string>
+                     </property>
+                     <property name="minimum" stdset="0">
+                      <double>-360.000000000000000</double>
+                     </property>
+                     <property name="maximum" stdset="0">
+                      <double>360.000000000000000</double>
+                     </property>
+                     <property name="value" stdset="0">
+                      <double>90.000000000000000</double>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </widget>
                 </item>
                </layout>
               </widget>
@@ -466,7 +543,7 @@ min-width: 28px;</string>
           <item row="2" column="1" colspan="3">
            <layout class="QHBoxLayout" name="radiusLayout">
             <property name="spacing">
-             <number>1</number>
+             <number>4</number>
             </property>
             <item>
              <widget class="QLabel" name="labelBendRadius">
@@ -478,14 +555,14 @@ min-width: 28px;</string>
               </property>
               <property name="minimumSize">
                <size>
-                <width>68</width>
-                <height>28</height>
+                <width>66</width>
+                <height>30</height>
                </size>
               </property>
               <property name="baseSize">
                <size>
                 <width>0</width>
-                <height>28</height>
+                <height>30</height>
                </size>
               </property>
               <property name="text">
@@ -500,6 +577,18 @@ min-width: 28px;</string>
                 <horstretch>0</horstretch>
                 <verstretch>0</verstretch>
                </sizepolicy>
+              </property>
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>30</height>
+               </size>
+              </property>
+              <property name="baseSize">
+               <size>
+                <width>0</width>
+                <height>30</height>
+               </size>
               </property>
               <property name="unit" stdset="0">
                <string notr="true">mm</string>
@@ -576,6 +665,9 @@ min-width: 28px;</string>
           </item>
           <item row="1" column="1" colspan="3">
            <layout class="QHBoxLayout" name="lengthModeLayout">
+            <property name="spacing">
+             <number>0</number>
+            </property>
             <item>
              <widget class="QLabel" name="labelLengthMode">
               <property name="sizePolicy">
@@ -587,13 +679,13 @@ min-width: 28px;</string>
               <property name="minimumSize">
                <size>
                 <width>70</width>
-                <height>0</height>
+                <height>30</height>
                </size>
               </property>
               <property name="baseSize">
                <size>
                 <width>0</width>
-                <height>0</height>
+                <height>30</height>
                </size>
               </property>
               <property name="text">
@@ -604,7 +696,7 @@ min-width: 28px;</string>
             <item>
              <widget class="QComboBox" name="LengthSpec">
               <property name="sizePolicy">
-               <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+               <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                 <horstretch>0</horstretch>
                 <verstretch>0</verstretch>
                </sizepolicy>
@@ -612,7 +704,7 @@ min-width: 28px;</string>
               <property name="minimumSize">
                <size>
                 <width>0</width>
-                <height>28</height>
+                <height>30</height>
                </size>
               </property>
               <property name="maximumSize">
@@ -630,7 +722,7 @@ min-width: 28px;</string>
               <property name="baseSize">
                <size>
                 <width>0</width>
-                <height>28</height>
+                <height>30</height>
                </size>
               </property>
               <property name="font">
@@ -749,7 +841,7 @@ min-width: 28px;</string>
            </widget>
           </item>
           <item row="0" column="1" colspan="3">
-           <layout class="QHBoxLayout" name="lengthLayout">
+           <layout class="QHBoxLayout" name="lengthLayout" stretch="0,0,0">
             <property name="spacing">
              <number>4</number>
             </property>
@@ -764,7 +856,13 @@ min-width: 28px;</string>
               <property name="minimumSize">
                <size>
                 <width>66</width>
-                <height>0</height>
+                <height>30</height>
+               </size>
+              </property>
+              <property name="baseSize">
+               <size>
+                <width>0</width>
+                <height>30</height>
                </size>
               </property>
               <property name="text">
@@ -779,6 +877,18 @@ min-width: 28px;</string>
                 <horstretch>0</horstretch>
                 <verstretch>0</verstretch>
                </sizepolicy>
+              </property>
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>30</height>
+               </size>
+              </property>
+              <property name="baseSize">
+               <size>
+                <width>0</width>
+                <height>30</height>
+               </size>
               </property>
               <property name="unit" stdset="0">
                <string notr="true">mm</string>
@@ -900,7 +1010,7 @@ min-width: 28px;</string>
               <number>0</number>
              </property>
              <property name="spacing">
-              <number>1</number>
+              <number>4</number>
              </property>
              <item row="5" column="0">
               <widget class="QWidget" name="frameOffOff" native="true">
@@ -931,13 +1041,13 @@ min-width: 28px;</string>
                   <property name="minimumSize">
                    <size>
                     <width>28</width>
-                    <height>28</height>
+                    <height>30</height>
                    </size>
                   </property>
                   <property name="baseSize">
                    <size>
                     <width>0</width>
-                    <height>28</height>
+                    <height>30</height>
                    </size>
                   </property>
                   <property name="text">
@@ -975,6 +1085,18 @@ min-width: 28px;</string>
              </item>
              <item row="2" column="0">
               <widget class="QWidget" name="frameOffFaceRef" native="true">
+               <property name="minimumSize">
+                <size>
+                 <width>0</width>
+                 <height>30</height>
+                </size>
+               </property>
+               <property name="baseSize">
+                <size>
+                 <width>0</width>
+                 <height>30</height>
+                </size>
+               </property>
                <layout class="QHBoxLayout" name="offsetLayout2">
                 <property name="spacing">
                  <number>4</number>
@@ -1002,13 +1124,19 @@ min-width: 28px;</string>
                   <property name="minimumSize">
                    <size>
                     <width>66</width>
-                    <height>0</height>
+                    <height>30</height>
                    </size>
                   </property>
                   <property name="maximumSize">
                    <size>
                     <width>0</width>
                     <height>16777215</height>
+                   </size>
+                  </property>
+                  <property name="baseSize">
+                   <size>
+                    <width>0</width>
+                    <height>30</height>
                    </size>
                   </property>
                   <property name="text">
@@ -1026,6 +1154,18 @@ min-width: 28px;</string>
                     <horstretch>0</horstretch>
                     <verstretch>0</verstretch>
                    </sizepolicy>
+                  </property>
+                  <property name="minimumSize">
+                   <size>
+                    <width>0</width>
+                    <height>30</height>
+                   </size>
+                  </property>
+                  <property name="baseSize">
+                   <size>
+                    <width>0</width>
+                    <height>30</height>
+                   </size>
                   </property>
                   <property name="unit" stdset="0">
                    <string notr="true">mm</string>
@@ -1102,7 +1242,7 @@ min-width: 28px;</string>
               <widget class="QWidget" name="frameOffType" native="true">
                <layout class="QVBoxLayout" name="verticalLayout_8">
                 <property name="spacing">
-                 <number>1</number>
+                 <number>4</number>
                 </property>
                 <property name="leftMargin">
                  <number>0</number>
@@ -1118,6 +1258,18 @@ min-width: 28px;</string>
                 </property>
                 <item>
                  <widget class="QWidget" name="frameOffFaceRef_2" native="true">
+                  <property name="minimumSize">
+                   <size>
+                    <width>0</width>
+                    <height>30</height>
+                   </size>
+                  </property>
+                  <property name="baseSize">
+                   <size>
+                    <width>0</width>
+                    <height>30</height>
+                   </size>
+                  </property>
                   <layout class="QHBoxLayout" name="frameOffsetType">
                    <property name="spacing">
                     <number>4</number>
@@ -1126,13 +1278,13 @@ min-width: 28px;</string>
                     <number>0</number>
                    </property>
                    <property name="topMargin">
-                    <number>1</number>
+                    <number>0</number>
                    </property>
                    <property name="rightMargin">
                     <number>0</number>
                    </property>
                    <property name="bottomMargin">
-                    <number>1</number>
+                    <number>0</number>
                    </property>
                    <item>
                     <widget class="QLabel" name="labelOffsetFaceRef">
@@ -1145,7 +1297,13 @@ min-width: 28px;</string>
                      <property name="minimumSize">
                       <size>
                        <width>66</width>
-                       <height>0</height>
+                       <height>30</height>
+                      </size>
+                     </property>
+                     <property name="baseSize">
+                      <size>
+                       <width>0</width>
+                       <height>30</height>
                       </size>
                      </property>
                      <property name="text">
@@ -1159,7 +1317,7 @@ min-width: 28px;</string>
                       <bool>false</bool>
                      </property>
                      <property name="sizePolicy">
-                      <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                      <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                        <horstretch>0</horstretch>
                        <verstretch>0</verstretch>
                       </sizepolicy>
@@ -1167,13 +1325,13 @@ min-width: 28px;</string>
                      <property name="minimumSize">
                       <size>
                        <width>0</width>
-                       <height>28</height>
+                       <height>30</height>
                       </size>
                      </property>
                      <property name="baseSize">
                       <size>
                        <width>0</width>
-                       <height>28</height>
+                       <height>30</height>
                       </size>
                      </property>
                     </widget>
@@ -1184,10 +1342,28 @@ min-width: 28px;</string>
                 <item>
                  <layout class="QHBoxLayout" name="horizontalLayout_6">
                   <property name="spacing">
-                   <number>1</number>
+                   <number>4</number>
                   </property>
                   <item>
                    <widget class="QLabel" name="labelOffsetPos">
+                    <property name="minimumSize">
+                     <size>
+                      <width>0</width>
+                      <height>30</height>
+                     </size>
+                    </property>
+                    <property name="maximumSize">
+                     <size>
+                      <width>66</width>
+                      <height>16777215</height>
+                     </size>
+                    </property>
+                    <property name="baseSize">
+                     <size>
+                      <width>0</width>
+                      <height>30</height>
+                     </size>
+                    </property>
                     <property name="text">
                      <string>Offset position</string>
                     </property>
@@ -1204,7 +1380,7 @@ min-width: 28px;</string>
                     <property name="minimumSize">
                      <size>
                       <width>0</width>
-                      <height>28</height>
+                      <height>30</height>
                      </size>
                     </property>
                     <property name="maximumSize">
@@ -1222,7 +1398,7 @@ min-width: 28px;</string>
                     <property name="baseSize">
                      <size>
                       <width>0</width>
-                      <height>28</height>
+                      <height>30</height>
                      </size>
                     </property>
                     <property name="focusPolicy">
@@ -1293,7 +1469,7 @@ min-width: 28px;</string>
              <item row="1" column="0">
               <layout class="QHBoxLayout" name="bendTypeLayout">
                <property name="spacing">
-                <number>1</number>
+                <number>4</number>
                </property>
                <item>
                 <widget class="QLabel" name="labelWallPos">
@@ -1305,14 +1481,20 @@ min-width: 28px;</string>
                  </property>
                  <property name="minimumSize">
                   <size>
-                   <width>68</width>
-                   <height>0</height>
+                   <width>66</width>
+                   <height>30</height>
                   </size>
                  </property>
                  <property name="maximumSize">
                   <size>
                    <width>66</width>
                    <height>16777215</height>
+                  </size>
+                 </property>
+                 <property name="baseSize">
+                  <size>
+                   <width>0</width>
+                   <height>30</height>
                   </size>
                  </property>
                  <property name="text">
@@ -1323,7 +1505,7 @@ min-width: 28px;</string>
                <item>
                 <widget class="QComboBox" name="BendType">
                  <property name="sizePolicy">
-                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                    <horstretch>0</horstretch>
                    <verstretch>0</verstretch>
                   </sizepolicy>
