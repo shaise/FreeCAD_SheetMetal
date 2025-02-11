@@ -1728,7 +1728,7 @@ def smBend(
 class SMBendWall:
     def __init__(self, obj, selobj, sel_items, refAngOffset=None, checkRefFace=False):
         '''"Add Wall with radius bend"'''
-        self._addProperties(obj, refAngOffset, checkRefFace)
+        self.addVerifyProperties(obj, refAngOffset, checkRefFace)
 
         _tip_ = translate("App::Property", "Base Object")
         obj.addProperty(
@@ -1737,7 +1737,7 @@ class SMBendWall:
         obj.Proxy = self
         SheetMetalTools.taskRestoreDefaults(obj, smAddWallDefaultVars)
 
-    def _addProperties(self, obj, refAngOffset=None, checkRefFace=False):
+    def addVerifyProperties(self, obj, refAngOffset=None, checkRefFace=False):
         SheetMetalTools.smAddLengthProperty(
             obj, "radius", translate("App::Property", "Bend Radius"), 1.0
         )
@@ -2036,7 +2036,7 @@ class SMBendWall:
     def execute(self, fp):
         '''"Print a short message when doing a recomputation, this method is mandatory"'''
 
-        self._addProperties(fp)
+        self.addVerifyProperties(fp)
 
         # restrict some params
         fp.miterangle1.Value = smRestrict(fp.miterangle1.Value, -80.0, 80.0)
@@ -2260,10 +2260,10 @@ if SheetMetalTools.isGuiLoaded():
             QtCore.QDir.addSearchPath('Icons', icons_path)
             self.obj = obj
             self.form = SheetMetalTools.taskLoadUI("FlangeParameters.ui")
-            obj.Proxy._addProperties(obj) # Make sure all properties ared added
+            obj.Proxy.addVerifyProperties(obj) # Make sure all properties are added
             self.activeRefGeom = None # Variable to track which property should be filled when in selection mode. And used to rename the form field (of face reference) only when necessary
             self.updateForm()
-            self.checkRefFace = self.onBendOffset(checkRefFace) # Turn bend type to 'Offset', on case of automatic face reference selection
+            self.onBendOffset(checkRefFace) # Turn bend type to 'Offset', on case of automatic face reference selection
 
             # flange parameters connects
             SheetMetalTools.taskConnectSelection(

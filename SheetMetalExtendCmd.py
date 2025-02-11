@@ -316,6 +316,9 @@ class SMExtrudeWall:
         ).Refine = True
         obj.Proxy = self
         SheetMetalTools.taskRestoreDefaults(obj, smExtrudeDefaultVars)
+    
+    def addVerifyProperties(self, obj):
+        pass
 
     def getElementMapVersion(self, _fp, ver, _prop, restored):
         if not restored:
@@ -387,6 +390,7 @@ if SheetMetalTools.isGuiLoaded():
         def __init__(self, obj):
             self.obj = obj
             self.form = SheetMetalTools.taskLoadUI("ExtendTaskPanel.ui")
+            obj.Proxy.addVerifyProperties(obj) # Make sure all properties are added
             SheetMetalTools.taskConnectSelection(
                 self.form.AddRemove, self.form.tree, self.obj, ["Face"]
             )

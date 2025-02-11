@@ -99,6 +99,7 @@ Starting from FreeCAD 0.17 it can be installed via the [Addon Manager](https://g
 * FreeCAD Forum announcement/discussion [thread](https://forum.freecadweb.org/viewtopic.php?f=3&t=60818) 
 
 #### Release notes:
+* V0.7.10 10 Feb 2025:  Improve flange cmd: Add reference to face by [@sheetmetalman][sheetmetalman].
 * V0.7.05 21 Jan 2025:  Fix DXF export by [@alexneufeld][alexneufeld].
                       - Add missing property to FoldWall UI.  
 * V0.7.04 19 Jan 2025:  Change some python code to be compatible with Py ver 3.8.

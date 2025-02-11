@@ -117,10 +117,10 @@ def smCreateBaseShape(type, thickness, radius, width, length, height, flangeWidt
 class SMBaseShape:
     def __init__(self, obj):
         '''"Add a base sheetmetal shape" '''
-        self._addVerifyProperties(obj)
+        self.addVerifyProperties(obj)
         obj.Proxy = self
 
-    def _addVerifyProperties(self, obj):
+    def addVerifyProperties(self, obj):
         SheetMetalTools.smAddLengthProperty(
             obj,
             "thickness",
@@ -193,7 +193,7 @@ class SMBaseShape:
             fp.setEditorMode("flangeWidth", not hat_box)
 
     def execute(self, fp):
-        self._addVerifyProperties(fp)
+        self.addVerifyProperties(fp)
         s = smCreateBaseShape(type = fp.shapeType, thickness = fp.thickness.Value,
                               radius = fp.radius.Value, width = fp.width.Value,
                               length = fp.length.Value, height = fp.height.Value,
@@ -233,6 +233,7 @@ if SheetMetalTools.isGuiLoaded():
             self.formReady = False
             self.firstTime = False
             self.selOrigButton = None
+            baseObj.Proxy.addVerifyProperties(baseObj) # Make sure all properties are added
             self.ShowAxisCross()
             self.setupUi()
 

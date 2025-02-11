@@ -127,6 +127,9 @@ class SMRelief:
         SheetMetalTools.taskRestoreDefaults(obj, smSolidCornerReliefDefaultVars)
         obj.Proxy = self
 
+    def addVerifyProperties(self, obj):
+        pass
+
     def getElementMapVersion(self, _fp, ver, _prop, restored):
         if not restored:
             return smElementMapVersion + ver
@@ -172,6 +175,7 @@ if SheetMetalTools.isGuiLoaded():
         def __init__(self, obj):
             self.obj = obj
             self.form = SheetMetalTools.taskLoadUI("SolidCornerReliefPanel.ui")
+            obj.Proxy.addVerifyProperties(obj) # Make sure all properties are added
             SheetMetalTools.taskConnectSelection(
                 self.form.AddRemove, self.form.tree, self.obj, ["Vertex"]
             )

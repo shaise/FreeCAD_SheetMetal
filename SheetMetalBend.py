@@ -111,7 +111,7 @@ class SMSolidBend:
     def __init__(self, obj, selobj, sel_elements):
         """ "Add Bend to Solid" """
 
-        self._addProperties(obj)
+        self.addVerifyProperties(obj)
         _tip_ = FreeCAD.Qt.translate("App::Property", "Base object")
         obj.addProperty(
             "App::PropertyLinkSub", "baseObject", "Parameters", _tip_
@@ -119,7 +119,7 @@ class SMSolidBend:
         obj.Proxy = self
         SheetMetalTools.taskRestoreDefaults(obj, smAddBendDefaultVars)
 
-    def _addProperties(self, obj):
+    def addVerifyProperties(self, obj):
         SheetMetalTools.smAddLengthProperty(
             obj, "radius", FreeCAD.Qt.translate("App::Property", "Bend Radius"), 1.0
         )
@@ -133,7 +133,7 @@ class SMSolidBend:
 
     def execute(self, fp):
         """ "Print a short message when doing a recomputation, this method is mandatory" """
-        self._addProperties(fp)
+        self.addVerifyProperties(fp)
         Main_Object = fp.baseObject[0].Shape.copy()
         s = smSolidBend(
             radius=fp.radius.Value,
@@ -169,6 +169,7 @@ if SheetMetalTools.isGuiLoaded():
         def __init__(self, obj):
             self.obj = obj
             self.form = SheetMetalTools.taskLoadUI("BendCornerPanel.ui")
+            obj.Proxy.addVerifyProperties(obj) # Make sure all properties are added
             SheetMetalTools.taskConnectSelection(
                 self.form.AddRemove, self.form.tree, self.obj, ["Edge"]
             )
