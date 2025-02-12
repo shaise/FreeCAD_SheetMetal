@@ -2479,7 +2479,7 @@ if SheetMetalTools.isGuiLoaded():
                 "ToolTip": FreeCAD.Qt.translate(
                     "SheetMetal",
                     "Extends one or more face, connected by a bend on existing sheet metal.\n"
-                    "1. Select edges or thickness side faces to create bends with walls.\n"
+                    "1. Select edges to create bends with walls.\n"
                     "2. Use Property editor to modify other parameters",
                 ),
             }
@@ -2497,10 +2497,9 @@ if SheetMetalTools.isGuiLoaded():
                             if type(obj.Object.Shape.getElement(subElem)) == Part.Edge:
                                 sel = obj
                                 break
+                selobj = sel.Object                                
             except:
                 raise Exception("At least one edge must be selected to create a wall.")
-
-            selobj = sel.Object
 
             selSubNames = list(sel.SubElementNames)
             selSubObjs = sel.SubObjects
@@ -2566,19 +2565,21 @@ if SheetMetalTools.isGuiLoaded():
             return
 
         def IsActive(self):
-            if (
-                len(Gui.Selection.getSelection()) < 1
-                or len(Gui.Selection.getSelectionEx()[0].SubElementNames) < 1
-            ):
-                return False
-            selobj = Gui.Selection.getSelection()[0]
-            for selobj in Gui.Selection.getSelection():
-                if selobj.isDerivedFrom("Sketcher::SketchObject"):
-                    return False
-            for selFace in Gui.Selection.getSelectionEx()[0].SubObjects:
-                if type(selFace) == Part.Vertex:
-                    return False
-            return True
+            selobj = Gui.Selection.getSelectionEx()
+            objSM = None
+            for obj in selobj: # In this iteration, we will find wich selected object is the sheet metal part, 'cause the user can select a face for reference (this object will not be the sheet metal part)
+                for subObj in obj.SubObjects:
+                    if type(subObj) == Part.Edge:
+                        objSM = obj
 
+            geomTest = []
+            for subObj in objSM.SubObjects: # Here, we will test if any selected subObject in the sheet metal isn't edge
+                if type(subObj) == Part.Edge:
+                    geomTest.append(True)
+                else:
+                    geomTest.append(False)
+            
+            if not False in geomTest and geomTest != None:
+                return True
 
     Gui.addCommand("SheetMetal_AddWall", AddWallCommandClass())
