@@ -177,7 +177,7 @@ if SheetMetalTools.isGuiLoaded():
             self.form = SheetMetalTools.taskLoadUI("SolidCornerReliefPanel.ui")
             obj.Proxy.addVerifyProperties(obj) # Make sure all properties are added
             SheetMetalTools.taskConnectSelection(
-                self.form.AddRemove, self.form.tree, self.obj, ["Vertex"]
+                self.form.AddRemove, self.form.tree, self.obj, ["Vertex"], self.form.pushClearSel
             )
             SheetMetalTools.taskConnectSpin(self, self.form.CornerSize, "relief")
             # SheetMetalTools.taskConnectCheck(self, self.form.RefineCheckbox, "Refine")

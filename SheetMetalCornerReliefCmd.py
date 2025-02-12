@@ -471,7 +471,7 @@ if SheetMetalTools.isGuiLoaded():
             obj.Proxy.addVerifyProperties(obj) # Make sure all properties are added
             self.updateForm()
             SheetMetalTools.taskConnectSelection(
-                self.form.AddRemove, self.form.tree, self.obj, ["Edge"])
+                self.form.AddRemove, self.form.tree, self.obj, ["Edge"], self.form.pushClearSel)
             SheetMetalTools.taskConnectSelectionSingle(
                 self, self.form.pushSketch, self.form.txtSketch, obj, "Sketch", ("Sketcher::SketchObject", []))
             SheetMetalTools.taskConnectSpin(self, self.form.unitReliefSize, "Size")

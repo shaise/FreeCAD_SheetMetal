@@ -392,7 +392,7 @@ if SheetMetalTools.isGuiLoaded():
             self.form = SheetMetalTools.taskLoadUI("ExtendTaskPanel.ui")
             obj.Proxy.addVerifyProperties(obj) # Make sure all properties are added
             SheetMetalTools.taskConnectSelection(
-                self.form.AddRemove, self.form.tree, self.obj, ["Face"]
+                self.form.AddRemove, self.form.tree, self.obj, ["Face"], self.form.pushClearSel
             )
             SheetMetalTools.taskConnectSpin(self, self.form.OffsetA, "gap1")
             SheetMetalTools.taskConnectSpin(self, self.form.OffsetB, "gap2")

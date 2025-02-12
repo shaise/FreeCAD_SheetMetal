@@ -136,7 +136,7 @@ if SheetMetalTools.isGuiLoaded():
             self.form = SheetMetalTools.taskLoadUI("AddJunctionPanel.ui")
             obj.Proxy.addVerifyProperties(obj) # Make sure all properties are added
             SheetMetalTools.taskConnectSelection(
-                self.form.AddRemove, self.form.tree, self.obj, ["Edge"]
+                self.form.AddRemove, self.form.tree, self.obj, ["Edge"], self.form.pushClearSel
             )
             SheetMetalTools.taskConnectSpin(self, self.form.JunctionWidth, "gap")
             # SheetMetalTools.taskConnectCheck(self, self.form.RefineCheckbox, "Refine")

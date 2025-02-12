@@ -131,7 +131,8 @@ if isGuiLoaded():
         #print(sel.Object, subItems)
         obj.baseObject = (sel.Object, subItems)
 
-    def _taskToggleSelectionMode(isChecked, addRemoveButton, treeWidget, obj, allowedTypes):
+    def _taskToggleSelectionMode(isChecked, addRemoveButton, treeWidget, 
+                                 obj, allowedTypes, clearButton):
         if isChecked:
             obj.Visibility=False
             obj.baseObject[0].Visibility=True
@@ -139,7 +140,11 @@ if isGuiLoaded():
             Gui.Selection.addSelection(obj.baseObject[0],obj.baseObject[1])
             smSelectGreedy()
             addRemoveButton.setText('Preview')
+            if clearButton is not None:
+                clearButton.setVisible(True)
         else:
+            if clearButton is not None:
+                clearButton.setVisible(False)
             updateSelectionElements(obj, allowedTypes)
             Gui.Selection.clearSelection()
             smSelectNormal()
@@ -149,11 +154,17 @@ if isGuiLoaded():
             addRemoveButton.setText('Select')
             taskPopulateSelectionList(treeWidget, obj.baseObject)
     
-    def taskConnectSelection(addRemoveButton, treeWidget, obj, allowedTypes):
+    def taskConnectSelection(addRemoveButton, treeWidget, obj, allowedTypes, clearButton = None):
         taskPopulateSelectionList(treeWidget, obj.baseObject)
+        # delete_shortcut = QtWidgets.QShortcut(QtGui.QKeySequence(QtCore.Qt.Key_Delete), treeWidget)
+        # delete_shortcut.activated.connect(
+        #     lambda: _delete_selected_items(treeWidget, obj))
+        if clearButton is not None:
+            clearButton.setVisible(False)
+            clearButton.clicked.connect(Gui.Selection.clearSelection)
         addRemoveButton.toggled.connect(
             lambda value: _taskToggleSelectionMode(value, addRemoveButton, treeWidget, 
-                                                   obj, allowedTypes))
+                                                   obj, allowedTypes, clearButton))
         
     def _taskToggleSingleSelMode(task, isChecked, button, textbox, obj, selProperty, allowedTypes):
         prop = getattr(obj, selProperty)

@@ -2267,7 +2267,7 @@ if SheetMetalTools.isGuiLoaded():
 
             # flange parameters connects
             SheetMetalTools.taskConnectSelection(
-                self.form.AddRemove, self.form.tree, self.obj, ["Edge"])
+                self.form.AddRemove, self.form.tree, self.obj, ["Edge"], self.form.pushClearSel)
             SheetMetalTools.taskConnectEnum(self, self.form.BendType, "BendType", self.bendTypeUpdated)
             SheetMetalTools.taskConnectSpin(self, self.form.Offset, "offset")
             SheetMetalTools.taskConnectSpin(self, self.form.Radius, "radius")
