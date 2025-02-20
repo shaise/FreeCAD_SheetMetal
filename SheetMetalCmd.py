@@ -1263,10 +1263,16 @@ def smBend(
     if BendType == "Material Outside":
         offset = 0.0
         inside = False
-    elif BendType == "Material Inside":
+    elif BendType == "Material Inside": # legacy mode for backwards compatibility
+        offset = -(thk + bendR)
+        inside = True
+    elif BendType == "Thickness Outside": # legacy mode for backwards compatibility
+        offset = -bendR
+        inside = True
+    elif BendType == "Material Inside V2":
         offset = -(thk + bendR) * abs(math.tan(math.radians(bendA * 0.5)))
         inside = True
-    elif BendType == "Thickness Outside":
+    elif BendType == "Thickness Outside V2":
         offset = -bendR * abs(math.tan(math.radians(bendA * 0.5)))
         inside = True
     elif BendType == "Offset":
@@ -1781,7 +1787,9 @@ class SMBendWall:
             obj,
             "BendType",
             translate("App::Property", "Bend Type"),
-            ["Material Outside", "Material Inside", "Thickness Outside", "Offset"],
+            ["Material Outside", "Material Inside V2", "Thickness Outside V2", "Offset",
+             # legacy modes
+             "Material Inside", "Thickness Outside"],
         )
         SheetMetalTools.smAddEnumProperty(
             obj,
