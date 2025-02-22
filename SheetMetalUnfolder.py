@@ -3018,7 +3018,7 @@ def getUnfoldSketches(
     splitSketches=False,
     sketchColor="#000080",
     bendSketchColor="#c00000",
-    internalSketchColor="#ff5733",        
+    internalSketchColor="#ff5733",
 ):
     unfold_sketch = None
 
@@ -3134,6 +3134,7 @@ def generateSketch(edges, name, color, existingSketches = None):
             rgb_color = tuple(i / 255 for i in rgb_color)
         sk.ViewObject.LineColor = rgb_color
         sk.ViewObject.PointColor = rgb_color
+        sk.ViewObject.AutoColor = False
 
     sk.recompute()
     return sk
