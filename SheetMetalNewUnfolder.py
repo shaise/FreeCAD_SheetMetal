@@ -558,6 +558,8 @@ class SketchExtraction:
                 rgb_color = tuple(i / 255 for i in rgb_color)
             sketch.ViewObject.LineColor = rgb_color
             sketch.ViewObject.PointColor = rgb_color
+            if hasattr(sketch.ViewObject, "AutoColor"):
+                sketch.ViewObject.AutoColor = False
         return sketch
 
     @staticmethod

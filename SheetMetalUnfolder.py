@@ -3134,7 +3134,8 @@ def generateSketch(edges, name, color, existingSketches = None):
             rgb_color = tuple(i / 255 for i in rgb_color)
         sk.ViewObject.LineColor = rgb_color
         sk.ViewObject.PointColor = rgb_color
-        sk.ViewObject.AutoColor = False
+        if hasattr(sk.ViewObject, "AutoColor"):
+            sk.ViewObject.AutoColor = False
 
     sk.recompute()
     return sk
