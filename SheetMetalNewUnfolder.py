@@ -862,7 +862,7 @@ class Edge2DCleanup:
         )
 
     @staticmethod
-    def fix_coincidence(edgelist: Part.Shape, fuzzvalue: float) -> list[Part.Wire]:
+    def fix_coincidence(edgelist: list[Part.Edge], fuzzvalue: float) -> list[Part.Wire]:
         """Given a list of edges, finds pairs of edges with endpoints that are
         nearly (but not exactly) coincident.
         Returns a list of wires with improved coincidence between edges"""
@@ -870,11 +870,13 @@ class Edge2DCleanup:
             list_of_lists_of_edges = Part.sortEdges(edgelist, fuzzvalue)
         except Part.OCCError:
             # the optional fuzz-value argument is not available in FreeCAD version <= 0.21
+            # Users should not expect good results with out-of tolerance shapes if the
+            # fuzz argument wasn't used
             list_of_lists_of_edges = Part.sortEdges(edgelist)
         wires = []
         for list_of_edges in list_of_lists_of_edges:
             # skip tiny edge segments
-            useable_edges = [e for e in list_of_edges if e.Length > fuzz]
+            useable_edges = [e for e in list_of_edges if e.Length > fuzzvalue]
             if not useable_edges:
                 # skip this edge list entirely if it was made up of only tiny segments
                 continue
@@ -884,16 +886,38 @@ class Edge2DCleanup:
                 for i in range(edgeloop_length):
                     e1 = useable_edges[i % edgeloop_length]
                     e2 = useable_edges[(i + 1) % edgeloop_length]
-                    err = e1.lastVertex().Point.distanceToPoint(e2.firstVertex().Point)
-                    if fuzzvalue > err > tol:
-                        # adjust the last vertex of e1 to connect to the first vertex of e2
+                    e1_start = e1.firstVertex().Point
+                    e1_end = e1.lastVertex().Point
+                    e2_start = e2.firstVertex().Point
+                    e2_end = e2.lastVertex().Point
+                    # this should be the correct error
+                    err1 = e1_end.distanceToPoint(e2_start)
+                    # but one of these other ones might be the case we need to use
+                    # if Part.sortEdges has failed to do its job properly
+                    err2 = e1_end.distanceToPoint(e2_end)
+                    err3 = e1_start.distanceToPoint(e2_start)
+                    err4 = e1_start.distanceToPoint(e2_end)
+                    if err1 < err2 and err1 < err3 and err1 < err4:
+                        # orientation is End ->*-> Start
                         startpoint = e1.firstVertex().Point
                         endpoint = e2.firstVertex().Point
-                    else:  # edges are connected within tolerance
-                        # don't change the endpoiont of e1
+                    elif err2 < err1 and err2 < err3 and err2 < err4:
+                        # "orientation is End ->*-> End"
                         startpoint = e1.firstVertex().Point
-                        endpoint = e1.lastVertex().Point
-                    # append the possibly modified edge to the output list
+                        endpoint = e2.lastVertex().Point
+                    elif err3 < err1 and err3 < err2 and err3 < err4:
+                        # orientation is Start ->*-> Start
+                        startpoint = e1.lastVertex().Point
+                        endpoint = e2.firstVertex().Point
+                    elif err4 < err2 and err4 < err3 and err4 < err1:
+                        # orientation is Start ->*-> End
+                        startpoint = e1.lastVertex().Point
+                        endpoint = e2.lastVertex().Point
+                    else:
+                        # orientation is ambiguous - the best we can do is assume
+                        # that the edges were sorted correctly
+                        startpoint = e1.firstVertex().Point
+                        endpoint = e2.firstVertex().Point
                     if e1.Curve.TypeId == "Part::GeomLine":
                         new_edges.append(Edge2DCleanup.line_xy(startpoint, endpoint))
                     elif e1.Curve.TypeId == "Part::GeomCircle":
