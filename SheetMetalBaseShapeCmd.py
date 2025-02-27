@@ -235,17 +235,17 @@ if SheetMetalTools.isGuiLoaded():
             self.selOrigButton = None
             baseObj.Proxy.addVerifyProperties(baseObj) # Make sure all properties are added
             self.ShowAxisCross()
-            self.setupUi()
+            self.setupUi(baseObj)
 
-        def setupUi(self):
-            SheetMetalTools.taskConnectSpin(self, self.form.bRadiusSpin, "radius")
-            SheetMetalTools.taskConnectSpin(self, self.form.bThicknessSpin, "thickness")
-            SheetMetalTools.taskConnectSpin(self, self.form.bWidthSpin, "width")
-            SheetMetalTools.taskConnectSpin(self, self.form.bHeightSpin, "height")
-            SheetMetalTools.taskConnectSpin(self, self.form.bFlangeWidthSpin, "flangeWidth")
-            SheetMetalTools.taskConnectSpin(self, self.form.bLengthSpin, "length")
-            SheetMetalTools.taskConnectEnum(self, self.form.shapeType, "shapeType", self.typeChanged)
-            SheetMetalTools.taskConnectCheck(self, self.form.chkFillGaps, "fillGaps")
+        def setupUi(self, obj):
+            SheetMetalTools.taskConnectSpin(obj, self.form.bRadiusSpin, "radius")
+            SheetMetalTools.taskConnectSpin(obj, self.form.bThicknessSpin, "thickness")
+            SheetMetalTools.taskConnectSpin(obj, self.form.bWidthSpin, "width")
+            SheetMetalTools.taskConnectSpin(obj, self.form.bHeightSpin, "height")
+            SheetMetalTools.taskConnectSpin(obj, self.form.bFlangeWidthSpin, "flangeWidth")
+            SheetMetalTools.taskConnectSpin(obj, self.form.bLengthSpin, "length")
+            SheetMetalTools.taskConnectEnum(obj, self.form.shapeType, "shapeType", self.typeChanged)
+            SheetMetalTools.taskConnectCheck(obj, self.form.chkFillGaps, "fillGaps")
 
             for origloc in origin_location_buttons:
                 buttname = 'push' + origloc

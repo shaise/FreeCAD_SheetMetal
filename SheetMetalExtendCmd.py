@@ -391,13 +391,13 @@ if SheetMetalTools.isGuiLoaded():
             self.obj = obj
             self.form = SheetMetalTools.taskLoadUI("ExtendTaskPanel.ui")
             obj.Proxy.addVerifyProperties(obj) # Make sure all properties are added
-            SheetMetalTools.taskConnectSelection(
+            self.selParams = SheetMetalTools.taskConnectSelection(
                 self.form.AddRemove, self.form.tree, self.obj, ["Face"], self.form.pushClearSel
             )
-            SheetMetalTools.taskConnectSpin(self, self.form.OffsetA, "gap1")
-            SheetMetalTools.taskConnectSpin(self, self.form.OffsetB, "gap2")
-            SheetMetalTools.taskConnectSpin(self, self.form.Length, "length")
-            SheetMetalTools.taskConnectCheck(self, self.form.RefineCheckbox, "Refine")
+            SheetMetalTools.taskConnectSpin(obj, self.form.OffsetA, "gap1")
+            SheetMetalTools.taskConnectSpin(obj, self.form.OffsetB, "gap2")
+            SheetMetalTools.taskConnectSpin(obj, self.form.Length, "length")
+            SheetMetalTools.taskConnectCheck(obj, self.form.RefineCheckbox, "Refine")
 
         def isAllowedAlterSelection(self):
             return True
@@ -406,12 +406,12 @@ if SheetMetalTools.isGuiLoaded():
             return True
 
         def accept(self):
-            SheetMetalTools.taskAccept(self, self.form.AddRemove)
+            SheetMetalTools.taskAccept(self)
             SheetMetalTools.taskSaveDefaults(self.obj, smExtrudeDefaultVars)
             return True
 
         def reject(self):
-            SheetMetalTools.taskReject(self, self.form.AddRemove)
+            SheetMetalTools.taskReject(self)
 
     class SMExtrudeCommandClass:
         """Extrude face"""

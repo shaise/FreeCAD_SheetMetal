@@ -470,15 +470,15 @@ if SheetMetalTools.isGuiLoaded():
             self.form = SheetMetalTools.taskLoadUI("CornerReliefPanel.ui")
             obj.Proxy.addVerifyProperties(obj) # Make sure all properties are added
             self.updateForm()
-            SheetMetalTools.taskConnectSelection(
+            self.selEdgesParams = SheetMetalTools.taskConnectSelection(
                 self.form.AddRemove, self.form.tree, self.obj, ["Edge"], self.form.pushClearSel)
-            SheetMetalTools.taskConnectSelectionSingle(
-                self, self.form.pushSketch, self.form.txtSketch, obj, "Sketch", ("Sketcher::SketchObject", []))
-            SheetMetalTools.taskConnectSpin(self, self.form.unitReliefSize, "Size")
-            SheetMetalTools.taskConnectSpin(self, self.form.floatScaleFactor, "SizeRatio")
-            SheetMetalTools.taskConnectSpin(self, self.form.floatKFactor, "kfactor")
-            SheetMetalTools.taskConnectSpin(self, self.form.unitXOffset, "XOffset")
-            SheetMetalTools.taskConnectSpin(self, self.form.unitYOffset, "YOffset")
+            self.selSketchParams = SheetMetalTools.taskConnectSelectionSingle(
+                self.form.pushSketch, self.form.txtSketch, obj, "Sketch", ("Sketcher::SketchObject", []))
+            SheetMetalTools.taskConnectSpin(obj, self.form.unitReliefSize, "Size")
+            SheetMetalTools.taskConnectSpin(obj, self.form.floatScaleFactor, "SizeRatio")
+            SheetMetalTools.taskConnectSpin(obj, self.form.floatKFactor, "kfactor")
+            SheetMetalTools.taskConnectSpin(obj, self.form.unitXOffset, "XOffset")
+            SheetMetalTools.taskConnectSpin(obj, self.form.unitYOffset, "YOffset")
             self.form.groupReliefType.buttonToggled.connect(self.reliefTypeChanged)
             self.form.groupReliefSize.buttonToggled.connect(self.reliefSizingTypeChanged)
 
@@ -529,12 +529,12 @@ if SheetMetalTools.isGuiLoaded():
             return True
 
         def accept(self):
-            SheetMetalTools.taskAccept(self, self.form.AddRemove)
+            SheetMetalTools.taskAccept(self)
             SheetMetalTools.taskSaveDefaults(self.obj, smCornerReliefDefaultVars)
             return True
 
         def reject(self):
-            SheetMetalTools.taskReject(self, self.form.AddRemove)
+            SheetMetalTools.taskReject(self)
 
 
     class AddCornerReliefCommandClass:

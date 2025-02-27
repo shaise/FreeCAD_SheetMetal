@@ -325,14 +325,14 @@ if SheetMetalTools.isGuiLoaded():
             self.form = SheetMetalTools.taskLoadUI("BendOnLinePanel.ui")
             obj.Proxy.addVerifyProperties(obj) # Make sure all properties are added
             SheetMetalTools.taskConnectSelectionSingle(
-                self, self.form.buttBaseObject, self.form.txtBaseObject, obj, "baseObject", ["Face"])
+                self.form.buttBaseObject, self.form.txtBaseObject, obj, "baseObject", ["Face"])
             SheetMetalTools.taskConnectSelectionSingle(
-                self, self.form.buttBendLine, self.form.txtBendLine, obj, "BendLine", ("Sketcher::SketchObject", []))
-            SheetMetalTools.taskConnectEnum(self, self.form.comboPosition, "Position")
-            SheetMetalTools.taskConnectSpin(self, self.form.unitBendRadius, "radius")
-            SheetMetalTools.taskConnectSpin(self, self.form.unitBendAngle, "angle")
-            SheetMetalTools.taskConnectCheck(self, self.form.checkFlipDir, "invertbend")
-            SheetMetalTools.taskConnectCheck(self, self.form.checkUnbend, "unfold")
+                self.form.buttBendLine, self.form.txtBendLine, obj, "BendLine", ("Sketcher::SketchObject", []))
+            SheetMetalTools.taskConnectEnum(obj, self.form.comboPosition, "Position")
+            SheetMetalTools.taskConnectSpin(obj, self.form.unitBendRadius, "radius")
+            SheetMetalTools.taskConnectSpin(obj, self.form.unitBendAngle, "angle")
+            SheetMetalTools.taskConnectCheck(obj, self.form.checkFlipDir, "invertbend")
+            SheetMetalTools.taskConnectCheck(obj, self.form.checkUnbend, "unfold")
 
         def isAllowedAlterSelection(self):
             return True

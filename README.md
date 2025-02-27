@@ -99,16 +99,19 @@ Starting from FreeCAD 0.17 it can be installed via the [Addon Manager](https://g
 * FreeCAD Forum announcement/discussion [thread](https://forum.freecadweb.org/viewtopic.php?f=3&t=60818) 
 
 #### Release notes:
-* V0.7.11 12 Feb 2025:  Gui enhancements and Flang's face selection removal by [@sheetmetalman][sheetmetalman].
-                      - Add clear selection button
-* V0.7.10 10 Feb 2025:  Improve flange cmd: Add reference to face by [@sheetmetalman][sheetmetalman].
-* V0.7.05 21 Jan 2025:  Fix DXF export by [@alexneufeld][alexneufeld].
+* V0.7.20 27 Feb 2025:  Improve sheetmetal gui tools.  
+                      - Add Task-Panel to forming tool.  
+                      - Fix sketch color issues by [@Roy-043][Roy-043] and [@Syres916][Syres916].  
+* V0.7.11 12 Feb 2025:  Gui enhancements and Flang's face selection removal by [@sheetmetalman][sheetmetalman].  
+                      - Add clear selection button  
+* V0.7.10 10 Feb 2025:  Improve flange cmd: Add reference to face by [@sheetmetalman][sheetmetalman].  
+* V0.7.05 21 Jan 2025:  Fix DXF export by [@alexneufeld][alexneufeld].  
                       - Add missing property to FoldWall UI.  
-* V0.7.04 19 Jan 2025:  Change some python code to be compatible with Py ver 3.8.
+* V0.7.04 19 Jan 2025:  Change some python code to be compatible with Py ver 3.8.  
                       - Fix FoldWall not claiming sketches  
 * V0.7.03 15 Jan 2025:  Fix ansi/din support.  
 * V0.7.02 15 Jan 2025:  Fix thickness detection by [@alexneufeld][alexneufeld].  
-                      - Improve detection of missing networkx dependency
+                      - Improve detection of missing networkx dependency  
 * V0.7.01 13 Jan 2025:  New Unfolder compatibility with FC0.21 and LS3 by [@alexneufeld][alexneufeld] and [@Syres916][Syres916].  
 * V0.7.00 11 Jan 2025:  New SheetMetal Unfolder! by [@alexneufeld][alexneufeld].  
                       - Unfolder backward compatibility fixes by [@GS90][GS90].  

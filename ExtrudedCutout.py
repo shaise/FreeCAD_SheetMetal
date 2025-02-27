@@ -439,18 +439,18 @@ if SheetMetalTools.isGuiLoaded():
             self.updateDisplay()
 
             SheetMetalTools.taskConnectSelectionSingle(
-                self, self.form.pushFace, self.form.txtFace, obj, "baseObject", ["Face"])
+                self.form.pushFace, self.form.txtFace, obj, "baseObject", ["Face"])
             SheetMetalTools.taskConnectSelectionSingle(
-                self, self.form.pushSketch, self.form.txtSketch, obj, "Sketch", ("Sketcher::SketchObject", []))
+                self.form.pushSketch, self.form.txtSketch, obj, "Sketch", ("Sketcher::SketchObject", []))
             self.form.groupCutSide.buttonToggled.connect(self.cutSideChanged)
-            SheetMetalTools.taskConnectEnum(self, self.form.comboCutoutType, "CutType", 
+            SheetMetalTools.taskConnectEnum(obj, self.form.comboCutoutType, "CutType", 
                                             self.cutTypeChanged)
-            SheetMetalTools.taskConnectSpin(self, self.form.unitLengthA, "ExtrusionLength1")
-            SheetMetalTools.taskConnectSpin(self, self.form.unitLengthB, "ExtrusionLength2")
-            SheetMetalTools.taskConnectSpin(self, self.form.intImproveLevel, "ImproveLevel")            
-            SheetMetalTools.taskConnectCheck(self, self.form.checkImprove, "ImproveCut", 
+            SheetMetalTools.taskConnectSpin(obj, self.form.unitLengthA, "ExtrusionLength1")
+            SheetMetalTools.taskConnectSpin(obj, self.form.unitLengthB, "ExtrusionLength2")
+            SheetMetalTools.taskConnectSpin(obj, self.form.intImproveLevel, "ImproveLevel")            
+            SheetMetalTools.taskConnectCheck(obj, self.form.checkImprove, "ImproveCut", 
                                              self.improveChanged)
-            SheetMetalTools.taskConnectCheck(self, self.form.checkRefine, "Refine")
+            SheetMetalTools.taskConnectCheck(obj, self.form.checkRefine, "Refine")
 
         def updateDisplay(self):
             if self.obj.CutSide == "Inside":

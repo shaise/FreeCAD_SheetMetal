@@ -143,9 +143,9 @@ class SMSolidBend:
         fp.Shape = s
 
 
-##########################################################################################################
+##############################################################################################
 # Gui code
-##########################################################################################################
+##############################################################################################
 
 if SheetMetalTools.isGuiLoaded():
     from FreeCAD import Gui
@@ -170,11 +170,11 @@ if SheetMetalTools.isGuiLoaded():
             self.obj = obj
             self.form = SheetMetalTools.taskLoadUI("BendCornerPanel.ui")
             obj.Proxy.addVerifyProperties(obj) # Make sure all properties are added
-            SheetMetalTools.taskConnectSelection(
+            self.selParams = SheetMetalTools.taskConnectSelection(
                 self.form.AddRemove, self.form.tree, self.obj, ["Edge"], self.form.pushClearSel
             )
-            SheetMetalTools.taskConnectSpin(self, self.form.Radius, "radius")
-            # SheetMetalTools.taskConnectCheck(self, self.form.RefineCheckbox, "Refine")
+            SheetMetalTools.taskConnectSpin(obj, self.form.Radius, "radius")
+            # SheetMetalTools.taskConnectCheck(obj, self.form.RefineCheckbox, "Refine")
 
         def isAllowedAlterSelection(self):
             return True
@@ -183,12 +183,12 @@ if SheetMetalTools.isGuiLoaded():
             return True
 
         def accept(self):
-            SheetMetalTools.taskAccept(self, self.form.AddRemove)
+            SheetMetalTools.taskAccept(self)
             SheetMetalTools.taskSaveDefaults(self.obj, smAddBendDefaultVars)
             return True
         
         def reject(self):
-            SheetMetalTools.taskReject(self, self.form.AddRemove)
+            SheetMetalTools.taskReject(self)
 
         #def retranslateUi(self, SMBendTaskPanel):
 

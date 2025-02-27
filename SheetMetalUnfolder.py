@@ -3120,7 +3120,6 @@ def generateSketch(edges, name, color, existingSketches = None):
         if existingSketch is None:
             sk.Label = name
     except:
-        print("====> alternate sketch method")
         doc = FreeCAD.ActiveDocument
         skb = doc.ActiveObject
         doc.removeObject(skb.Name)

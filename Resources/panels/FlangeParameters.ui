@@ -297,16 +297,6 @@ min-width: 28px;</string>
                  </property>
                 </widget>
                </item>
-               <item>
-                <widget class="QPushButton" name="hideButtWorkaround01">
-                 <property name="visible">
-                  <bool>false</bool>
-                 </property>
-                 <property name="text">
-                  <string>reference face</string>
-                 </property>
-                </widget>
-               </item>
               </layout>
              </item>
              <item row="2" column="0">
@@ -384,9 +374,6 @@ min-width: 28px;</string>
                    </item>
                    <item>
                     <widget class="QLineEdit" name="AngleFaceRef">
-                     <property name="enabled">
-                      <bool>false</bool>
-                     </property>
                      <property name="sizePolicy">
                       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
                        <horstretch>0</horstretch>
@@ -404,6 +391,9 @@ min-width: 28px;</string>
                        <width>0</width>
                        <height>28</height>
                       </size>
+                     </property>
+                     <property name="readOnly">
+                      <bool>true</bool>
                      </property>
                     </widget>
                    </item>
@@ -1098,16 +1088,6 @@ min-width: 28px;</string>
                   </property>
                  </widget>
                 </item>
-                <item>
-                 <widget class="QPushButton" name="hideButtWorkaround02">
-                  <property name="visible">
-                   <bool>false</bool>
-                  </property>
-                  <property name="text">
-                   <string>reference face</string>
-                  </property>
-                 </widget>
-                </item>
                </layout>
               </widget>
              </item>
@@ -1168,9 +1148,6 @@ min-width: 28px;</string>
                    </item>
                    <item>
                     <widget class="QLineEdit" name="OffsetFaceRef">
-                     <property name="enabled">
-                      <bool>false</bool>
-                     </property>
                      <property name="sizePolicy">
                       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
                        <horstretch>0</horstretch>
@@ -1188,6 +1165,9 @@ min-width: 28px;</string>
                        <width>0</width>
                        <height>28</height>
                       </size>
+                     </property>
+                     <property name="readOnly">
+                      <bool>true</bool>
                      </property>
                     </widget>
                    </item>

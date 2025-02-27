@@ -214,14 +214,14 @@ if SheetMetalTools.isGuiLoaded():
             obj.Proxy.addVerifyProperties(obj) # Make sure all properties are added
             self.updateDisplay()
             SheetMetalTools.taskConnectSelectionSingle(
-                self, self.form.pushSketch, self.form.txtSketch, obj, "BendSketch", ("Sketcher::SketchObject", [])
+                self.form.pushSketch, self.form.txtSketch, obj, "BendSketch", ("Sketcher::SketchObject", [])
             )
-            SheetMetalTools.taskConnectSpin(self, self.form.spinRadius, "Radius")
-            SheetMetalTools.taskConnectSpin(self, self.form.spinThickness, "Thickness")
-            SheetMetalTools.taskConnectSpin(self, self.form.spinLength, "Length")
-            SheetMetalTools.taskConnectEnum(self, self.form.comboBendPlane, "BendSide")
-            SheetMetalTools.taskConnectCheck(self, self.form.checkSymetric, "MidPlane", self.midplaneChanged)
-            SheetMetalTools.taskConnectCheck(self, self.form.checkRevDirection, "Reverse")
+            SheetMetalTools.taskConnectSpin(obj, self.form.spinRadius, "Radius")
+            SheetMetalTools.taskConnectSpin(obj, self.form.spinThickness, "Thickness")
+            SheetMetalTools.taskConnectSpin(obj, self.form.spinLength, "Length")
+            SheetMetalTools.taskConnectEnum(obj, self.form.comboBendPlane, "BendSide")
+            SheetMetalTools.taskConnectCheck(obj, self.form.checkSymetric, "MidPlane", self.midplaneChanged)
+            SheetMetalTools.taskConnectCheck(obj, self.form.checkRevDirection, "Reverse")
             obj.BendSketch.Visibility = True
 
         def isAllowedAlterSelection(self):

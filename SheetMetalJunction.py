@@ -135,11 +135,11 @@ if SheetMetalTools.isGuiLoaded():
             self.obj = obj
             self.form = SheetMetalTools.taskLoadUI("AddJunctionPanel.ui")
             obj.Proxy.addVerifyProperties(obj) # Make sure all properties are added
-            SheetMetalTools.taskConnectSelection(
+            self.selParams = SheetMetalTools.taskConnectSelection(
                 self.form.AddRemove, self.form.tree, self.obj, ["Edge"], self.form.pushClearSel
             )
-            SheetMetalTools.taskConnectSpin(self, self.form.JunctionWidth, "gap")
-            # SheetMetalTools.taskConnectCheck(self, self.form.RefineCheckbox, "Refine")
+            SheetMetalTools.taskConnectSpin(obj, self.form.JunctionWidth, "gap")
+            # SheetMetalTools.taskConnectCheck(obj, self.form.RefineCheckbox, "Refine")
 
         def isAllowedAlterSelection(self):
             return True
@@ -148,12 +148,12 @@ if SheetMetalTools.isGuiLoaded():
             return True
 
         def accept(self):
-            SheetMetalTools.taskAccept(self, self.form.AddRemove)
+            SheetMetalTools.taskAccept(self)
             SheetMetalTools.taskSaveDefaults(self.obj, smJunctionDefaultVars)
             return True
         
         def reject(self):
-            SheetMetalTools.taskReject(self, self.form.AddRemove)
+            SheetMetalTools.taskReject(self)
 
         def retranslateUi(self, TaskPanel):
             self.addButton.setText(

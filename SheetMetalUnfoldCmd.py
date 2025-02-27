@@ -34,8 +34,8 @@ import SheetMetalUnfolder
 
 from SheetMetalTools import SMLogger, UnfoldException
 from engineering_mode import engineering_mode_enabled
-
 translate = FreeCAD.Qt.translate
+
 if sys.version_info.major == 3 and sys.version_info.minor < 10:
     NewUnfolderAvailable = False
     FreeCAD.Console.PrintWarning(
@@ -334,7 +334,7 @@ if SheetMetalTools.isGuiLoaded():
             self.obj = obj
             self.form = SheetMetalTools.taskLoadUI("UnfoldOptions.ui")
             obj.Proxy.addVerifyProperties(obj) # Make sure all properties are added
-            self.setupUi()
+            self.setupUi(obj)
 
         def _boolToState(self, bool):
             return QtCore.Qt.Checked if bool else QtCore.Qt.Unchecked
@@ -374,11 +374,11 @@ if SheetMetalTools.isGuiLoaded():
 
         def checkKFactorValid(self):
             if self.obj.MaterialSheet == "_none":
-                msg = FreeCAD.Qt.translate(
+                msg = translate(
                     "Logger", "Unfold operation needs to know K-factor value(s) to be used."
                 )
                 SMLogger.warning(msg)
-                msg += FreeCAD.Qt.translate(
+                msg += translate(
                     "QMessageBox",
                     "<ol>\n"
                     "<li>Either select 'Manual K-factor'</li>\n"
@@ -389,9 +389,9 @@ if SheetMetalTools.isGuiLoaded():
                 return False
             return True
 
-        def setupUi(self):
+        def setupUi(self, obj):
             self.updateKFactor(True)
-            if self.obj.Proxy.ExportType == "dxf":
+            if obj.Proxy.ExportType == "dxf":
                 self.form.dxfExport.setChecked(True)
             else:
                 self.form.svgExport.setChecked(True)
@@ -400,15 +400,15 @@ if SheetMetalTools.isGuiLoaded():
             self.BendLineColor = BENDLINESKETCHCOLOR
             self.populateMdsList()
             SheetMetalTools.taskConnectSelectionSingle(
-                self, self.form.pushFace, self.form.txtFace, self.obj, "baseObject", ["Face"])
-            SheetMetalTools.taskConnectColor(self, self.form.genColor, "SketchColor", customObj = self.obj.Proxy)
-            SheetMetalTools.taskConnectColor(self, self.form.bendColor, "BendLineColor", customObj = self.obj.Proxy)
-            SheetMetalTools.taskConnectColor(self, self.form.internalColor, "InternalColor", customObj = self.obj.Proxy)
-            SheetMetalTools.taskConnectCheck(self, self.form.chkSketch, "GenerateSketch", self.chkSketchChange)
-            SheetMetalTools.taskConnectCheck(self, self.form.chkSeparate, "SeparateSketchLayers", self.chkSketchChange)
-            SheetMetalTools.taskConnectCheck(self, self.form.chkManualUpdate, "ManualRecompute", self.chkManualChanged)
-            SheetMetalTools.taskConnectSpin(self, self.form.floatKFactor, "KFactor")
-            SheetMetalTools.taskConnectSpin(self, self.form.transSpin, "UnfoldTransparency", customObj = self.obj.Proxy)
+                self.form.pushFace, self.form.txtFace, obj, "baseObject", ["Face"])
+            SheetMetalTools.taskConnectColor(obj.Proxy, self.form.genColor, "SketchColor")
+            SheetMetalTools.taskConnectColor(obj.Proxy, self.form.bendColor, "BendLineColor")
+            SheetMetalTools.taskConnectColor(obj.Proxy, self.form.internalColor, "InternalColor")
+            SheetMetalTools.taskConnectCheck(obj, self.form.chkSketch, "GenerateSketch", self.chkSketchChange)
+            SheetMetalTools.taskConnectCheck(obj, self.form.chkSeparate, "SeparateSketchLayers", self.chkSketchChange)
+            SheetMetalTools.taskConnectCheck(obj, self.form.chkManualUpdate, "ManualRecompute", self.chkManualChanged)
+            SheetMetalTools.taskConnectSpin(obj, self.form.floatKFactor, "KFactor")
+            SheetMetalTools.taskConnectSpin(obj.Proxy, self.form.transSpin, "UnfoldTransparency", bindFunction = False)
             self.form.pushUnfold.clicked.connect(self.unfoldPressed)
             self.form.pushExport.clicked.connect(self.doExport)
             self.form.availableMds.currentIndexChanged.connect(self.availableMdsChacnge)
@@ -535,9 +535,9 @@ if SheetMetalTools.isGuiLoaded():
                 "Pixmap": os.path.join(
                     iconPath, "SheetMetal_Unfold.svg"
                 ),  # the name of a svg file available in the resources
-                "MenuText": FreeCAD.Qt.translate("SheetMetal", "Unfold"),
+                "MenuText": translate("SheetMetal", "Unfold"),
                 "Accel": "U",
-                "ToolTip": FreeCAD.Qt.translate(
+                "ToolTip": translate(
                     "SheetMetal",
                     "Flatten folded sheet metal object.\n"
                     "1. Select flat face on sheetmetal shape.\n"
@@ -579,9 +579,9 @@ if SheetMetalTools.isGuiLoaded():
                 "Pixmap": os.path.join(
                     iconPath, "SheetMetal_UnfoldUpdate.svg"
                 ),  # the name of a svg file available in the resources
-                "MenuText": FreeCAD.Qt.translate("SheetMetal", "Unfold Update"),
+                "MenuText": translate("SheetMetal", "Unfold Update"),
                 "Accel": "UU",
-                "ToolTip": FreeCAD.Qt.translate(
+                "ToolTip": translate(
                     "SheetMetal",
                     "Update all unfold objects.\n"
                 ),
@@ -607,9 +607,9 @@ if SheetMetalTools.isGuiLoaded():
                 "Pixmap": os.path.join(
                     iconPath, "SheetMetal_UnfoldUnattended.svg"
                 ),  # the name of a svg file available in the resources
-                "MenuText": FreeCAD.Qt.translate("SheetMetal", "Unattended Unfold"),
+                "MenuText": translate("SheetMetal", "Unattended Unfold"),
                 "Accel": "U",
-                "ToolTip": FreeCAD.Qt.translate(
+                "ToolTip": translate(
                     "SheetMetal",
                     "Flatten folded sheet metal object with default options\n"
                     "1. Select flat face on sheetmetal shape.\n"

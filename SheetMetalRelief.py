@@ -176,11 +176,11 @@ if SheetMetalTools.isGuiLoaded():
             self.obj = obj
             self.form = SheetMetalTools.taskLoadUI("SolidCornerReliefPanel.ui")
             obj.Proxy.addVerifyProperties(obj) # Make sure all properties are added
-            SheetMetalTools.taskConnectSelection(
+            self.selParams = SheetMetalTools.taskConnectSelection(
                 self.form.AddRemove, self.form.tree, self.obj, ["Vertex"], self.form.pushClearSel
             )
-            SheetMetalTools.taskConnectSpin(self, self.form.CornerSize, "relief")
-            # SheetMetalTools.taskConnectCheck(self, self.form.RefineCheckbox, "Refine")
+            SheetMetalTools.taskConnectSpin(obj, self.form.CornerSize, "relief")
+            # SheetMetalTools.taskConnectCheck(obj, self.form.RefineCheckbox, "Refine")
 
         def isAllowedAlterSelection(self):
             return True
@@ -189,12 +189,12 @@ if SheetMetalTools.isGuiLoaded():
             return True
 
         def accept(self):
-            SheetMetalTools.taskAccept(self, self.form.AddRemove)
+            SheetMetalTools.taskAccept(self)
             SheetMetalTools.taskSaveDefaults(self.obj, smSolidCornerReliefDefaultVars)
             return True
         
         def reject(self):
-            SheetMetalTools.taskReject(self, self.form.AddRemove)
+            SheetMetalTools.taskReject(self)
 
 
     class AddReliefCommandClass():

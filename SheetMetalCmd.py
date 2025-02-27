@@ -1966,28 +1966,12 @@ class SMBendWall:
             "ParametersPerforation",
         )
 
-        SheetMetalTools.smAddBoolProperty(
-            obj,
-            "OffsetFaceRefMode",
-            "Enable face reference for offset",
-            checkRefFace,
-            "ParametersEx"
-        )
-
         SheetMetalTools.smAddProperty(
             obj,
             "App::PropertyLinkSub",
             "OffsetFaceReference",
             "Face reference for offset",
             refAngOffset,
-            "ParametersEx"
-        )
-
-        SheetMetalTools.smAddBoolProperty(
-            obj,
-            "AngleFaceRefMode",
-            "Enable face reference for angle",
-            checkRefFace,
             "ParametersEx"
         )
 
@@ -2081,27 +2065,14 @@ class SMBendWall:
         # print(gap1_list, gap2_list)
 
         # Calculate the angle based on reference face:
-        if fp.AngleFaceRefMode == True and fp.AngleFaceReference != None:
+        if fp.AngleFaceReference is not None:
             smObj, smSelItemName = fp.baseObject
             smSelItemName = smSelItemName[0]
             smFace, refEdge, thkFace = GetSMComparisonFace(smObj,smSelItemName) # Get the sheet metal reference face
             refObj, refFace = fp.AngleFaceReference
 
             if "Plane" in refObj.TypeId:
-                #Create a reference rectangular face to use instead of a datum/origin plane
-                datump1 = FreeCAD.Vector(0, 0, 0) # Vertexes of the ref face
-                datump2 = FreeCAD.Vector(10, 0, 0)
-                datump3 = FreeCAD.Vector(10, 10, 0)
-                datump4 = FreeCAD.Vector(0, 10, 0)
-                datumEdge1 = Part.LineSegment(datump1, datump2).toShape() # Edges of the ref face
-                datumEdge2 = Part.LineSegment(datump2, datump3).toShape()
-                datumEdge3 = Part.LineSegment(datump3, datump4).toShape()
-                datumEdge4 = Part.LineSegment(datump4, datump1).toShape()
-                datumWire = Part.Wire([datumEdge1, datumEdge2, datumEdge3, datumEdge4])  # Wire of the ref face
-                datumFace = Part.Face(datumWire)  # Face of the ref face
-                datumFace.Placement = refObj.Shape.Placement  # Put the face on the same place of datum
-
-                refFace = datumFace
+                refFace = SheetMetalTools.smConvertPlaneToFace(refObj.Shape)
             else:
                 refFace = refFace[0]
                 refFace = refObj.Shape.getElement(refFace)
@@ -2109,36 +2080,26 @@ class SMBendWall:
             # Angle calculation
             angleParFace = relatAngleCalc(thkFace,refEdge,refFace,smFace)
 
-            fp.angle.Value = angleParFace + fp.RelativeAngleToRef.Value
+
+            angle = angleParFace + fp.RelativeAngleToRef.Value
 
             if fp.invert == True:
-                fp.angle.Value = 180 - angleParFace + fp.RelativeAngleToRef.Value
+                angle = 180 - angleParFace + fp.RelativeAngleToRef.Value
 
             if fp.SupplAngleRef == True: # Supplementary angle option
-                fp.angle.Value = 180 - fp.angle.Value + fp.RelativeAngleToRef.Value
+                angle = 180 - angle + fp.RelativeAngleToRef.Value
+            bendAList = [angle]
 
+        offsetValue = fp.offset.Value
         # Calculate the offset based on reference face:
-        if fp.BendType == "Offset" and fp.OffsetFaceRefMode == True and fp.OffsetFaceReference != None:
+        if fp.BendType == "Offset" and fp.OffsetFaceReference is not None:
             smObj, smSelItemName = fp.baseObject
             smSelItemName = smSelItemName[0]
             smFace, refEdge, thkFace = GetSMComparisonFace(smObj,smSelItemName) # Get the sheet metal reference face and edge
             refObj, refFace = fp.OffsetFaceReference
 
             if "Plane" in refObj.TypeId:
-                # Create a reference rectangular face to use instead of a datum/origin plane
-                datump1 = FreeCAD.Vector(0, 0, 0) # Vertexes of the ref face
-                datump2 = FreeCAD.Vector(10, 0, 0)
-                datump3 = FreeCAD.Vector(10, 10, 0)
-                datump4 = FreeCAD.Vector(0, 10, 0)
-                datumEdge1 = Part.LineSegment(datump1, datump2).toShape() # Edges of the ref face
-                datumEdge2 = Part.LineSegment(datump2, datump3).toShape()
-                datumEdge3 = Part.LineSegment(datump3, datump4).toShape()
-                datumEdge4 = Part.LineSegment(datump4, datump1).toShape()
-                datumWire = Part.Wire([datumEdge1, datumEdge2, datumEdge3, datumEdge4])  # Wire of the ref face
-                datumFace = Part.Face(datumWire)  # Face of the ref face
-                datumFace.Placement = refObj.Shape.Placement  # Put the face on the same place of datum
-                
-                refFace = datumFace
+                refFace = SheetMetalTools.smConvertPlaneToFace(refObj.Shape)
             else:
                 refFace = refFace[0]
                 refFace = refObj.Shape.getElement(refFace)
@@ -2146,12 +2107,10 @@ class SMBendWall:
             # Angle calculation
             angleParFace = relatAngleCalc(thkFace,refEdge,refFace,smFace)
             
-            angleParFace = angleParFace
-
-            if fp.invert == True:
+            if fp.invert:
                 angleParFace = 180 - angleParFace
             
-            if fp.SupplAngleRef == True: # Supplementary angle option
+            if fp.SupplAngleRef: # Supplementary angle option
                 angleParFace = 180 - angleParFace
 
             # Calculate the distance for the wall position:
@@ -2179,13 +2138,13 @@ class SMBendWall:
                 distOffsetOut = (thk + fp.OffsetTypeOffset.Value)/math.cos(wallThkAngle)
                 distWall = (((fp.radius.Value + thk) * math.sqrt(2 - 2 * math.cos(radAngle)))/2)/math.sin(halfSuplAngle) - distOffsetOut
 
-            if fp.invert == True and fp.OffsetType != "Material Outside":
+            if fp.invert and fp.OffsetType != "Material Outside":
                 complAngle = math.radians(90 - angleParFace) # Get radians of the complementary angle
                 distInvertComp = math.sin(complAngle) * (thk/math.cos(complAngle))
 
                 distWall = distWall + distInvertComp
 
-            fp.offset.Value = offsetFaceDistance(smFace, refFace, refEdge, thkFace) - distWall
+            offsetValue = offsetFaceDistance(smFace, refFace, refEdge, thkFace) - distWall
 
         for i, Length in enumerate(LengthList):
             s, f = smBend(
@@ -2207,7 +2166,7 @@ class SMBendWall:
                 extend1=extend1_list[i],
                 extend2=extend2_list[i],
                 kfactor=fp.kfactor,
-                offset=fp.offset.Value,
+                offset=offsetValue,
                 ReliefFactor=fp.ReliefFactor,
                 UseReliefFactor=fp.UseReliefFactor,
                 automiter=fp.AutoMiter,
@@ -2266,89 +2225,55 @@ if SheetMetalTools.isGuiLoaded():
             self.onBendOffset(checkRefFace) # Turn bend type to 'Offset', on case of automatic face reference selection
 
             # flange parameters connects
-            SheetMetalTools.taskConnectSelection(
+            self.selParams = SheetMetalTools.taskConnectSelection(
                 self.form.AddRemove, self.form.tree, self.obj, ["Edge"], self.form.pushClearSel)
-            SheetMetalTools.taskConnectEnum(self, self.form.BendType, "BendType", self.bendTypeUpdated)
-            SheetMetalTools.taskConnectSpin(self, self.form.Offset, "offset")
-            SheetMetalTools.taskConnectSpin(self, self.form.Radius, "radius")
-            SheetMetalTools.taskConnectSpin(self, self.form.Angle, "angle")
-            SheetMetalTools.taskConnectSpin(self, self.form.Length, "length")
-            SheetMetalTools.taskConnectEnum(self, self.form.LengthSpec, "LengthSpec")
-            SheetMetalTools.taskConnectCheck(self, self.form.UnfoldCheckbox, "unfold")
-            SheetMetalTools.taskConnectSpin(self, self.form.gap1, "gap1")
-            SheetMetalTools.taskConnectSpin(self, self.form.gap2, "gap2")
-            SheetMetalTools.taskConnectSpin(self, self.form.extend1, "extend1")
-            SheetMetalTools.taskConnectSpin(self, self.form.extend2, "extend2")
+            SheetMetalTools.taskConnectEnum(obj, self.form.BendType, "BendType", self.bendTypeUpdated)
+            SheetMetalTools.taskConnectSpin(obj, self.form.Offset, "offset")
+            SheetMetalTools.taskConnectSpin(obj, self.form.Radius, "radius")
+            SheetMetalTools.taskConnectSpin(obj, self.form.Angle, "angle")
+            SheetMetalTools.taskConnectSpin(obj, self.form.Length, "length")
+            SheetMetalTools.taskConnectEnum(obj, self.form.LengthSpec, "LengthSpec")
+            SheetMetalTools.taskConnectCheck(obj, self.form.UnfoldCheckbox, "unfold")
+            SheetMetalTools.taskConnectSpin(obj, self.form.gap1, "gap1")
+            SheetMetalTools.taskConnectSpin(obj, self.form.gap2, "gap2")
+            SheetMetalTools.taskConnectSpin(obj, self.form.extend1, "extend1")
+            SheetMetalTools.taskConnectSpin(obj, self.form.extend2, "extend2")
             # advanced flange parameters connects
             self.form.reliefTypeButtonGroup.buttonToggled.connect(self.reliefTypeUpdated)
-            SheetMetalTools.taskConnectSpin(self, self.form.reliefWidth, "reliefw")
-            SheetMetalTools.taskConnectSpin(self, self.form.reliefDepth, "reliefd")
-            SheetMetalTools.taskConnectCheck(self, self.form.autoMiterCheckbox, "AutoMiter", self.autoMiterChanged)
-            SheetMetalTools.taskConnectSpin(self, self.form.minGap, "minGap")
-            SheetMetalTools.taskConnectSpin(self, self.form.maxExDist, "maxExtendDist")
-            SheetMetalTools.taskConnectSpin(self, self.form.miterAngle1, "miterangle1")
-            SheetMetalTools.taskConnectSpin(self, self.form.miterAngle2, "miterangle2")
+            SheetMetalTools.taskConnectSpin(obj, self.form.reliefWidth, "reliefw")
+            SheetMetalTools.taskConnectSpin(obj, self.form.reliefDepth, "reliefd")
+            SheetMetalTools.taskConnectCheck(obj, self.form.autoMiterCheckbox, "AutoMiter", self.autoMiterChanged)
+            SheetMetalTools.taskConnectSpin(obj, self.form.minGap, "minGap")
+            SheetMetalTools.taskConnectSpin(obj, self.form.maxExDist, "maxExtendDist")
+            SheetMetalTools.taskConnectSpin(obj, self.form.miterAngle1, "miterangle1")
+            SheetMetalTools.taskConnectSpin(obj, self.form.miterAngle2, "miterangle2")
             # perforation
-            SheetMetalTools.taskConnectCheck(self, self.form.checkPerforate, "Perforate", self.perforateChanged)
-            SheetMetalTools.taskConnectSpin(self, self.form.perforateAngle, "PerforationAngle")            
-            SheetMetalTools.taskConnectSpin(self, self.form.perforateInitialCutLen, "PerforationInitialLength")            
-            SheetMetalTools.taskConnectSpin(self, self.form.perforateMaxCutLen, "PerforationMaxLength")            
-            SheetMetalTools.taskConnectSpin(self, self.form.perforateMaxTabLen, "NonperforationMaxLength")
+            SheetMetalTools.taskConnectCheck(obj, self.form.checkPerforate, "Perforate", self.perforateChanged)
+            SheetMetalTools.taskConnectSpin(obj, self.form.perforateAngle, "PerforationAngle")            
+            SheetMetalTools.taskConnectSpin(obj, self.form.perforateInitialCutLen, "PerforationInitialLength")            
+            SheetMetalTools.taskConnectSpin(obj, self.form.perforateMaxCutLen, "PerforationMaxLength")            
+            SheetMetalTools.taskConnectSpin(obj, self.form.perforateMaxTabLen, "NonperforationMaxLength")
 
-            # Connections for Offset face referenced mode
-            self.form.hideButtWorkaround02.clicked.connect(lambda: self.selectAngleOffsetGeo(self.form.OffsetFaceRef))
-            self.form.SelOffsetFace.released.connect(self.offsetFaceModeButton)
-            SheetMetalTools.taskConnectEnum(self, self.form.OffsetTypes, "OffsetType", self.updateForm)
-            SheetMetalTools.taskConnectSpin(self, self.form.OffsetTypeOffset, "OffsetTypeOffset", self.updateForm)
-
-            # Connections for Angle face referenced mode
-            self.form.hideButtWorkaround01.clicked.connect(lambda: self.selectAngleOffsetGeo(self.form.AngleFaceRef))
-            self.form.SelAngleFace.released.connect(self.angleFaceModeButton)
-            SheetMetalTools.taskConnectSpin(self, self.form.RelativeAngle, "RelativeAngleToRef", self.updateForm)
+            self.offsetRefSelParams = SheetMetalTools.taskConnectSelectionToggle(
+                self.form.SelOffsetFace, self.form.OffsetFaceRef, self.obj, 
+                "OffsetFaceReference", [("Plane", []), ["Face"]]
+            )
+            self.offsetRefSelParams.setVisibilityControlledWidgets(
+                [(self.form.frameOffType, True)], [(self.form.Offset, False)])
+            self.offsetRefSelParams.HideRefObject = False
+            SheetMetalTools.taskConnectEnum(obj, self.form.OffsetTypes, "OffsetType", self.updateForm)
+            SheetMetalTools.taskConnectSpin(obj, self.form.OffsetTypeOffset, "OffsetTypeOffset", self.updateForm)
+            self.angleRefSelParams = SheetMetalTools.taskConnectSelectionToggle(
+                self.form.SelAngleFace, self.form.AngleFaceRef, self.obj, 
+                "AngleFaceReference", [("Plane", []), ["Face"]]
+            )
+            self.angleRefSelParams.setVisibilityControlledWidgets(
+                [(self.form.frameRelatAngle, True)], [(self.form.Angle, False)])
+            self.angleRefSelParams.HideRefObject = False
+            SheetMetalTools.taskConnectSpin(obj, self.form.RelativeAngle, "RelativeAngleToRef", self.updateForm)
 
             # Button reversed wall:
             self.form.buttRevWall.clicked.connect(self.revWall) # Button click action
-
-        def selectAngleOffsetGeo(self, targetField): # Trigger selection of angle and offset reference geometry
-            """Trigger selection of angle and offset reference geometry"""
-            self.activeRefGeom = targetField # Store the target field
-            Gui.Selection.clearSelection()  # Clear previous selection
-            Gui.Selection.addObserver(self)  # Start observing selection
-            self.activeRefGeom.setText("Select a face as reference...")
-            self.obj.baseObject[0].ViewObject.show()
-            self.obj.ViewObject.hide()
-
-        def addSelection(self, document, object, subname, position): # Companion of "selectAngleOffsetGeo" function
-            """Called when a selection is made."""
-            selected_obj = FreeCAD.ActiveDocument.getObject(object)
-
-            if not selected_obj or not subname: # Debug if a user clicks empty space instead of a valid object
-                self.activeRefGeom.setText("Invalid selection. Select one face as reference")
-
-            if "Plane" in selected_obj.TypeId or "Face" in subname:
-                selected_text = f"{selected_obj.Name}.{subname}"
-                try:
-                    if self.activeRefGeom:
-                        self.activeRefGeom.setText(selected_text)
-                        if self.activeRefGeom.objectName() == "AngleFaceRef":
-                            self.obj.AngleFaceReference = selected_obj, subname # Fill the property of geometry reference for Angle
-                            Gui.Selection.removeObserver(self) # Stop observing after selection
-                            self.activeRefGeom = None
-                            self.obj.baseObject[0].ViewObject.hide()
-                            self.obj.ViewObject.show()
-                        elif self.activeRefGeom.objectName() == "OffsetFaceRef":
-                            self.obj.OffsetFaceReference = selected_obj, subname # Fill the property of geometry reference for Offset
-                            Gui.Selection.removeObserver(self) # Stop observing after selection
-                            self.activeRefGeom = None
-                            self.obj.baseObject[0].ViewObject.hide()
-                            self.obj.ViewObject.show()
-                        
-                        self.updateForm()
-                except:
-                    pass
-            else:
-                if Gui.Control.activeDialog():
-                    self.activeRefGeom.setText("Invalid. Select one face as reference")
 
         def onBendOffset(self,test): # Turn bend type to 'Offset', on case of automatic face reference selection
             if test:
@@ -2359,28 +2284,6 @@ if SheetMetalTools.isGuiLoaded():
             self.obj.invert = not self.obj.invert
             self.updateForm()
         
-        def angleFaceModeButton(self): # Make the angle face button check angle face mode
-            self.obj.AngleFaceRefMode = not self.obj.AngleFaceRefMode
-
-            if self.obj.AngleFaceRefMode == False:
-                self.obj.baseObject[0].ViewObject.hide()
-                self.obj.ViewObject.show()
-            else:
-                self.form.hideButtWorkaround01.click()
-            
-            self.updateForm()
-
-        def offsetFaceModeButton(self): # Make the offset face button check offset face mode
-            self.obj.OffsetFaceRefMode = not self.obj.OffsetFaceRefMode
-
-            if self.obj.OffsetFaceRefMode == False:
-                self.obj.baseObject[0].ViewObject.hide()
-                self.obj.ViewObject.show()
-            else:
-                self.form.hideButtWorkaround02.click()
-
-            self.updateForm()
-     
         def isAllowedAlterSelection(self):
             return True
 
@@ -2397,7 +2300,7 @@ if SheetMetalTools.isGuiLoaded():
 
             # Updates of offset face reference mode
             self.form.frameOffFaceRef.setVisible(self.obj.BendType == "Offset")
-            self.form.frameOffType.setVisible(self.obj.BendType == "Offset" and self.obj.OffsetFaceRefMode == True)
+            self.form.frameOffType.setVisible(self.obj.BendType == "Offset" and self.obj.OffsetFaceReference is not None)
 
         def reliefTypeUpdated(self):
             self.obj.reliefType = (
@@ -2415,36 +2318,13 @@ if SheetMetalTools.isGuiLoaded():
             else:
                 self.form.reliefRound.setChecked(True)
 
-            # Make the button of angle face reference mode act like a checkbox:
-            self.form.SelAngleFace.setChecked(self.obj.AngleFaceRefMode)
-            self.form.frameRelatAngle.setVisible(self.obj.AngleFaceRefMode)
-
-            # Make the button of offset face reference mode act like a checkbox:
-            self.form.SelOffsetFace.setChecked(self.obj.OffsetFaceRefMode)
-            self.form.frameOffType.setVisible(self.obj.OffsetFaceRefMode)
-
-            # Disable offset spinbox when offset face mode is on:
-            self.form.Offset.setEnabled(not self.obj.OffsetFaceRefMode)
-
-            # Disable angle spinbox when angle face mode is on:
-            self.form.Angle.setEnabled(not self.obj.AngleFaceRefMode)
-
             # Button flip the wall - updates check:
             self.form.buttRevWall.setChecked(self.obj.invert)
 
             # Updates of offset face reference mode
             self.form.frameOffFaceRef.setVisible(self.obj.BendType == "Offset")
-            self.form.frameOffType.setVisible(self.obj.BendType == "Offset" and self.obj.OffsetFaceRefMode == True)
-            self.form.frameOffOff.setVisible(self.obj.BendType == "Offset" and self.obj.OffsetType == "Offset" and self.obj.OffsetFaceRefMode == True)
-
-            # Fill property of angle and offset face reference:
-            if self.activeRefGeom == None and self.obj.AngleFaceReference != None:
-                strAngRef = f"{self.obj.AngleFaceReference[0].Name}.{self.obj.AngleFaceReference[1][0]}"
-                self.form.AngleFaceRef.setText(strAngRef)
-
-            if self.activeRefGeom == None and self.obj.OffsetFaceReference != None:
-                strOffsetRef = f"{self.obj.OffsetFaceReference[0].Name}.{self.obj.OffsetFaceReference[1][0]}"
-                self.form.OffsetFaceRef.setText(strOffsetRef)
+            self.form.frameOffType.setVisible(self.obj.BendType == "Offset" and self.obj.OffsetFaceReference is not None)
+            self.form.frameOffOff.setVisible(self.form.frameOffType.isVisible() and self.obj.OffsetType == "Offset")
 
             self.obj.recompute() # Updates the angle in model
             self.obj.Document.recompute()
@@ -2459,12 +2339,12 @@ if SheetMetalTools.isGuiLoaded():
             self.form.groupManualMiter.setEnabled(not isAutoMiter)
              
         def accept(self):
-            SheetMetalTools.taskAccept(self, self.form.AddRemove)
+            SheetMetalTools.taskAccept(self)
             SheetMetalTools.taskSaveDefaults(self.obj, smAddWallDefaultVars)
             return True
 
         def reject(self):
-            SheetMetalTools.taskReject(self, self.form.AddRemove)
+            SheetMetalTools.taskReject(self)
 
     class AddWallCommandClass:
         """Add Wall command"""
