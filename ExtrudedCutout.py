@@ -438,9 +438,9 @@ if SheetMetalTools.isGuiLoaded():
             obj.Proxy.addVerifyProperties(obj) # Make sure all properties are added
             self.updateDisplay()
 
-            SheetMetalTools.taskConnectSelectionSingle(
+            self.faceSelParams = SheetMetalTools.taskConnectSelectionSingle(
                 self.form.pushFace, self.form.txtFace, obj, "baseObject", ["Face"])
-            SheetMetalTools.taskConnectSelectionSingle(
+            self.sketchSelParams = SheetMetalTools.taskConnectSelectionSingle(
                 self.form.pushSketch, self.form.txtSketch, obj, "Sketch", ("Sketcher::SketchObject", []))
             self.form.groupCutSide.buttonToggled.connect(self.cutSideChanged)
             SheetMetalTools.taskConnectEnum(obj, self.form.comboCutoutType, "CutType", 

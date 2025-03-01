@@ -211,7 +211,12 @@ class SMSketchOnSheet:
         obj.addProperty(
             "App::PropertyFloatConstraint", "kfactor", "Parameters", _tip_
         ).kfactor = (0.5, 0.0, 1.0, 0.01)
+        self.addVerifyProperties(obj)
         obj.Proxy = self
+
+    def addVerifyProperties(self, obj):
+        '''"Add new properties to the object here and not on init"'''
+        pass
 
     def execute(self, fp):
         '''"Print a short message when doing a recomputation, this method is mandatory"'''
@@ -234,110 +239,44 @@ if SheetMetalTools.isGuiLoaded():
 
     icons_path = SheetMetalTools.icons_path
 
-
-    class SMSketchOnSheetVP:
-        "A View provider that nests children objects under the created one"
-
-        def __init__(self, obj):
-            obj.Proxy = self
-            self.Object = obj.Object
-
-        def attach(self, obj):
-            self.Object = obj.Object
-            return
-
-        def updateData(self, fp, prop):
-            return
-
-        def getDisplayModes(self, obj):
-            modes = []
-            return modes
-
-        def setDisplayMode(self, mode):
-            return mode
-
-        def onChanged(self, vp, prop):
-            return
-
-        def __getstate__(self):
-            #        return {'ObjectName' : self.Object.Name}
-            return None
-
-        def __setstate__(self, state):
-            self.loads(state)
-
-        # dumps and loads replace __getstate__ and __setstate__ post v. 0.21.2
-        def dumps(self):
-            return None
-
-        def loads(self, state):
-            if state is not None:
-                import FreeCAD
-
-                doc = FreeCAD.ActiveDocument  # crap
-                self.Object = doc.getObject(state["ObjectName"])
-
-        def claimChildren(self):
-            objs = []
-            if hasattr(self.Object, "baseObject"):
-                objs.append(self.Object.baseObject[0])
-                objs.append(self.Object.Sketch)
-            return objs
-
+    class SMSketchOnSheetVP(SheetMetalTools.SMViewProvider):
+        ''' Part WB style ViewProvider '''        
         def getIcon(self):
             return os.path.join(icons_path, "SheetMetal_SketchOnSheet.svg")
+        
+        def getTaskPanel(self, obj):
+            return SMWrappedCutoutTaskPanel(obj)
 
+    class SMSketchOnSheetPDVP(SMSketchOnSheetVP):
+        ''' Part Design WB style ViewProvider - backward compatibility only''' 
 
-    class SMSketchOnSheetPDVP:
-        "A View provider that nests children objects under the created one"
+    class SMWrappedCutoutTaskPanel:
+        '''A TaskPanel for the Sheetmetal Wrapped Cutout'''
 
         def __init__(self, obj):
-            obj.Proxy = self
-            self.Object = obj.Object
+            self.obj = obj
+            self.form = SheetMetalTools.taskLoadUI("WrappedCutoutPanel.ui")
+            obj.Proxy.addVerifyProperties(obj) # Make sure all properties are added
 
-        def attach(self, obj):
-            self.Object = obj.Object
-            return
+            self.faceSelParams = SheetMetalTools.taskConnectSelectionSingle(
+                self.form.pushFace, self.form.txtFace, obj, "baseObject", ["Face"])
+            self.sketchSelParams = SheetMetalTools.taskConnectSelectionSingle(
+                self.form.pushSketch, self.form.txtSketch, obj, "Sketch", ("Sketcher::SketchObject", []))
+            SheetMetalTools.taskConnectSpin(obj, self.form.floatKFactor, "kfactor")
+ 
+        def isAllowedAlterSelection(self):
+            return True
 
-        def updateData(self, fp, prop):
-            return
+        def isAllowedAlterView(self):
+            return True
 
-        def getDisplayModes(self, obj):
-            modes = []
-            return modes
-
-        def setDisplayMode(self, mode):
-            return mode
-
-        def onChanged(self, vp, prop):
-            return
-
-        def __getstate__(self):
-            #        return {'ObjectName' : self.Object.Name}
-            return None
-
-        def __setstate__(self, state):
-            self.loads(state)
-
-        # dumps and loads replace __getstate__ and __setstate__ post v. 0.21.2
-        def dumps(self):
-            return None
-
-        def loads(self, state):
-            if state is not None:
-                import FreeCAD
-
-                doc = FreeCAD.ActiveDocument  # crap
-                self.Object = doc.getObject(state["ObjectName"])
-
-        def claimChildren(self):
-            objs = []
-            if hasattr(self.Object, "Sketch"):
-                objs.append(self.Object.Sketch)
-            return objs
-
-        def getIcon(self):
-            return os.path.join(icons_path, "SheetMetal_SketchOnSheet.svg")
+        def accept(self):
+            SheetMetalTools.taskAccept(self)
+            self.obj.Sketch.ViewObject.hide() # Hide sketch after click OK button
+            return True
+        
+        def reject(self):
+            SheetMetalTools.taskReject(self)
 
 
     class AddSketchOnSheetCommandClass:
@@ -360,31 +299,16 @@ if SheetMetalTools.isGuiLoaded():
             }
 
         def Activated(self):
-            doc = FreeCAD.ActiveDocument
-            view = Gui.ActiveDocument.ActiveView
-            activeBody = None
-            sel = Gui.Selection.getSelectionEx()
-            selobj = sel[0].Object
-            viewConf = SheetMetalTools.GetViewConfig(selobj)
-            if hasattr(view, "getActiveObject"):
-                activeBody = view.getActiveObject("pdbody")
-            if not SheetMetalTools.smIsOperationLegal(activeBody, selobj):
+            sel = Gui.Selection.getSelectionEx()[0]
+            selobj = Gui.Selection.getSelectionEx()[0].Object
+            selected_faces = sel.SubElementNames[0]
+            selected_sketch = Gui.Selection.getSelectionEx()[1].Object
+            newObj, activeBody = SheetMetalTools.smCreateNewObject(selobj, "WrappedCutout")
+            if newObj is None:
                 return
-            doc.openTransaction("SketchOnSheet")
-            if activeBody is None or not SheetMetalTools.smIsPartDesign(selobj):
-                a = doc.addObject("Part::FeaturePython", "SketchOnSheet")
-                SMSketchOnSheet(a, selobj, sel[0].SubElementNames, sel[1].Object)
-                SMSketchOnSheetVP(a.ViewObject)
-            else:
-                # FreeCAD.Console.PrintLog("found active body: " + activeBody.Name)
-                a = doc.addObject("PartDesign::FeaturePython", "SketchOnSheet")
-                SMSketchOnSheet(a, selobj, sel[0].SubElementNames, sel[1].Object)
-                SMSketchOnSheetPDVP(a.ViewObject)
-                activeBody.addObject(a)
-            SheetMetalTools.SetViewConfig(a, viewConf)
-            doc.recompute()
-            doc.commitTransaction()
-            return
+            SMSketchOnSheet(newObj, selobj, selected_faces, selected_sketch)
+            SMSketchOnSheetVP(newObj.ViewObject)
+            SheetMetalTools.smAddNewObject(selobj, newObj, activeBody, SMWrappedCutoutTaskPanel)
 
         def IsActive(self):
             if len(Gui.Selection.getSelection()) < 2:
