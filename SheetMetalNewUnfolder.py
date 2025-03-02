@@ -732,7 +732,7 @@ class BendAllowanceCalculator:
             if not next_kf_value:
                 errmsg = (
                     "material definition sheet has an empty "
-                    f"cell in the K-factors column (cell B{i+2})"
+                    f"cell in the K-factors column (cell B{i + 2})"
                 )
                 raise ValueError(errmsg)
             k_factor_list.append(float(next_kf_value))
@@ -816,7 +816,11 @@ class Edge2DCleanup:
                 if isinstance(edge.Curve, Part.BSplineCurve):
                     bspline = edge
                 else:
-                    bspline = edge.toNurbs().Edges[0]
+                    # some edge types (such as elliptical arcs) don't support the
+                    # .toBSpline() method, so we have to use .toNurbs().
+                    # However, when the latter is called on a Part::BezierCurve,
+                    # the returned bspline won't have the toBiArcs() method.
+                    bspline = edge.toBSpline().Edges[0]
                 new_edge, max_err = Edge2DCleanup.bspline_to_line(bspline)
                 if max_err < tolerance:
                     new_edge_list.append(new_edge)
@@ -825,6 +829,8 @@ class Edge2DCleanup:
                 if max_err < tolerance:
                     new_edge_list.append(new_edge)
                     continue
+                if not hasattr(bspline, "toBiArcs"):
+                    bspline = edge.toBSpline()
                 new_edge_list.extend(
                     a.toShape().Edges[0] for a in bspline.Curve.toBiArcs(tolerance)
                 )
@@ -1279,7 +1285,7 @@ def unfold(
             ]
         except Exception as E:
             msg = (
-                f"failed to unroll a cylindrical face (Face{e[1]+1})"
+                f"failed to unroll a cylindrical face (Face{e[1] + 1})"
                 + "\n"
                 + f"Original exception: {E}\n"
             )
