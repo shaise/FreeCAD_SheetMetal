@@ -222,6 +222,8 @@ if isGuiLoaded():
     # Task panel helper code
     def taskPopulateSelectionList(qwidget, baseObject):
         qwidget.clear()
+        if baseObject is None:
+            return
         obj, items = baseObject
         if not isinstance(items, list):
             items = [items]
@@ -247,10 +249,11 @@ if isGuiLoaded():
         if sp.SelectState:
             if sp.hideObject:
                 sp.obj.Visibility=False
-            sp.ObjWasVisible = baseObj[0].Visibility    
-            baseObj[0].Visibility=True
             Gui.Selection.clearSelection()
-            smSelectSubObjects(baseObj[0], baseObj[1])
+            if baseObj is not None:
+                sp.ObjWasVisible = baseObj[0].Visibility    
+                baseObj[0].Visibility=True
+                smSelectSubObjects(baseObj[0], baseObj[1])
             # Gui.Selection.addSelection(baseObj[0],baseObj[1]) # does not work on binder
             smSelectGreedy()
             sp.addRemoveButton.setText(translatedPreviewText)
