@@ -88,14 +88,11 @@ In engineering mode, such "non-visually-inspectable" values are not assigned wit
 3. Select `enabled` in `Engineering UX Mode` field.
 
 # Installation
-For installation and how to use, please visit:  
-http://theseger.com/projects/2015/06/sheet-metal-addon-for-freecad/  
-Starting from FreeCAD 0.17 it can be installed via the [Addon Manager](https://github.com/FreeCAD/FreeCAD-addons) (from Tools menu)
+SheetMetal WB can be installed via the [Addon Manager](https://github.com/FreeCAD/FreeCAD-addons) (from Tools menu)
 
 #### References
 * Development repo: https://github.com/shaise/FreeCAD_SheetMetal  
 * FreeCAD wiki page: https://www.freecadweb.org/wiki/SheetMetal_Workbench  
-* Authors webpage: http://theseger.com/projects/2015/06/sheet-metal-addon-for-freecad/  
 * FreeCAD Forum announcement/discussion [thread](https://forum.freecadweb.org/viewtopic.php?f=3&t=60818) 
 
 #### Release notes:
