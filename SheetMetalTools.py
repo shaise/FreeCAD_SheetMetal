@@ -355,6 +355,7 @@ if isGuiLoaded():
         if selobj is None:
             return
         
+        selobj, selSubNames = smUpdateLinks(sp.obj, selobj, selSubNames)
         baseObject = selobj if sp.allowAllTypes() else (selobj, selSubNames)
         setattr(sp.obj, sp.SelPropertyName, baseObject)
         if sp.ValueChangedCallback is not None:
@@ -708,7 +709,7 @@ def smGetParentBody(obj):
         return obj.getParent()
     if hasattr(obj, "getParents"): # probably FreeCadLink version
         if len(obj.getParents()) == 0:
-            return False
+            return None
         return obj.getParents()[0][0]
     return None
 
@@ -786,6 +787,16 @@ def smIsParallel(v1, v2):
 def smIsNormal(v1, v2):
     return abs(v1.dot(v2)) < smEpsilon
 
+def smUpdateLinks(obj, selobj, selSubNames):
+    ''' Update the links of a selected object to the proper scope of an object '''
+    body1 = smGetParentBody(selobj)
+    if body1 is None:
+        return selobj, selSubNames
+    body2 = smGetParentBody(obj)
+    if body2 is body1:
+        return selobj, selSubNames
+    return body1, [f'{selobj.Name}.{subName}' for subName in selSubNames]
+    
 def smAddProperty(obj, proptype, name, proptip, defval=None, paramgroup="Parameters", 
                   replacedname = None, readOnly = False, isHiddden = False, attribs = 0):
     """
@@ -936,6 +947,14 @@ def smIsEqualAngle(ang1, ang2, p=5):
 def smIsNetworkxAvailable():
     spec = importlib.util.find_spec("networkx")
     return spec is not None
+
+def smGetSubElementName(elementName : str) -> tuple:
+    '''Get the object and the sub element name from a string (e.g. "obj.subobj" or "subobj")'''
+    elementNames = elementName.split('.')
+    if len(elementNames) == 1:
+        return None, elementName
+    return FreeCAD.ActiveDocument.getObject(elementNames[0]), elementNames[1]
+
 
 def smConvertPlaneToFace(planeShape):
     '''Create a reference rectangular face to use instead of a datum/origin plane'''

@@ -113,6 +113,7 @@ class SMUnfold:
     ''' Class object for the unfold command '''
     def __init__(self, obj, selobj, sel_elements):
         '''"Add wall or Wall with radius bend"'''
+        selobj, sel_elements = SheetMetalTools.smUpdateLinks(obj, selobj, sel_elements)
         SheetMetalTools.smAddProperty(
             obj,
             "App::PropertyLinkSub",
@@ -186,13 +187,20 @@ class SMUnfold:
             "Hidden",
             attribs = 8, # Output only - no recompute if changed
         )
+        # SheetMetalTools.smAddProperty(
+        #     obj,
+        #     "App::PropertyBool",
+        #     "DetachFromBody",
+        #     translate
+        #     ( "SheetMetal", "Make unfolded shape independent of the object's body"),
+        #     False
+        # )
 
     def getElementMapVersion(self, _fp, ver, _prop, restored):
         if not restored:
             return smElementMapVersion + ver
         
     def onChanged(self, obj, prop):
-        # print("====>", obj.Name, "/", prop)
         if prop == "Visibility":
             isVisible = obj.Visibility
             visibleSketches = obj.Proxy.visibleSketches if isVisible else []
@@ -208,7 +216,7 @@ class SMUnfold:
             if not isVisible:
                 obj.Proxy.visibleSketches = visibleSketches
 
-    def newUnfolder(self, obj):
+    def newUnfolder(self, obj, baseObject, baseFace):
         ''' Use new unfolder system '''
         FreeCAD.Console.PrintMessage("Using V2 unfolding system\n")
         if obj.MaterialSheet in ["_manual", "_none"]:
@@ -217,7 +225,7 @@ class SMUnfold:
             sheet = FreeCAD.ActiveDocument.getObject(obj.MaterialSheet)
             bac = BendAllowanceCalculator.from_spreadsheet(sheet)
         sel_face, unfolded_shape, bend_lines, root_normal = SheetMetalNewUnfolder.getUnfold(
-            bac, obj.baseObject[0], obj.baseObject[1][0]
+            bac, baseObject, baseFace
         )
 
         sketches = []
@@ -235,7 +243,7 @@ class SMUnfold:
             )
         return unfolded_shape, sketches
 
-    def oldUnfolder(self, obj):
+    def oldUnfolder(self, obj, baseObject, baseFace):
         ''' Use old unfolder system '''
         FreeCAD.Console.PrintMessage("Using V1 unfolding system\n")
         kFactorTable = {1: obj.KFactor}
@@ -244,7 +252,7 @@ class SMUnfold:
             kFactorTable = lookupTable.k_factor_lookup
 
         shape, foldComp, norm, _thename, _err_cd, _fSel, _obN = SheetMetalUnfolder.getUnfold(
-            kFactorTable, obj.baseObject[0], obj.baseObject[1][0], obj.KFactorStandard
+            kFactorTable, baseObject, baseFace, obj.KFactorStandard
         )
 
         sketches = []
@@ -264,11 +272,13 @@ class SMUnfold:
     def execute(self, fp):
         '''"Print a short message when doing a recomputation, this method is mandatory"'''
         self.addVerifyProperties(fp)
-
+        baseObj, baseFace = SheetMetalTools.smGetSubElementName(fp.baseObject[1][0])
+        if baseObj is None:
+            baseObj = fp.baseObject[0]
         if not NewUnfolderAvailable or SheetMetalTools.use_old_unfolder():
-            shape, sketches = self.oldUnfolder(fp)
+            shape, sketches = self.oldUnfolder(fp, baseObj, baseFace)
         else:
-            shape, sketches = self.newUnfolder(fp)
+            shape, sketches = self.newUnfolder(fp, baseObj, baseFace)
      
         fp.Shape = shape
         parent = SheetMetalTools.smGetParentBody(fp)
@@ -548,7 +558,9 @@ if SheetMetalTools.isGuiLoaded():
         def Activated(self):
             sel = Gui.Selection.getSelectionEx()[0]
             selobj = sel.Object
-            newObj, activeBody = SheetMetalTools.smCreateNewObject(selobj, "Unfold")
+            selparent = SheetMetalTools.smGetParentBody(selobj)
+            name = "Unfold" if selparent is None else f"{selparent.Label}_Unfold"
+            newObj, activeBody = SheetMetalTools.smCreateNewObject(selobj, name, False)
             if newObj is None:
                 return
             SMUnfold(newObj, selobj, sel.SubElementNames)
@@ -620,7 +632,9 @@ if SheetMetalTools.isGuiLoaded():
         def Activated(self):
             sel = Gui.Selection.getSelectionEx()[0]
             selobj = sel.Object
-            newObj, activeBody = SheetMetalTools.smCreateNewObject(selobj, "Unfold", False)
+            selparent = SheetMetalTools.smGetParentBody(selobj)
+            name = "Unfold" if selparent is None else f"{selparent.Label}_Unfold"
+            newObj, activeBody = SheetMetalTools.smCreateNewObject(selobj, name, False)
             if newObj is None:
                 return
             SMUnfold(newObj, selobj, sel.SubElementNames)

@@ -96,6 +96,8 @@ SheetMetal WB can be installed via the [Addon Manager](https://github.com/FreeCA
 * FreeCAD Forum announcement/discussion [thread](https://forum.freecadweb.org/viewtopic.php?f=3&t=60818) 
 
 #### Release notes:
+* V0.7.22 18 Mar 2025:  Detach unfolded object from Body.  
+                      - Improve bezier conversion to arcs by [@alexneufeld][alexneufeld].  
 * V0.7.21 01 Mar 2025:  Add Task-Panel to Wrapped Cutout tool.  
 * V0.7.20 27 Feb 2025:  Improve sheetmetal gui tools.  
                       - Add Task-Panel to forming tool.  
