@@ -633,10 +633,12 @@ if SheetMetalTools.isGuiLoaded():
             sel = Gui.Selection.getSelectionEx()[0]
             selobj = sel.Object
             selparent = SheetMetalTools.smGetParentBody(selobj)
-            name = "Unfold" if selparent is None else f"{selparent.Label}_Unfold"
+            name = "Unfold" if selparent is None else f"{selparent.Name}_Unfold"
+            label = "Unfold" if selparent is None else f"{selparent.Label}_Unfold"
             newObj, activeBody = SheetMetalTools.smCreateNewObject(selobj, name, False)
             if newObj is None:
                 return
+            newObj.Label = label
             SMUnfold(newObj, selobj, sel.SubElementNames)
             SMUnfoldViewProvider(newObj.ViewObject)
             SheetMetalTools.smAddNewObject(selobj, newObj, activeBody)
