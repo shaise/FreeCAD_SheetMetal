@@ -43,7 +43,15 @@ except ImportError:
         "Consider checking that it is installed, "
         "or reinstalling the SheetMetal workbench using the addon manager\n"
     )
-
+try:
+    test_graph = nx.Graph
+except AttributeError:
+    FreeCAD.Console.PrintUserError(
+        "The NetworkX Python package is version "
+        + str(nx.__version__)
+        + "\n"
+        + "Consider checking that it is at least version 3.4.2\n "
+    )
 
 # we need to VERY CAREFULLY choose multiple different 'epsilon' values for
 # different types of numerical comparisons

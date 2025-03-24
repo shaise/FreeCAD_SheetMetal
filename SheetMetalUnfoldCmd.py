@@ -46,8 +46,12 @@ if sys.version_info.major == 3 and sys.version_info.minor < 10:
     )
 elif SheetMetalTools.smIsNetworkxAvailable():
     import SheetMetalNewUnfolder
-    from SheetMetalNewUnfolder import BendAllowanceCalculator
-    NewUnfolderAvailable = True
+    import networkx as nx
+    if not hasattr(nx, "Graph"):
+        NewUnfolderAvailable = False
+    else:
+        from SheetMetalNewUnfolder import BendAllowanceCalculator
+        NewUnfolderAvailable = True
 else:
     NewUnfolderAvailable = False
     FreeCAD.Console.PrintWarning(
