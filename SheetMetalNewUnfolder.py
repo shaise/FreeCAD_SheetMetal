@@ -812,6 +812,28 @@ class Edge2DCleanup:
         return arc, max_err
 
     @staticmethod
+    def curve_to_bisected_arcs(edge: Part.Edge, tolerance: float) -> list[Part.Edge]:
+        """For a curved edge that isn't a straight line or circular arc,
+        choose the best available method to convert it to a series of connected arcs."""
+        if edge.Curve.TypeId == "Part::GeomBSplineCurve":
+            c = edge.Curve
+        elif edge.Curve.TypeId == "Part::GeomBezierCurve":
+            c = edge.Curve.toBSpline()
+        elif edge.Curve.TypeId in (
+            "Part::GeomParabola",
+            "Part::GeomEllipse",
+            "Part::GeomHyperbola",
+        ):
+            c = edge.toNurbs().Edges[0].Curve
+        else:
+            errmsg = (
+                f"Unhandled curve type found during edge cleanup: {edge.Curve.TypeId}"
+            )
+            raise RuntimeError(errmsg)
+        arcs = c.toBiArcs(tolerance)
+        return [a.toShape().Edges[0] for a in arcs]
+
+    @staticmethod
     def eliminate_bsplines(
         sketch: list[Part.Edge], tolerance: float
     ) -> list[Part.Edge]:
@@ -821,26 +843,16 @@ class Edge2DCleanup:
             if edge.Curve.TypeId in ["Part::GeomLine", "Part::GeomCircle"]:
                 new_edge_list.append(edge)
             else:
-                if isinstance(edge.Curve, Part.BSplineCurve):
-                    bspline = edge
-                else:
-                    # some edge types (such as elliptical arcs) don't support the
-                    # .toBSpline() method, so we have to use .toNurbs().
-                    # However, when the latter is called on a Part::BezierCurve,
-                    # the returned bspline won't have the toBiArcs() method.
-                    bspline = edge.toBSpline().Edges[0]
-                new_edge, max_err = Edge2DCleanup.bspline_to_line(bspline)
+                new_edge, max_err = Edge2DCleanup.bspline_to_line(edge)
                 if max_err < tolerance:
                     new_edge_list.append(new_edge)
                     continue
-                new_edge, max_err = Edge2DCleanup.bspline_to_arc(bspline)
+                new_edge, max_err = Edge2DCleanup.bspline_to_arc(edge)
                 if max_err < tolerance:
                     new_edge_list.append(new_edge)
                     continue
-                if not hasattr(bspline, "toBiArcs"):
-                    bspline = edge.toBSpline()
                 new_edge_list.extend(
-                    a.toShape().Edges[0] for a in bspline.Curve.toBiArcs(tolerance)
+                    Edge2DCleanup.curve_to_bisected_arcs(edge, tolerance)
                 )
         return new_edge_list
 
