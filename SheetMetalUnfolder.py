@@ -119,7 +119,12 @@ import SheetMetalTools
 try:
     from TechDraw import projectEx
 except ImportError:
-    from Drawing import projectEx
+    try:
+        from Drawing import projectEx
+    except ImportError:
+        FreeCAD.Console.PrintWarning(
+            "This version of FreeCAD cannot create a projected sketch of the unfolded model\n"
+        )
 
 from lookup import get_val_from_range
 
