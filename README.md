@@ -96,6 +96,9 @@ SheetMetal WB can be installed via the [Addon Manager](https://github.com/FreeCA
 * FreeCAD Forum announcement/discussion [thread](https://forum.freecadweb.org/viewtopic.php?f=3&t=60818) 
 
 #### Release notes:
+* V0.7.23 24 Jun 2025:  Fix problem with object transform.  
+                      - NetworkX compatibility fix by [@Syres916][Syres916].  
+                      - Separation of Name and Label for Unfold by [@GS90][GS90].  
 * V0.7.22 18 Mar 2025:  Detach unfolded object from Body.  
                       - Improve bezier conversion to arcs by [@alexneufeld][alexneufeld].  
 * V0.7.21 01 Mar 2025:  Add Task-Panel to Wrapped Cutout tool.  

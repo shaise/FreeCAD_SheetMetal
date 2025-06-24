@@ -657,6 +657,8 @@ if isGuiLoaded():
             return objs
 
         def setEdit(self, vobj, mode):
+            if (mode != 0):
+                return None
             if not hasattr(self, "getTaskPanel"):
                 return False
             taskd = self.getTaskPanel(vobj.Object)
