@@ -179,6 +179,7 @@ class SMBaseBend:
 ##########################################################################################################
 
 if SheetMetalTools.isGuiLoaded():
+    from PySide import QtGui
     from FreeCAD import Gui
 
     ##########################################################################################################
@@ -211,6 +212,8 @@ if SheetMetalTools.isGuiLoaded():
         def __init__(self, obj):
             self.obj = obj
             self.form = SheetMetalTools.taskLoadUI("CreateBaseShape.ui")
+            self.form.setWindowIcon(QtGui.QIcon(
+                    os.path.join(icons_path, 'SheetMetal_AddBase.svg')))
             obj.Proxy.addVerifyProperties(obj) # Make sure all properties are added
             self.updateDisplay()
             SheetMetalTools.taskConnectSelectionSingle(

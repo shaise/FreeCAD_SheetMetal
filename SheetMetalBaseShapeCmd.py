@@ -230,6 +230,8 @@ if SheetMetalTools.isGuiLoaded():
             QtCore.QDir.addSearchPath('Icons', icons_path)
             path = os.path.join(panels_path, 'BaseShapeOptions.ui')
             self.form = Gui.PySideUic.loadUi(path)
+            self.form.setWindowIcon(QtGui.QIcon(
+                    os.path.join(icons_path, "SheetMetal_AddBaseShape.svg")))
             self.formReady = False
             self.firstTime = False
             self.selOrigButton = None

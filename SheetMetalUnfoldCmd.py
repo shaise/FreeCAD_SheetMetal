@@ -347,6 +347,8 @@ if SheetMetalTools.isGuiLoaded():
             QtCore.QDir.addSearchPath('Icons', SheetMetalTools.icons_path)
             self.obj = obj
             self.form = SheetMetalTools.taskLoadUI("UnfoldOptions.ui")
+            self.form.setWindowIcon(QtGui.QIcon(
+                    os.path.join(SheetMetalTools.icons_path, "SheetMetal_Unfold.svg")))
             obj.Proxy.addVerifyProperties(obj) # Make sure all properties are added
             self.setupUi(obj)
 

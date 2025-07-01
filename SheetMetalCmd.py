@@ -2195,6 +2195,7 @@ class SMBendWall:
 
 if SheetMetalTools.isGuiLoaded():
     import os
+    from PySide import QtGui
     from FreeCAD import Gui
 
     icons_path = SheetMetalTools.icons_path
@@ -2219,6 +2220,8 @@ if SheetMetalTools.isGuiLoaded():
             QtCore.QDir.addSearchPath('Icons', icons_path)
             self.obj = obj
             self.form = SheetMetalTools.taskLoadUI("FlangeParameters.ui")
+            self.form.setWindowIcon(QtGui.QIcon(
+                    os.path.join(icons_path, "SheetMetal_AddWall.svg")))
             obj.Proxy.addVerifyProperties(obj) # Make sure all properties are added
             self.activeRefGeom = None # Variable to track which property should be filled when in selection mode. And used to rename the form field (of face reference) only when necessary
             self.updateForm()

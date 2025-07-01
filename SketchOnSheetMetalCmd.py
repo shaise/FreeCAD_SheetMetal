@@ -235,6 +235,7 @@ class SMSketchOnSheet:
 ##########################################################################################################
 
 if SheetMetalTools.isGuiLoaded():
+    from PySide import QtGui
     from FreeCAD import Gui
 
     icons_path = SheetMetalTools.icons_path
@@ -256,6 +257,8 @@ if SheetMetalTools.isGuiLoaded():
         def __init__(self, obj):
             self.obj = obj
             self.form = SheetMetalTools.taskLoadUI("WrappedCutoutPanel.ui")
+            self.form.setWindowIcon(QtGui.QIcon(
+                    os.path.join(icons_path, "SheetMetal_SketchOnSheet.svg")))
             obj.Proxy.addVerifyProperties(obj) # Make sure all properties are added
 
             self.faceSelParams = SheetMetalTools.taskConnectSelectionSingle(

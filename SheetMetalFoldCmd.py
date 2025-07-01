@@ -294,6 +294,7 @@ class SMFoldWall:
 ###################################################################################################
 
 if SheetMetalTools.isGuiLoaded():
+    from PySide import QtGui
     from FreeCAD import Gui
 
     icons_path = SheetMetalTools.icons_path
@@ -323,6 +324,8 @@ if SheetMetalTools.isGuiLoaded():
             self.obj = obj
             self.activeSelection = {}
             self.form = SheetMetalTools.taskLoadUI("BendOnLinePanel.ui")
+            self.form.setWindowIcon(QtGui.QIcon(
+                    os.path.join(icons_path, "SheetMetal_AddFoldWall.svg")))
             obj.Proxy.addVerifyProperties(obj) # Make sure all properties are added
             SheetMetalTools.taskConnectSelectionSingle(
                 self.form.buttBaseObject, self.form.txtBaseObject, obj, "baseObject", ["Face"])

@@ -266,6 +266,8 @@ if SheetMetalTools.isGuiLoaded():
             QtCore.QDir.addSearchPath('Icons', SheetMetalTools.icons_path)
             self.obj = obj
             self.form = SheetMetalTools.taskLoadUI("StampPanel.ui")
+            self.form.setWindowIcon(QtGui.QIcon(
+                    os.path.join(icons_path, "SheetMetal_Forming.svg")))
             obj.Proxy.addVerifyProperties(obj) # Make sure all properties are added
 
             self.sheerSelParams = SheetMetalTools.taskConnectSelection(

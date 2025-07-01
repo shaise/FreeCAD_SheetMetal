@@ -148,6 +148,7 @@ class SMSolidBend:
 ##############################################################################################
 
 if SheetMetalTools.isGuiLoaded():
+    from PySide import QtGui
     from FreeCAD import Gui
 
     icons_path = SheetMetalTools.icons_path
@@ -169,6 +170,8 @@ if SheetMetalTools.isGuiLoaded():
         def __init__(self, obj):
             self.obj = obj
             self.form = SheetMetalTools.taskLoadUI("BendCornerPanel.ui")
+            self.form.setWindowIcon(QtGui.QIcon(
+                    os.path.join(icons_path, "SheetMetal_AddBend.svg")))
             obj.Proxy.addVerifyProperties(obj) # Make sure all properties are added
             self.selParams = SheetMetalTools.taskConnectSelection(
                 self.form.AddRemove, self.form.tree, self.obj, ["Edge"], self.form.pushClearSel
