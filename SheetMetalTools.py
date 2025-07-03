@@ -243,6 +243,12 @@ if isGuiLoaded():
             textbox.setText(f"{obj.Name}: {item}")
         else:
             textbox.setText(selObject.Name)
+
+    def updateTaskTitleIcon(task):
+        if hasattr(task, "form"):
+            if hasattr(task.obj.ViewObject.Proxy, "getIcon"):
+                task.form.setWindowIcon(QtGui.QIcon(task.obj.ViewObject.Proxy.getIcon()))
+        return  
             
     def _taskMultiSelectionModeClicked(sp: SMSelectionParameters):
         baseObj = getattr(sp.obj, sp.propetyName)
@@ -573,6 +579,7 @@ if isGuiLoaded():
         FreeCAD.ActiveDocument.recompute()
         if taskPanel is not None:
             dialog = taskPanel(newObj)
+            updateTaskTitleIcon(dialog)
             Gui.Control.showDialog(dialog)
         return
     
@@ -662,6 +669,7 @@ if isGuiLoaded():
             if not hasattr(self, "getTaskPanel"):
                 return False
             taskd = self.getTaskPanel(vobj.Object)
+            updateTaskTitleIcon(taskd)
             if smIsPartDesign(self.Object):
                 self.Object.ViewObject.Visibility = True
             FreeCAD.ActiveDocument.openTransaction(self.Object.Name)

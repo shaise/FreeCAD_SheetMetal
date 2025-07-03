@@ -387,14 +387,12 @@ if SheetMetalTools.isGuiLoaded():
             return os.path.join( icons_path , 'SheetMetal_AddBaseShape.svg')
 
         def setEdit(self, vobj, mode):
-            SMLogger.log(
-                FreeCAD.Qt.translate("Logger", "Base shape edit mode: ") + str(mode)
-            )
             if mode != 0:
                 return None
             taskd = BaseShapeTaskPanel(vobj.Object)
             taskd.firstTime = False
             taskd.update()
+            SheetMetalTools.updateTaskTitleIcon(taskd)
             #self.Object.ViewObject.Visibility=False
             Gui.Selection.clearSelection()
             FreeCAD.ActiveDocument.openTransaction("BaseShape")
@@ -440,6 +438,7 @@ if SheetMetalTools.isGuiLoaded():
             dialog = BaseShapeTaskPanel(a)
             dialog.firstTime = True
             dialog.update()
+            SheetMetalTools.updateTaskTitleIcon(dialog)
             Gui.Control.showDialog(dialog)
 
         def IsActive(self):

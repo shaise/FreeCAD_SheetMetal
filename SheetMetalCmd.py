@@ -2441,6 +2441,7 @@ if SheetMetalTools.isGuiLoaded():
             newObj.baseObject[0].ViewObject.Visibility = False
             doc.recompute()
             dialog = SMBendWallTaskPanel(newObj, checkRefFace) # 'checkRefFace' turn bendtype to 'Offset' when face reference is before the command
+            SheetMetalTools.updateTaskTitleIcon(dialog)
             Gui.Control.showDialog(dialog)
             return
 

@@ -96,6 +96,7 @@ SheetMetal WB can be installed via the [Addon Manager](https://github.com/FreeCA
 * FreeCAD Forum announcement/discussion [thread](https://forum.freecadweb.org/viewtopic.php?f=3&t=60818) 
 
 #### Release notes:
+* V0.7.24 03 Jul 2025:  Add Icons to task panel's titles by [@zokhasan][zokhasan].  
 * V0.7.23 24 Jun 2025:  Fix problem with object transform.  
                       - NetworkX compatibility fix by [@Syres916][Syres916].  
                       - Separation of Name and Label for Unfold by [@GS90][GS90].  
@@ -304,6 +305,7 @@ SheetMetal WB can be installed via the [Addon Manager](https://github.com/FreeCA
 [robbeban]: https://github.com/robbeban
 [sheetmetalman]: https://github.com/sheetmetalman
 [GS90]: https://github.com/GS90
+[zokhasan]: https://github.com/zokhasan
 [topic82482]: https://forum.freecad.org/viewtopic.php?t=82482
 [30]: https://github.com/shaise/FreeCAD_SheetMetal/issues/30
 [33]: https://github.com/shaise/FreeCAD_SheetMetal/issues/33
