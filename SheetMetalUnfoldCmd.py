@@ -268,8 +268,8 @@ class SMUnfold:
                 obj.UnfoldSketches,
                 obj.SeparateSketchLayers, 
                 obj.Proxy.SketchColor,
-                bendSketchColor=obj.Proxy.InternalColor,
-                internalSketchColor=obj.Proxy.BendLineColor,
+                bendSketchColor=obj.Proxy.BendLineColor,
+                internalSketchColor=obj.Proxy.InternalColor,
             )
         return shape, sketches
 
