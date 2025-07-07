@@ -142,21 +142,15 @@ class ExtrudedCutout:
 
         # Show or hide length properties based in the CutType property:
         if prop == "CutType":
-            if fp.CutType == "Through everything both sides":
-                fp.setEditorMode("ExtrusionLength1", 2) # Hide
-                fp.setEditorMode("ExtrusionLength2", 2) # Hide
-            elif fp.CutType == "Through everything side 1":
-                fp.setEditorMode("ExtrusionLength1", 2) # Hide
-                fp.setEditorMode("ExtrusionLength2", 2) # Hide
-            elif fp.CutType == "Through everything side 2":
-                fp.setEditorMode("ExtrusionLength1", 2) # Hide
-                fp.setEditorMode("ExtrusionLength2", 2) # Hide
+            if fp.CutType == "Two dimensions":
+                fp.setEditorMode("ExtrusionLength1", 0) # Show
+                fp.setEditorMode("ExtrusionLength2", 0) # Show
             elif fp.CutType == "Symmetric":
                 fp.setEditorMode("ExtrusionLength1", 0) # Show
                 fp.setEditorMode("ExtrusionLength2", 2) # Hide
             else:
-                fp.setEditorMode("ExtrusionLength1", 0) # Show
-                fp.setEditorMode("ExtrusionLength2", 0) # Show
+                fp.setEditorMode("ExtrusionLength1", 2) # Hide
+                fp.setEditorMode("ExtrusionLength2", 2) # Hide
 
     def execute(self, fp):
         '''Perform the cut when the object is recomputed'''
@@ -182,40 +176,25 @@ class ExtrudedCutout:
             if fp.CutType == "Two dimensions":
                 ExtLength1 = fp.ExtrusionLength1.Value
                 ExtLength2 = fp.ExtrusionLength2.Value
-
-            if fp.CutType == "Symmetric":
+            elif fp.CutType == "Symmetric":
                 ExtLength1 = fp.ExtrusionLength1.Value/2
                 ExtLength2 = fp.ExtrusionLength1.Value/2
-
-            if fp.CutType == "Through everything both sides":
-                TotalLength = selected_object.Shape.BoundBox.DiagonalLength
+            else:
                 skCenter = cutSketch.Shape.BoundBox.Center
                 objCenter = selected_object.Shape.BoundBox.Center
                 distance = skCenter - objCenter
-                TotalLength = TotalLength + distance.Length
+                TotalLength = selected_object.Shape.BoundBox.DiagonalLength + distance.Length
 
-                ExtLength1 = TotalLength
-                ExtLength2 = TotalLength
-
-            if fp.CutType == "Through everything side 1":
-                TotalLength = selected_object.Shape.BoundBox.DiagonalLength
-                skCenter = cutSketch.Shape.BoundBox.Center
-                objCenter = selected_object.Shape.BoundBox.Center
-                distance = skCenter - objCenter
-                TotalLength = TotalLength + distance.Length
-
-                ExtLength1 = TotalLength
-                ExtLength2 = -TotalLength
-
-            if fp.CutType == "Through everything side 2":
-                TotalLength = selected_object.Shape.BoundBox.DiagonalLength
-                skCenter = cutSketch.Shape.BoundBox.Center
-                objCenter = selected_object.Shape.BoundBox.Center
-                distance = skCenter - objCenter
-                TotalLength = TotalLength + distance.Length
-
-                ExtLength2 = TotalLength
-                ExtLength1 = -TotalLength
+                if fp.CutType == "Through everything both sides":
+                    ExtLength1 = TotalLength
+                    ExtLength2 = TotalLength
+                elif fp.CutType == "Through everything side 1":
+                    ExtLength1 = TotalLength
+                    ExtLength2 = -TotalLength
+                else:
+                    # "Through everything side 2"
+                    ExtLength1 = -TotalLength
+                    ExtLength2 = TotalLength
 
             # Step 1: Determine the sheet metal thickness
             min_distance = float('inf')
@@ -556,10 +535,6 @@ if SheetMetalTools.isGuiLoaded():
                 selected_object, newObj, activeBody, SMExtrudedCutoutTaskPanel)
  
         def IsActive(self):
-            if len(Gui.Selection.getSelection()) < 2:
-                return False
-            if len(Gui.Selection.getSelection()) > 2:
-                return False
-            return True
+            return len(Gui.Selection.getSelection()) == 2
          
     Gui.addCommand("SheetMetal_AddCutout", AddExtrudedCutoutCommandClass())
