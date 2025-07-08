@@ -25,6 +25,7 @@
 
 import FreeCAD, Part, os, SheetMetalTools
 from SheetMetalCmd import smBend
+# from SheetMetalTools import SMLogger
 
 icons_path = SheetMetalTools.icons_path
 panels_path = SheetMetalTools.panels_path
@@ -215,7 +216,6 @@ class SMBaseShape:
 if SheetMetalTools.isGuiLoaded():
     from PySide import QtCore, QtGui
     from FreeCAD import Gui
-    from SheetMetalLogger import SMLogger
 
     mw = Gui.getMainWindow()
 
