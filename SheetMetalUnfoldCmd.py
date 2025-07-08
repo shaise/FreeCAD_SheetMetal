@@ -32,7 +32,7 @@ import SheetMetalKfactor
 import SheetMetalTools
 import SheetMetalUnfolder
 
-from SheetMetalTools import SMLogger, UnfoldException
+from SheetMetalTools import SMLogger
 from engineering_mode import engineering_mode_enabled
 translate = FreeCAD.Qt.translate
 
