@@ -185,7 +185,7 @@ if isGuiLoaded():
             for widget, state in self.EnableControlledWidgets:
                 widget.setEnabled(state ^ self.SelectState)
 
-        def setVisibilityControlledWidgets(self, visWidgets: list[tuple], enWidgets: list[tuple] = None):
+        def setVisibilityControlledWidgets(self, visWidgets, enWidgets = None):
             self.VisibilityControlledWidgets = visWidgets
             self.EnableControlledWidgets = [] if enWidgets is None else enWidgets
             self.updateVisibilityControlledWidgets()
