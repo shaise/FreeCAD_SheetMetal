@@ -236,6 +236,7 @@ if SheetMetalTools.isGuiLoaded():
             baseObj.Proxy.addVerifyProperties(baseObj) # Make sure all properties are added
             self.ShowAxisCross()
             self.setupUi(baseObj)
+            self.updateEnableState()
 
         def setupUi(self, obj):
             SheetMetalTools.taskConnectSpin(obj, self.form.bRadiusSpin, "radius")
