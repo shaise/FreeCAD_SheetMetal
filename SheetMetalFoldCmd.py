@@ -25,7 +25,6 @@
 
 import FreeCAD, Part, math, os, SheetMetalTools
 import SheetMetalBendSolid
-from SheetMetalLogger import SMLogger
 
 smEpsilon = SheetMetalTools.smEpsilon
 

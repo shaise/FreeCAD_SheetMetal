@@ -28,7 +28,6 @@ import Part
 import math
 import os
 import SheetMetalTools
-from SheetMetalLogger import SMLogger
 
 smEpsilon = SheetMetalTools.smEpsilon
 translate = FreeCAD.Qt.translate

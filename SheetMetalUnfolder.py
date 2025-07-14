@@ -126,7 +126,7 @@ from lookup import get_val_from_range
 import tempfile
 from math import sqrt
 
-from SheetMetalLogger import SMLogger, UnfoldException, BendException, TreeException
+from SheetMetalTools import SMLogger
 
 
 KFACTORSTANDARD = None
