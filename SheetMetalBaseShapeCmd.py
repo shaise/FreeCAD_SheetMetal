@@ -187,11 +187,14 @@ class SMBaseShape:
 
     def onChanged(self, fp, prop):
         if prop == "shapeType":
-            flat = fp.shapeType == "Flat"
-            hat_box = fp.shapeType in ["Hat", "Box"]
-            fp.setEditorMode("radius", flat)
-            fp.setEditorMode("height", flat)
-            fp.setEditorMode("flangeWidth", not hat_box)
+            fp.setEditorMode("radius",
+                             0 if fp.shapeType != "Flat" else 2)  # 0=Show; 2=Hide
+            fp.setEditorMode("height",
+                             0 if fp.shapeType != "Flat" else 2)
+            fp.setEditorMode("flangeWidth",
+                             0 if fp.shapeType in ("Hat", "Box") else 2)
+            fp.setEditorMode("fillGaps",
+                             0 if fp.shapeType in ("Tub", "Hat", "Box") else 2)
 
     def execute(self, fp):
         self.addVerifyProperties(fp)
@@ -236,7 +239,7 @@ if SheetMetalTools.isGuiLoaded():
             baseObj.Proxy.addVerifyProperties(baseObj) # Make sure all properties are added
             self.ShowAxisCross()
             self.setupUi(baseObj)
-            self.updateEnableState()
+            self.updateWidgetsVisibility()
 
         def setupUi(self, obj):
             SheetMetalTools.taskConnectSpin(obj, self.form.bRadiusSpin, "radius")
@@ -255,11 +258,12 @@ if SheetMetalTools.isGuiLoaded():
             self.form.update()
 
             #SMLogger.log(str(self.formReady) + " <2 \n")
-        def updateEnableState(self):
+        def updateWidgetsVisibility(self):
             shapeType = base_shape_types[self.form.shapeType.currentIndex()]
-            self.form.bFlangeWidthSpin.setEnabled(shapeType in ["Hat", "Box"])
-            self.form.bRadiusSpin.setEnabled(not shapeType == "Flat")
-            self.form.bHeightSpin.setEnabled(not shapeType == "Flat")
+            self.form.frameBendRadius.setVisible(shapeType != "Flat")
+            self.form.frameHeight.setVisible(shapeType != "Flat")
+            self.form.frameFlangeWidth.setVisible(shapeType in ("Hat", "Box"))
+            self.form.chkFillGaps.setVisible(shapeType in ("Tub", "Hat", "Box"))
 
         def buttonToOriginType(self, butt):
             if butt is None:
@@ -286,7 +290,7 @@ if SheetMetalTools.isGuiLoaded():
             self.obj.recompute()
 
         def typeChanged(self, _value):
-            self.updateEnableState()
+            self.updateWidgetsVisibility()
 
         def origButtPressed(self, butt):
             # print(butt.objectName())
