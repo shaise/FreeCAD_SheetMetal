@@ -68,6 +68,7 @@ class SMWorkbench(Workbench):
         import SheetMetalUnfoldCmd
         import SheetMetalBaseShapeCmd
         import os.path
+        import SheetMetalExtraToolbar
 
         self.list = [
             "SheetMetal_AddBase",
@@ -98,6 +99,7 @@ class SMWorkbench(Workbench):
         # self.appendMenu(["An existing Menu","My submenu"],self.list) # appends a submenu to an existing menu
         Gui.addPreferencePage(os.path.join(SMWBPath, "Resources/panels/SMprefs.ui"), "SheetMetal")
         Gui.addIconPath(SMIconPath)
+        SheetMetalExtraToolbar.check_setup()
 
     def Activated(self):
         "This function is executed when the workbench is activated"
