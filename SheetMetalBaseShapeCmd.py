@@ -32,8 +32,9 @@ panels_path = SheetMetalTools.panels_path
 language_path = SheetMetalTools.language_path
 
 base_shape_types = ["Flat", "L-Shape", "U-Shape", "Tub", "Hat", "Box"]
-origin_location_types = ["-X,-Y", "-X,0", "-X,+Y", "0,-Y", "0,0", "0,+Y", "+X,-Y", "+X,0", "+X,+Y"]
-origin_location_buttons = ["BL", "CL", "TL", "BC", "CC", "TC", "BR", "CR", "TR"]
+origin_location_types = ("-X,+Y", "0,+Y", "+X,+Y",
+                         "-X,0",  "0,0",  "+X,0",
+                         "-X,-Y", "0,-Y", "+X,-Y")
 
 # IMPORTANT: please remember to change the element map version in case of any
 # changes in modeling logic
@@ -217,7 +218,7 @@ class SMBaseShape:
 ##########################################################################################################
 
 if SheetMetalTools.isGuiLoaded():
-    from PySide import QtCore, QtGui
+    from PySide import QtCore, QtGui, QtWidgets
     from FreeCAD import Gui
 
     mw = Gui.getMainWindow()
@@ -236,10 +237,37 @@ if SheetMetalTools.isGuiLoaded():
             self.formReady = False
             self.firstTime = False
             self.selOrigButton = None
+
+            self.button_group = QtWidgets.QButtonGroup()
+            self.radio_buttons = (self.form.rb_TL, self.form.rb_TC, self.form.rb_TR,
+                                  self.form.rb_CL, self.form.rb_CC, self.form.rb_CR,
+                                  self.form.rb_BL, self.form.rb_BC, self.form.rb_BR)
+            for rb in self.radio_buttons:
+                self.button_group.addButton(rb)
+            self.button_group.buttonClicked.connect(self.radio_button_clicked)
+            self.set_select_radio_button()
+
             baseObj.Proxy.addVerifyProperties(baseObj) # Make sure all properties are added
             self.ShowAxisCross()
             self.setupUi(baseObj)
             self.updateWidgetsVisibility()
+
+        def radio_button_clicked(self, button):
+            self.obj.originLoc = origin_location_types[self.radio_buttons.index(button)]
+            self.selOrigButton = button
+            self.spinValChanged()
+
+        def set_select_radio_button(self):
+            if self.selOrigButton is None:
+                self.form.rb_CC.setChecked(True)
+                self.selOrigButton = self.form.rb_CC
+                return self.form.rb_CC
+            else:
+                loc_index = origin_location_types.index(self.obj.originLoc)
+                button = self.radio_buttons[loc_index]
+                button.setChecked(True)
+                self.selOrigButton = button
+                return button
 
         def setupUi(self, obj):
             SheetMetalTools.taskConnectSpin(obj, self.form.bRadiusSpin, "radius")
@@ -251,10 +279,7 @@ if SheetMetalTools.isGuiLoaded():
             SheetMetalTools.taskConnectEnum(obj, self.form.shapeType, "shapeType", self.typeChanged)
             SheetMetalTools.taskConnectCheck(obj, self.form.chkFillGaps, "fillGaps")
 
-            for origloc in origin_location_buttons:
-                buttname = 'push' + origloc
-                butt = self.form.findChild(QtGui.QPushButton, buttname)
-                butt.pressed.connect(lambda b = butt: self.origButtPressed(b))
+            self.set_select_radio_button()
             self.form.update()
 
             #SMLogger.log(str(self.formReady) + " <2 \n")
@@ -265,24 +290,6 @@ if SheetMetalTools.isGuiLoaded():
             self.form.frameFlangeWidth.setVisible(shapeType in ("Hat", "Box"))
             self.form.chkFillGaps.setVisible(shapeType in ("Tub", "Hat", "Box"))
 
-        def buttonToOriginType(self, butt):
-            if butt is None:
-                name = 'pushCC'
-            else:
-                name = butt.objectName()
-            return origin_location_types[origin_location_buttons.index(name[-2:])]
-        
-        def originTypeToButton(self, type):
-            name = "push" + origin_location_buttons[origin_location_types.index(type)]
-            return self.form.findChild(QtGui.QPushButton, name)
-        
-        def setSelectedOrigButton(self, butt):
-            if self.selOrigButton is not None:
-                self.selOrigButton.setIcon(QtGui.QIcon())
-            if butt is not None:
-                butt.setIcon(QtGui.QIcon('Icons:BaseShape_Sel.svg'))
-            self.selOrigButton = butt
-
         def spinValChanged(self):
             if not self.formReady:
                 return
@@ -292,11 +299,6 @@ if SheetMetalTools.isGuiLoaded():
         def typeChanged(self, _value):
             self.updateWidgetsVisibility()
 
-        def origButtPressed(self, butt):
-            # print(butt.objectName())
-            self.setSelectedOrigButton(butt)
-            self.spinValChanged()
-
         def ShowAxisCross(self):
             self.hasAxisCross = Gui.ActiveDocument.ActiveView.hasAxisCross()
             Gui.ActiveDocument.ActiveView.setAxisCross(True)
@@ -305,7 +307,7 @@ if SheetMetalTools.isGuiLoaded():
             Gui.ActiveDocument.ActiveView.setAxisCross(self.hasAxisCross)
 
         def updateObj(self):
-            self.obj.originLoc = self.buttonToOriginType(self.selOrigButton)
+            self.obj.originLoc = origin_location_types[self.radio_buttons.index(self.selOrigButton)]
 
         def accept(self):
             doc = FreeCAD.ActiveDocument
@@ -336,7 +338,6 @@ if SheetMetalTools.isGuiLoaded():
 
         def update(self):
             self.form.shapeType.setCurrentText(self.obj.shapeType)
-            self.setSelectedOrigButton(self.originTypeToButton(self.obj.originLoc))
             self.form.chkFillGaps.setChecked(self.obj.fillGaps)
             self.form.chkNewBody.setVisible(self.firstTime)
             self.formReady = True
