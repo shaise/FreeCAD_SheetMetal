@@ -960,13 +960,8 @@ def smGetIntersectingEdge(Face, obj):
 
 
 def smGetAllIntersectingEdges(Face, obj):
-    # find Edges that overlap
-    edgelist = []
-    for edge in obj.Edges:
-        face_common = edge.common(Face)
-        if face_common.Edges:
-            edgelist.append(edge)
-    return edgelist
+    """Find Edges that overlap."""
+    return [edge for edge in obj.Edges if edge.common(Face).Edges]
 
 
 def smIsEqualAngle(ang1, ang2, p=5):
