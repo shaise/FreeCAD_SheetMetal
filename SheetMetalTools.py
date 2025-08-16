@@ -47,10 +47,6 @@ cancelText = translate("SheetMetalTools", "Cancel...")
 clearText = translate("SheetMetalTools", "Clear...")
 
 
-class SMException(Exception):
-    ''' Sheet Metal Custom Exception '''
-
-
 def isGuiLoaded():
     if hasattr(FreeCAD, "GuiUp"):
         return FreeCAD.GuiUp
@@ -1036,13 +1032,17 @@ class SMLogger:
         FreeCAD.Console.PrintWarning(SMLogger._text(*args))
 
 
-class UnfoldException(Exception):
-    pass
-
-
 class BendException(Exception):
     pass
 
 
 class TreeException(Exception):
     pass
+
+
+class UnfoldException(Exception):
+    pass
+
+
+class SMException(Exception):
+    """Sheet Metal Custom Exception."""
