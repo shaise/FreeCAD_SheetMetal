@@ -983,33 +983,25 @@ def smConvertPlaneToFace(planeShape):
 
 
 class SMLogger:
-    @classmethod
-    def error(cls, *args):
-        message = ""
-        for x in args:
-            message += str(x)
-        FreeCAD.Console.PrintError(message + "\n")
+    @staticmethod
+    def _text(*args):
+        return "".join(str(arg) for arg in args) + "\n"
 
-    @classmethod
-    def log(cls, *args):
-        message = ""
-        for x in args:
-            message += str(x)
-        FreeCAD.Console.PrintLog(message + "\n")
+    @staticmethod
+    def error(*args):
+        FreeCAD.Console.PrintError(SMLogger._text(*args))
 
-    @classmethod
-    def message(cls, *args):
-        message = ""
-        for x in args:
-            message += str(x)
-        FreeCAD.Console.PrintMessage(message + "\n")
+    @staticmethod
+    def log(*args):
+        FreeCAD.Console.PrintLog(SMLogger._text(*args))
 
-    @classmethod
-    def warning(cls, *args):
-        message = ""
-        for x in args:
-            message += str(x)
-        FreeCAD.Console.PrintWarning(message + "\n")
+    @staticmethod
+    def message(*args):
+        FreeCAD.Console.PrintMessage(SMLogger._text(*args))
+
+    @staticmethod
+    def warning(*args):
+        FreeCAD.Console.PrintWarning(SMLogger._text(*args))
 
 class UnfoldException(Exception):
     pass
