@@ -776,11 +776,10 @@ def getOriginalBendObject(obj):
     for item in obj.OutListRecursive:
         if hasattr(item, "Proxy"):
             proxy = item.Proxy.__class__.__name__
-            if (proxy == 'SMBaseBend'
-            or proxy == 'SMBendWall'
-            or proxy == 'SMSolidBend'
-            or proxy == 'SMFoldWall'
-            ):
+            if proxy in ("SMBaseBend",
+                         "SMBendWall",
+                         "SMSolidBend",
+                         "SMFoldWall"):
                 if not getOriginalBendObject(item):
                     return item
     return None
