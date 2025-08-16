@@ -46,14 +46,17 @@ translatedPreviewText = translate("SheetMetalTools", "Preview")
 cancelText = translate("SheetMetalTools", "Cancel...")
 clearText = translate("SheetMetalTools", "Clear...")
 
+
 class SMException(Exception):
     ''' Sheet Metal Custom Exception '''
+
 
 def isGuiLoaded():
     if hasattr(FreeCAD, "GuiUp"):
         return FreeCAD.GuiUp
     return False
-    
+
+
 if isGuiLoaded():
     from PySide import QtCore, QtGui
     from PySide.QtWidgets import QHeaderView
@@ -70,17 +73,19 @@ if isGuiLoaded():
 
     class SMSingleSelectionObserver:
         ''' used for tasks that needs to be aware of selection changes '''
+
         def __init__(self):
             self.selParams = None
 
         def addSelection(self, document, obj, element, position):
             taskSingleSelectionChanged(self.selParams)
-    
+
     smSingleSelObserver = SMSingleSelectionObserver()
     Gui.Selection.addObserver(smSingleSelObserver)
 
     class SMSelectionParameters:
         ''' Helper class for selection operations '''
+
         def __init__(self, addRemoveButton, dispWidget, obj, allowedTypes, 
                      propetyName = "baseObject", hideObject = True):
             self.addRemoveButton = addRemoveButton
@@ -109,7 +114,7 @@ if isGuiLoaded():
             if isinstance(self.allowedTypes, tuple):
                 return len(self.allowedTypes[1]) == 0
             return len(self.allowedTypes) == 0
-        
+
         # allowed type formats:
         # 1. list of allowed subelement types: ["Face", "Edge"]
         # 2. tuple of allowed object type and list of allowed subelement types: ("Sketch", [])
@@ -136,7 +141,7 @@ if isGuiLoaded():
                 if res:
                     return True
             return False
-        
+
         def getAllowedTypesList(self, allowedTypes):
             allowedObjType = ""
             if isinstance(allowedTypes, tuple):
@@ -148,10 +153,10 @@ if isGuiLoaded():
                 else:
                     allowedTypesList += self.getAllowedTypesList(allowedSubType)
             return allowedTypesList
-        
+
         def getAlowedTypesString(self, allowedTypes, seperator = ", "):
             return seperator.join(self.getAllowedTypesList(allowedTypes))
-        
+
         def verifySelection(self):
             selection = Gui.Selection.getSelectionEx()
             origprop = getattr(self.obj, self.propetyName)
@@ -162,7 +167,7 @@ if isGuiLoaded():
                 selSubNames = selection[0].SubElementNames
             if selobj.isDerivedFrom("App::Link"):
                 selobj = selobj.LinkedObject
-            
+
             if self.ConstrainToObject is not None and not selobj is self.ConstrainToObject:
                 smWarnDialog(translate("SheetMetalTools",
                     "Features are selected from a wrong object\n"
@@ -176,9 +181,9 @@ if isGuiLoaded():
                     "Valid element types: {}"
                 ).format(self.getAlowedTypesString(self.allowedTypes)))
                 return (None, None)
-                        
+
             return (selobj, selSubNames)
-        
+
         def updateVisibilityControlledWidgets(self):
             for widget, state in self.VisibilityControlledWidgets:
                 widget.setVisible(state ^ self.SelectState)
@@ -210,7 +215,6 @@ if isGuiLoaded():
         else:
             for subName in subObjects:
                 Gui.Selection.addSelection(docName, obj.Name, subName)
-        
 
     def smHideObjects(*args):
         for arg in args:
@@ -249,7 +253,7 @@ if isGuiLoaded():
             if hasattr(task.obj.ViewObject.Proxy, "getIcon"):
                 task.form.setWindowIcon(QtGui.QIcon(task.obj.ViewObject.Proxy.getIcon()))
         return  
-            
+
     def _taskMultiSelectionModeClicked(sp: SMSelectionParameters):
         baseObj = getattr(sp.obj, sp.propetyName)
         if sp.SelectState:
@@ -285,7 +289,7 @@ if isGuiLoaded():
                 taskPopulateSelectionList(sp.dispWidget, baseObj)
                 if sp.ValueChangedCallback is not None:
                     sp.ValueChangedCallback(sp, selObj, selSubNames)
-    
+
     def taskConnectSelection(addRemoveButton, treeWidget, obj, allowedTypes, clearButton = None, 
                 propetyName = "baseObject", hideObject = True) -> SMSelectionParameters:
         '''Connects a selection button to a tree widget for selecting multiple objects'''
@@ -305,14 +309,14 @@ if isGuiLoaded():
         sp.OriginalText = addRemoveButton.text()
         addRemoveButton.clicked.connect(lambda _value: _taskMultiSelectionModeClicked(sp))
         return sp
-    
+
     def _taskGetSelectedObjects(sp: SMSelectionParameters):
         selObject =  getattr(sp.obj, sp.SelPropertyName)
         if isinstance(selObject, tuple):
             selObject = selObject[0]
         baseObject = getattr(sp.obj, sp.propetyName)[0] if hasattr(sp.obj, sp.propetyName) else None
         return selObject, baseObject
-        
+
     def _taskUpdateSingleSelection(sp: SMSelectionParameters):
         selObject, baseObject = _taskGetSelectedObjects(sp)
         smSingleSelObserver.selParams = None
@@ -355,12 +359,12 @@ if isGuiLoaded():
     def taskSingleSelectionChanged(sp: SMSelectionParameters):
         if sp is None:
             return
-        
+
         selobj, selSubNames = sp.verifySelection()
         Gui.Selection.clearSelection()
         if selobj is None:
             return
-        
+
         selobj, selSubNames = smUpdateLinks(sp.obj, selobj, selSubNames)
         baseObject = selobj if sp.allowAllTypes() else (selobj, selSubNames)
         setattr(sp.obj, sp.SelPropertyName, baseObject)
@@ -384,7 +388,7 @@ if isGuiLoaded():
         taskPopulateSelectionSingle(textbox, getattr(obj, SelPropertyName))
         button.clicked.connect(lambda _value: _taskSingleSelModeClicked(sp))
         return sp
-        
+
     def taskConnectSelectionToggle(button, textbox, obj, SelPropertyName, allowedTypes,
                 basePropetyName = "baseObject", hideObject = True) -> SMSelectionParameters:
         '''Connects a selection image-button to a textbox for selecting 
@@ -450,7 +454,7 @@ if isGuiLoaded():
             # Can happen if an old file is loaded and some props were renamed
             obj.recompute()
         return getattr(obj, propName)
-    
+
     def taskConnectSpin(obj, formvar, propName, callback = None, bindFunction = True):
         formvar.setProperty("value", _getVarValue(obj, propName))
         if bindFunction:
@@ -504,7 +508,7 @@ if isGuiLoaded():
         Gui.Control.closeDialog()
         FreeCAD.ActiveDocument.recompute()
         Gui.ActiveDocument.resetEdit()
-      
+
     def taskSaveDefaults(obj, varList):
         for var in varList:
             if isinstance(var, tuple):
@@ -551,7 +555,7 @@ if isGuiLoaded():
             path = os.path.join(panels_path, uiFile)
             forms.append(Gui.PySideUic.loadUi(path))
         return forms
-    
+
     def smGuiExportSketch(sketches, fileType, fileName, useDialog = True):
         if useDialog:
             filePath, _ = QtGui.QFileDialog.getSaveFileName(
@@ -567,7 +571,7 @@ if isGuiLoaded():
                 importDXF.export(sketches, filePath)
             else:
                 importSVG.export(sketches, filePath)
-    
+
     def smAddNewObject(baseObj, newObj, activeBody, taskPanel = None):
         if activeBody is not None:
             activeBody.addObject(newObj)
@@ -582,7 +586,7 @@ if isGuiLoaded():
             updateTaskTitleIcon(dialog)
             Gui.Control.showDialog(dialog)
         return
-    
+
     def smCreateNewObject(baseObj, name, allowPartDesign = True):
         doc = FreeCAD.ActiveDocument
         activeBody = None
@@ -599,7 +603,6 @@ if isGuiLoaded():
             doc.openTransaction(name)
             newObj = doc.addObject("PartDesign::FeaturePython", name)
         return (newObj, activeBody)
- 
 
     #************************************************************************************
     #* View providers for part and part design
@@ -686,22 +689,25 @@ if isGuiLoaded():
 
 # Else: In case no gui is loaded
 else:
+
     def smWarnDialog(msg):
         SMLogger.warning(msg)
 
     def smHideObjects(*args):
         pass
 
+
 def smStripTrailingNumber(item):
     return re.sub(r'\d+$', '', item)
+
 
 def smAddToRecompute(obj):
     smObjectsToRecompute.add(obj)
 
+
 def smRemoveFromRecompute(obj):
     smObjectsToRecompute.discard(obj)
 
-    
 
 def smBelongToBody(item, body):
     if body is None:
@@ -711,8 +717,10 @@ def smBelongToBody(item, body):
             return True
     return False
 
+
 def smIsSketchObject(obj):
     return obj.TypeId.startswith("Sketcher::")
+
 
 def smGetParentBody(obj):
     if hasattr(obj, "getParent"):
@@ -723,6 +731,7 @@ def smGetParentBody(obj):
         return obj.getParents()[0][0]
     return None
 
+
 def smIsPartDesign(obj):
     if smIsSketchObject(obj):
         parent = smGetParentBody(obj)
@@ -730,6 +739,7 @@ def smIsPartDesign(obj):
             return False
         return isinstance(parent, Part.BodyBase)
     return obj.TypeId.startswith("PartDesign::")
+
 
 def smIsOperationLegal(body, selobj):
     # FreeCAD.Console.PrintLog(str(selobj) + " " + str(body) + " " + str(smBelongToBody(selobj, body)) + "\n")
@@ -745,11 +755,14 @@ def smIsOperationLegal(body, selobj):
         return False
     return True
 
+
 def is_autolink_enabled():
     return params.GetInt("AutoLinkBendRadius", 0)
 
+
 def use_old_unfolder():
     return params.GetBool("UseOldUnfolder", False)
+
 
 def GetViewConfig(obj):
     if smIsSketchObject(obj):
@@ -764,13 +777,14 @@ def GetViewConfig(obj):
     else:
         return None
     return viewconf 
- 
- 
+
+
 def SetViewConfig(obj, viewconf): 
     if hasattr(obj.ViewObject, "ShapeColor") and viewconf: 
         obj.ViewObject.ShapeColor = viewconf["objShapeCol"] 
         obj.ViewObject.Transparency = viewconf["objShapeTsp"] 
         obj.ViewObject.DiffuseColor = viewconf["objDiffuseCol"] 
+
 
 def getOriginalBendObject(obj):
     for item in obj.OutListRecursive:
@@ -784,17 +798,21 @@ def getOriginalBendObject(obj):
                     return item
     return None
 
+
 def getElementFromTNP(tnpName):
     names = tnpName.split('.')
     if len(names) > 1:
         FreeCAD.Console.PrintWarning("Warning: Tnp Name still visible: " + tnpName + "\n")
     return names[len(names) - 1].lstrip('?')
 
+
 def smIsParallel(v1, v2):
     return abs(abs(v1.normalize().dot(v2.normalize())) - 1.0) < smEpsilon
 
+
 def smIsNormal(v1, v2):
     return abs(v1.dot(v2)) < smEpsilon
+
 
 def smUpdateLinks(obj, selobj, selSubNames):
     ''' Update the links of a selected object to the proper scope of an object '''
@@ -805,7 +823,8 @@ def smUpdateLinks(obj, selobj, selSubNames):
     if body2 is body1:
         return selobj, selSubNames
     return body1, [f'{selobj.Name}.{subName}' for subName in selSubNames]
-    
+
+
 def smAddProperty(obj, proptype, name, proptip, defval=None, paramgroup="Parameters", 
                   replacedname = None, readOnly = False, isHiddden = False, attribs = 0):
     """
@@ -838,26 +857,31 @@ def smAddProperty(obj, proptype, name, proptip, defval=None, paramgroup="Paramet
             setattr(obj, name, getattr(obj, replacedname))
             #obj.removeProperty(replacedname)
             obj.setEditorMode(replacedname, 2) # Hide
-    
 
 
 def smAddLengthProperty(obj, name, proptip, defval, paramgroup="Parameters"):
     smAddProperty(obj, "App::PropertyLength", name, proptip, defval, paramgroup)
 
+
 def smAddBoolProperty(obj, name, proptip, defval, paramgroup="Parameters"):
     smAddProperty(obj, "App::PropertyBool", name, proptip, defval, paramgroup)
+
 
 def smAddDistanceProperty(obj, name, proptip, defval, paramgroup="Parameters"):
     smAddProperty(obj, "App::PropertyDistance", name, proptip, defval, paramgroup)
 
+
 def smAddAngleProperty(obj, name, proptip, defval, paramgroup="Parameters"):
     smAddProperty(obj, "App::PropertyAngle", name, proptip, defval, paramgroup)
+
 
 def smAddFloatProperty(obj, name, proptip, defval, paramgroup="Parameters"):
     smAddProperty(obj, "App::PropertyFloat", name, proptip, defval, paramgroup)
 
+
 def smAddIntProperty(obj, name, proptip, defval, paramgroup="Parameters"):
     smAddProperty(obj, "App::PropertyInteger", name, proptip, defval, paramgroup)
+
 
 def smAddStringProperty(obj, name, proptip, defval, paramgroup="Parameters"):
     smAddProperty(obj, "App::PropertyString", name, proptip, defval, paramgroup)
@@ -873,6 +897,7 @@ def smAddEnumProperty(
         if defval is not None:
             setattr(obj, name, defval)
 
+
 def smGetBodyOfItem(obj):
     if hasattr(obj, "getParent"):
         return obj.getParent()
@@ -880,6 +905,7 @@ def smGetBodyOfItem(obj):
         parent, _ = obj.getParents()[0]
         return parent
     return None
+
 
 def smGetThickness(obj, foldface):
     normal = foldface.normalAt(0, 0)
@@ -902,6 +928,7 @@ def smGetThickness(obj, foldface):
     thk = thkedge.Length
     return thk
 
+
 def smGetFaceByEdge(selItem, obj):
     selFace = None
     # find face if Edge Selected
@@ -915,6 +942,7 @@ def smGetFaceByEdge(selItem, obj):
         selFace = selItem
     return selFace
 
+
 def smGetIntersectingFace(Face, obj):
     # find Faces that overlap
     face = None
@@ -923,6 +951,7 @@ def smGetIntersectingFace(Face, obj):
         if face_common.Faces:
             break
     return face
+
 
 def smGetIntersectingEdge(Face, obj):
     # find an Edge that overlap
@@ -933,6 +962,7 @@ def smGetIntersectingEdge(Face, obj):
             break
     return edge
 
+
 def smGetAllIntersectingEdges(Face, obj):
     # find Edges that overlap
     edgelist = []
@@ -941,6 +971,7 @@ def smGetAllIntersectingEdges(Face, obj):
         if face_common.Edges:
             edgelist.append(edge)
     return edgelist
+
 
 def smIsEqualAngle(ang1, ang2, p=5):
     # compares two angles with a given precision
@@ -953,9 +984,11 @@ def smIsEqualAngle(ang1, ang2, p=5):
         result = True
     return result
 
+
 def smIsNetworkxAvailable():
     spec = importlib.util.find_spec("networkx")
     return spec is not None
+
 
 def smGetSubElementName(elementName : str) -> tuple:
     '''Get the object and the sub element name from a string (e.g. "obj.subobj" or "subobj")'''
@@ -1002,11 +1035,14 @@ class SMLogger:
     def warning(*args):
         FreeCAD.Console.PrintWarning(SMLogger._text(*args))
 
+
 class UnfoldException(Exception):
     pass
 
+
 class BendException(Exception):
     pass
+
 
 class TreeException(Exception):
     pass
