@@ -36,7 +36,9 @@ smExtrudedCutoutDefaultVars = []
 
 class ExtrudedCutout:
     def __init__(self, obj, sketch, selected_face):
-        """Initialize the parametric Sheet Metal Cut object and add properties"""
+        """Initialize the parametric Sheet Metal Cut object and add
+        properties.
+        """
         obj.addProperty(
             "App::PropertyLink",
             "Sketch",
@@ -132,7 +134,7 @@ class ExtrudedCutout:
         )
 
     def onChanged(self, fp, prop):
-        '''Respond to property changes'''
+        """Respond to property changes."""
         # Show or hide improvement of the cut:
         if prop == "ImproveCut":
             if fp.ImproveCut == True:
@@ -153,7 +155,7 @@ class ExtrudedCutout:
                 fp.setEditorMode("ExtrusionLength2", 2) # Hide
 
     def execute(self, fp):
-        '''Perform the cut when the object is recomputed'''
+        """Perform the cut when the object is recomputed."""
 
         self.addVerifyProperties(fp)
 
@@ -359,7 +361,7 @@ class ExtrudedCutout:
             FreeCAD.Console.PrintError(f"Error: {e}\n")
 
     def find_connected_faces(self, shape):
-        '''Find connected faces in a shape'''
+        """Find connected faces in a shape."""
         faces = shape.Faces
         visited = set()
         components = []
@@ -396,7 +398,8 @@ if SheetMetalTools.isGuiLoaded():
     icons_path = SheetMetalTools.icons_path
 
     class SMExtrudedCutoutVP(SheetMetalTools.SMViewProvider):
-        ''' Part WB style ViewProvider '''        
+        """Part WB style ViewProvider."""
+
         def getIcon(self):
             return os.path.join(icons_path, 'SheetMetal_AddCutout.svg')
         
@@ -404,10 +407,15 @@ if SheetMetalTools.isGuiLoaded():
             return SMExtrudedCutoutTaskPanel(obj)
 
     class SMExtrudedCutoutPDVP(SMExtrudedCutoutVP):
-        ''' Part Design WB style ViewProvider - backward compatibility only''' 
+        """Part Design WB style ViewProvider.
+
+        Note:
+            Backward compatibility only.
+
+        """
 
     class SMExtrudedCutoutTaskPanel:
-        '''A TaskPanel for the Sheetmetal Extruded Cutout'''
+        """A TaskPanel for the SheetMetal Extruded Cutout."""
 
         def __init__(self, obj):
             self.obj = obj
@@ -472,7 +480,7 @@ if SheetMetalTools.isGuiLoaded():
             SheetMetalTools.taskReject(self)
 
     class AddExtrudedCutoutCommandClass:
-        """Add Extruded Cutout command"""
+        """Add Extruded Cutout command."""
 
         def GetResources(self):
             return {
@@ -491,7 +499,7 @@ if SheetMetalTools.isGuiLoaded():
             }
 
         def Activated(self):
-            '''Create a Extruded Cutout object from user selections'''
+            """Create an Extruded Cutout object from user selections."""
             # Get the selecteds object and face
             selection = Gui.Selection.getSelectionEx()[0]
             if selection.Object.isDerivedFrom("Sketcher::SketchObject"): # When user select first the sketch

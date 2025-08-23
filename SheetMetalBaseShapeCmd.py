@@ -117,7 +117,7 @@ def smCreateBaseShape(type, thickness, radius, width, length, height, flangeWidt
 
 class SMBaseShape:
     def __init__(self, obj):
-        '''"Add a base sheetmetal shape" '''
+        """Add a base SheetMetal shape."""
         self.addVerifyProperties(obj)
         obj.Proxy = self
 
@@ -227,7 +227,8 @@ if SheetMetalTools.isGuiLoaded():
     ##########################################################################################################
 
     class BaseShapeTaskPanel:
-        ''' Task Panel for Base Shape sheetmetal command '''
+        """Task Panel for Base Shape SheetMetal command."""
+
         def __init__(self, baseObj):
             self.obj = baseObj
             QtCore.QDir.addSearchPath('Icons', icons_path)
@@ -347,7 +348,9 @@ if SheetMetalTools.isGuiLoaded():
     ##########################################################################################################
 
     class SMBaseShapeViewProviderFlat:
-        "A View provider that nests children objects under the created one"
+        """A View provider that nests children objects under the
+        created one.
+        """
 
         def __init__(self, obj):
             obj.Proxy = self
@@ -415,7 +418,7 @@ if SheetMetalTools.isGuiLoaded():
     ##########################################################################################################
 
     class SMBaseshapeCommandClass:
-        """Open Base shape task"""
+        """Open Base shape task."""
 
         def GetResources(self):
             # add translations path

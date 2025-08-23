@@ -286,7 +286,7 @@ def smExtrude(
 
 class SMExtrudeWall:
     def __init__(self, obj, selobj, sel_items):
-        """ "Add Sheetmetal Wall by Extending" """
+        """Add SheetMetal Wall by Extending."""
 
         _tip_ = FreeCAD.Qt.translate("App::Property", "Length of Wall")
         obj.addProperty("App::PropertyLength", "length", "Parameters", _tip_).length = (
@@ -373,7 +373,8 @@ if SheetMetalTools.isGuiLoaded():
     icons_path = SheetMetalTools.icons_path
 
     class SMViewProviderTree(SheetMetalTools.SMViewProvider):
-        ''' Part WB style ViewProvider '''        
+        """Part WB style ViewProvider."""
+
         def getIcon(self):
             return os.path.join(icons_path, "SheetMetal_Extrude.svg")
         
@@ -381,11 +382,15 @@ if SheetMetalTools.isGuiLoaded():
             return SMExtendWallTaskPanel(obj)
         
     class SMViewProviderFlat(SMViewProviderTree):
-        ''' Part Design WB style ViewProvider - backward compatibility only''' 
+        """Part Design WB style ViewProvider.
 
+        Note:
+            Backward compatibility only.
+
+        """
 
     class SMExtendWallTaskPanel:
-        """A TaskPanel for the Sheetmetal"""
+        """A TaskPanel for the SheetMetal."""
 
         def __init__(self, obj):
             self.obj = obj
@@ -414,7 +419,7 @@ if SheetMetalTools.isGuiLoaded():
             SheetMetalTools.taskReject(self)
 
     class SMExtrudeCommandClass:
-        """Extrude face"""
+        """Extrude face."""
 
         def GetResources(self):
             return {

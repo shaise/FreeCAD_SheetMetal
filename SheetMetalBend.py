@@ -109,7 +109,7 @@ def smSolidBend(radius=1.0, selEdgeNames="", MainObject=None):
 
 class SMSolidBend:
     def __init__(self, obj, selobj, sel_elements):
-        """ "Add Bend to Solid" """
+        """Add Bend to Solid."""
 
         self.addVerifyProperties(obj)
         _tip_ = FreeCAD.Qt.translate("App::Property", "Base object")
@@ -132,7 +132,12 @@ class SMSolidBend:
             return smElementMapVersion + ver
 
     def execute(self, fp):
-        """ "Print a short message when doing a recomputation, this method is mandatory" """
+        """Print a short message when doing a recomputation.
+
+        Note:
+            This method is mandatory.
+
+        """
         self.addVerifyProperties(fp)
         Main_Object = fp.baseObject[0].Shape.copy()
         s = smSolidBend(
@@ -153,7 +158,8 @@ if SheetMetalTools.isGuiLoaded():
     icons_path = SheetMetalTools.icons_path
 
     class SMBendViewProviderTree(SheetMetalTools.SMViewProvider):
-        ''' Part WB style ViewProvider '''        
+        """Part WB style ViewProvider."""
+
         def getIcon(self):
             return os.path.join(icons_path, 'SheetMetal_AddBend.svg')
         
@@ -161,10 +167,15 @@ if SheetMetalTools.isGuiLoaded():
             return SMBendTaskPanel(obj)
 
     class SMBendViewProviderFlat(SMBendViewProviderTree):
-        ''' Part Design WB style ViewProvider - backward compatibility only''' 
+        """Part Design WB style ViewProvider.
+
+        Note:
+            Backward compatibility only.
+
+        """
 
     class SMBendTaskPanel:
-        """A TaskPanel for the Sheetmetal"""
+        """A TaskPanel for the SheetMetal."""
 
         def __init__(self, obj):
             self.obj = obj
@@ -193,7 +204,7 @@ if SheetMetalTools.isGuiLoaded():
         #def retranslateUi(self, SMBendTaskPanel):
 
     class AddBendCommandClass:
-        """Add Solid Bend command"""
+        """Add Solid Bend command."""
 
         def GetResources(self):
             return {

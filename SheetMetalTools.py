@@ -824,21 +824,25 @@ def smUpdateLinks(obj, selobj, selSubNames):
 
 def smAddProperty(obj, proptype, name, proptip, defval=None, paramgroup="Parameters", 
                   replacedname=None, readOnly=False, isHiddden=False, attribs=0):
-    """
-    Add a property to a given object.
+    """Add a property to a given object.
 
     Args:
-    - obj: The object to which the property should be added.
-    - proptype: The type of the property (e.g., "App::PropertyLength", "App::PropertyBool").
-    - name: The name of the property. Non-translatable.
-    - proptip: The tooltip for the property. Need to be translated from outside.
-    - defval: The default value for the property (optional).
-    - paramgroup: The parameter group to which the property should belong (default is "Parameters").
-                  if group name is "Hidden", the property will not be shown in the property editor
-    - replacedname: If a property is renamed, for backward compatibility, add the replaced name
-                    to the old one so data can be extracted from it in old files
-    - readOnly: Property can not be edited
-    - isHiddden: Property is not shown in the property editor
+        obj: The object to which the property should be added.
+        proptype: The type of the property (e.g., "App::PropertyLength",
+            "App::PropertyBool").
+        name: The name of the property. Non-translatable.
+        proptip: The tooltip for the property. Need to be translated
+            from outside.
+        defval: The default value for the property (optional).
+        paramgroup: The parameter group to which the property should
+            belong (default is "Parameters"). If group name is "Hidden",
+            the property will not be shown in the property editor.
+        replacedname: If a property is renamed, for backward
+            compatibility, add the replaced name to the old one so data
+            can be extracted from it in old files.
+        readOnly: Property can not be edited.
+        isHiddden: Property is not shown in the property editor.
+
     """
     if not hasattr(obj, name):
         if paramgroup == "Hidden":

@@ -27,19 +27,21 @@ import Part, math
 
 
 def get_point_on_cylinder(zero_vert, point, radius, center, axis, zero_vert_normal):
-    """
-    Calculate a point on a cylinder's surface projected from a given point.
+    """Calculate a point on a cylinder's surface projected from
+    a given point.
 
-    Parameters:
-    - zero_vert: The reference vertex on the cylinder.
-    - point: The point of interest to project onto the cylinder.
-    - radius: The radius of the cylinder.
-    - center: The center point of the cylinder's base.
-    - axis: The axis along which the cylinder extends.
-    - zero_vert_normal: A normal vector to the plane defined by zero_vert.
+    Args:
+        zero_vert: The reference vertex on the cylinder.
+        point: The point of interest to project onto the cylinder.
+        radius: The radius of the cylinder.
+        center: The center point of the cylinder's base.
+        axis: The axis along which the cylinder extends.
+        zero_vert_normal: A normal vector to the plane defined
+            by `zero_vert`.
 
     Returns:
-    - A point on the cylinder surface.
+        A point on the cylinder surface.
+
     """
     # Calculate distance from point to the plane defined by zero_vert and its normal
     distance = zero_vert.distanceToPlane(point, zero_vert_normal)
@@ -70,19 +72,20 @@ def get_point_on_cylinder(zero_vert, point, radius, center, axis, zero_vert_norm
 
 
 def wrap_bspline(bspline, radius, zero_vert, center, axis, zero_vert_normal):
-    """
-    Wraps a B-Spline curve onto the surface of a cylinder.
+    """Wraps a B-Spline curve onto the surface of a cylinder.
 
-    Parameters:
-    - bspline: The B-Spline curve to wrap.
-    - radius: The radius of the cylinder.
-    - zero_vert: The reference vertex on the cylinder.
-    - cent: The center point of the cylinder's base.
-    - axis: The axis along which the cylinder extends.
-    - zero_vert_normal: A normal vector to the plane defined by zero_vert.
+    Args:
+        bspline: The B-Spline curve to wrap.
+        radius: The radius of the cylinder.
+        zero_vert: The reference vertex on the cylinder.
+        center: The center point of the cylinder's base.
+        axis: The axis along which the cylinder extends.
+        zero_vert_normal: A normal vector to the plane defined
+            by `zero_vert`.
 
     Returns:
-    - The wrapped B-Spline curve as a Part.Shape object.
+        The wrapped B-Spline curve as a Part.Shape object.
+
     """
     poles = bspline.getPoles()
     new_poles = []
@@ -107,20 +110,23 @@ def wrap_bspline(bspline, radius, zero_vert, center, axis, zero_vert_normal):
 
 
 def wrap_face(face, radius, axis, normal, zero_vert, center, zero_vert_normal):
-    """
-    Wraps a face onto the surface of a cylinder by wrapping its edges.
+    """Wraps a face onto the surface of a cylinder by wrapping
+    its edges.
 
-    Parameters:
-    - face: The face to wrap.
-    - radius: The radius of the cylinder.
-    - axis: The axis along which the cylinder extends.
-    - normal: The normal vector to the face.
-    - zero_vert: The reference vertex on the cylinder.
-    - center: The center point of the cylinder's base.
-    - zero_vert_normal: A normal vector to the plane defined by zero_vert.
+    Args:
+        face: The face to wrap.
+        radius: The radius of the cylinder.
+        axis: The axis along which the cylinder extends.
+        normal: The normal vector to the face.
+        zero_vert: The reference vertex on the cylinder.
+        center: The center point of the cylinder's base.
+        zero_vert_normal: A normal vector to the plane defined
+            by `zero_vert`.
 
     Returns:
-    - A list of Part.Shape objects representing the wrapped edges of the face.
+        A list of Part.Shape objects representing the wrapped edges of
+        the face.
+
     """
     edges = []
     for e in face.Edges:
@@ -200,20 +206,20 @@ def wrap_face(face, radius, axis, normal, zero_vert, center, zero_vert_normal):
 
 
 def bend_solid(sel_face, sel_edge, bend_r, thickness, neutral_radius, axis, flipped):
-    """
-    Bends a solid along a specified axis and radius.
+    """Bends a solid along a specified axis and radius.
 
-    Parameters:
-    - sel_face: The selected face to bend.
-    - sel_edge: The selected edge to define the bending start point.
-    - bend_r: The radius of bending.
-    - thk: Thickness of the solid.
-    - neutral_radius: The neutral radius of bending.
-    - axis: The axis along which to bend.
-    - flipped: Boolean indicating if the bend is inverted.
+    Args:
+        sel_face: The selected face to bend.
+        sel_edge: The selected edge to define the bending start point.
+        bend_r: The radius of bending.
+        thickness: Thickness of the solid.
+        neutral_radius: The neutral radius of bending.
+        axis: The axis along which to bend.
+        flipped: Boolean indicating if the bend is inverted.
 
     Returns:
-    - A Part.Shape object representing the bent solid.
+        A Part.Shape object representing the bent solid.
+
     """
     normal = sel_face.normalAt(0, 0)
     zero_vert = sel_edge.Vertexes[0].Point

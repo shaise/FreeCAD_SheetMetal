@@ -198,7 +198,7 @@ def smSketchOnSheetMetal(
 
 class SMSketchOnSheet:
     def __init__(self, obj, selobj, sel_items, selsketch):
-        '''"Add Sketch based cut On Sheet metal"'''
+        """Add Sketch based cut On Sheet metal."""
         _tip_ = FreeCAD.Qt.translate("App::Property", "Base Object")
         obj.addProperty(
             "App::PropertyLinkSub", "baseObject", "Parameters", _tip_
@@ -215,12 +215,16 @@ class SMSketchOnSheet:
         obj.Proxy = self
 
     def addVerifyProperties(self, obj):
-        '''"Add new properties to the object here and not on init"'''
+        """Add new properties to the object here and not on init."""
         pass
 
     def execute(self, fp):
-        '''"Print a short message when doing a recomputation, this method is mandatory"'''
+        """Print a short message when doing a recomputation.
 
+        Note:
+            This method is mandatory.
+
+        """
         s = smSketchOnSheetMetal(
             kfactor=fp.kfactor,
             sketch=fp.Sketch,
@@ -240,7 +244,8 @@ if SheetMetalTools.isGuiLoaded():
     icons_path = SheetMetalTools.icons_path
 
     class SMSketchOnSheetVP(SheetMetalTools.SMViewProvider):
-        ''' Part WB style ViewProvider '''        
+        """Part WB style ViewProvider."""
+
         def getIcon(self):
             return os.path.join(icons_path, "SheetMetal_SketchOnSheet.svg")
         
@@ -248,10 +253,15 @@ if SheetMetalTools.isGuiLoaded():
             return SMWrappedCutoutTaskPanel(obj)
 
     class SMSketchOnSheetPDVP(SMSketchOnSheetVP):
-        ''' Part Design WB style ViewProvider - backward compatibility only''' 
+        """Part Design WB style ViewProvider.
+
+        Note:
+            Backward compatibility only.
+
+        """
 
     class SMWrappedCutoutTaskPanel:
-        '''A TaskPanel for the Sheetmetal Wrapped Cutout'''
+        """A TaskPanel for the SheetMetal Wrapped Cutout."""
 
         def __init__(self, obj):
             self.obj = obj
@@ -280,7 +290,7 @@ if SheetMetalTools.isGuiLoaded():
 
 
     class AddSketchOnSheetCommandClass:
-        """Add Wrap cutout command"""
+        """Add Wrap cutout command."""
 
         def GetResources(self):
             return {

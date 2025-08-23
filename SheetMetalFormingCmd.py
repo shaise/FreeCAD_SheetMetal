@@ -33,7 +33,7 @@ smEpsilon = SheetMetalTools.smEpsilon
 translate = FreeCAD.Qt.translate
 
 def angleBetween(ve1, ve2):
-    # Find angle between two vectors in degrees
+    """Find angle between two vectors in degrees."""
     return math.degrees(ve1.getAngle(ve2))
 
 
@@ -112,7 +112,7 @@ def makeforming(tool, base, base_face, thk, tool_faces=None, point=FreeCAD.Vecto
 
 class SMBendWall:
     def __init__(self, obj, selobj, selobj_items, seltool, seltool_items):
-        '''"Add Forming Wall" '''
+        """Add Forming Wall."""
 
         _tip_ = translate(
             "App::Property", "Suppress Forming Feature")
@@ -174,7 +174,12 @@ class SMBendWall:
             obj.toolShearFaces = (seltool, seltool_items[1:])
 
     def execute(self, fp):
-        '''"Print a short message when doing a recomputation, this method is mandatory" '''
+        """Print a short message when doing a recomputation.
+
+        Note:
+            This method is mandatory.
+
+        """
         self.addVerifyProperties(fp)
         base = fp.baseObject[0].Shape
         base_face = base.getElement(
@@ -234,7 +239,8 @@ if SheetMetalTools.isGuiLoaded():
     #########################################################################################
 
     class SMFormingVP(SheetMetalTools.SMViewProvider):
-        ''' Part WB style ViewProvider '''        
+        """Part WB style ViewProvider."""
+
         def getIcon(self):
             return os.path.join(icons_path, 'SheetMetal_AddBend.svg')
         
@@ -252,14 +258,19 @@ if SheetMetalTools.isGuiLoaded():
             return objs
 
     class SMFormingPDVP(SMFormingVP):
-        ''' Part Design WB style ViewProvider - backward compatibility only'''
+        """Part Design WB style ViewProvider.
+
+        Note:
+            Backward compatibility only.
+
+        """
 
     #########################################################################################
     # Task Panel
     #########################################################################################
 
     class SMFormingWallTaskPanel:
-        '''A TaskPanel for the Sheetmetal'''
+        """A TaskPanel for the SheetMetal."""
 
         def __init__(self, obj):
             QtCore.QDir.addSearchPath('Icons', SheetMetalTools.icons_path)
@@ -307,8 +318,8 @@ if SheetMetalTools.isGuiLoaded():
         def reject(self):
             SheetMetalTools.taskReject(self)
 
-    class AddFormingWallCommand():
-        """Add Forming Wall command"""
+    class AddFormingWallCommand:
+        """Add Forming Wall command."""
 
         def GetResources(self):
             return {'Pixmap': os.path.join(icons_path, 'SheetMetal_Forming.svg'),

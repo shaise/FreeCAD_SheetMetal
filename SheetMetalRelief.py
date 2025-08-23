@@ -117,7 +117,7 @@ def smRelief(relief=2.0, selVertexNames=' ', MainObject=None):
 
 class SMRelief:
     def __init__(self, obj, selobj, sel_items):
-        '''"Add Relief to Solid" '''
+        """Add Relief to Solid."""
         _tip_ = FreeCAD.Qt.translate("App::Property", "Relief Size")
         obj.addProperty("App::PropertyLength", "relief",
                         "Parameters", _tip_).relief = 2.0
@@ -135,7 +135,12 @@ class SMRelief:
             return smElementMapVersion + ver
 
     def execute(self, fp):
-        '''"Print a short message when doing a recomputation, this method is mandatory" '''
+        """Print a short message when doing a recomputation.
+
+        Note:
+            This method is mandatory.
+
+        """
         # pass selected object shape
         Main_Object = fp.baseObject[0].Shape.copy()
         s = smRelief(relief=fp.relief.Value,
@@ -159,7 +164,8 @@ if SheetMetalTools.isGuiLoaded():
     Gui.updateLocale()
 
     class SMReliefViewProviderTree(SheetMetalTools.SMViewProvider):
-        ''' Part WB style ViewProvider '''        
+        """Part WB style ViewProvider."""
+
         def getIcon(self):
             return os.path.join(icons_path, 'SheetMetal_AddRelief.svg')
         
@@ -167,10 +173,15 @@ if SheetMetalTools.isGuiLoaded():
             return SMReliefTaskPanel(obj)
 
     class SMReliefViewProviderFlat(SMReliefViewProviderTree):
-        ''' Part Design WB style ViewProvider - backward compatibility only''' 
+        """Part Design WB style ViewProvider.
+
+        Note:
+            Backward compatibility only.
+
+        """
         
     class SMReliefTaskPanel:
-        '''A TaskPanel for the Sheetmetal relief on solid corner'''
+        """A TaskPanel for the SheetMetal relief on solid corner."""
 
         def __init__(self, obj):
             self.obj = obj
@@ -197,8 +208,8 @@ if SheetMetalTools.isGuiLoaded():
             SheetMetalTools.taskReject(self)
 
 
-    class AddReliefCommandClass():
-        """Add Relief command"""
+    class AddReliefCommandClass:
+        """Add Relief command."""
 
         def GetResources(self):
             return {'Pixmap': os.path.join(icons_path, 'SheetMetal_AddRelief.svg'),  # the name of a svg file available in the resources

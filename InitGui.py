@@ -52,7 +52,7 @@ class SMWorkbench(Workbench):
     Icon = os.path.join(SMIconPath, "SMLogo.svg")
 
     def Initialize(self):
-        "This function is executed when FreeCAD starts"
+        """This function is executed when FreeCAD starts."""
         import SheetMetalCmd  # import here all the needed files that create your FreeCAD commands
         import SheetMetalExtendCmd
         import SheetMetalUnfolder
@@ -100,15 +100,15 @@ class SMWorkbench(Workbench):
         Gui.addIconPath(SMIconPath)
 
     def Activated(self):
-        "This function is executed when the workbench is activated"
+        """This function is executed when the workbench is activated."""
         return
 
     def Deactivated(self):
-        "This function is executed when the workbench is deactivated"
+        """This function is executed when the workbench is deactivated."""
         return
 
     def ContextMenu(self, recipient):
-        "This is executed whenever the user right-clicks on screen"
+        """This is executed whenever the user right-clicks on screen."""
         # "recipient" will be either "view" or "tree"
         self.appendContextMenu(
             FreeCAD.Qt.translate("SheetMetal", "Sheet Metal"), self.list

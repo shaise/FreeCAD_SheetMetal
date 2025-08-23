@@ -46,17 +46,19 @@ smAddWallDefaultVars = [
 translate = FreeCAD.Qt.translate
 
 def GetSMComparisonFace (smObj, smSelItemName): # Calculations for Angle and Offset face reference modes
-    """
-    Find the sheet metal face reference to find the angle and offset with another face.
+    """Find the sheet metal face reference to find the angle and offset
+    with another face.
     Find the thickness edge coincident with sheet metal reference face.
     Find the thickness face.
     
-    Parameters:
-        smObj: sheet metal part.
-        smSelItemName: selected item to create the wall/flange (can be face or edge).
+    Args:
+        smObj: Sheet metal part.
+        smSelItemName: Selected item to create the wall/flange
+            (can be face or edge).
     
     Returns:
-        FaceReference, ThicknessEdgeCoincident, ThicknessFace
+        FaceReference, ThicknessEdgeCoincident, ThicknessFace.
+
     """
 
     smSelItem = smObj.Shape.getElement(smSelItemName)
@@ -65,15 +67,16 @@ def GetSMComparisonFace (smObj, smSelItemName): # Calculations for Angle and Off
     thickness = round(thickness, 4)
 
     def faces_with_edge(obj, edge):
-        """
-        Finds all faces in the given object that contain the specified edge.
+        """Find all faces in the given object that contain the
+        specified edge.
         
-        Parameters:
+        Args:
             obj: The FreeCAD object to analyze.
             edge: The specific edge to search for.
         
         Returns:
-            FacesWithEdge(list)
+            FacesWithEdge(list).
+
         """
 
         faces_with_edge = []
@@ -84,15 +87,16 @@ def GetSMComparisonFace (smObj, smSelItemName): # Calculations for Angle and Off
         return faces_with_edge
 
     def facesConnectedToFace(obj, smThkFace):
-        """
-        Finds all faces in the given object that are connected to the given face.
+        """Find all faces in the given object that are connected to
+        the given face.
         
-        Parameters:
+        Args:
             obj: The FreeCAD object to analyze.
             smThkFace: The specific face to find connected faces to.
             
         Returns:
-            FacesConnectedToface(list)
+            FacesConnectedToface(list).
+
         """
         smFaces = obj.Faces
         faces_connected_to = []
@@ -269,28 +273,31 @@ def GetSMComparisonFace (smObj, smSelItemName): # Calculations for Angle and Off
     return extFace, thkEdge, thkFace
 
 def offsetFaceDistance (smFace, refFace, refEdge, thkFace): # Calculations for Offset face reference mode
-    """
-    Calculate the distance between the intersection of the planes of sheet metal object and the edge of face thickness.
+    """Calculate the distance between the intersection of the planes of
+    sheet metal object and the edge of face thickness.
 
-    Parameters:
-        smFace: sheet metal surface that is opposite the wall
-        refFace: any reference surface
-        refEdge: edge that is coincident with thkFace and the smFace
-        thkFace: face of the thickness where the wall gonna be
+    Args:
+        smFace: Sheet metal surface that is opposite the wall.
+        refFace: Any reference surface.
+        refEdge: Edge that is coincident with thkFace and the smFace.
+        thkFace: Face of the thickness where the wall going to be.
+
     Returns:
-        OffsetDistance (can be positive or negative value)
+        OffsetDistance (can be positive or negative value).
+
     """
     
     def get_lowest_normal_distance_to_line(face, infinite_line):
-        """
-        Calculate the lowest normal distance from a face to an infinite line.
+        """Calculate the lowest normal distance from a face to
+        an infinite line.
         
-        Parameters:
+        Args:
             face (Part.Face): The face object.
             infinite_line (Part.Line): The infinite line object.
         
         Returns:
             float: The lowest normal distance.
+
         """
         # Find the closest point on the face to the infinite line
         closest_point_face = face.distToShape(infinite_line.toShape())[1][0][0]
@@ -340,18 +347,23 @@ def offsetFaceDistance (smFace, refFace, refEdge, thkFace): # Calculations for O
     return offsetDist
 
 def relatAngleCalc (thkFace, refEdge, refFace, smFace): # Calculations for Angle and Offset face reference modes
-    """
-    Find the relative angle to apply for a sheet metal wall (aka flange),
-    considering the thickness where the wall gonna be, the edge opposite to the wall bend side,
-    the face that the wall gonna be parallel to and the sheet metal face side in opposition to
-    the wall bend side.
-    Parameters:
-        thkFace: thickness attached to the created wall
-        refEdge: edge commom to thkFace and to a sheet metal face side
-        refFace: a face used as reference for bend angle
-        smFace: a sheet metal face side in opposition to the wall bend side wich has a edge common with thkFace
+    """Find the relative angle to apply for a sheet metal wall
+    (aka flange), considering the thickness where the wall going to be,
+    the edge opposite to the wall bend side, the face that the wall
+    going to be parallel to and the sheet metal face side in opposition
+    to the wall bend side.
+
+    Args:
+        thkFace: Thickness attached to the created wall.
+        refEdge: An edge common to `thkFace` and to a sheet metal
+            face side.
+        refFace: A face used as reference for bend angle.
+        smFace: A sheet metal face side in opposition to the wall bend
+            side which has an edge common with `thkFace`.
+
     Returns:
-        angleParFace: angle between the refFace and the smFace
+        angleParFace: Angle between the refFace and the smFace.
+
     """
 
     try: # Get the face for 3D angle:
@@ -557,7 +569,7 @@ def smRestrict(var, fromVal, toVal):
 
 
 def smModifiedFace(Face, obj):
-    # find face Modified During loop
+    """Find face Modified During loop."""
     for face in obj.Faces:
         face_common = face.common(Face)
         if face_common.Faces:
@@ -612,7 +624,7 @@ def smGetFace(Faces, obj):
 
 
 def LineExtend(edge, distance1, distance2):
-    # Extend a line by given distances
+    """Extend a line by given distances."""
     result = edge.Curve.toShape(
         edge.FirstParameter - distance1, edge.LastParameter + distance2
     )
@@ -1727,7 +1739,7 @@ def smBend(
 
 class SMBendWall:
     def __init__(self, obj, selobj, sel_items, refAngOffset=None, checkRefFace=False):
-        '''"Add Wall with radius bend"'''
+        """Add Wall with radius bend."""
         self.addVerifyProperties(obj, refAngOffset, checkRefFace)
 
         _tip_ = translate("App::Property", "Base Object")
@@ -2018,7 +2030,12 @@ class SMBendWall:
             return smElementMapVersion + ver
 
     def execute(self, fp):
-        '''"Print a short message when doing a recomputation, this method is mandatory"'''
+        """Print a short message when doing a recomputation.
+
+        Note:
+            This method is mandatory.
+
+        """
 
         self.addVerifyProperties(fp)
 
@@ -2201,7 +2218,8 @@ if SheetMetalTools.isGuiLoaded():
     smEpsilon = SheetMetalTools.smEpsilon
        
     class SMViewProviderTree(SheetMetalTools.SMViewProvider):
-        ''' Part WB style ViewProvider '''        
+        """Part WB style ViewProvider."""
+
         def getIcon(self):
             return os.path.join(icons_path, 'SheetMetal_AddWall.svg')
         
@@ -2209,11 +2227,15 @@ if SheetMetalTools.isGuiLoaded():
             return SMBendWallTaskPanel(obj)
 
     class SMViewProviderFlat(SMViewProviderTree):
-        ''' Part Design WB style ViewProvider - backward compatibility only''' 
+        """Part Design WB style ViewProvider.
 
+        Note:
+            Backward compatibility only.
+
+        """
 
     class SMBendWallTaskPanel:
-        """A TaskPanel for the Sheetmetal"""
+        """A TaskPanel for the SheetMetal."""
 
         def __init__(self, obj, checkRefFace=False):
             QtCore.QDir.addSearchPath('Icons', icons_path)
@@ -2347,7 +2369,7 @@ if SheetMetalTools.isGuiLoaded():
             SheetMetalTools.taskReject(self)
 
     class AddWallCommandClass:
-        """Add Wall command"""
+        """Add Wall command."""
 
         def GetResources(self):
             return {

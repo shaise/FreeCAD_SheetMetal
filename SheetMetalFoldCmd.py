@@ -221,7 +221,7 @@ def smFold(
 
 
 class SMFoldWall:
-    '''"Fold / Bend a Sheetmetal with given Bend Radius"'''
+    """Fold / Bend a SheetMetal with given Bend Radius."""
 
     def __init__(self, obj, selobj, sel_items, sel_sketch):
         _tip_ = FreeCAD.Qt.translate("App::Property", "Bend Radius")
@@ -266,7 +266,12 @@ class SMFoldWall:
         pass
 
     def execute(self, fp):
-        '''"Print a short message when doing a recomputation, this method is mandatory"'''
+        """Print a short message when doing a recomputation.
+
+        Note:
+            This method is mandatory.
+
+        """
 
         if not hasattr(fp, "Position"):
             _tip_ = FreeCAD.Qt.translate("App::Property", "Bend Line Position")
@@ -298,7 +303,8 @@ if SheetMetalTools.isGuiLoaded():
     icons_path = SheetMetalTools.icons_path
 
     class SMFoldViewProvider(SheetMetalTools.SMViewProvider):
-        ''' Part WB style ViewProvider '''        
+        """Part WB style ViewProvider."""
+
         def getIcon(self):
             return os.path.join(icons_path, 'SheetMetal_AddFoldWall.svg')
         
@@ -313,10 +319,15 @@ if SheetMetalTools.isGuiLoaded():
             return objs
 
     class SMFoldPDViewProvider(SMFoldViewProvider):
-        ''' Part Design WB style ViewProvider - backward compatibility only''' 
+        """Part Design WB style ViewProvider.
+
+        Note:
+            Backward compatibility only.
+
+        """
 
     class SMFoldOnLineTaskPanel:
-        """A TaskPanel for the Sheetmetal"""
+        """A TaskPanel for the SheetMetal."""
 
         def __init__(self, obj):
             self.obj = obj
@@ -351,7 +362,7 @@ if SheetMetalTools.isGuiLoaded():
 
 
     class AddFoldWallCommandClass:
-        """Add Fold Wall command"""
+        """Add Fold Wall command."""
 
         def GetResources(self):
             return {

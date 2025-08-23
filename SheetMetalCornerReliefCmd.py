@@ -378,7 +378,8 @@ def smCornerR(
 
 
 class SMCornerRelief:
-    '''"Add Corner Relief to Sheetmetal Bends"'''
+    """Add Corner Relief to SheetMetal Bends."""
+
     def __init__(self, obj, selobj, sel_items):
         _tip_ = FreeCAD.Qt.translate("App::Property", "Corner Relief Type")
         obj.addProperty(
@@ -421,7 +422,12 @@ class SMCornerRelief:
         pass
 
     def execute(self, fp):
-        '''"Print a short message when doing a recomputation, this method is mandatory"'''
+        """Print a short message when doing a recomputation.
+
+        Note:
+            This method is mandatory.
+
+        """
 
         s = smCornerR(
             reliefsketch=fp.ReliefSketch,
@@ -450,7 +456,8 @@ if SheetMetalTools.isGuiLoaded():
     Gui.updateLocale()
 
     class SMCornerReliefVP(SheetMetalTools.SMViewProvider):
-        ''' Part WB style ViewProvider '''        
+        """Part WB style ViewProvider."""
+
         def getIcon(self):
             return os.path.join(icons_path, "SheetMetal_AddCornerRelief.svg")
         
@@ -458,12 +465,15 @@ if SheetMetalTools.isGuiLoaded():
             return SMCornerReliefTaskPanel(obj)
 
     class SMCornerReliefPDVP(SMCornerReliefVP):
-        ''' Part Design WB style ViewProvider - backward compatibility only''' 
+        """Part Design WB style ViewProvider.
 
+        Note:
+            Backward compatibility only.
 
+        """
 
     class SMCornerReliefTaskPanel:
-        """ A TaskPanel for the Sheetmetal corner relief function"""
+        """A TaskPanel for the SheetMetal corner relief function."""
 
         def __init__(self, obj):
             self.obj = obj
@@ -538,7 +548,7 @@ if SheetMetalTools.isGuiLoaded():
 
 
     class AddCornerReliefCommandClass:
-        """Add Corner Relief command"""
+        """Add Corner Relief command."""
 
         def GetResources(self):
             return {

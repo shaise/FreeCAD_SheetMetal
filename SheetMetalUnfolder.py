@@ -178,7 +178,7 @@ def warn_print(msg, addNewLine = True):
     FreeCAD.Console.PrintWarning(msg)
 
 def equal_vector(vec1, vec2, p=5):
-    # compares two vectors
+    """Compare two vectors."""
     return (
         round(vec1.x - vec2.x, p) == 0
         and round(vec1.y - vec2.y, p) == 0
@@ -187,7 +187,7 @@ def equal_vector(vec1, vec2, p=5):
 
 
 def equal_vertex(vert1, vert2, p=5):
-    # compares two vertices
+    """Compare two vertices."""
     return (
         round(vert1.X - vert2.X, p) == 0
         and round(vert1.Y - vert2.Y, p) == 0
@@ -409,7 +409,7 @@ class Simple_node(object):
         print("  b_edges: %s" % (str(self.b_edges)))
 
     def get_Face_idx(self):
-        # get the face index from the tree-element
+        """Get the face index from the tree-element."""
         return self.idx
 
     @property
@@ -610,12 +610,15 @@ class SheetTree(object):
             Part.show(lLine, "Measurement_Thickness_trial")
 
     def get_node_faces(self, theNode, wires_e_lists):
-        """This function searches for all faces making up the node, except
-        of the top and bottom face, which are already there.
-        wires_e_list is the list of wires lists of the top face without the parent-edge
-        theNode: the actual node to be filled with data.
-        """
+        """Search for all faces making up the node, except of the top
+        and bottom face, which are already there.
 
+        Args:
+            theNode: The actual node to be filled with data.
+            wires_e_lists: The list of wires lists of the top face
+                without the parent-edge.
+
+        """
         # Where to start?
         # Searching for all faces that have two vertices in common with
         # an edge from the list should give the sheet edge.
@@ -851,10 +854,13 @@ class SheetTree(object):
         #  Part.show(theEdge)
 
     def cutEdgeFace(self, eIdx, fIdx, theEdge, theNode):
-        """This function cuts a face in two pieces.
-        one piece is connected to the node.
-        The residual piece is discarded.
-        The function returns the piece that has a common edge with the top face of theNode.
+        """Cut a face in two pieces. One piece is connected
+        to the node. The residual piece is discarded.
+
+        Returns:
+            The piece that has a common edge with the top face
+            of `theNode`.
+
         """
         # print "now the face cutter: ", fIdx, ' ', eIdx, ' ', theNode.idx
         # Part.show(theEdge, 'EdgeToCut'+ str(theNode.idx+1)+'_')
@@ -1587,11 +1593,16 @@ class SheetTree(object):
                 + str(self.failed_face_idx + 1)
             )
 
-    # Check if a face is a chamfer, and handle it as a special case.
-    # parent_face_idx: The index of the top face
-    # edge: the edge shared by parent and child faces
-    # child_face: the supposedly face of the chamfer
     def handle_chamfer(self, parent_face_idx, edge, child_face, child_face_idx):
+        """Check if a face is a chamfer, and handle it as a special
+        case.
+
+        Args:
+            parent_face_idx: The index of the top face.
+            edge: The edge shared by parent and child faces.
+            child_face: The supposedly face of the chamfer.
+
+        """
         # if edge doesn't have 2 vertices, it can't be a chamfer
         if len(edge.Vertexes) != 2:
             return False
@@ -1670,13 +1681,18 @@ class SheetTree(object):
 
         return True
 
-    # Check if a face is a hole, and handle countersink and counterbore cases.
-    # parent_node: The node of the top face of the hole
-    # parent_face_idx: The index of the top face of the hole
-    # edge: the edge shared by parent and child faces
-    # child_face: the supposedly lateral face of the hole
-    # child_index: the index of the child in the parent_node
     def handle_hole(self, parent_node, parent_face_idx, edge, child_face, child_index):
+        """Check if a face is a hole, and handle countersink and
+        counterbore cases.
+
+        Args:
+            parent_node: The node of the top face of the hole.
+            parent_face_idx: The index of the top face of the hole.
+            edge: The edge shared by parent and child faces.
+            child_face: The supposedly lateral face of the hole.
+            child_index: The index of the child in the parent_node.
+
+        """
         # if child face is not cylindrical it can't be a hole
         if not self.is_cylindrical_face(child_face):
             return False
@@ -1802,14 +1818,19 @@ class SheetTree(object):
 
         return counter_idx
 
-    # Add new replacement edges for a chamfer to the list of wires to replace.
-    # top_face: the face from which the chamfer starts
-    # top_face_idx: the index of top_face
-    # sloped_face: the sloped face of the chamfer
-    # edge: the edge between top_face and sloped_face
     def compute_chamfer_replacement_edges(
         self, top_face, top_face_idx, sloped_face, edge
     ):
+        """Add new replacement edges for a chamfer to the list of wires
+        to replace.
+
+        Args:
+            top_face: The face from which the chamfer starts.
+            top_face_idx: The index of top_face.
+            sloped_face: The sloped face of the chamfer.
+            edge: The edge between top_face and sloped_face.
+
+        """
         v1 = self.compute_chamfer_reconstructed_vertex(
             top_face, sloped_face, edge, edge.Vertexes[0]
         )
@@ -1818,8 +1839,10 @@ class SheetTree(object):
         )
         self.add_edge_wire_replacement(top_face, top_face_idx, edge, v1, v2)
 
-    # Given a face and an edge, create a new wire replacement with two new vertices added to replace the edge in the face.
     def add_edge_wire_replacement(self, face, face_idx, edge, v1, v2):
+        """Given a face and an edge, create a new wire replacement with
+        two new vertices added to replace the edge in the face.
+        """
         wire_index = self.find_wire_index(face, edge)
         edges = []
 
@@ -1875,15 +1898,21 @@ class SheetTree(object):
             SheetTree.WireReplacement(face_idx, wire_index, Part.Wire(edges))
         )
 
-    # Add a new replacement circle to the list of wires to replace.
-    # top_face: The top face where the wire will be replaced
-    # top_face_idx : The index of the top face
-    # top_edge : An edge of the top face that will be replaced
-    # bottom_face : The bottom face used to compute the radius of the new circle
-    # bottom_edges : The edges of the hole face just above the bottom face
     def compute_replacement_circle(
         self, top_face, top_face_idx, top_edge, bottom_face, bottom_edges
     ):
+        """Add a new replacement circle to the list of wires to replace.
+
+        Args:
+            top_face: The top face where the wire will be replaced.
+            top_face_idx : The index of the top face.
+            top_edge : An edge of the top face that will be replaced.
+            bottom_face : The bottom face used to compute the radius
+                of the new circle.
+            bottom_edges : The edges of the hole face just above
+                the bottom face.
+
+        """
         top_radius = self.arc_edge_radius(top_edge)
         top_center = self.arc_edge_center(top_edge)
 
@@ -1950,25 +1979,27 @@ class SheetTree(object):
                         )
                         return True
 
-    # Check if a face is cylindrical or not.
     def is_cylindrical_face(self, face):
+        """Check if a face is cylindrical or not."""
         return (
             str(get_surface(face)) == "<Cylinder object>"
             or str(get_surface(face)) == "<Cone object>"
         )
 
-    # Check if an edge is an arc or not. Sometimes B-spline is used instead of circle.
     def is_arc_edge(self, edge):
+        """Check if an edge is an arc or not. Sometimes B-spline
+        is used instead of circle.
+        """
         return isinstance(edge.Curve, Part.Circle) or isinstance(
             edge.Curve, Part.BSplineCurve
         )
 
-    # Check if an edge is a line or not
     def is_line_edge(self, edge):
+        """Check if an edge is a line or not."""
         return isinstance(edge.Curve, Part.Line)
 
-    # Compute the radius of an arc edge
     def arc_edge_radius(self, edge):
+        """Compute the radius of an arc edge."""
         if isinstance(edge.Curve, Part.Circle):
             # Circle has radius
             return edge.Curve.Radius
@@ -1979,8 +2010,8 @@ class SheetTree(object):
             # B-spline but not with 2 vertices, this should not happen
             return None
 
-    # Compute the center of an arc edge
     def arc_edge_center(self, edge):
+        """Compute the center of an arc edge."""
         if isinstance(edge.Curve, Part.Circle):
             # Circle has location
             return edge.Curve.Location
@@ -1991,8 +2022,8 @@ class SheetTree(object):
             # B-spline but not with 2 vertices, this should not happen
             return None
 
-    # Find the wire index inside a face that contains an edge
     def find_wire_index(self, face, edge):
+        """Find the wire index inside a face that contains an edge."""
         for i, wire in enumerate(face.Wires):
             for wire_edge in wire.Edges:
                 if self.same_edges(wire_edge, edge):
@@ -2000,8 +2031,8 @@ class SheetTree(object):
 
         return None
 
-    # Find an edge's face among a list of faces
     def find_edge_face(self, edge, faces):
+        """Find an edge's face among a list of faces."""
         edge_faces = self.__Shape.ancestorsOfType(edge, Part.Face)
 
         for face in faces:
@@ -2011,18 +2042,24 @@ class SheetTree(object):
 
         return None
 
-    # Compute the normal of a face
     def face_normal(self, face):
+        """Compute the normal of a face."""
         uv = face.Surface.parameter(face.CenterOfGravity)
 
         return face.normalAt(uv[0], uv[1])
 
-    # Compute the vertex needed to reconstruct a chamfered face to its original shape
-    # top_face: the face from which the chamfer starts
-    # sloped_face: the sloped face of the chamfer
-    # edge: the edge between top_face and sloped_face
-    # vertex: the vertex of edge edge used to compute the intersection (this method must be called twice, for each vertex)
     def compute_chamfer_reconstructed_vertex(self, top_face, sloped_face, edge, vertex):
+        """Compute the vertex needed to reconstruct a chamfered face
+        to its original shape.
+
+        Args:
+            top_face: The face from which the chamfer starts.
+            sloped_face: The sloped face of the chamfer.
+            edge: The edge between top_face and sloped_face.
+            vertex: The vertex of edge used to compute the intersection
+                    (this method must be called twice, for each vertex).
+
+        """
         vert = self.find_face_vertex(sloped_face, vertex, edge)
         normal = self.face_normal(top_face)
         distance = abs(vert.Point.distanceToPlane(vertex.Point, normal))
@@ -2041,7 +2078,7 @@ class SheetTree(object):
         return None
 
     def searchNode(self, theIdx, sNode):
-        # search for a Node with theIdx in sNode.idx
+        """Search for a Node with `theIdx` in `sNode.idx`."""
         debug_print("my Idx: " + str(sNode.idx))
 
         if sNode.idx == theIdx:
@@ -2071,7 +2108,7 @@ class SheetTree(object):
         # oder kein Kind mehr da.
 
     def rotateVec(self, vec, phi, rAxis):
-        """rotate a vector by the angle phi around the axis rAxis"""
+        """Rotate a vector by the angle phi around the axis `rAxis`."""
         # https://de.wikipedia.org/wiki/Drehmatrix
         rVec = (
             rAxis.cross(vec).cross(rAxis).multiply(math.cos(phi))
@@ -2472,11 +2509,13 @@ class SheetTree(object):
         return theFace
 
     def sortEdgesTolerant(self, myEdgeList):
-        """
-        sort edges from an existing wire.
-        returns:
-          a new sorted list of indexes to edges of the original wire
-          flag if wire is closed or not (a wire of a cylinder mantle is not closed!)
+        """Sort edges from an existing wire.
+
+        Returns:
+            A new sorted list of indexes to edges of the original wire
+            flag if wire is closed or not (a wire of a cylinder mantle
+            is not closed!)
+
         """
         eIndex = 0
         newEdgeList = []
@@ -2587,9 +2626,11 @@ class SheetTree(object):
         return wireList
 
     def unbendVertDict(self, bend_node, cent, axis, nullVec):
-        """
-        calculate the unbend points in the vertexDict.
-        This is called with the vertices of the top and the opposite face only.
+        """Calculate the unbend points in the vertexDict.
+
+        This is called with the vertices of the top and the opposite
+        face only.
+
         """
 
         def unbendDictPoint(poi, compRadialVec):
@@ -2633,9 +2674,8 @@ class SheetTree(object):
         # print 'vDict Face', str(bend_node.idx+1), ' ', i, ' ', flagStr, ' ', origVec, ' ', unbendVec
 
     def generateBendShell2(self, bend_node):
-        """
-        This function takes a cylindrical bend part of sheet metal and
-        returns a flat version of that bend part.
+        """Take a cylindrical bend part of sheet metal and returns
+        a flat version of that bend part.
         """
         theCenter = bend_node.bendCenter  # theCyl.Surface.Center
         theAxis = bend_node.axis  # theCyl.Surface.Axis
@@ -2673,8 +2713,8 @@ class SheetTree(object):
         return flat_shell, foldwires
 
     def makeSeamFace(self, sEdge, theNode):
-        """This function creates a face at a seam of the sheet metal.
-        It works currently only at a flat node.
+        """Create a face at a seam of the sheet metal. It works
+        currently only at a flat node.
         """
         debug_print("now make a seam Face")
         nextVert = sEdge.Vertexes[1]
@@ -2768,8 +2808,9 @@ class SheetTree(object):
             Part.show(self.f_list[i])
 
     def unfold_tree2(self, node):
-        # This function traverses the tree and unfolds the faces
-        # beginning at the outermost nodes.
+        """Walk the tree and unfold the faces beginning
+        at the outermost nodes.
+        """
         # print "unfold_tree face", node.idx + 1
         theShell = []
         nodeShell = []
@@ -2812,8 +2853,10 @@ class SheetTree(object):
         debug_print("ufo finish face" + str(node.idx + 1))
         return (theShell + nodeShell, theFoldLines + nodeFoldLines)
 
-    # Build a copy of the face, replacing any wire that must be replaced
     def build_new_face(self, face_index):
+        """Build a copy of the face, replacing any wire that must
+        be replaced.
+        """
         new_wires = []
         face = self.f_list[face_index]
         face_replaced = False
@@ -2830,8 +2873,10 @@ class SheetTree(object):
         else:
             return face.copy()
 
-    # Given a wire, check if there is a replacement wire and return it, otherwise return a copy of the wire.
     def build_new_wire(self, wire, face_idx, wire_idx):
+        """Given a wire, check if there is a replacement wire and
+        return it, otherwise return a copy of the wire.
+        """
         for wire_replacement in self.wire_replacements:
             if (
                 wire_replacement.face_idx == face_idx
@@ -2843,8 +2888,7 @@ class SheetTree(object):
 
 
 def sew_Shape(obj):
-    """checking Shape"""
-
+    """Checking Shape."""
     if hasattr(obj, "Shape"):
         sh = obj.Shape.copy()
         sh.sewShape()

@@ -114,9 +114,10 @@ def smUnfoldExportSketches(obj, useDialog = True):
 ##########################################################################################################
 
 class SMUnfold:
-    ''' Class object for the unfold command '''
+    """Class object for the unfold command."""
+
     def __init__(self, obj, selobj, sel_elements):
-        '''"Add wall or Wall with radius bend"'''
+        """Add wall or Wall with radius bend."""
         selobj, sel_elements = SheetMetalTools.smUpdateLinks(obj, selobj, sel_elements)
         SheetMetalTools.smAddProperty(
             obj,
@@ -221,7 +222,7 @@ class SMUnfold:
                 obj.Proxy.visibleSketches = visibleSketches
 
     def newUnfolder(self, obj, baseObject, baseFace):
-        ''' Use new unfolder system '''
+        """Use new unfolder system."""
         FreeCAD.Console.PrintMessage("Using V2 unfolding system\n")
         if obj.MaterialSheet in ["_manual", "_none"]:
             bac = BendAllowanceCalculator.from_single_value(obj.KFactor, obj.KFactorStandard)
@@ -248,7 +249,7 @@ class SMUnfold:
         return unfolded_shape, sketches
 
     def oldUnfolder(self, obj, baseObject, baseFace):
-        ''' Use old unfolder system '''
+        """Use old unfolder system."""
         FreeCAD.Console.PrintMessage("Using V1 unfolding system\n")
         kFactorTable = {1: obj.KFactor}
         if obj.MaterialSheet != "_manual" and obj.MaterialSheet != "_none":
@@ -274,7 +275,12 @@ class SMUnfold:
         return shape, sketches
 
     def execute(self, fp):
-        '''"Print a short message when doing a recomputation, this method is mandatory"'''
+        """Print a short message when doing a recomputation.
+
+        Note:
+            This method is mandatory.
+
+        """
         self.addVerifyProperties(fp)
         baseObj, baseFace = SheetMetalTools.smGetSubElementName(fp.baseObject[1][0])
         if baseObj is None:
@@ -322,7 +328,8 @@ if SheetMetalTools.isGuiLoaded():
     ##########################################################################################################
 
     class SMUnfoldViewProvider(SheetMetalTools.SMViewProvider):
-        ''' Part / Part WB style ViewProvider '''        
+        """Part / Part WB style ViewProvider."""
+
         def getIcon(self):
             return os.path.join(SheetMetalTools.icons_path, 'SheetMetal_Unfold.svg')
         
@@ -342,7 +349,8 @@ if SheetMetalTools.isGuiLoaded():
     ##########################################################################################################
 
     class SMUnfoldTaskPanel:
-        ''' Task Panel for the unfold function '''
+        """Task Panel for the unfold function."""
+
         def __init__(self, obj):
             QtCore.QDir.addSearchPath('Icons', SheetMetalTools.icons_path)
             self.obj = obj
@@ -536,7 +544,7 @@ if SheetMetalTools.isGuiLoaded():
     ##########################################################################################################
 
     class SMUnfoldCommandClass:
-        """Unfold object"""
+        """Unfold object."""
 
         def GetResources(self):
             __dir__ = os.path.dirname(__file__)
@@ -584,7 +592,7 @@ if SheetMetalTools.isGuiLoaded():
             return isinstance(selFace.Surface, Part.Plane)
         
     class SMRecomputeUnfoldsCommandClass:
-        """Recompute all unfold objects marked for manual recompute"""
+        """Recompute all unfold objects marked for manual recompute."""
 
         def GetResources(self):
             __dir__ = os.path.dirname(__file__)
@@ -616,7 +624,7 @@ if SheetMetalTools.isGuiLoaded():
             return len(SheetMetalTools.smObjectsToRecompute) > 0
 
     class SMUnfoldUnattendedCommandClass:
-        """Unfold object"""
+        """Unfold object."""
 
         def GetResources(self):
             __dir__ = os.path.dirname(__file__)

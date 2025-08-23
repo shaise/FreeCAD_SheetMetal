@@ -111,7 +111,7 @@ def smBase(
 
 class SMBaseBend:
     def __init__(self, obj, sketch):
-        '''"Add wall or Wall with radius bend"'''
+        """Add wall or Wall with radius bend."""
         _tip_ = translate("App::Property", "Bend Plane")
         obj.addProperty(
             "App::PropertyEnumeration", "BendSide", "Parameters", _tip_
@@ -159,7 +159,12 @@ class SMBaseBend:
 
 
     def execute(self, fp):
-        '''"Print a short message when doing a recomputation, this method is mandatory"'''
+        """Print a short message when doing a recomputation.
+
+        Note:
+            This method is mandatory.
+
+        """
         self.addVerifyProperties(fp)
         s = smBase(
             thk=fp.Thickness.Value,
@@ -186,7 +191,8 @@ if SheetMetalTools.isGuiLoaded():
     ##########################################################################################################
 
     class SMBaseViewProvider(SheetMetalTools.SMViewProvider):
-        ''' Part / Part WB style ViewProvider '''        
+        """Part / Part WB style ViewProvider."""
+
         def getIcon(self):
             return os.path.join(icons_path, 'SheetMetal_AddBase.svg')
         
@@ -199,14 +205,12 @@ if SheetMetalTools.isGuiLoaded():
         def getTaskPanel(self, obj):
             return SMBaseBendTaskPanel(obj)
 
-
-        
     ##########################################################################################################
     # Task Panel
     ##########################################################################################################
 
     class SMBaseBendTaskPanel:
-        '''A TaskPanel for the Sheetmetal base bend command'''
+        """A TaskPanel for the SheetMetal base bend command."""
 
         def __init__(self, obj):
             self.obj = obj
@@ -253,7 +257,7 @@ if SheetMetalTools.isGuiLoaded():
     ##########################################################################################################
 
     class AddBaseCommandClass:
-        """Add Base Wall command"""
+        """Add Base Wall command."""
 
         def GetResources(self):
             return {

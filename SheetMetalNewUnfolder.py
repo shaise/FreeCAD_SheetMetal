@@ -77,15 +77,17 @@ discretization_quantity = 10
 
 
 class EstimateThickness:
-    """This class provides helper functions to determine the sheet thickness
-    of a solid-modelled sheet metal part."""
+    """This class provides helper functions to determine the sheet
+    thickness of a solid-modelled sheet metal part.
+    """
 
     @staticmethod
     def from_normal_edges(shp: Part.Shape, selected_face: int) -> float:
-        """Get the modal length of all straight edges that share a vertex with
-        the selected root face, and are orinted in line with the root faces
-        normal direction. Edges that meet this criteria usually correspond to
-        the sheet thickness."""
+        """Get the modal length of all straight edges that share
+        a vertex with the selected root face, and are oriented in line
+        with the root faces normal direction. Edges that meet these
+        criteria usually correspond to the sheet thickness.
+        """
         num_places = abs(int(log10(eps)))
         root_face = shp.Faces[selected_face]
         normal = root_face.Surface.Axis
@@ -113,7 +115,8 @@ class EstimateThickness:
         bend having 2 concentric cylindrical faces. If we take the modal
         difference between all possible combinations of radii present in the
         subset of shape faces which are cylindrical, we will usually get the
-        exact thickness of the sheet metal part."""
+        exact thickness of the sheet metal part.
+        """
         num_places = abs(int(log10(eps)))
         curv_map = {}
         for face in shp.Faces:
@@ -183,11 +186,12 @@ class EstimateThickness:
 
 
 class TangentFaces:
-    """This class provides functions to check if brep faces are tangent to
-    each other. each compare_x_x function accepts two surfaces of a
+    """This class provides functions to check if brep faces are tangent
+    to each other. each compare_x_x function accepts two surfaces of a
     particular type, and returns a boolean value indicating tangency.
     The compare function accepts two faces and selects the correct
-    compare_x_x function automatically,"""
+    compare_x_x function automatically.
+    """
 
     @staticmethod
     def compare_plane_plane(p1: Part.Plane, p2: Part.Plane) -> bool:
@@ -463,7 +467,7 @@ class TangentFaces:
 
 
 class UVRef(Enum):
-    """Describes reference corner for a rectangular-ish surface patch"""
+    """Describes reference corner for a rectangular-ish surface patch."""
 
     BOTTOM_LEFT = auto()
     BOTTOM_RIGHT = auto()
@@ -472,8 +476,9 @@ class UVRef(Enum):
 
 
 class BendDirection(Enum):
-    """Up is like a tray with a raised lip,
-    down is like the rolled over edges of a table."""
+    """Up is like a tray with a raised lip, down is like the rolled
+    over edges of a table.
+    """
 
     UP = auto()
     DOWN = auto()
@@ -481,8 +486,9 @@ class BendDirection(Enum):
     @staticmethod
     def from_face(bent_face: Part.Face):
         """Cylindrical faces may be convex or concave, and the boundary
-        representation can be forward or reversed. the bend direction may be
-        determined according to these values."""
+        representation can be forward or reversed. The bend direction
+        may be determined according to these values.
+        """
         curv_a, curv_b = bent_face.curvatureAt(0, 0)
         if curv_a < 0 and abs(curv_b) < eps:
             if bent_face.Orientation == "Forward":
@@ -510,8 +516,9 @@ class SketchExtraction:
         color: str = "#00FF00",
     ) -> FreeCAD.DocumentObject:
         """Converts a list of edges to an un-constrained sketch object.
-        This allows the user to more easily make small changes to the sheet
-        metal cutting pattern when prepping it for fabrication."""
+        This allows the user to more easily make small changes to the
+        sheet metal cutting pattern when prepping it for fabrication.
+        """
         cleaned_up_edges = edges  # Edge2DCleanup.cleanup_sketch(edges, spline2arc_tol)
         # See if there is an existing sketch with the same name,
         # use it instead of creating a new one.
@@ -582,7 +589,7 @@ class SketchExtraction:
     def extract_manually(
         unfolded_shape: Part.Shape, normal: Vector
     ) -> tuple[Part.Shape]:
-        """extract sketch lines from the topmost flattened face."""
+        """Extract sketch lines from the topmost flattened face."""
         # Another approach would be to slice the flattened solid with a plane to
         # get a cross section of the middle of the unfolded shape.
         # This would probably be slower, but might be more robust in cases where
@@ -606,7 +613,8 @@ class SketchExtraction:
     @staticmethod
     def extract_with_techdraw(solid: Part.Shape, direction: Vector) -> Part.Shape:
         """Uses functionality from the TechDraw API to project
-        a 3D shape onto a particular 2D plane."""
+        a 3D shape onto a particular 2D plane.
+        """
         # this is a slow but robust method of sketch profile extraction
         # ref: https://github.com/FreeCAD/FreeCAD/blob/main/src/Mod/Draft/draftobjects/shape2dview.py
         raw_output = project_shape_to_plane(solid, direction)
@@ -619,7 +627,8 @@ class SketchExtraction:
         """Given a 2d shape and a reference face, compute a transformation matrix
         that aligns the shape's bounding box to the origin of the XY-plane, with
         the reference face oriented Z-up and rotated square to the global
-        coordinate system."""
+        coordinate system.
+        """
         # find the orientation of the root face that aligns
         # the U-direction with the x-axis
         origin = root_face.valueAt(0, 0)
@@ -647,7 +656,7 @@ class BendAllowanceCalculator:
 
     @classmethod
     def from_single_value(cls, k_factor: float, kfactor_standard: str):
-        """one k-factor for all radius:thickness ratios"""
+        """One k-factor for all radius:thickness ratios."""
         instance = cls()
         instance.k_factor_standard = (
             cls.KFactorStandard.ANSI
@@ -756,10 +765,11 @@ class BendAllowanceCalculator:
 
 
 class Edge2DCleanup:
-    """Many sheet metal fabrication suppliers, as well as CAM systems and
-    laser cutting software, don't have good support for geometric
+    """Many sheet metal fabrication suppliers, as well as CAM systems
+    and laser cutting software, don't have good support for geometric
     primitives other than lines and arcs. This class features tools to
-    replace bezier curves and other geometry types with lines and arcs"""
+    replace bezier curves and other geometry types with lines and arcs.
+    """
 
     @staticmethod
     def bspline_to_line(curve: Part.Edge) -> tuple[Part.Edge, float]:
@@ -814,7 +824,9 @@ class Edge2DCleanup:
     @staticmethod
     def curve_to_bisected_arcs(edge: Part.Edge, tolerance: float) -> list[Part.Edge]:
         """For a curved edge that isn't a straight line or circular arc,
-        choose the best available method to convert it to a series of connected arcs."""
+        choose the best available method to convert it to a series of
+        connected arcs.
+        """
         if edge.Curve.TypeId == "Part::GeomBSplineCurve":
             c = edge.Curve
         elif edge.Curve.TypeId == "Part::GeomBezierCurve":
@@ -837,7 +849,9 @@ class Edge2DCleanup:
     def eliminate_bsplines(
         sketch: list[Part.Edge], tolerance: float
     ) -> list[Part.Edge]:
-        """convert all geometry in the sketch to only straight lines and arcs"""
+        """Convert all geometry in the sketch to only straight lines
+        and arcs.
+        """
         new_edge_list = []
         for edge in sketch:
             if edge.Curve.TypeId in ["Part::GeomLine", "Part::GeomCircle"]:
@@ -858,12 +872,12 @@ class Edge2DCleanup:
 
     @staticmethod
     def line_xy(p1: Vector, p2: Vector) -> Part.Edge:
-        """flatten a straight line to the XY-plane"""
+        """Flatten a straight line to the XY-plane."""
         return Part.makeLine(Vector(p1.x, p1.y, 0.0), Vector(p2.x, p2.y, 0.0))
 
     @staticmethod
     def arc_xy(start: Vector, middle: Vector, end: Vector) -> Part.Edge:
-        """flatten a circular arc to the XY-plane"""
+        """Flatten a circular arc to the XY-plane."""
         return (
             Part.Arc(
                 Vector(start.x, start.y, 0.0),
@@ -876,7 +890,7 @@ class Edge2DCleanup:
 
     @staticmethod
     def circle_xy(center: Vector, radius: Vector) -> Part.Edge:
-        """flatten a circle to the XY-plane"""
+        """Flatten a circle to the XY-plane."""
         return (
             Part.Circle(
                 Vector(center.x, center.y, 0.0),
@@ -889,9 +903,13 @@ class Edge2DCleanup:
 
     @staticmethod
     def fix_coincidence(edgelist: list[Part.Edge], fuzzvalue: float) -> list[Part.Wire]:
-        """Given a list of edges, finds pairs of edges with endpoints that are
-        nearly (but not exactly) coincident.
-        Returns a list of wires with improved coincidence between edges"""
+        """Given a list of edges, finds pairs of edges with endpoints
+        that are nearly (but not exactly) coincident.
+
+        Returns:
+            A list of wires with improved coincidence between edges.
+
+        """
         try:
             list_of_lists_of_edges = Part.sortEdges(edgelist, fuzzvalue)
         except Part.OCCError:
@@ -974,7 +992,8 @@ class Edge2DCleanup:
     @staticmethod
     def merge_segmented_circles(wirelist: list[Part.Wire]) -> list[Part.Wire]:
         """Combine circles that are split into multiple edges so that they
-        can be recognized as holes properly"""
+        can be recognized as holes properly.
+        """
         fixed_wire_list = []
         for w in wirelist:
             if (
@@ -1007,7 +1026,7 @@ class Edge2DCleanup:
 
     @staticmethod
     def clean_and_structure_geometry(edges: list[Part.Edge]) -> list[Part.Wire]:
-        """Run all available clean up passes"""
+        """Run all available clean up passes."""
         intermediate_result1 = Edge2DCleanup.eliminate_bsplines(edges, spline2arc_tol)
         intermediate_result2 = Edge2DCleanup.fix_coincidence(intermediate_result1, fuzz)
         result = Edge2DCleanup.merge_segmented_circles(intermediate_result2)
@@ -1059,7 +1078,8 @@ def unroll_cylinder(
 ) -> tuple[list[Part.Edge], Part.Edge]:
     """Given a cylindrical face and a reference corner,
     computes flattened versions of the face's non-seam edges,
-    oriented with respect to the +x,+y quadrant of the 2D plane."""
+    oriented with respect to the +x,+y quadrant of the 2D plane.
+    """
     umin, umax, vmin, vmax = cylindrical_face.ParameterRange
     bend_angle = umax - umin
     radius = cylindrical_face.Surface.Radius
@@ -1136,7 +1156,8 @@ def compute_unbend_transform(
 ) -> tuple[Matrix, Matrix, UVRef]:
     """Computes the position and orientation of a reference corner on a bent
     surface, as well as a transformation to flatten out subsequent faces to
-    align with the pre-bend part of the shape"""
+    align with the pre-bend part of the shape.
+    """
     # for cylindrical surfaces, the u-parameter corresponds to the radial
     # direction, and the u-period is the radial boundary of the cylindrical
     # patch. The v-period corresponds to the axial direction.
@@ -1240,7 +1261,8 @@ def unfold(
 ) -> tuple[list[Part.Edge], list[Part.Edge]]:
     """Given a solid body of a sheet metal part and a reference face, computes
     a solid representation of the unbent object, as well as a compound object
-    containing straight edges for each bend centerline."""
+    containing straight edges for each bend centerline.
+    """
     graph_of_sheet_faces = build_graph_of_tangent_faces(shape, root_face_index)
     thickness = EstimateThickness.using_best_method(shape, root_face_index)
     # also build a list of all seam edges, to be filtered out from the unfolded shape

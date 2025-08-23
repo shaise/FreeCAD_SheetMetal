@@ -73,7 +73,7 @@ def smJunction(gap=2.0, selEdgeNames='', MainObject=None):
 
 class SMJunction:
     def __init__(self, obj, selobj, sel_items):
-        '''"Add Gap to Solid" '''
+        """Add Gap to Solid."""
 
         _tip_ = FreeCAD.Qt.translate("App::Property", "Junction Gap")
         obj.addProperty("App::PropertyLength", "gap",
@@ -92,7 +92,12 @@ class SMJunction:
             return smElementMapVersion + ver
 
     def execute(self, fp):
-        '''"Print a short message when doing a recomputation, this method is mandatory" '''
+        """Print a short message when doing a recomputation.
+
+        Note:
+            This method is mandatory.
+
+        """
         # pass selected object shape
         Main_Object = fp.baseObject[0].Shape.copy()
         s = smJunction(gap=fp.gap.Value,
@@ -116,7 +121,8 @@ if SheetMetalTools.isGuiLoaded():
     Gui.updateLocale()
 
     class SMJViewProviderTree(SheetMetalTools.SMViewProvider):
-        ''' Part WB style ViewProvider '''        
+        """Part WB style ViewProvider."""
+
         def getIcon(self):
             return os.path.join(icons_path, 'SheetMetal_AddJunction.svg')
         
@@ -125,11 +131,15 @@ if SheetMetalTools.isGuiLoaded():
 
 
     class SMJViewProviderFlat(SMJViewProviderTree):
-        ''' Part Design WB style ViewProvider - backward compatibility only''' 
+        """Part Design WB style ViewProvider.
 
+        Note:
+            Backward compatibility only.
+
+        """
 
     class SMJunctionTaskPanel:
-        '''A TaskPanel for the Sheetmetal addJunction command'''
+        """A TaskPanel for the SheetMetal addJunction command."""
 
         def __init__(self, obj):
             self.obj = obj
@@ -159,8 +169,8 @@ if SheetMetalTools.isGuiLoaded():
             self.addButton.setText(
                 QtGui.QApplication.translate("draft", "Update", None))
 
-    class AddJunctionCommandClass():
-        """Add Junction command"""
+    class AddJunctionCommandClass:
+        """Add Junction command."""
 
         def GetResources(self):
             return {'Pixmap': os.path.join(icons_path, 'SheetMetal_AddJunction.svg'),  # the name of a svg file available in the resources
