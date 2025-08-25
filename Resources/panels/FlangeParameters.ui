@@ -1388,6 +1388,26 @@ min-width: 28px;</string>
                    </iconset>
                   </property>
                  </item>
+                 <item>
+                  <property name="text">
+                   <string>Material Inside (90° legacy)</string>
+                  </property>
+                  <property name="icon">
+                   <iconset>
+                    <normalon>Icons:SheetMetal_WallPosMatIns.svg</normalon>
+                   </iconset>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>Thickness Outside (legacy)</string>
+                  </property>
+                  <property name="icon">
+                   <iconset>
+                    <normalon>Icons:SheetMetal_WallPosThkOut.svg</normalon>
+                   </iconset>
+                  </property>
+                 </item>
                 </widget>
                </item>
               </layout>
