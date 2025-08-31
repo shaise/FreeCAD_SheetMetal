@@ -1,5 +1,4 @@
-# -*- coding: utf-8 -*-
-##############################################################################
+########################################################################
 #
 #  SketchOnSheetMetalCmd.py
 #
@@ -21,31 +20,35 @@
 #  MA 02110-1301, USA.
 #
 #
-##############################################################################
+########################################################################
 
 import math
 import os
+
 import FreeCAD
 import Part
-import SheetMetalTools
+
 import SheetMetalBendSolid
+import SheetMetalTools
 
 smEpsilon = SheetMetalTools.smEpsilon
 
+
 def bendAngle(theFace, edge_vec):
-    # Start to investigate the angles at self.__Shape.Faces[face_idx].ParameterRange[0]
+    # Start to investigate the angles
+    # at `self.__Shape.Faces[face_idx].ParameterRange[0]`.
     # Part.show(theFace,"theFace")
-    # valuelist =  theFace.ParameterRange
+    # valuelist = theFace.ParameterRange
     # print(valuelist)
     angle_0 = theFace.ParameterRange[0]
     angle_1 = theFace.ParameterRange[1]
 
-    # idea: identify the angle at edge_vec = P_edge.Vertexes[0].copy().Point
-    # This will be = angle_start
-    # calculate the tan_vec from valueAt
+    # Idea: identify the angle
+    # at `edge_vec = P_edge.Vertexes[0].copy().Point`.
+    # This will be = `angle_start`.
+    # Calculate the tan_vec from `valueAt`.
     edgeAngle, edgePar = theFace.Surface.parameter(edge_vec)
-    # print('the angles: ', angle_0, ' ', angle_1, ' ', edgeAngle, ' ', edgeAngle - 2*math.pi)
-
+    # print("the angles: ", angle_0, " ", angle_1, " ", edgeAngle, " ", edgeAngle - 2*math.pi)
     if SheetMetalTools.smIsEqualAngle(angle_0, edgeAngle):
         angle_start = angle_0
         angle_end = angle_1
@@ -53,30 +56,26 @@ def bendAngle(theFace, edge_vec):
         angle_start = angle_1
         angle_end = angle_0
     bend_angle = angle_end - angle_start
-    #  angle_tan = angle_start + bend_angle/6.0 # need to have the angle_tan before correcting the sign
-
+    # # Need to have the angle_tan before correcting the sign.
+    # angle_tan = angle_start + bend_angle/6.0
     if bend_angle < 0.0:
         bend_angle = -bend_angle
     # print(math.degrees(bend_angle))
     return math.degrees(bend_angle)
 
 
-def smSketchOnSheetMetal(
-    kfactor=0.5, sketch="", flipped=False, selFaceNames="", MainObject=None
-):
+def smSketchOnSheetMetal(kfactor=0.5, sketch="", flipped=False, selFaceNames="", MainObject=None):
     resultSolid = MainObject.Shape.copy()
     selElement = resultSolid.getElement(SheetMetalTools.getElementFromTNP(selFaceNames[0]))
     LargeFace = SheetMetalTools.smGetFaceByEdge(selElement, resultSolid)
     sketch_face = Part.makeFace(sketch.Shape.Wires, "Part::FaceMakerBullseye")
-
-    # To get thk of sheet, top face normal
+    # To get thk of sheet, top face normal.
     thk = SheetMetalTools.smGetThickness(resultSolid, LargeFace)
     # print(thk)
-
-    # To get top face normal, flatsolid
+    # # To get top face normal, flatsolid
     solidlist = []
     normal = LargeFace.normalAt(0, 0)
-    # To check face direction
+    # To check face direction.
     coeff = normal.dot(sketch_face.Faces[0].normalAt(0, 0))
     if coeff < 0:
         sketch_face.reverse()
@@ -86,19 +85,18 @@ def smSketchOnSheetMetal(
     Flatsolid = Flatface.extrude(normal * -thk)
     # Part.show(Flatsolid,"Flatsolid")
     solidlist.append(Flatsolid)
-
     if BalanceFaces.Faces:
         for BalanceFace in BalanceFaces.Faces:
-            # Part.show(BalanceFace,"BalanceFace")
+            # Part.show(BalanceFace, "BalanceFace")
             TopFace = LargeFace
-            # Part.show(TopFace,"TopFace")
+            # Part.show(TopFace, "TopFace")
             # flipped = False
             while BalanceFace.Faces:
                 BendEdge = SheetMetalTools.smGetIntersectingEdge(BalanceFace, TopFace)
-                # Part.show(BendEdge,"BendEdge")
+                # Part.show(BendEdge, "BendEdge")
                 facelist = resultSolid.ancestorsOfType(BendEdge, Part.Face)
 
-                # To get bend radius, bend angle
+                # To get bend radius, bend angle.
                 for cylface in facelist:
                     if issubclass(type(cylface.Surface), Part.Cylinder):
                         break
@@ -115,21 +113,21 @@ def smSketchOnSheetMetal(
                 bendA = bendAngle(cylface, revAxisP)
                 # print([bendA, revAxisV, revAxisP, cylface.Orientation])
 
-                # To check bend direction
+                # To check bend direction.
                 offsetface = cylface.makeOffsetShape(-thk, 0.0, fill=False)
-                # Part.show(offsetface,"offsetface")
+                # Part.show(offsetface, "offsetface")
                 if offsetface.Area < cylface.Area:
                     bendR = cylface.Surface.Radius - thk
                     flipped = True
                 else:
                     bendR = cylface.Surface.Radius
                     flipped = False
-                # To arrive unfold Length, neutralRadius
-                unfoldLength = (bendR + kfactor * thk) * abs(bendA) * math.pi / 180.0
-                neutralRadius = bendR + kfactor * thk
-                # print([unfoldLength,neutralRadius])
+                # To arrive unfold Length, neutralRadius.
+                unfoldLength = (bendR + kfactor*thk) * abs(bendA) * math.pi / 180.0
+                neutralRadius = bendR + kfactor*thk
+                # print([unfoldLength, neutralRadius])
 
-                # To get faceNormal, bend face
+                # To get faceNormal, bend face.
                 faceNormal = normal.cross(revAxisV).normalize()
                 # print(faceNormal)
                 if bendR < cylface.Surface.Radius:
@@ -143,30 +141,24 @@ def smSketchOnSheetMetal(
                 # Part.show(BalanceFace,"BalanceFace")
                 SolidFace = offsetSolid.common(FaceArea)
                 # Part.show(BendSolidFace,"BendSolidFace")
-                if not (SolidFace.Faces):
-                    faceNormal = faceNormal * -1
+                if not SolidFace.Faces:
+                    faceNormal *= -1
                     FaceArea = tool.extrude(faceNormal * -unfoldLength)
                 BendSolidFace = BalanceFace.common(FaceArea)
                 # Part.show(FaceArea,"FaceArea")
                 # Part.show(BendSolidFace,"BendSolidFace")
-                # print([bendR, bendA, revAxisV, revAxisP, normal, flipped, BendSolidFace.Faces[0].normalAt(0,0)])
+                # print([bendR, bendA, revAxisV, revAxisP, normal, flipped,
+                #        BendSolidFace.Faces[0].normalAt(0, 0)])
 
-                bendsolid = SheetMetalBendSolid.bend_solid(
-                    BendSolidFace.Faces[0],
-                    BendEdge,
-                    bendR,
-                    thk,
-                    neutralRadius,
-                    revAxisV,
-                    flipped,
-                )
+                bendsolid = SheetMetalBendSolid.bend_solid(BendSolidFace.Faces[0], BendEdge, bendR,
+                                                           thk, neutralRadius, revAxisV, flipped)
                 # Part.show(bendsolid,"bendsolid")
                 solidlist.append(bendsolid)
 
-                if flipped == True:
+                if flipped:
                     bendA = -bendA
-                if not (SolidFace.Faces):
-                    revAxisV = revAxisV * -1
+                if not SolidFace.Faces:
+                    revAxisV *= -1
                 sketch_face = BalanceFace.cut(BendSolidFace)
                 sketch_face.translate(faceNormal * unfoldLength)
                 # Part.show(sketch_face,"sketch_face")
@@ -175,7 +167,7 @@ def smSketchOnSheetMetal(
                 TopFace = SheetMetalTools.smGetIntersectingFace(sketch_face, resultSolid)
                 # Part.show(TopFace,"TopFace")
 
-                # To get top face normal, flatsolid
+                # To get top face normal, flatsolid.
                 normal = TopFace.normalAt(0, 0)
                 Flatface = sketch_face.common(TopFace)
                 BalanceFace = sketch_face.cut(Flatface)
@@ -183,7 +175,7 @@ def smSketchOnSheetMetal(
                 Flatsolid = Flatface.extrude(normal * -thk)
                 # Part.show(Flatsolid,"Flatsolid")
                 solidlist.append(Flatsolid)
-    # To get relief Solid fused
+    # To get relief Solid fused.
     if len(solidlist) > 1:
         SMSolid = solidlist[0].multiFuse(solidlist[1:])
         # Part.show(SMSolid,"SMSolid")
@@ -198,72 +190,84 @@ def smSketchOnSheetMetal(
 
 class SMSketchOnSheet:
     def __init__(self, obj, selobj, sel_items, selsketch):
-        '''"Add Sketch based cut On Sheet metal"'''
+        """Add Sketch based cut On Sheet metal."""
         _tip_ = FreeCAD.Qt.translate("App::Property", "Base Object")
-        obj.addProperty(
-            "App::PropertyLinkSub", "baseObject", "Parameters", _tip_
-        ).baseObject = (selobj, sel_items)
+        obj.addProperty("App::PropertyLinkSub", "baseObject", "Parameters", _tip_).baseObject = (
+                selobj, sel_items)
         _tip_ = FreeCAD.Qt.translate("App::Property", "Sketch on Sheetmetal")
-        obj.addProperty(
-            "App::PropertyLink", "Sketch", "Parameters", _tip_
-        ).Sketch = selsketch
+        obj.addProperty("App::PropertyLink", "Sketch", "Parameters", _tip_).Sketch = selsketch
         _tip_ = FreeCAD.Qt.translate("App::Property", "Gap from Left Side")
-        obj.addProperty(
-            "App::PropertyFloatConstraint", "kfactor", "Parameters", _tip_
-        ).kfactor = (0.5, 0.0, 1.0, 0.01)
+        obj.addProperty("App::PropertyFloatConstraint", "kfactor", "Parameters", _tip_).kfactor = (
+                0.5, 0.0, 1.0, 0.01)
         self.addVerifyProperties(obj)
         obj.Proxy = self
 
     def addVerifyProperties(self, obj):
-        '''"Add new properties to the object here and not on init"'''
+        """Add new properties to the object here and not on init."""
         pass
 
     def execute(self, fp):
-        '''"Print a short message when doing a recomputation, this method is mandatory"'''
+        """Print a short message when doing a recomputation.
 
-        s = smSketchOnSheetMetal(
-            kfactor=fp.kfactor,
-            sketch=fp.Sketch,
-            selFaceNames=fp.baseObject[1],
-            MainObject=fp.baseObject[0],
-        )
-        fp.Shape = s
+        Note:
+            This method is mandatory.
+
+        """
+        fp.Shape = smSketchOnSheetMetal(kfactor=fp.kfactor,
+                                        sketch=fp.Sketch,
+                                        selFaceNames=fp.baseObject[1],
+                                        MainObject=fp.baseObject[0])
 
 
-##########################################################################################################
-# Gui code
-##########################################################################################################
+###################################################################################################
+#  Gui code
+###################################################################################################
 
 if SheetMetalTools.isGuiLoaded():
-    from FreeCAD import Gui
-
+    Gui = FreeCAD.Gui
     icons_path = SheetMetalTools.icons_path
 
+
     class SMSketchOnSheetVP(SheetMetalTools.SMViewProvider):
-        ''' Part WB style ViewProvider '''        
+        """Part WB style ViewProvider."""
+
         def getIcon(self):
             return os.path.join(icons_path, "SheetMetal_SketchOnSheet.svg")
-        
+
         def getTaskPanel(self, obj):
             return SMWrappedCutoutTaskPanel(obj)
 
+
     class SMSketchOnSheetPDVP(SMSketchOnSheetVP):
-        ''' Part Design WB style ViewProvider - backward compatibility only''' 
+        """Part Design WB style ViewProvider.
+
+        Note:
+            Backward compatibility only.
+
+        """
+
 
     class SMWrappedCutoutTaskPanel:
-        '''A TaskPanel for the Sheetmetal Wrapped Cutout'''
+        """A TaskPanel for the SheetMetal Wrapped Cutout."""
 
         def __init__(self, obj):
             self.obj = obj
             self.form = SheetMetalTools.taskLoadUI("WrappedCutoutPanel.ui")
-            obj.Proxy.addVerifyProperties(obj) # Make sure all properties are added
+
+            # Make sure all properties are added.
+            obj.Proxy.addVerifyProperties(obj)
 
             self.faceSelParams = SheetMetalTools.taskConnectSelectionSingle(
-                self.form.pushFace, self.form.txtFace, obj, "baseObject", ["Face"])
+                    self.form.pushFace, self.form.txtFace, obj, "baseObject", ["Face"])
             self.sketchSelParams = SheetMetalTools.taskConnectSelectionSingle(
-                self.form.pushSketch, self.form.txtSketch, obj, "Sketch", ("Sketcher::SketchObject", []))
+                    self.form.pushSketch,
+                    self.form.txtSketch,
+                    obj,
+                    "Sketch",
+                    ("Sketcher::SketchObject", [])
+            )
             SheetMetalTools.taskConnectSpin(obj, self.form.floatKFactor, "kfactor")
- 
+
         def isAllowedAlterSelection(self):
             return True
 
@@ -272,31 +276,31 @@ if SheetMetalTools.isGuiLoaded():
 
         def accept(self):
             SheetMetalTools.taskAccept(self)
-            self.obj.Sketch.ViewObject.hide() # Hide sketch after click OK button
+            # Hide sketch after click OK button.
+            self.obj.Sketch.ViewObject.hide()
             return True
-        
+
         def reject(self):
             SheetMetalTools.taskReject(self)
 
 
     class AddSketchOnSheetCommandClass:
-        """Add Wrap cutout command"""
+        """Add Wrap cutout command."""
 
         def GetResources(self):
             return {
-                "Pixmap": os.path.join(
-                    icons_path, "SheetMetal_SketchOnSheet.svg"
-                ),  # the name of a svg file available in the resources
-                "MenuText": FreeCAD.Qt.translate("SheetMetal", "Wrap Cutout"),
-                "Accel": "M, S",
-                "ToolTip": FreeCAD.Qt.translate(
-                    "SheetMetal",
-                    "Wrap cutout from a Sketch On Sheet metal faces\n"
-                    "1. Select a flat face on sheet metal and\n"
-                    "2. Select a sketch on same face to create sheetmetal wrapped cut.\n"
-                    "3. Use Property editor to modify other parameters",
-                ),
-            }
+                    # The name of a svg file available in the resources.
+                    "Pixmap": os.path.join(icons_path, "SheetMetal_SketchOnSheet.svg"),
+                    "MenuText": FreeCAD.Qt.translate("SheetMetal", "Wrap Cutout"),
+                    "Accel": "M, S",
+                    "ToolTip": FreeCAD.Qt.translate(
+                        "SheetMetal",
+                        "Wrap cutout from a Sketch On Sheet metal faces\n"
+                        "1. Select a flat face on sheet metal and\n"
+                        "2. Select a sketch on same face to create sheetmetal wrapped cut.\n"
+                        "3. Use Property editor to modify other parameters",
+                        ),
+                    }
 
         def Activated(self):
             sel = Gui.Selection.getSelectionEx()[0]

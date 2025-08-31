@@ -1,5 +1,4 @@
-# -*- coding: utf-8 -*-
-###################################################################################
+########################################################################
 #
 #  lookup.py
 #
@@ -21,7 +20,7 @@
 #  MA 02110-1301, USA.
 #
 #
-###################################################################################
+########################################################################
 
 import collections
 
@@ -48,24 +47,24 @@ def get_val_from_range(lookup, input, interpolate=False):
             continue
 
         if interpolate:
-            # Do the interpolation here
+            # Do the interpolation here.
             if prev_key is not None:
                 key = float(_range)
-                # print "interpolate for input: ", input, ": ", prev_key, "to ", key, "->", prev_val, val
+                # print("interpolate for input: ", input, ": ", prev_key,
+                #       "to ", key, "->", prev_val, val)
                 input_offset_percentage = (input - prev_key) / (key - prev_key)
                 val_diff = val - prev_val
                 val_offset = val_diff * input_offset_percentage
                 interpolated_val = prev_val + val_offset
-                round_2 = lambda a: int((a * 100) + 0.5) / 100.0
-                val = round_2(interpolated_val)
-                # print "...interpolated to: ", val, interpolated_val
+                val = int((interpolated_val * 100) + 0.5) / 100.0
+                # print("...interpolated to: ", val, interpolated_val)
         break
     return val
 
 
 mytable = {1: 0.25, 1.1: 0.28, 3: 0.33, 5: 0.42, 7: 0.5}
 
-# Interpolation disabled
+# Interpolation disabled.
 assert get_val_from_range(mytable, 0.1) == 0.25
 assert get_val_from_range(mytable, 0.99) == 0.25
 assert get_val_from_range(mytable, 1) == 0.25
@@ -77,7 +76,7 @@ assert get_val_from_range(mytable, 4) == 0.42
 assert get_val_from_range(mytable, 40) == 0.5
 assert get_val_from_range(mytable, 1000) == 0.5
 
-# Interpolation enabled
+# Interpolation enabled.
 assert get_val_from_range(mytable, 0.1, True) == 0.25
 assert get_val_from_range(mytable, 0.99, True) == 0.25
 assert get_val_from_range(mytable, 1, True) == 0.25
