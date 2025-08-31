@@ -382,8 +382,32 @@ class TangentFaces:
         return False  # TODO
 
     @staticmethod
-    def compare(face1: Part.Face, face2: Part.Face) -> bool:
-        # order types to simplify pattern matching
+    def compare_simple(face1: Part.Face, face2: Part.Face) -> bool:
+        # determine tangency of two faces, checking only relationships between
+        # flat planes and cylinders
+        s1 = face1.Surface
+        s2 = face2.Surface
+        if s1.TypeId == "Part::GeomPlane":
+            if s2.TypeId == "Part::GeomPlane":
+                return TangentFaces.compare_plane_plane(s1, s2)
+            elif s2.TypeId == "Part::GeomCylinder":
+                return TangentFaces.compare_plane_cylinder(s1, s2)
+            else:
+                return False
+        elif s1.TypeId == "Part::GeomCylinder":
+            if s2.TypeId == "Part::GeomPlane":
+                return TangentFaces.compare_plane_cylinder(s2, s1)
+            elif s2.TypeId == "Part::GeomCylinder":
+                return TangentFaces.compare_cylinder_cylinder(s1, s2)
+            else:
+                return False
+        else:
+            return False
+
+    @staticmethod
+    def compare_advanced(face1: Part.Face, face2: Part.Face) -> bool:
+        # determine tangency of two faces, checking as many surface geometry
+        # combinations as possible
         s1 = face1.Surface
         s2 = face2.Surface
         type1 = s1.TypeId
@@ -1030,7 +1054,7 @@ def build_graph_of_tangent_faces(shp: Part.Shape, root: int) -> nx.Graph:
     # this assumption is probably only valid for watertight solids.
     for edge_index, faces in filter(lambda c: len(c[1]) == 2, candidates):
         face_a, face_b = faces
-        if TangentFaces.compare(face_a, face_b):
+        if TangentFaces.compare_simple(face_a, face_b):
             graph_of_shape_faces.add_edge(
                 index_lookup[face_a.hashCode()],
                 index_lookup[face_b.hashCode()],
