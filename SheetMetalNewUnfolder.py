@@ -1,4 +1,4 @@
-###################################################################################
+########################################################################
 #
 #  SheetMetalNewUnfolder.py
 #
@@ -20,7 +20,7 @@
 #  MA 02110-1301, USA.
 #
 #
-###################################################################################
+########################################################################
 
 from enum import Enum, auto
 from functools import reduce
@@ -31,9 +31,10 @@ from statistics import StatisticsError, mode
 
 import FreeCAD
 import Part
-import SheetMetalTools
 from FreeCAD import Matrix, Placement, Rotation, Vector
 from TechDraw import projectEx as project_shape_to_plane
+
+import SheetMetalTools
 
 try:
     import networkx as nx
@@ -53,26 +54,28 @@ except AttributeError:
         + "Consider checking that it is at least version 3.4.2\n "
     )
 
-# we need to VERY CAREFULLY choose multiple different 'epsilon' values for
-# different types of numerical comparisons
+# We need to VERY CAREFULLY choose multiple different 'epsilon' values
+# for different types of numerical comparisons.
 #
-# default eps value to use for most numerical approximations.
+# Default eps value to use for most numerical approximations.
 # This is intentionally larger than OCC's tolerance requirements,
 # so that out of tolerance geometry can still be processed
 # and then fixed later with cleanup passes
 eps = FreeCAD.Base.Precision.approximation()
-# this is used instead of 'eps' when comparing angles
+# This is used instead of 'eps' when comparing angles.
 eps_angular = FreeCAD.Base.Precision.angular()
-# when running cleanup passes, it will be assumed that points that are
-# closer together than this value should be altered to be exactly coincident
+# When running cleanup passes, it will be assumed that points that are
+# closer together than this value should be altered to be exactly
+# coincident.
 fuzz = 1e-3  # <-- 1 / 1000 * 1mm  = one micrometer
-# this is OCC's upper bound for tolerance errors when building geometry.
-# Make sure to use it as an acceptance criterion before passing data to OCC!
+# This is OCC's upper bound for tolerance errors when building geometry.
+# Make sure to use it as an acceptance criterion before passing data
+# to OCC!
 tol = FreeCAD.Base.Precision.confusion()
 # When converting B-Splines to Arcs, use a much larger tolerance value,
-# so that we don't end up with too many small segments
-spline2arc_tol = 0.1  # one tenth of one millimeter
-# used when splitting an edge into a set number of small segments
+# so that we don't end up with too many small segments.
+spline2arc_tol = 0.1  # One tenth of one millimeter.
+# Used when splitting an edge into a set number of small segments.
 discretization_quantity = 10
 
 
@@ -121,17 +124,13 @@ class EstimateThickness:
         curv_map = {}
         for face in shp.Faces:
             if face.Surface.TypeId == "Part::GeomCylinder":
-                # normalize the axis and center-point
+                # Normalize the axis and center-point.
                 normalized_axis = face.Surface.Axis.normalize()
                 if normalized_axis.dot(Vector(0, 0, -1)) < 0:
                     normalized_axis = normalized_axis.negative()
                 cleaned_axis = Vector(*[round(d, num_places) for d in normalized_axis])
-                adjusted_center = face.Surface.Center.projectToPlane(
-                    Vector(), normalized_axis
-                )
-                cleaned_center = Vector(
-                    *[round(d, num_places) for d in adjusted_center]
-                )
+                adjusted_center = face.Surface.Center.projectToPlane(Vector(), normalized_axis)
+                cleaned_center = Vector(*[round(d, num_places) for d in adjusted_center])
                 key = (*cleaned_axis, *cleaned_center)
                 if key in curv_map:
                     curv_map[key].append(face.Surface.Radius)
@@ -155,7 +154,7 @@ class EstimateThickness:
     @staticmethod
     def from_face(shape: Part.Shape, selected_face: int) -> float:
         ref_face = shape.Faces[selected_face]
-        # find all planar faces that are parallel to the chosen face
+        # Find all planar faces that are parallel to the chosen face.
         candidates = [
             f
             for f in shape.Faces
@@ -166,11 +165,8 @@ class EstimateThickness:
         if not candidates:
             return 0.0
         opposite_face = sorted(candidates, key=lambda x: abs(x.Area - ref_face.Area))[0]
-        return abs(
-            opposite_face.valueAt(0, 0).distanceToPlane(
-                ref_face.Surface.Position, ref_face.Surface.Axis
-            )
-        )
+        return abs(opposite_face.valueAt(0, 0).distanceToPlane(ref_face.Surface.Position,
+                                                               ref_face.Surface.Axis))
 
     @staticmethod
     def using_best_method(shape: Part.Shape, selected_face: int) -> float:
@@ -195,8 +191,9 @@ class TangentFaces:
 
     @staticmethod
     def compare_plane_plane(p1: Part.Plane, p2: Part.Plane) -> bool:
-        # returns True if the two planes have similar normals and the base
-        # point of the first plane is (nearly) coincident with the second plane
+        # Returns True if the two planes have similar normals and
+        # the base point of the first plane is (nearly) coincident with
+        # the second plane.
         return (
             SheetMetalTools.smIsParallel(p1.Axis, p2.Axis)
             and p1.Position.distanceToPlane(p2.Position, p2.Axis) < eps
@@ -204,8 +201,8 @@ class TangentFaces:
 
     @staticmethod
     def compare_plane_cylinder(p: Part.Plane, c: Part.Cylinder) -> bool:
-        # returns True if the cylinder is tangent to the plane
-        # (there is 'line contact' between the surfaces)
+        # Returns True if the cylinder is tangent to the plane
+        # (there is 'line contact' between the surfaces).
         return (
             SheetMetalTools.smIsNormal(p.Axis, c.Axis)
             and abs(abs(c.Center.distanceToPlane(p.Position, p.Axis)) - c.Radius) < eps
@@ -213,8 +210,9 @@ class TangentFaces:
 
     @staticmethod
     def compare_cylinder_cylinder(c1: Part.Cylinder, c2: Part.Cylinder) -> bool:
-        # returns True if the two cylinders have parallel axis' and those axis'
-        # are separated by a distance of approximately r1 + r2
+        # Returns True if the two cylinders have parallel axis' and
+        # those axis' are separated by a distance of
+        # approximately r1 + r2.
         return (
             SheetMetalTools.smIsParallel(c1.Axis, c2.Axis)
             and abs(
@@ -236,9 +234,11 @@ class TangentFaces:
     @staticmethod
     def compare_cylinder_torus(c: Part.Cylinder, t: Part.Toroid) -> bool:
         # If the surfaces are tangent, either we have:
-        # - a donut inside a circular container, with no gap at the container perimeter
-        # - a donut shoved onto a shaft with no wiggle room
-        # - a cylinder with an axis tangent to the central circle of the donut
+        # - a donut inside a circular container, with no gap at the
+        #     container perimeter;
+        # - a donut shoved onto a shaft with no wiggle room;
+        # - a cylinder with an axis tangent to the central circle of
+        #     the donut.
         return (
             SheetMetalTools.smIsParallel(c.Axis, t.Axis)
             and c.Center.distanceToLine(t.Center, t.Axis) < eps
@@ -255,17 +255,14 @@ class TangentFaces:
 
     @staticmethod
     def compare_sphere_sphere(s1: Part.Sphere, s2: Part.Sphere) -> bool:
-        # only segments of identical spheres are tangent to each other
-        return (
-            s1.Center.distanceToPoint(s2.Center) < eps
-            and abs(s1.Radius - s2.Radius) < eps
-        )
+        # Only segments of identical spheres are tangent to each other.
+        return s1.Center.distanceToPoint(s2.Center) < eps and abs(s1.Radius - s2.Radius) < eps
 
     @staticmethod
     def compare_plane_sphere(p: Part.Plane, s: Part.Sphere) -> bool:
         # This function will probably never actually return True,
         # because a plane and a sphere only ever share a vertex if
-        # they are tangent to each other
+        # they are tangent to each other.
         return abs(abs(s.Center.distanceToPlane(p.Position, p.Axis)) - s.Radius) < eps
 
     @staticmethod
@@ -297,44 +294,41 @@ class TangentFaces:
 
     @staticmethod
     def compare_cylinder_sphere(c: Part.Cylinder, s: Part.Sphere) -> bool:
-        # the sphere must be sized/positioned like a ball sliding down a tube
-        # with no wiggle room
+        # The sphere must be sized/positioned like a ball sliding down
+        # a tube with no wiggle room.
         return (
-            s.Center.distanceToLine(c.Center, c.Axis) < eps
-            and abs(s.Radius - c.Radius) < eps
-        ) or (
-            # point contact case
-            abs(s.Center.distanceToLine(c.Center, c.Axis) - s.Radius - c.Radius) < eps
+            (s.Center.distanceToLine(c.Center, c.Axis) < eps and abs(s.Radius - c.Radius) < eps)
+            # Point contact case.
+            or (abs(s.Center.distanceToLine(c.Center, c.Axis) - s.Radius - c.Radius) < eps)
         )
 
     @staticmethod
     def compare_plane_cone(p: Part.Plane, cn: Part.Cone) -> bool:
-        return abs(cn.Apex.distanceToPlane(p.Position, p.Axis)) < eps and (
-            abs(cn.Axis.getAngle(p.Axis) - abs(cn.SemiAngle) - pi / 2) < eps_angular
-            or abs(cn.Axis.getAngle(p.Axis) + abs(cn.SemiAngle) - pi / 2) < eps_angular
-        )
+        return (abs(cn.Apex.distanceToPlane(p.Position, p.Axis)) < eps
+                and (abs(cn.Axis.getAngle(p.Axis) - abs(cn.SemiAngle) - pi/2) < eps_angular
+                     or abs(cn.Axis.getAngle(p.Axis) + abs(cn.SemiAngle) - pi/2) < eps_angular
+                     )
+                )
 
     @staticmethod
     def compare_cone_cone(cn1: Part.Cone, cn2: Part.Cone) -> bool:
-        return (
-            cn1.Apex.distanceToPoint(cn2.Apex) < eps
-            and abs(cn1.Axis.getAngle(cn2.Axis) - cn1.SemiAngle - cn2.SemiAngle)
-            < eps_angular
-        )
+        return (cn1.Apex.distanceToPoint(cn2.Apex) < eps
+                and abs(cn1.Axis.getAngle(cn2.Axis) - cn1.SemiAngle - cn2.SemiAngle) < eps_angular
+                )
 
     @staticmethod
     def compare_sphere_cone(s: Part.Sphere, cn: Part.Cone) -> bool:
-        return (
-            s.Center.distanceToLine(cn.Apex, cn.Axis) < eps
-            and (cn.Apex.distanceToPoint(s.Center) * sin(cn.SemiAngle) - s.Radius) < eps
-        )
+        return (s.Center.distanceToLine(cn.Apex, cn.Axis) < eps
+                and (cn.Apex.distanceToPoint(s.Center)*sin(cn.SemiAngle) - s.Radius) < eps
+                )
 
     @staticmethod
     def compare_cylinder_cone(c: Part.Cylinder, cn: Part.Cone) -> bool:
-        return abs(cn.Apex.distanceToLine(c.Center, c.Axis) - c.Radius) < eps and (
-            abs(c.Axis.getAngle(cn.Axis) - cn.SemiAngle) < eps_angular
-            or abs(pi - c.Axis.getAngle(cn.Axis) - abs(cn.SemiAngle)) < eps_angular
-        )
+        return (abs(cn.Apex.distanceToLine(c.Center, c.Axis) - c.Radius) < eps
+                and (abs(c.Axis.getAngle(cn.Axis) - cn.SemiAngle) < eps_angular
+                     or abs(pi - c.Axis.getAngle(cn.Axis) - abs(cn.SemiAngle)) < eps_angular
+                     )
+                )
 
     @staticmethod
     def compare_torus_cone(t: Part.Toroid, cn: Part.Cone) -> bool:
@@ -362,9 +356,7 @@ class TangentFaces:
         return False  # TODO
 
     @staticmethod
-    def compare_cylinder_extrusion(
-        c: Part.Cylinder, ex: Part.SurfaceOfExtrusion
-    ) -> bool:
+    def compare_cylinder_extrusion(c: Part.Cylinder, ex: Part.SurfaceOfExtrusion) -> bool:
         return False  # TODO
 
     @staticmethod
@@ -377,7 +369,7 @@ class TangentFaces:
 
     @staticmethod
     def compare_extrusion_extrusion(
-        ex1: Part.SurfaceOfExtrusion, ex2: Part.SurfaceOfExtrusion
+            ex1: Part.SurfaceOfExtrusion, ex2: Part.SurfaceOfExtrusion
     ) -> bool:
         return False  # TODO
 
@@ -409,7 +401,7 @@ class TangentFaces:
             s2, s1 = s1, s2
         cls = TangentFaces
         if s1.TypeId == "Part::GeomPlane":
-            # plane
+            # Plane.
             if s2.TypeId == "Part::GeomPlane":
                 return cls.compare_plane_plane(s1, s2)
             elif s2.TypeId == "Part::GeomCylinder":
@@ -422,7 +414,7 @@ class TangentFaces:
                 return cls.compare_plane_extrusion(s1, s2)
             elif s2.TypeId == "Part::GeomCone":
                 return cls.compare_plane_cone(s1, s2)
-            # cylinder
+            # Cylinder.
         elif s1.TypeId == "Part::GeomCylinder":
             if s2.TypeId == "Part::GeomCylinder":
                 return cls.compare_cylinder_cylinder(s1, s2)
@@ -435,7 +427,7 @@ class TangentFaces:
             elif s2.TypeId == "Part::GeomCone":
                 return cls.compare_cylinder_cone(s1, s2)
         elif s1.TypeId == "Part::GeomToroid":
-            # torus
+            # Torus.
             if s2.TypeId == "Part::GeomToroid":
                 return cls.compare_torus_torus(s1, s2)
             elif s2.TypeId == "Part::GeomSphere":
@@ -445,7 +437,7 @@ class TangentFaces:
             elif s2.TypeId == "Part::GeomCone":
                 return cls.compare_torus_cone(s1, s2)
         elif s1.TypeId == "Part::GeomSphere":
-            # sphere
+            # Sphere.
             if s2.TypeId == "Part::GeomSphere":
                 return cls.compare_sphere_sphere(s1, s2)
             elif s2.TypeId == "Part::GeomSurfaceOfExtrusion":
@@ -453,16 +445,16 @@ class TangentFaces:
             elif s2.TypeId == "Part::GeomCone":
                 return cls.compare_sphere_cone(s1, s2)
         elif s1.TypeId == "Part::GeomSurfaceOfExtrusion":
-            # extrusion
+            # Extrusion.
             if s2.TypeId == "Part::GeomSurfaceOfExtrusion":
                 return cls.compare_extrusion_extrusion(s1, s2)
             elif s2.TypeId == "Part::GeomCone":
                 return cls.compare_extrusion_cone(s1, s2)
         elif s1.TypeId == "Part::GeomCone":
-            # cone
+            # Cone.
             if s2.TypeId == "Part::GeomCone":
                 return cls.compare_cone_cone(s1, s2)
-        # all other cases
+        # All other cases.
         return False
 
 
@@ -526,16 +518,13 @@ class SketchExtraction:
             existing_sketch_name = ""
         else:
             existing_sketch_name = next(
-                (item for item in existing_sketches if item.startswith(object_name)), ""
-            )
+                    (item for item in existing_sketches if item.startswith(object_name)), "")
         sketch = FreeCAD.ActiveDocument.getObject(existing_sketch_name)
         if sketch is not None:
             sketch.deleteAllGeometry()
         else:
-            # if there is not already an existing sketch, create one.
-            sketch = FreeCAD.ActiveDocument.addObject(
-                "Sketcher::SketchObject", object_name
-            )
+            # If there is not already an existing sketch, create one.
+            sketch = FreeCAD.ActiveDocument.addObject("Sketcher::SketchObject", object_name)
             sketch.Placement = Placement()
 
         for edge in cleaned_up_edges:
@@ -547,25 +536,22 @@ class SketchExtraction:
                     sketch.addGeometry(Part.LineSegment(startpoint, endpoint))
             elif curvetype == "Part::GeomCircle":
                 if startpoint.distanceToPoint(endpoint) < eps:
-                    # full circle
+                    # Full circle.
                     sketch.addGeometry(
-                        Part.Circle(
-                            edge.Curve.Center, Vector(0, 0, 1), edge.Curve.Radius
-                        )
+                        Part.Circle(edge.Curve.Center, Vector(0, 0, 1), edge.Curve.Radius)
                     )
                 else:
-                    # arc
+                    # Arc.
                     pmin, pmax = edge.ParameterRange
                     midpoint = edge.valueAt(pmin + 0.5 * (pmax - pmin))
                     sketch.addGeometry(Part.Arc(startpoint, midpoint, endpoint))
             else:
-                errmsg = (
-                    "Unusable curve type found during sketch creation: " + curvetype
-                )
+                errmsg = ("Unusable curve type found during sketch creation: " + curvetype)
                 raise RuntimeError(errmsg)
         sketch.Label = object_name
         sketch.recompute()
-        # if the gui is running, change the color of the sketch lines and vertices
+        # If the gui is running, change the color of the sketch lines
+        # and vertices.
         if FreeCAD.GuiUp:
             rgb_color = tuple(int(color[i : i + 2], 16) for i in (1, 3, 5))
             v = FreeCAD.Version()
@@ -579,21 +565,20 @@ class SketchExtraction:
 
     @staticmethod
     def wire_is_a_hole(w: Part.Wire) -> bool:
-        return (
-            len(w.Edges) == 1
-            and w.Edges[0].Curve.TypeId == "Part::GeomCircle"
-            and abs(w.Edges[0].Length - 2 * pi * w.Edges[0].Curve.Radius) < eps
-        )
+        return (len(w.Edges) == 1
+                and w.Edges[0].Curve.TypeId == "Part::GeomCircle"
+                and abs(w.Edges[0].Length - 2 * pi * w.Edges[0].Curve.Radius) < eps
+                )
 
     @staticmethod
     def extract_manually(
         unfolded_shape: Part.Shape, normal: Vector
     ) -> tuple[Part.Shape]:
         """Extract sketch lines from the topmost flattened face."""
-        # Another approach would be to slice the flattened solid with a plane to
-        # get a cross section of the middle of the unfolded shape.
-        # This would probably be slower, but might be more robust in cases where
-        # the outerwire is not cleanly defined.
+        # Another approach would be to slice the flattened solid with
+        # a plane to get a cross-section of the middle of the unfolded
+        # shape. This would probably be slower, but might be more robust
+        # in cases where the outerwire is not cleanly defined.
         top_face = [
             f
             for f in unfolded_shape.Faces
@@ -616,7 +601,8 @@ class SketchExtraction:
         a 3D shape onto a particular 2D plane.
         """
         # this is a slow but robust method of sketch profile extraction
-        # ref: https://github.com/FreeCAD/FreeCAD/blob/main/src/Mod/Draft/draftobjects/shape2dview.py
+        # ref:
+        # https://github.com/FreeCAD/FreeCAD/blob/main/src/Mod/Draft/draftobjects/shape2dview.py
         raw_output = project_shape_to_plane(solid, direction)
         edges = [group for group in raw_output[:5] if not group.isNull()]
         compound = Part.makeCompound(edges)
@@ -629,15 +615,16 @@ class SketchExtraction:
         the reference face oriented Z-up and rotated square to the global
         coordinate system.
         """
-        # find the orientation of the root face that aligns
-        # the U-direction with the x-axis
+        # Find the orientation of the root face that aligns
+        # the U-direction with the x-axis.
         origin = root_face.valueAt(0, 0)
         x_axis = root_face.valueAt(1, 0) - origin
         z_axis = root_face.normalAt(0, 0)
         rotation = Rotation(x_axis, Vector(), z_axis, "ZXY")
         alignment_transform = Placement(origin, rotation).toMatrix().inverse()
         sketch_aligned_to_xy_plane = sketch.transformed(alignment_transform)
-        # move in x and y so that the bounding box is entirely in the +x, +y quadrant
+        # Move in x and y so that the bounding box is entirely in
+        # the +x, +y quadrant.
         mov_x = -1 * sketch_aligned_to_xy_plane.BoundBox.XMin
         mov_y = -1 * sketch_aligned_to_xy_plane.BoundBox.YMin
         mov_z = -1 * sketch_aligned_to_xy_plane.BoundBox.ZMin
@@ -659,30 +646,24 @@ class BendAllowanceCalculator:
         """One k-factor for all radius:thickness ratios."""
         instance = cls()
         instance.k_factor_standard = (
-            cls.KFactorStandard.ANSI
-            if kfactor_standard == "ansi"
-            else cls.KFactorStandard.DIN
+            cls.KFactorStandard.ANSI if kfactor_standard == "ansi" else cls.KFactorStandard.DIN
         )
-        instance.radius_thickness_values = [
-            1.0,
-        ]
-        instance.k_factor_values = [
-            k_factor,
-        ]
+        instance.radius_thickness_values = [1.0, ]
+        instance.k_factor_values = [k_factor, ]
         return instance
 
     def get_k_factor(self, radius: float, thickness: float) -> float:
-        # if we are below the lowest tabulated value for the radius over
-        # thickness relation, return the smallest noted k-factor
+        # If we are below the lowest tabulated value for the radius over
+        # thickness relation, return the smallest noted k-factor.
         r_over_t = radius / thickness
         if r_over_t <= self.radius_thickness_values[0]:
             kf_val = self.k_factor_values[0]
-        # apply similar logic to radius:thickness values greater than
-        # the largest available
+        # Apply similar logic to radius:thickness values greater than
+        # the largest available.
         elif r_over_t >= self.radius_thickness_values[-1]:
             kf_val = self.k_factor_values[-1]
-        # if we are within the range of specified radius:thickness values,
-        # perform piecewise linear interpolation
+        # If we are within the range of specified radius: thickness
+        # values, perform piecewise linear interpolation.
         else:
             i = 0
             while r_over_t <= self.radius_thickness_values[i]:
@@ -692,7 +673,8 @@ class BendAllowanceCalculator:
             rt1 = self.radius_thickness_values[i]
             rt2 = self.radius_thickness_values[i + 1]
             kf_val = kf1 + (kf2 - kf1) * ((r_over_t - rt1) / (rt2 - rt1))
-        # we use the ansi definition of the k-factor everywhere internally
+        # We use the ansi definition of the k-factor everywhere
+        # internally.
         return self._convert_to_ansi_kfactor(kf_val)
 
     def get_bend_allowance(
@@ -718,10 +700,8 @@ class BendAllowanceCalculator:
         r_t_header = sheet.getContents("A1")
         r_t_header = "".join(c for c in r_t_header if c not in "' ").lower()
         if r_t_header != "radius/thickness":
-            errmsg = (
-                "Cell A1 of material definition sheet must "
-                'be exactly "Radius/Thickness"'
-            )
+            errmsg = ("Cell A1 of material definition sheet must "
+                      'be exactly "Radius/Thickness"')
             raise ValueError(errmsg)
         kf_header = sheet.getContents("B1")
         kf_header = "".join(c for c in kf_header if c not in "' -()").lower()
@@ -735,15 +715,15 @@ class BendAllowanceCalculator:
                 'one of "K-factor (ANSI)" or "K-factor (DIN)"'
             )
             raise ValueError(errmsg)
-        # read cells from the A column until we get to an empty cell
+        # Read cells from the A column until we get to an empty cell.
         number_of_columns = 0
         radius_thickness_list = []
         k_factor_list = []
         while next_rt_value := sheet.getContents("A" + str(number_of_columns + 2)):
             number_of_columns += 1
             radius_thickness_list.append(float(next_rt_value))
-        # read corresponding k-factor values from the B column
-        # and throw an error if we find an empty cell too early
+        # Read corresponding k-factor values from the B column
+        # and throw an error if we find an empty cell too early.
         for i in range(number_of_columns):
             next_kf_value = sheet.getContents("B" + str(i + 2))
             if not next_kf_value:
@@ -785,12 +765,16 @@ class Edge2DCleanup:
     def check_err(curve1: Part.Edge, curve2: Part.Edge) -> float:
         max_err = 0.00
         for i in range(discretization_quantity):
-            curve1_parameter = curve1.FirstParameter + (
-                curve1.LastParameter - curve1.FirstParameter
-            ) * (i + 1) / (discretization_quantity + 1)
-            curve2_parameter = curve2.FirstParameter + (
-                curve2.LastParameter - curve2.FirstParameter
-            ) * (i + 1) / (discretization_quantity + 1)
+            curve1_parameter = (curve1.FirstParameter
+                                + (curve1.LastParameter - curve1.FirstParameter)
+                                * (i + 1)
+                                / (discretization_quantity + 1)
+                                )
+            curve2_parameter = (curve2.FirstParameter
+                                + (curve2.LastParameter - curve2.FirstParameter)
+                                * (i + 1)
+                                / (discretization_quantity + 1)
+                                )
             err = curve1.valueAt(curve1_parameter).distanceToPoint(
                 curve2.valueAt(curve2_parameter)
             )
@@ -806,7 +790,7 @@ class Edge2DCleanup:
         )
         point3 = curve.lastVertex().Point
         if point1.distanceToPoint(point3) < eps:
-            # full circle
+            # Full circle.
             point4 = curve.valueAt(
                 curve.FirstParameter
                 + 0.25 * (curve.LastParameter - curve.FirstParameter)
@@ -816,7 +800,7 @@ class Edge2DCleanup:
             axis = (point1 - center).cross(point4 - center)
             arc = Part.makeCircle(radius, center, axis)
         else:
-            # partial circle
+            # Partial circle.
             arc = Part.Arc(point1, point2, point3).toShape().Edges[0]
         max_err = Edge2DCleanup.check_err(curve, arc)
         return arc, max_err
@@ -838,17 +822,13 @@ class Edge2DCleanup:
         ):
             c = edge.toNurbs().Edges[0].Curve
         else:
-            errmsg = (
-                f"Unhandled curve type found during edge cleanup: {edge.Curve.TypeId}"
-            )
+            errmsg = (f"Unhandled curve type found during edge cleanup: {edge.Curve.TypeId}")
             raise RuntimeError(errmsg)
         arcs = c.toBiArcs(tolerance)
         return [a.toShape().Edges[0] for a in arcs]
 
     @staticmethod
-    def eliminate_bsplines(
-        sketch: list[Part.Edge], tolerance: float
-    ) -> list[Part.Edge]:
+    def eliminate_bsplines(sketch: list[Part.Edge], tolerance: float) -> list[Part.Edge]:
         """Convert all geometry in the sketch to only straight lines
         and arcs.
         """
@@ -865,9 +845,7 @@ class Edge2DCleanup:
                 if max_err < tolerance:
                     new_edge_list.append(new_edge)
                     continue
-                new_edge_list.extend(
-                    Edge2DCleanup.curve_to_bisected_arcs(edge, tolerance)
-                )
+                new_edge_list.extend(Edge2DCleanup.curve_to_bisected_arcs(edge, tolerance))
         return new_edge_list
 
     @staticmethod
@@ -878,28 +856,16 @@ class Edge2DCleanup:
     @staticmethod
     def arc_xy(start: Vector, middle: Vector, end: Vector) -> Part.Edge:
         """Flatten a circular arc to the XY-plane."""
-        return (
-            Part.Arc(
-                Vector(start.x, start.y, 0.0),
-                Vector(middle.x, middle.y, 0.0),
-                Vector(end.x, end.y, 0.0),
-            )
-            .toShape()
-            .Edges[0]
-        )
+        return Part.Arc(Vector(start.x, start.y, 0.0), Vector(middle.x, middle.y, 0.0),
+                        Vector(end.x, end.y, 0.0),
+                        ).toShape().Edges[0]
 
     @staticmethod
     def circle_xy(center: Vector, radius: Vector) -> Part.Edge:
         """Flatten a circle to the XY-plane."""
-        return (
-            Part.Circle(
-                Vector(center.x, center.y, 0.0),
-                Vector(0.0, 0.0, 1.0),
-                radius,
-            )
-            .toShape()
-            .Edges[0]
-        )
+        return Part.Circle(Vector(center.x, center.y, 0.0), Vector(0.0, 0.0, 1.0),
+                           radius,
+                           ).toShape().Edges[0]
 
     @staticmethod
     def fix_coincidence(edgelist: list[Part.Edge], fuzzvalue: float) -> list[Part.Wire]:
@@ -913,16 +879,18 @@ class Edge2DCleanup:
         try:
             list_of_lists_of_edges = Part.sortEdges(edgelist, fuzzvalue)
         except Part.OCCError:
-            # the optional fuzz-value argument is not available in FreeCAD version <= 0.21
-            # Users should not expect good results with out-of tolerance shapes if the
-            # fuzz argument wasn't used
+            # The optional fuzz-value argument is not available
+            # in FreeCAD version <= 0.21. Users should not expect good
+            # results with out-of tolerance shapes if the fuzz argument
+            # wasn't used.
             list_of_lists_of_edges = Part.sortEdges(edgelist)
         wires = []
         for list_of_edges in list_of_lists_of_edges:
-            # skip tiny edge segments
+            # Skip tiny edge segments.
             useable_edges = [e for e in list_of_edges if e.Length > fuzzvalue]
             if not useable_edges:
-                # skip this edge list entirely if it was made up of only tiny segments
+                # Skip this edge list entirely if it was made up of
+                # only tiny segments.
                 continue
             edgeloop_length = len(useable_edges)
             if edgeloop_length > 1:
@@ -934,10 +902,11 @@ class Edge2DCleanup:
                     e1_end = e1.lastVertex().Point
                     e2_start = e2.firstVertex().Point
                     e2_end = e2.lastVertex().Point
-                    # this should be the correct error
+                    # This should be the correct error.
                     err1 = e1_end.distanceToPoint(e2_start)
-                    # but one of these other ones might be the case we need to use
-                    # if Part.sortEdges has failed to do its job properly
+                    # But one of these other ones might be the case we
+                    # need to use if Part.sortEdges has failed to do its
+                    # job properly.
                     err2 = e1_end.distanceToPoint(e2_end)
                     err3 = e1_start.distanceToPoint(e2_start)
                     err4 = e1_start.distanceToPoint(e2_end)
@@ -958,8 +927,9 @@ class Edge2DCleanup:
                         startpoint = e1.lastVertex().Point
                         endpoint = e2.lastVertex().Point
                     else:
-                        # orientation is ambiguous - the best we can do is assume
-                        # that the edges were sorted correctly
+                        # Orientation is ambiguous - the best we can do
+                        # is assume that the edges were sorted
+                        # correctly.
                         startpoint = e1.firstVertex().Point
                         endpoint = e2.firstVertex().Point
                     if e1.Curve.TypeId == "Part::GeomLine":
@@ -967,25 +937,19 @@ class Edge2DCleanup:
                     elif e1.Curve.TypeId == "Part::GeomCircle":
                         pmin, pmax = e1.ParameterRange
                         midpoint = e1.valueAt((pmax + pmin) / 2)
-                        new_edges.append(
-                            Edge2DCleanup.arc_xy(startpoint, midpoint, endpoint)
-                        )
+                        new_edges.append(Edge2DCleanup.arc_xy(startpoint, midpoint, endpoint))
                     else:
-                        errmsg = (
-                            f"Can't process edge with curve type = {e1.Curve.TypeId}"
-                        )
+                        errmsg = f"Can't process edge with curve type = {e1.Curve.TypeId}"
                         raise RuntimeError(errmsg)
                 w = Part.Wire(new_edges)
                 wires.append(w)
             else:
-                # single edge loops
+                # Single edge loops.
                 edge = useable_edges[0]
                 if edge.Curve.TypeId != "Part::GeomCircle":
                     errmsg = "Can't process non-circular single-edge loop"
                     raise RuntimeError(errmsg)
-                w = Part.Wire(
-                    [Edge2DCleanup.circle_xy(edge.Curve.Center, edge.Curve.Radius)]
-                )
+                w = Part.Wire([Edge2DCleanup.circle_xy(edge.Curve.Center, edge.Curve.Radius)])
                 wires.append(w)
         return wires
 
@@ -1034,26 +998,26 @@ class Edge2DCleanup:
 
 
 def build_graph_of_tangent_faces(shp: Part.Shape, root: int) -> nx.Graph:
-    # created a simple undirected graph object
+    # Created a simple undirected graph object.
     graph_of_shape_faces = nx.Graph()
-    # track faces by their indices, because the underlying pointers to faces
-    # may get changed around while building the graph.
+    # Track faces by their indices, because the underlying pointers
+    # to faces may get changed around while building the graph.
     face_hashes = [f.hashCode() for f in shp.Faces]
     index_lookup = {h: i for i, h in enumerate(face_hashes)}
-    # get pairs of faces that share the same edge
-    candidates = [
-        (i, shp.ancestorsOfType(e, Part.Face)) for i, e in enumerate(shp.Edges)
-    ]
-    # filter to remove seams on cylinders or other faces that wrap back onto themselves
-    # other than self-adjacent faces, edges should always have 2 face ancestors
-    # this assumption is probably only valid for watertight solids.
+    # Get pairs of faces that share the same edge.
+    candidates = [(i, shp.ancestorsOfType(e, Part.Face)) for i, e in enumerate(shp.Edges)]
+    # Filter to remove seams on cylinders or other faces that wrap back
+    # onto themselves other than self-adjacent faces, edges should
+    # always have 2 face ancestors this assumption is probably only
+    # valid for watertight solids.
     for edge_index, faces in filter(lambda c: len(c[1]) == 2, candidates):
         face_a, face_b = faces
         if TangentFaces.compare(face_a, face_b):
             graph_of_shape_faces.add_edge(
                 index_lookup[face_a.hashCode()],
                 index_lookup[face_b.hashCode()],
-                label=edge_index,  # store indexes in the label attr for debugging
+                # Store indexes in the label attr for debugging.
+                label=edge_index,
             )
     # graph_of_shape_faces should have at least three connected subgraphs
     # (top side, bottom side, and sheet edge sides of the sheetmetal part).
@@ -1061,8 +1025,8 @@ def build_graph_of_tangent_faces(shp: Part.Shape, root: int) -> nx.Graph:
     for c in nx.connected_components(graph_of_shape_faces):
         if root in c:
             return graph_of_shape_faces.subgraph(c).copy()
-    # If there is nothing tangent to the root face, return a graph with one
-    # node and no edges.
+    # If there is nothing tangent to the root face, return a graph with
+    # one node and no edges.
     # This is useful for dxf/svg export of flat plates for manufacturing.
     single_face_graph = nx.Graph()
     single_face_graph.add_node(root)
@@ -1084,67 +1048,48 @@ def unroll_cylinder(
     bend_angle = umax - umin
     radius = cylindrical_face.Surface.Radius
     bend_direction = BendDirection.from_face(cylindrical_face)
-    bend_allowance = bac.get_bend_allowance(
-        bend_direction, radius, thickness, bend_angle
-    )
+    bend_allowance = bac.get_bend_allowance(bend_direction, radius, thickness, bend_angle)
     overall_height = abs(vmax - vmin)
     y_scale_factor = bend_allowance / bend_angle
     flattened_edges = []
-    for e in [
-        edge for edge in cylindrical_face.Edges if edge.hashCode() not in seam_edges
-    ]:
+    for e in [edge for edge in cylindrical_face.Edges if edge.hashCode() not in seam_edges]:
         edge_on_surface, e_param_min, e_param_max = cylindrical_face.curveOnSurface(e)
         if isinstance(edge_on_surface, (Part.Geom2d.Line2d, Part.Geom2d.Line2dSegment)):
             v1 = edge_on_surface.value(e_param_min)
             y1, x1 = v1.x - umin, v1.y - vmin
             v2 = edge_on_surface.value(e_param_max)
             y2, x2 = v2.x - umin, v2.y - vmin
-            line = Part.makeLine(
-                Vector(x1, y1 * y_scale_factor), Vector(x2, y2 * y_scale_factor)
-            )
+            line = Part.makeLine(Vector(x1, y1 * y_scale_factor), Vector(x2, y2 * y_scale_factor))
             flattened_edges.append(line)
         elif isinstance(edge_on_surface, Part.Geom2d.BSplineCurve2d):
             poles_and_weights = edge_on_surface.getPolesAndWeights()
-            poles = [
-                (v - vmin, (u - umin) * y_scale_factor, 0)
-                for u, v, _ in poles_and_weights
-            ]
+            poles = [(v - vmin, (u - umin) * y_scale_factor, 0) for u, v, _ in poles_and_weights]
             weights = [w for _, _, w in poles_and_weights]
             spline = Part.BSplineCurve()
             spline.buildFromPolesMultsKnots(poles=poles, weights=weights)
             flattened_edges.append(spline.toShape())
         else:
-            errmsg = (
-                f"Unhandled curve type when unfolding face: {type(edge_on_surface)}"
-            )
+            errmsg = f"Unhandled curve type when unfolding face: {type(edge_on_surface)}"
             raise TypeError(errmsg)
     mirror_base_pos = Vector(overall_height / 2, bend_allowance / 2)
-    # there are four possible orientations of the face corresponding to four
-    # quadrants of the 2D plane. Whether flipping across the x/y/both axis is
-    # required depends on the initial orientation and the UV parameters.
-    # The correct flip conditions were figured out by brute force
-    # (checking each possible permutation).
+    # There are four possible orientations of the face corresponding to
+    # four quadrants of the 2D plane. Whether flipping across the
+    # x/y/both axis is required depends on the initial orientation and
+    # the UV parameters. The correct flip conditions were figured out by
+    # brute force (checking each possible permutation).
     if refpos == UVRef.BOTTOM_LEFT:
         pass
     elif refpos == UVRef.BOTTOM_RIGHT:
-        flattened_edges = [
-            x.mirror(mirror_base_pos, Vector(0, 1)) for x in flattened_edges
-        ]
+        flattened_edges = [x.mirror(mirror_base_pos, Vector(0, 1)) for x in flattened_edges]
     elif refpos == UVRef.TOP_LEFT:
-        flattened_edges = [
-            x.mirror(mirror_base_pos, Vector(1, 0)) for x in flattened_edges
-        ]
+        flattened_edges = [x.mirror(mirror_base_pos, Vector(1, 0)) for x in flattened_edges]
     elif refpos == UVRef.TOP_RIGHT:
         flattened_edges = [
-            x.mirror(mirror_base_pos, Vector(0, 1)).mirror(
-                mirror_base_pos, Vector(1, 0)
-            )
+            x.mirror(mirror_base_pos, Vector(0, 1)).mirror(mirror_base_pos, Vector(1, 0))
             for x in flattened_edges
         ]
     half_bend_width = Vector((vmax - vmin) / 2, 0)
-    bend_line = Part.makeLine(
-        mirror_base_pos + half_bend_width, mirror_base_pos - half_bend_width
-    )
+    bend_line = Part.makeLine(mirror_base_pos + half_bend_width, mirror_base_pos - half_bend_width)
     return flattened_edges, bend_line
 
 
@@ -1154,47 +1099,45 @@ def compute_unbend_transform(
     thickness: float,
     bac: BendAllowanceCalculator,
 ) -> tuple[Matrix, Matrix, UVRef]:
-    """Computes the position and orientation of a reference corner on a bent
-    surface, as well as a transformation to flatten out subsequent faces to
-    align with the pre-bend part of the shape.
+    """Computes the position and orientation of a reference corner on a
+    bent surface, as well as a transformation to flatten out subsequent
+    faces to align with the pre-bend part of the shape.
     """
     # for cylindrical surfaces, the u-parameter corresponds to the radial
     # direction, and the u-period is the radial boundary of the cylindrical
     # patch. The v-period corresponds to the axial direction.
     umin, umax, vmin, vmax = bent_face.ParameterRange
-    # the u period is always positive: 0.0 <= umin < umax <= 2*pi
+    # The u period is always positive: 0.0 <= umin < umax <= 2*pi.
     bend_angle = umax - umin
     radius = bent_face.Surface.Radius
-    # disallow fully cylindrical bends. These can't be formed because the
-    # opposite edge of the sheet will intersect the previous face
+    # Disallow fully cylindrical bends. These can't be formed because
+    # the opposite edge of the sheet will intersect the previous face.
     if bend_angle > radians(359.9):
         errmsg = "Bend angle must be less that 359.9 degrees"
         raise RuntimeError(errmsg)
     bend_direction = BendDirection.from_face(bent_face)
-    # the reference edge should intersect with the bent cylindrical surface at
-    # either opposite corner of surface's uv-parameter range.
-    # We need to determine which of these possibilities is correct
+    # The reference edge should intersect with the bent cylindrical
+    # surface at either opposite corner of surface's uv-parameter range.
+    # We need to determine which of these possibilities is correct.
     first_corner_point = bent_face.valueAt(umin, vmin)
     second_corner_point = bent_face.valueAt(umax, vmin)
-    # at least one of these points should be on the starting edge
-    dist1 = first_corner_point.distanceToLine(
-        base_edge.Curve.Location, base_edge.Curve.Direction
-    )
-    dist2 = second_corner_point.distanceToLine(
-        base_edge.Curve.Location, base_edge.Curve.Direction
-    )
-    # the x-axis of our desired reference is the tangent vector to a radial
-    # line on the cylindrical surface, oriented away from the previous face.
-    # We can compute candidates to choose from with the .tangent() method
-    if dist1 < eps:  # 'Forward' orientation
+    # At least one of these points should be on the starting edge.
+    dist1 = first_corner_point.distanceToLine(base_edge.Curve.Location, base_edge.Curve.Direction)
+    dist2 = second_corner_point.distanceToLine(base_edge.Curve.Location, base_edge.Curve.Direction)
+    # The x-axis of our desired reference is the tangent vector to a
+    # radial line on the cylindrical surface, oriented away from the
+    # previous face. We can compute candidates to choose from with
+    # the .tangent() method.
+    if dist1 < eps:  # "Forward" orientation.
         tangent_vector, binormal_vector = bent_face.Surface.tangent(umin, vmin)
         y_axis = tangent_vector
-        # use the normal of the face and not the surface here
-        # If the face is reverse oriented, the surface normal will be flipped
-        # relative to the face normal.
+        # Use the normal of the face and not the surface here.
+        # If the face is reverse oriented, the surface normal will be
+        # flipped relative to the face normal.
         z_axis = bent_face.normalAt(umin, vmin)
-        # place the reference point such that the cylindrical face lies in the
-        # (+x, +y) quadrant of the xy-plane of the reference coordinate system
+        # Place the reference point such that the cylindrical face lies
+        # in the (+x, +y) quadrant of the xy-plane of the reference
+        # coordinate system.
         x_axis = y_axis.cross(z_axis)
         if x_axis.dot(corner_1 := bent_face.valueAt(umin, vmin)) < x_axis.dot(
             corner_2 := bent_face.valueAt(umin, vmax)
@@ -1204,7 +1147,7 @@ def compute_unbend_transform(
         else:
             lcs_base_point = corner_2
             uvref = UVRef.TOP_LEFT
-    elif dist2 < eps:  # 'Reverse' orientation
+    elif dist2 < eps:  # "Reverse" orientation.
         tangent_vector, binormal_vector = bent_face.Surface.tangent(umax, vmin)
         y_axis = tangent_vector.negative()
         z_axis = bent_face.normalAt(umax, vmin)
@@ -1220,15 +1163,14 @@ def compute_unbend_transform(
     else:
         errmsg = "No point on reference edge"
         raise RuntimeError(errmsg)
-    # note that the x-axis is ignored here based on the priority string
+    # Note that the x-axis is ignored here based on the priority string.
     lcs_rotation = Rotation(x_axis, y_axis, z_axis, "ZYX")
     alignment_transform = Placement(lcs_base_point, lcs_rotation).toMatrix()
-    # the actual unbend transformation is found by reversing the rotation of
-    # a flat face after the bend due to the bending operation,
-    # then pushing it forward according to the bend allowance
-    bend_allowance = bac.get_bend_allowance(
-        bend_direction, radius, thickness, bend_angle
-    )
+    # The actual unbend transformation is found by reversing the
+    # rotation of a flat face after the bend due to the bending
+    # operation, then pushing it forward according to the bend
+    # allowance.
+    bend_allowance = bac.get_bend_allowance(bend_direction, radius, thickness, bend_angle)
     # fmt: off
     allowance_transform = Matrix(
         1, 0, 0, 0,
@@ -1247,7 +1189,7 @@ def compute_unbend_transform(
         0, 0, 0, 1
     )
     # fmt: on
-    # compose transformations to get the final matrix
+    # Compose transformations to get the final matrix.
     overall_transform = Matrix()
     overall_transform.transform(Vector(), alignment_transform.inverse())
     overall_transform.transform(Vector(), translate * rot * translate.inverse())
@@ -1265,18 +1207,20 @@ def unfold(
     """
     graph_of_sheet_faces = build_graph_of_tangent_faces(shape, root_face_index)
     thickness = EstimateThickness.using_best_method(shape, root_face_index)
-    # also build a list of all seam edges, to be filtered out from the unfolded shape
+    # Also build a list of all seam edges, to be filtered out from the
+    # unfolded shape.
     seam_edges_list = []
     for _, _, edata in graph_of_sheet_faces.edges(data=True):
         seam_edges_list.append(shape.Edges[edata["label"]].hashCode())
     seam_edges = set(seam_edges_list)
-    # we could also get a random spanning tree here. Would that be faster?
-    # Or is it better to take the opportunity to get a spanning tree that meets
-    # some criteria for minimization?
+    # We could also get a random spanning tree here. Would that be
+    # faster? Or is it better to take the opportunity to get a spanning
+    # tree that meets some criteria for minimization?
     # I.E.: the shorter the longest path in the tree, the fewer nested
-    # transformations we have to compute
+    # transformations we have to compute.
     spanning_tree = nx.minimum_spanning_tree(graph_of_sheet_faces, weight="label")
-    # convert to 'directed tree', where every edge points away from the selected face
+    # Convert to "directed tree", where every edge points away from the
+    # selected face.
     dg = nx.DiGraph()
     for node in spanning_tree:
         dg.add_node(node)
@@ -1287,19 +1231,18 @@ def unfold(
             dg.add_edge(f1, f2, label=edata["label"])
         else:
             dg.add_edge(f2, f1, label=edata["label"])
-    # the digraph should now have everything we need to unfold the shape,
+    # The digraph should now have everything we need to unfold the shape,
     # For every edge f1--e1-->f2 where f2 is a cylindrical face, feed f1
     # through our unbending functions with e1 as the stationary edge.
-    for e in [
-        e for e in dg.edges if shape.Faces[e[1]].Surface.TypeId == "Part::GeomCylinder"
-    ]:
-        # the bend face is the end-node of the directed edge
+    for e in [e for e in dg.edges if shape.Faces[e[1]].Surface.TypeId == "Part::GeomCylinder"]:
+        # The bend face is the end-node of the directed edge.
         bend_part = shape.Faces[e[1]]
-        # we stored the edge indices as the labels of the graph edges
+        # We stored the edge indices as the labels of the graph edges.
         edge_before_bend_index = dg.get_edge_data(e[0], e[1])["label"]
-        # check that we aren't trying to unfold across a non-linear reference edge
-        # this condition is reached if the user supplies a part with complex formed
-        # features that have unfoldable-but-tangent faces, for example.
+        # Check that we aren't trying to unfold across a non-linear
+        # reference edge. This condition is reached if the user supplies
+        # a part with complex formed features that have
+        # unfoldable-but-tangent faces, for example.
         edge_before_bend = shape.Edges[edge_before_bend_index]
         if edge_before_bend.Curve.TypeId != "Part::GeomLine":
             errmsg = (
@@ -1308,7 +1251,7 @@ def unfold(
                 f" (Edge{edge_before_bend_index + 1})"
             )
             raise RuntimeError(errmsg)
-        # compute the unbend transformation matrices.
+        # Compute the unbend transformation matrices.
         alignment_transform, overall_transform, uvref = compute_unbend_transform(
             bend_part, edge_before_bend, thickness, bac
         )
@@ -1319,45 +1262,44 @@ def unfold(
             flattened_edges, bend_line = unroll_cylinder(
                 bend_part, uvref, bac, thickness, seam_edges
             )
-            # Add the transformation and unbend shape to the end node of the edge
-            # as attributes.
+            # Add the transformation and unbend shape to the end node
+            # of the edge as attributes.
             dg.nodes[e[1]]["bend_line"] = bend_line.transformed(alignment_transform)
             dg.nodes[e[1]]["sketch_lines"] = [
                 e.transformed(alignment_transform) for e in flattened_edges
             ]
         except Exception as E:
-            msg = (
-                f"failed to unroll a cylindrical face (Face{e[1] + 1})"
-                + "\n"
-                + f"Original exception: {E}\n"
-            )
+            msg = (f"failed to unroll a cylindrical face (Face{e[1] + 1})\n"
+                   + f"Original exception: {E}\n")
             FreeCAD.Console.PrintWarning(msg)
     # Get a path from the root (stationary) face to each other face,
     # so we can combine transformations to position the final shape.
-    # Apply the unbent transformation to all the flattened geometry to bring
-    # it in-plane with the root face.
+    # Apply the unbent transformation to all the flattened geometry to
+    # bring it in-plane with the root face.
     list_of_sketch_lines = []
     list_of_bend_lines = []
     for face_id, path in nx.shortest_path(dg, source=root_face_index).items():
-        # the path includes the root face itself, which we don't need
+        # The path includes the root face itself, which we don't need.
         path_to_face = path[:-1]
         node_data = dg.nodes.data()
-        # accumulate transformations while traversing from the root face to this face
+        # Accumulate transformations while traversing from the root face
+        # to this face.
         list_of_matrices = [
             node_data[f]["unbend_transform"]
             for f in path_to_face
             if "unbend_transform" in node_data[f]
         ]
-        # use reduce() to do repeated matrix multiplication
-        # Matrix() * M_1 * M_2 * ... * M_N for N matrices
+        # Use reduce() to do repeated matrix multiplication
+        # Matrix() * M_1 * M_2 * ... * M_N for N matrices.
         final_mat = reduce(multiply_operator, list_of_matrices, Matrix())
-        # bent faces of the input shape are swapped for their unbent versions
+        # Bent faces of the input shape are swapped for their unbent
+        # versions.
         if "sketch_lines" in node_data[face_id]:
             list_of_sketch_lines.extend(
                 [e.transformed(final_mat) for e in node_data[face_id]["sketch_lines"]]
             )
-        # planar faces of the input shape are returned aligned to the root face,
-        # but otherwise unmodified
+        # Planar faces of the input shape are returned aligned to the
+        # root face, but otherwise unmodified.
         else:
             list_of_sketch_lines.extend(
                 [
@@ -1366,12 +1308,10 @@ def unfold(
                     if e.hashCode() not in seam_edges
                 ]
             )
-        # also combine all of the bend lines into a list after positioning
-        # them correctly
+        # Also combine all the bend lines into a list after positioning
+        # them correctly.
         if "bend_line" in node_data[face_id]:
-            list_of_bend_lines.append(
-                node_data[face_id]["bend_line"].transformed(final_mat)
-            )
+            list_of_bend_lines.append(node_data[face_id]["bend_line"].transformed(final_mat))
     # Extrude the 2d profile back into a flattened solid body.
     return list_of_sketch_lines, list_of_bend_lines
 
@@ -1427,10 +1367,8 @@ def getUnfoldSketches(
     sketch_profile, inner_wires, hole_wires = SketchExtraction.extract_manually(
         unfolded_shape, root_normal
     )
-    # create transform to move the sketch profiles nicely to the origin
-    sketch_align_transform = SketchExtraction.move_to_origin(
-        sketch_profile, selected_face
-    )
+    # Create transform to move the sketch profiles nicely to the origin.
+    sketch_align_transform = SketchExtraction.move_to_origin(sketch_profile, selected_face)
 
     if not split_sketches:
         sketch_profile = Part.makeCompound(
@@ -1440,12 +1378,12 @@ def getUnfoldSketches(
         hole_wires = None
         bend_lines = None
     sketch_profile = sketch_profile.transformed(sketch_align_transform)
-    # organize the unfold sketch layers in a group
+    # Organize the unfold sketch layers in a group.
     sketch_doc_obj = SketchExtraction.edges_to_sketch_object(
         sketch_profile.Edges, "Unfold_Sketch", existing_sketches, sketch_color
     )
     sketch_objects_list = [sketch_doc_obj]
-    # bend lines are sometimes not present
+    # Bend lines are sometimes not present.
     if bend_lines and bend_lines.Edges:
         bend_lines = bend_lines.transformed(sketch_align_transform)
         bend_lines_doc_obj = SketchExtraction.edges_to_sketch_object(
@@ -1456,7 +1394,7 @@ def getUnfoldSketches(
         )
         bend_lines_doc_obj.ViewObject.DrawStyle = "Dashdot"
         sketch_objects_list.append(bend_lines_doc_obj)
-    # inner lines are sometimes not present
+    # Inner lines are sometimes not present.
     if inner_wires:
         inner_lines = Part.makeCompound(inner_wires).transformed(sketch_align_transform)
         inner_lines_doc_obj = SketchExtraction.edges_to_sketch_object(

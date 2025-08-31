@@ -1,7 +1,6 @@
-# -*- coding: utf-8 -*-
-##############################################################################
+########################################################################
 #
-#  SheetMetalBend.py
+#  SheetMetalTools.py
 #
 #  Copyright 2024 Shai Seger <shaise at gmail dot com>
 #
@@ -21,12 +20,13 @@
 #  MA 02110-1301, USA.
 #
 #
-##############################################################################
+########################################################################
 
+import importlib
 import math
 import os
 import re
-import importlib
+
 import FreeCAD
 import importDXF
 import importSVG
@@ -56,7 +56,9 @@ def isGuiLoaded():
 if isGuiLoaded():
     from PySide import QtCore, QtGui
     from PySide.QtWidgets import QHeaderView
-    from FreeCAD import Gui
+
+    Gui = FreeCAD.Gui
+
 
     def smWarnDialog(msg):
         diag = QtGui.QMessageBox(
@@ -67,8 +69,11 @@ if isGuiLoaded():
         diag.setWindowModality(QtCore.Qt.ApplicationModal)
         diag.exec_()
 
+
     class SMSingleSelectionObserver:
-        """Used for tasks that needs to be aware of selection changes."""
+        """Used for tasks that needs to be aware of selection
+         changes.
+         """
 
         def __init__(self):
             self.selParams = None
@@ -76,13 +81,15 @@ if isGuiLoaded():
         def addSelection(self, document, obj, element, position):
             taskSingleSelectionChanged(self.selParams)
 
+
     smSingleSelObserver = SMSingleSelectionObserver()
     Gui.Selection.addObserver(smSingleSelObserver)
+
 
     class SMSelectionParameters:
         """Helper class for selection operations."""
 
-        def __init__(self, addRemoveButton, dispWidget, obj, allowedTypes, 
+        def __init__(self, addRemoveButton, dispWidget, obj, allowedTypes,
                      propetyName="baseObject", hideObject=True):
             self.addRemoveButton = addRemoveButton
             self.dispWidget = dispWidget
@@ -111,11 +118,12 @@ if isGuiLoaded():
                 return len(self.allowedTypes[1]) == 0
             return len(self.allowedTypes) == 0
 
-        # allowed type formats:
+        # Allowed type formats:
         # 1. list of allowed subelement types: ["Face", "Edge"]
-        # 2. tuple of allowed object type and list of allowed subelement types: ("Sketch", [])
-        #    empy list means all subelement types are allowed
-        # 3. list of above 1 or 2: [("DatumPlane", []), ["Face"]]
+        # 2. tuple of allowed object type and list of allowed subelement
+        #    types: ("Sketch", []).
+        #    Empy list means all subelement types are allowed
+        # 3. list of above 1 or 2: [("DatumPlane", []), ["Face"]].
         def matchAllowedType(self, selobj, selSubNames, allowedTypes):
             allowedObjType = ""
             if isinstance(allowedTypes, tuple):
@@ -191,17 +199,23 @@ if isGuiLoaded():
             self.EnableControlledWidgets = [] if enWidgets is None else enWidgets
             self.updateVisibilityControlledWidgets()
 
+
     def smSelectGreedy():
-        if hasattr(Gui.Selection, "setSelectionStyle"): # compatibility with FC link version
+        # Compatibility with FC link version.
+        if hasattr(Gui.Selection, "setSelectionStyle"):
             Gui.Selection.setSelectionStyle(Gui.Selection.SelectionStyle.GreedySelection)
 
+
     def smSelectNormal():
-        if hasattr(Gui.Selection, "setSelectionStyle"): # compatibility with FC link version
+        # Compatibility with FC link version.
+        if hasattr(Gui.Selection, "setSelectionStyle"):
             Gui.Selection.setSelectionStyle(Gui.Selection.SelectionStyle.NormalSelection)
 
+
     def smSelectSubObjects(obj, subObjects):
-        # doing this to avoid the bug in FreeCAD that does not select the subobjects
-        # if the object is a binder and the function is Gui.Selection.addSelection(obj, subObjects)
+        # Doing this to avoid the bug in FreeCAD that does not select
+        # the subobjects if the object is a binder and the function
+        # is Gui.Selection.addSelection(obj, subObjects).
         docName = obj.Document.Name
         if smIsPartDesign(obj):
             bodyName = obj.getParent().Name
@@ -212,6 +226,7 @@ if isGuiLoaded():
             for subName in subObjects:
                 Gui.Selection.addSelection(docName, obj.Name, subName)
 
+
     def smHideObjects(*args):
         for arg in args:
             if arg:
@@ -219,7 +234,8 @@ if isGuiLoaded():
                 if obj:
                     obj.Visibility = False
 
-    # Task panel helper code
+
+    # Task panel helper code.
     def taskPopulateSelectionList(qwidget, baseObject):
         qwidget.clear()
         if baseObject is None:
@@ -234,6 +250,7 @@ if isGuiLoaded():
             item.setIcon(0, QtGui.QIcon(":/icons/Tree_Part.svg"))
             item.setText(1, subf)
 
+
     def taskPopulateSelectionSingle(textbox, selObject):
         if selObject is None:
             textbox.setText("")
@@ -244,11 +261,13 @@ if isGuiLoaded():
         else:
             textbox.setText(selObject.Name)
 
+
     def updateTaskTitleIcon(task):
         if hasattr(task, "form"):
             if hasattr(task.obj.ViewObject.Proxy, "getIcon"):
                 task.form.setWindowIcon(QtGui.QIcon(task.obj.ViewObject.Proxy.getIcon()))
-        return  
+        return
+
 
     def _taskMultiSelectionModeClicked(sp: SMSelectionParameters):
         baseObj = getattr(sp.obj, sp.propetyName)
@@ -260,7 +279,7 @@ if isGuiLoaded():
                 sp.ObjWasVisible = baseObj[0].Visibility
                 baseObj[0].Visibility = True
                 smSelectSubObjects(baseObj[0], baseObj[1])
-            # Gui.Selection.addSelection(baseObj[0],baseObj[1]) # does not work on binder
+            # Gui.Selection.addSelection(baseObj[0],baseObj[1])  # Does not work on binder.
             smSelectGreedy()
             sp.addRemoveButton.setText(translatedPreviewText)
             if sp.ClearButton is not None:
@@ -272,7 +291,7 @@ if isGuiLoaded():
                 if sp.ClearButton is not None:
                     sp.ClearButton.setVisible(False)
                 setattr(sp.obj, sp.propetyName, (selObj, selSubNames))
-                #updateSelectionElements(sp.obj, sp.allowedTypes, sp.propetyName)
+                # updateSelectionElements(sp.obj, sp.allowedTypes, sp.propetyName)
                 baseObj = getattr(sp.obj, sp.propetyName)
                 Gui.Selection.clearSelection()
                 smSelectNormal()
@@ -286,9 +305,12 @@ if isGuiLoaded():
                 if sp.ValueChangedCallback is not None:
                     sp.ValueChangedCallback(sp, selObj, selSubNames)
 
+
     def taskConnectSelection(addRemoveButton, treeWidget, obj, allowedTypes, clearButton=None,
                              propetyName="baseObject", hideObject=True) -> SMSelectionParameters:
-        """Connects a selection button to a tree widget for selecting multiple objects."""
+        """Connects a selection button to a tree widget for selecting
+         multiple objects.
+         """
         sp = SMSelectionParameters(addRemoveButton, treeWidget, obj, allowedTypes,
                                    propetyName, hideObject)
         sp.ClearButton = clearButton
@@ -296,9 +318,10 @@ if isGuiLoaded():
         treeWidget.header().setSectionResizeMode(QHeaderView.ResizeToContents)
 
         taskPopulateSelectionList(treeWidget, baseObj)
-        # delete_shortcut = QtWidgets.QShortcut(QtGui.QKeySequence(QtCore.Qt.Key_Delete), treeWidget)
+        # delete_shortcut = QtWidgets.QShortcut(QtGui.QKeySequence(QtCore.Qt.Key_Delete),
+        #                                       treeWidget)
         # delete_shortcut.activated.connect(
-        #     lambda: _delete_selected_items(treeWidget, obj))
+        #         lambda: _delete_selected_items(treeWidget, obj))
         if clearButton is not None:
             clearButton.setVisible(False)
             clearButton.clicked.connect(Gui.Selection.clearSelection)
@@ -306,12 +329,14 @@ if isGuiLoaded():
         addRemoveButton.clicked.connect(lambda _value: _taskMultiSelectionModeClicked(sp))
         return sp
 
+
     def _taskGetSelectedObjects(sp: SMSelectionParameters):
         selObject = getattr(sp.obj, sp.SelPropertyName)
         if isinstance(selObject, tuple):
             selObject = selObject[0]
         baseObject = getattr(sp.obj, sp.propetyName)[0] if hasattr(sp.obj, sp.propetyName) else None
         return selObject, baseObject
+
 
     def _taskUpdateSingleSelection(sp: SMSelectionParameters):
         selObject, baseObject = _taskGetSelectedObjects(sp)
@@ -323,6 +348,7 @@ if isGuiLoaded():
         if selObject is not None and sp.HideRefObject:
             selObject.Visibility = False
         taskPopulateSelectionSingle(sp.dispWidget, getattr(sp.obj, sp.SelPropertyName))
+
 
     def _taskSingleSelModeClicked(sp: SMSelectionParameters):
         selObject, baseObject = _taskGetSelectedObjects(sp)
@@ -352,6 +378,7 @@ if isGuiLoaded():
             sp.SelectState = True
             sp.updateVisibilityControlledWidgets()
 
+
     def taskSingleSelectionChanged(sp: SMSelectionParameters):
         if sp is None:
             return
@@ -373,9 +400,13 @@ if isGuiLoaded():
         else:
             _taskSingleSelModeClicked(sp)
 
+
     def taskConnectSelectionSingle(button, textbox, obj, SelPropertyName, allowedTypes,
-                                   propetyName="baseObject", hideObject=True) -> SMSelectionParameters:
-        """Connects a selection button to a textbox for selecting a single object."""
+                                   propetyName="baseObject", hideObject=True
+    ) -> SMSelectionParameters:
+        """Connects a selection button to a textbox for selecting
+         a single object.
+         """
         sp = SMSelectionParameters(button, textbox, obj, allowedTypes,
                                    propetyName, hideObject)
         sp.SelPropertyName = SelPropertyName
@@ -384,6 +415,7 @@ if isGuiLoaded():
         taskPopulateSelectionSingle(textbox, getattr(obj, SelPropertyName))
         button.clicked.connect(lambda _value: _taskSingleSelModeClicked(sp))
         return sp
+
 
     def taskConnectSelectionToggle(button, textbox, obj, SelPropertyName, allowedTypes,
                                    basePropetyName="baseObject", hideObject=True) -> SMSelectionParameters:
@@ -398,11 +430,13 @@ if isGuiLoaded():
         button.setChecked(not sp.SelectState)
         return sp
 
+
     def _taskRecomputeObject(obj):
         if hasattr(obj, "ManualRecompute") and obj.ManualRecompute:
             return
         if hasattr(obj, "recompute"):
             obj.recompute()
+
 
     def _taskRecomputeDocument(obj=None):
         if obj is not None:
@@ -412,33 +446,37 @@ if isGuiLoaded():
         else:
             FreeCAD.ActiveDocument.recompute()
 
+
     def _taskUpdateValue(value, obj, propName, callback):
         setattr(obj, propName, value)
-        try:  # avoid intermitant changes
+        try:  # Avoid intermittent changes.
             _taskRecomputeObject(obj)
         except:
             pass
         if callback is not None:
             callback(value)
 
+
     def _taskUpdateSubValue(value, obj, prop, subPropName, callback):
         setattr(prop, subPropName, value)
-        try:  # avoid intermitant changes
+        try:  # Avoid intermittent changes.
             _taskRecomputeObject(obj)
         except:
             pass
         if callback is not None:
             callback(value)
+
 
     def _taskUpdateColor(formvar, obj, objvar, callback):
         value = formvar.property("color").name()
         setattr(obj, objvar, value)
-        try:  # avoid intermitant changes
+        try:  # Avoid intermittent changes.
             _taskRecomputeObject(obj)
         except:
             pass
         if callback is not None:
             callback(value)
+
 
     def _taskEditFinished(obj):
         if hasattr(obj, "Object"):
@@ -446,27 +484,37 @@ if isGuiLoaded():
         if hasattr(obj, "Document"):
             _taskRecomputeDocument(obj)
 
+
     def _getVarValue(obj, propName):
         if not hasattr(obj, propName):
-            # Can happen if an old file is loaded and some props were renamed
+            # Can happen if an old file is loaded and some props
+            # were renamed.
             obj.recompute()
         return getattr(obj, propName)
+
 
     def taskConnectSpin(obj, formvar, propName, callback=None, bindFunction=True):
         formvar.setProperty("value", _getVarValue(obj, propName))
         if bindFunction:
             Gui.ExpressionBinding(formvar).bind(obj, propName)
-        # keyboardTracking is set to False to avoid recompute on every key press
+        # keyboardTracking is set False to avoid recompute on every key
+        # press.
         formvar.setProperty("keyboardTracking", False)
         formvar.valueChanged.connect(lambda value: _taskUpdateValue(value, obj, propName, callback))
-        #formvar.editingFinished.connect(lambda: _taskEditFinished(obj))
+        # formvar.editingFinished.connect(lambda: _taskEditFinished(obj))
+
 
     def taskConnectSpinSub(obj, formvar, prop, subPropName, callback=None, bindFunction=True):
         formvar.setProperty("value", getattr(prop, subPropName))
-        if bindFunction and subPropName == "x": #fixme: is there a way to bind a function to a sub property?
+
+        # fixme: is there a way to bind a function to a sub property?
+        if bindFunction and subPropName == "x":
             Gui.ExpressionBinding(formvar).bind(obj, "offset")
+
         formvar.setProperty("keyboardTracking", False)
-        formvar.valueChanged.connect(lambda value: _taskUpdateSubValue(value, obj, prop, subPropName, callback))
+        formvar.valueChanged.connect(
+            lambda value: _taskUpdateSubValue(value, obj, prop, subPropName, callback))
+
 
     def taskConnectCheck(obj, formvar, propName, callback=None):
         formvar.setChecked(_getVarValue(obj, propName))
@@ -474,20 +522,27 @@ if isGuiLoaded():
             callback(formvar.isChecked())
         formvar.toggled.connect(lambda value: _taskUpdateValue(value, obj, propName, callback))
 
+
     def taskConnectEnum(obj, formvar, propName, callback=None, customList=None):
         val = _getVarValue(obj, propName)
         enumlist = obj.getEnumerationsOfProperty(propName) if customList is None else customList
         formvar.setProperty("currentIndex", enumlist.index(val))
-        formvar.currentIndexChanged.connect(lambda value: _taskUpdateValue(value, obj, propName, callback))
+        formvar.currentIndexChanged.connect(
+                lambda value: _taskUpdateValue(value, obj, propName, callback))
+
 
     def taskConnectColor(obj, formvar, propName, callback=None):
         formvar.setProperty("color", _getVarValue(obj, propName))
         formvar.changed.connect(lambda: _taskUpdateColor(formvar, obj, propName, callback))
 
+
     def taskAccept(task):
         for varname in vars(task).keys():
             var = getattr(task, varname)
-            if isinstance(var, SMSelectionParameters) and not var.SelectState and not var.ToggleMode:
+            if (isinstance(var, SMSelectionParameters)
+                    and not var.SelectState
+                    and not var.ToggleMode
+            ):
                 if isinstance(var.dispWidget, QtGui.QTreeWidget):
                     _taskMultiSelectionModeClicked(var)
                 else:
@@ -498,6 +553,7 @@ if isGuiLoaded():
         Gui.ActiveDocument.resetEdit()
         return True
 
+
     def taskReject(task):
         smSelectNormal()
         smSingleSelObserver.selParams = None
@@ -505,6 +561,7 @@ if isGuiLoaded():
         Gui.Control.closeDialog()
         FreeCAD.ActiveDocument.recompute()
         Gui.ActiveDocument.resetEdit()
+
 
     def taskSaveDefaults(obj, varList):
         for var in varList:
@@ -523,6 +580,7 @@ if isGuiLoaded():
                 params.SetInt(saveVar, val)
             else:
                 params.SetString(saveVar, str(val))
+
 
     def taskRestoreDefaults(obj, varList):
         for var in varList:
@@ -543,6 +601,7 @@ if isGuiLoaded():
                 newVal = params.GetString(saveVar, str(val))
             setattr(obj, var, newVal)
 
+
     def taskLoadUI(*args):
         if len(args) == 1:
             path = os.path.join(panels_path, args[0])
@@ -552,6 +611,7 @@ if isGuiLoaded():
             path = os.path.join(panels_path, uiFile)
             forms.append(Gui.PySideUic.loadUi(path))
         return forms
+
 
     def smGuiExportSketch(sketches, fileType, fileName, useDialog=True):
         if useDialog:
@@ -569,6 +629,7 @@ if isGuiLoaded():
             else:
                 importSVG.export(sketches, filePath)
 
+
     def smAddNewObject(baseObj, newObj, activeBody, taskPanel=None):
         if activeBody is not None:
             activeBody.addObject(newObj)
@@ -583,6 +644,7 @@ if isGuiLoaded():
             updateTaskTitleIcon(dialog)
             Gui.Control.showDialog(dialog)
         return
+
 
     def smCreateNewObject(baseObj, name, allowPartDesign=True):
         doc = FreeCAD.ActiveDocument
@@ -601,12 +663,15 @@ if isGuiLoaded():
             newObj = doc.addObject("PartDesign::FeaturePython", name)
         return (newObj, activeBody)
 
-    # ************************************************************************************
-    # * View providers for part and part design
-    # ************************************************************************************
+
+    ###############################################################################################
+    # View providers for part and part design
+    ###############################################################################################
 
     class SMViewProvider:
-        """A View provider for sheetmetal objects. Supports Part/Part-Design types."""
+        """A View provider for SheetMetal objects. Supports
+         Part/Part-Design types.
+         """
 
         def __init__(self, obj):
             obj.Proxy = self
@@ -619,8 +684,7 @@ if isGuiLoaded():
         def setupContextMenu(self, viewObject, menu):
             action = menu.addAction(FreeCAD.Qt.translate(
                 "QObject", "Edit %1").replace("%1", viewObject.Object.Label))
-            action.triggered.connect(
-                lambda: self.startDefaultEditMode(viewObject))
+            action.triggered.connect(lambda: self.startDefaultEditMode(viewObject))
             return False
 
         def startDefaultEditMode(self, viewObject):
@@ -640,7 +704,7 @@ if isGuiLoaded():
             return
 
         def __getstate__(self):
-            #        return {'ObjectName' : self.Object.Name}
+            # return {"ObjectName" : self.Object.Name}
             return None
 
         def __setstate__(self, state):
@@ -684,11 +748,12 @@ if isGuiLoaded():
             return False
 
 
-# Else: In case no gui is loaded
+# Else: In case no gui is loaded.
 else:
 
     def smWarnDialog(msg):
         SMLogger.warning(msg)
+
 
     def smHideObjects(*args):
         pass
@@ -722,7 +787,7 @@ def smIsSketchObject(obj):
 def smGetParentBody(obj):
     if hasattr(obj, "getParent"):
         return obj.getParent()
-    if hasattr(obj, "getParents"):  # probably FreeCadLink version
+    if hasattr(obj, "getParents"):  # Probably FreeCadLink version.
         if len(obj.getParents()) == 0:
             return None
         return obj.getParents()[0][0]
@@ -739,7 +804,8 @@ def smIsPartDesign(obj):
 
 
 def smIsOperationLegal(body, selobj):
-    # FreeCAD.Console.PrintLog(str(selobj) + " " + str(body) + " " + str(smBelongToBody(selobj, body)) + "\n")
+    # FreeCAD.Console.PrintLog(str(selobj) + " " + str(body) + " "
+    #                          + str(smBelongToBody(selobj, body)) + "\n")
     if smIsPartDesign(selobj) and not smBelongToBody(selobj, body):
         smWarnDialog(
             translate(
@@ -747,7 +813,7 @@ def smIsOperationLegal(body, selobj):
                 "The selected geometry does not belong to the active Body.\n"
                 "Please make the container of this item active by\n"
                 "double clicking on it.",
-            )
+                )
         )
         return False
     return True
@@ -764,23 +830,24 @@ def use_old_unfolder():
 def GetViewConfig(obj):
     if smIsSketchObject(obj):
         return None
-    viewconf = {} 
-    if hasattr(obj.ViewObject, "ShapeColor"): 
-        viewconf["objShapeCol"] = obj.ViewObject.ShapeColor 
-        viewconf["objShapeTsp"] = obj.ViewObject.Transparency 
-        viewconf["objDiffuseCol"] = obj.ViewObject.DiffuseColor 
-        # TODO: Make the individual face colors be retained 
-        # needDiffuseColorExtension = ( len(selobj.ViewObject.DiffuseColor) < len(selobj.Shape.Faces) ) 
+    viewconf = {}
+    if hasattr(obj.ViewObject, "ShapeColor"):
+        viewconf["objShapeCol"] = obj.ViewObject.ShapeColor
+        viewconf["objShapeTsp"] = obj.ViewObject.Transparency
+        viewconf["objDiffuseCol"] = obj.ViewObject.DiffuseColor
+        # TODO: Make the individual face colors be retained
+        # needDiffuseColorExtension = (
+        #         len(selobj.ViewObject.DiffuseColor) < len(selobj.Shape.Faces))
     else:
         return None
-    return viewconf 
+    return viewconf
 
 
-def SetViewConfig(obj, viewconf): 
-    if hasattr(obj.ViewObject, "ShapeColor") and viewconf: 
-        obj.ViewObject.ShapeColor = viewconf["objShapeCol"] 
-        obj.ViewObject.Transparency = viewconf["objShapeTsp"] 
-        obj.ViewObject.DiffuseColor = viewconf["objDiffuseCol"] 
+def SetViewConfig(obj, viewconf):
+    if hasattr(obj.ViewObject, "ShapeColor") and viewconf:
+        obj.ViewObject.ShapeColor = viewconf["objShapeCol"]
+        obj.ViewObject.Transparency = viewconf["objShapeTsp"]
+        obj.ViewObject.DiffuseColor = viewconf["objDiffuseCol"]
 
 
 def getOriginalBendObject(obj):
@@ -812,7 +879,9 @@ def smIsNormal(v1, v2):
 
 
 def smUpdateLinks(obj, selobj, selSubNames):
-    """Update the links of a selected object to the proper scope of an object."""
+    """Update the links of a selected object to the proper scope of
+    an object.
+    """
     body1 = smGetParentBody(selobj)
     if body1 is None:
         return selobj, selSubNames
@@ -822,7 +891,7 @@ def smUpdateLinks(obj, selobj, selSubNames):
     return body1, [f"{selobj.Name}.{subName}" for subName in selSubNames]
 
 
-def smAddProperty(obj, proptype, name, proptip, defval=None, paramgroup="Parameters", 
+def smAddProperty(obj, proptype, name, proptip, defval=None, paramgroup="Parameters",
                   replacedname=None, readOnly=False, isHiddden=False, attribs=0):
     """Add a property to a given object.
 
@@ -850,14 +919,14 @@ def smAddProperty(obj, proptype, name, proptip, defval=None, paramgroup="Paramet
         obj.addProperty(proptype, name, paramgroup, proptip, attribs, readOnly, isHiddden)
         if defval is not None:
             setattr(obj, name, defval)
-        # replaced name is either given or automatically search for 
-        #   old lower case version of the same parameter
+        # Replaced name is either given or automatically search for old
+        # lower case version of the same parameter.
         if replacedname is None and name[0].isupper():
             replacedname = name[0].lower() + name[1:]
         if replacedname is not None and hasattr(obj, replacedname):
             setattr(obj, name, getattr(obj, replacedname))
-            #obj.removeProperty(replacedname)
-            obj.setEditorMode(replacedname, 2) # Hide
+            #obj.removeProperty(replacedname).
+            obj.setEditorMode(replacedname, 2)  # Hide
 
 
 def smAddLengthProperty(obj, name, proptip, defval, paramgroup="Parameters"):
@@ -888,9 +957,7 @@ def smAddStringProperty(obj, name, proptip, defval, paramgroup="Parameters"):
     smAddProperty(obj, "App::PropertyString", name, proptip, defval, paramgroup)
 
 
-def smAddEnumProperty(
-    obj, name, proptip, enumlist, defval=None, paramgroup="Parameters"
-):
+def smAddEnumProperty(obj, name, proptip, enumlist, defval=None, paramgroup="Parameters"):
     if not hasattr(obj, name):
         _tip_ = FreeCAD.Qt.translate("App::Property", proptip)
         obj.addProperty("App::PropertyEnumeration", name, paramgroup, _tip_)
@@ -902,7 +969,7 @@ def smAddEnumProperty(
 def smGetBodyOfItem(obj):
     if hasattr(obj, "getParent"):
         return obj.getParent()
-    elif hasattr(obj, "getParents"):  # probably FreeCadLink version
+    elif hasattr(obj, "getParents"):  # Probably FreeCadLink version.
         parent, _ = obj.getParents()[0]
         return parent
     return None
@@ -919,7 +986,7 @@ def smGetThickness(obj, foldface):
         )
         return 0
 
-    # Make a first estimate of the thickness
+    # Make a first estimate of the thickness.
     estimated_thk = theVol / (foldface.Area)
     #  p1 = foldface.CenterOfMass
     p1 = foldface.Vertexes[0].Point
@@ -932,7 +999,7 @@ def smGetThickness(obj, foldface):
 
 def smGetFaceByEdge(selItem, obj):
     selFace = None
-    # find face if Edge Selected
+    # Find face if Edge Selected.
     if type(selItem) == Part.Edge:
         Facelist = obj.ancestorsOfType(selItem, Part.Face)
         if Facelist[0].Area < Facelist[1].Area:
@@ -987,7 +1054,9 @@ def smIsNetworkxAvailable():
 
 
 def smGetSubElementName(elementName: str) -> tuple:
-    """Get the object and the sub element name from a string (e.g. "obj.subobj" or "subobj")."""
+    """Get the object and the sub element name from a string
+    (e.g. "obj.subobj" or "subobj").
+    """
     elementNames = elementName.split(".")
     if len(elementNames) == 1:
         return None, elementName
@@ -995,18 +1064,25 @@ def smGetSubElementName(elementName: str) -> tuple:
 
 
 def smConvertPlaneToFace(planeShape):
-    """Create a reference rectangular face to use instead of a datum/origin plane."""
-    datump1 = FreeCAD.Vector(0, 0, 0)  # Vertexes of the ref face
+    """Create a reference rectangular face to use instead of a
+    datum/origin plane.
+    """
+    # Vertexes of the ref face.
+    datump1 = FreeCAD.Vector(0, 0, 0)
     datump2 = FreeCAD.Vector(10, 0, 0)
     datump3 = FreeCAD.Vector(10, 10, 0)
     datump4 = FreeCAD.Vector(0, 10, 0)
-    datumEdge1 = Part.LineSegment(datump1, datump2).toShape()  # Edges of the ref face
+    # Edges of the ref face.
+    datumEdge1 = Part.LineSegment(datump1, datump2).toShape()
     datumEdge2 = Part.LineSegment(datump2, datump3).toShape()
     datumEdge3 = Part.LineSegment(datump3, datump4).toShape()
     datumEdge4 = Part.LineSegment(datump4, datump1).toShape()
-    datumWire = Part.Wire([datumEdge1, datumEdge2, datumEdge3, datumEdge4])  # Wire of the ref face
-    datumFace = Part.Face(datumWire)  # Face of the ref face
-    datumFace.Placement = planeShape.Placement  # Put the face on the same place of datum
+    # Wire of the ref face.
+    datumWire = Part.Wire([datumEdge1, datumEdge2, datumEdge3, datumEdge4])
+    # Face of the ref face.
+    datumFace = Part.Face(datumWire)
+    # Put the face on the same place of datum.
+    datumFace.Placement = planeShape.Placement
     return datumFace
 
 

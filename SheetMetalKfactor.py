@@ -1,5 +1,4 @@
-# -*- coding: utf-8 -*-
-###################################################################################
+########################################################################
 #
 #  SheetMetalKfactor.py
 #
@@ -22,9 +21,10 @@
 #  MA 02110-1301, USA.
 #
 #
-###################################################################################
+########################################################################
 
 import re
+
 import FreeCAD
 
 
@@ -66,12 +66,8 @@ def getSpreadSheetNames():
     material_sheet_regex_str = r"material_([a-zA-Z0-9_\-\[\]\.]+)"
     material_sheet_regex = re.compile(material_sheet_regex_str)
 
-    spreadsheets = findObjectsByTypeRecursive(
-        FreeCAD.ActiveDocument, "Spreadsheet::Sheet"
-    )
-    candidateSpreadSheets = [
-        o for o in spreadsheets if material_sheet_regex.match(o.Label)
-    ]
+    spreadsheets = findObjectsByTypeRecursive(FreeCAD.ActiveDocument, "Spreadsheet::Sheet")
+    candidateSpreadSheets = [o for o in spreadsheets if material_sheet_regex.match(o.Label)]
 
     availableMdsObjects = []
     for candidate in candidateSpreadSheets:
@@ -80,8 +76,8 @@ def getSpreadSheetNames():
             availableMdsObjects.append(candidate)
         except ValueError as e:
             FreeCAD.Console.PrintWarning(
-                f"Spreadsheet with name {candidate.Label} is not a valid material definition table.\n"
-            )
+                f"Spreadsheet with name {candidate.Label} is not a valid material definition "
+                "table.\n")
             FreeCAD.Console.PrintWarning(f"Error: {e}\n")
 
     return availableMdsObjects
@@ -96,13 +92,10 @@ class KFactorLookupTable:
             lookup_sheet = lookup_sheet[0]
         else:
             raise ValueError(
-                "No spreadsheet found containing material definition: %s"
-                % material_sheet
-            )
+                "No spreadsheet found containing material definition: %s" % material_sheet)
 
         key_cell = self.find_cell_by_label(lookup_sheet, "Radius / Thickness")
         value_cell, k_factor_standard = self.find_k_factor_cell(lookup_sheet)
-
         if key_cell is None:
             raise ValueError("No cell found with label: 'Radius / Thickness'")
         if value_cell is None:
@@ -112,15 +105,11 @@ class KFactorLookupTable:
 
         key_column_name, key_column_row = self.get_cell_tuple(key_cell)
         value_column_name = self.get_cell_tuple(value_cell)[0]
-
-        k_factor_lookup = self.build_k_factor_lookup(
-            lookup_sheet, key_column_name, key_column_row, value_column_name
-        )
-
+        k_factor_lookup = self.build_k_factor_lookup(lookup_sheet, key_column_name, key_column_row,
+                                                     value_column_name)
         options_cell = self.find_cell_by_label(lookup_sheet, "Options")
-        k_factor_standard = self.get_k_factor_standard(
-            lookup_sheet, options_cell, k_factor_standard
-        )
+        k_factor_standard = self.get_k_factor_standard(lookup_sheet, options_cell,
+                                                       k_factor_standard)
 
         if k_factor_standard not in ["ansi", "din"]:
             raise ValueError("Invalid K-factor standard: %s" % k_factor_standard)
@@ -160,9 +149,7 @@ class KFactorLookupTable:
                 pass
         return value_cell, k_factor_standard
 
-    def build_k_factor_lookup(
-        self, sheet, key_column_name, key_column_row, value_column_name
-    ):
+    def build_k_factor_lookup(self, sheet, key_column_name, key_column_row, value_column_name):
         k_factor_lookup = {}
         for i in range(key_column_row + 1, 1000):
             try:

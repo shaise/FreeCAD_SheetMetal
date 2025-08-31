@@ -1,5 +1,4 @@
-# -*- coding: utf-8 -*-
-###############################################################################
+########################################################################
 #
 #  SheetMetalUnfoldCmd.py
 #
@@ -22,54 +21,56 @@
 #  MA 02110-1301, USA.
 #
 #
-###############################################################################
+########################################################################
 
 import os
 import sys
-import Part
+
 import FreeCAD
+import Part
+
 import SheetMetalKfactor
 import SheetMetalTools
 import SheetMetalUnfolder
-
-from SheetMetalTools import SMLogger
 from engineering_mode import engineering_mode_enabled
+
 translate = FreeCAD.Qt.translate
+SMLogger = SheetMetalTools.SMLogger
 
 if sys.version_info.major == 3 and sys.version_info.minor < 10:
     NewUnfolderAvailable = False
     FreeCAD.Console.PrintWarning(
-        translate( "SheetMetal", 
+        translate("SheetMetal",
             "Python version is too old for the new unfolder\n"
             "Reverting to the old one\n"
+            )
         )
-    )
 elif SheetMetalTools.smIsNetworkxAvailable():
     import SheetMetalNewUnfolder
     import networkx as nx
+
     if not hasattr(nx, "Graph"):
         NewUnfolderAvailable = False
     else:
         from SheetMetalNewUnfolder import BendAllowanceCalculator
+
         NewUnfolderAvailable = True
 else:
     NewUnfolderAvailable = False
     FreeCAD.Console.PrintWarning(
-        translate( "SheetMetal", 
+        translate("SheetMetal",
             "Networkx dependency is missing and required for the new Unfolder\n"
             "Try uninstalling SheetMetal, refresh Addon Manager's cache, and reinstall\n"
+            )
         )
-    )
 
-
-# IMPORTANT: please remember to change the element map version in case of any
-# changes in modeling logic
+# IMPORTANT: please remember to change the element map version in case
+# of any changes in modeling logic.
 smElementMapVersion = "sm1."
 
-
-# list of properties to be saved as defaults
+# List of properties to be saved as defaults.
 smUnfoldDefaultVars = [
-    "KFactorStandard", 
+    "KFactorStandard",
     "GenerateSketch",
     "SeparateSketchLayers",
 ]
@@ -81,17 +82,17 @@ smUnfoldNonSavedDefaultVars = [
     "ExportType",
 ]
 
-
 GENSKETCHCOLOR = "#000080"
 OUTLINESKETCHCOLOR = "#c00000"
 BENDLINESKETCHCOLOR = "#ff5733"
 KFACTOR = 0.40
 
 
-##########################################################################################################
+###################################################################################################
 # Helper functions
-##########################################################################################################
-def smUnfoldExportSketches(obj, useDialog = True):
+###################################################################################################
+
+def smUnfoldExportSketches(obj, useDialog=True):
     if len(obj.UnfoldSketches) == 0:
         return
     sketches = []
@@ -109,9 +110,9 @@ def smUnfoldExportSketches(obj, useDialog = True):
     SheetMetalTools.smGuiExportSketch(sketches, exptype, filename, useDialog)
 
 
-##########################################################################################################
+###################################################################################################
 # Object class
-##########################################################################################################
+###################################################################################################
 
 class SMUnfold:
     """Class object for the unfold command."""
@@ -119,16 +120,15 @@ class SMUnfold:
     def __init__(self, obj, selobj, sel_elements):
         """Add wall or Wall with radius bend."""
         selobj, sel_elements = SheetMetalTools.smUpdateLinks(obj, selobj, sel_elements)
-        SheetMetalTools.smAddProperty(
-            obj,
+        SheetMetalTools.smAddProperty(obj,
             "App::PropertyLinkSub",
             "baseObject",
-            translate( "App::Property", "Base Object" ),
+            translate("App::Property", "Base Object"),
             (selobj, sel_elements),
         )
         self.addVerifyProperties(obj)
         SheetMetalTools.taskRestoreDefaults(obj, smUnfoldDefaultVars)
-        # setup transient properties
+        # Setup transient properties.
         self.SketchColor = GENSKETCHCOLOR
         self.InternalColor = OUTLINESKETCHCOLOR
         self.BendLineColor = BENDLINESKETCHCOLOR
@@ -140,42 +140,36 @@ class SMUnfold:
         self.UnfoldSketches = []
 
     def addVerifyProperties(self, obj):
-        SheetMetalTools.smAddProperty(
-            obj,
+        SheetMetalTools.smAddProperty(obj,
             "App::PropertyFloatConstraint",
             "KFactor",
-            translate( "SheetMetal", "Manual K-Factor value" ),
+            translate("SheetMetal", "Manual K-Factor value"),
             (0.4, 0.0, 2.0, 0.01),
         )
-        SheetMetalTools.smAddEnumProperty(
-            obj,
+        SheetMetalTools.smAddEnumProperty(obj,
             "KFactorStandard",
-            translate( "SheetMetal", "K-Factor standard" ),
-            ["ansi","din"],
+            translate("SheetMetal", "K-Factor standard"),
+            ["ansi", "din"],
             "ansi",
         )
-        SheetMetalTools.smAddProperty(
-            obj,
+        SheetMetalTools.smAddProperty(obj,
             "App::PropertyString",
             "MaterialSheet",
-            translate( "SheetMetal", "Material definition sheet" ),
+            translate("SheetMetal", "Material definition sheet"),
             "_manual",
-            readOnly = True
+            readOnly=True,
         )
-        SheetMetalTools.smAddBoolProperty(
-            obj,
+        SheetMetalTools.smAddBoolProperty(obj,
             "ManualRecompute",
             translate("SheetMetal", "If set, object recomputation will be done on demand only"),
             False,
         )
-        SheetMetalTools.smAddBoolProperty(
-            obj,
+        SheetMetalTools.smAddBoolProperty(obj,
             "GenerateSketch",
             translate("SheetMetal", "Generate unfold sketch"),
             False,
         )
-        SheetMetalTools.smAddBoolProperty(
-            obj,
+        SheetMetalTools.smAddBoolProperty(obj,
             "SeparateSketchLayers",
             translate(
                 "SheetMetal",
@@ -183,14 +177,13 @@ class SMUnfold:
             ),
             False,
         )
-        SheetMetalTools.smAddProperty(
-            obj,
+        SheetMetalTools.smAddProperty(obj,
             "App::PropertyStringList",
             "UnfoldSketches",
             translate("SheetMetal", "Generated sketches"),
             None,
             "Hidden",
-            attribs = 8, # Output only - no recompute if changed
+            attribs=8,  # Output only - no recompute if changed
         )
         # SheetMetalTools.smAddProperty(
         #     obj,
@@ -204,7 +197,8 @@ class SMUnfold:
     def getElementMapVersion(self, _fp, ver, _prop, restored):
         if not restored:
             return smElementMapVersion + ver
-        
+        return None
+
     def onChanged(self, obj, prop):
         if prop == "Visibility":
             isVisible = obj.Visibility
@@ -257,17 +251,16 @@ class SMUnfold:
             kFactorTable = lookupTable.k_factor_lookup
 
         shape, foldComp, norm, _thename, _err_cd, _fSel, _obN = SheetMetalUnfolder.getUnfold(
-            kFactorTable, baseObject, baseFace, obj.KFactorStandard
-        )
+                kFactorTable, baseObject, baseFace, obj.KFactorStandard)
 
         sketches = []
         if obj.GenerateSketch and shape is not None:
             sketches = SheetMetalUnfolder.getUnfoldSketches(
-                shape, 
+                shape,
                 foldComp.Edges,
                 norm,
                 obj.UnfoldSketches,
-                obj.SeparateSketchLayers, 
+                obj.SeparateSketchLayers,
                 obj.Proxy.SketchColor,
                 bendSketchColor=obj.Proxy.BendLineColor,
                 internalSketchColor=obj.Proxy.InternalColor,
@@ -289,7 +282,7 @@ class SMUnfold:
             shape, sketches = self.oldUnfolder(fp, baseObj, baseFace)
         else:
             shape, sketches = self.newUnfolder(fp, baseObj, baseFace)
-     
+
         fp.Shape = shape
         parent = SheetMetalTools.smGetParentBody(fp)
         sketchList = []
@@ -299,7 +292,7 @@ class SMUnfold:
                 if parent is not None and SheetMetalTools.smGetParentBody(sketch) is None:
                     parent.addObject(sketch)
 
-        # remove non used sketches
+        # Remove non-used sketches.
         for prop in fp.UnfoldSketches:
             if not prop in sketchList:
                 item = fp.Document.getObject(prop)
@@ -310,29 +303,30 @@ class SMUnfold:
         SheetMetalTools.smRemoveFromRecompute(fp)
 
 
-
-##########################################################################################################
+###################################################################################################
 # Gui code
-##########################################################################################################
+###################################################################################################
 
 if SheetMetalTools.isGuiLoaded():
-    from FreeCAD import Gui
+
     from PySide import QtGui, QtCore
+
+    Gui = FreeCAD.Gui
 
     mds_help_url = "https://github.com/shaise/FreeCAD_SheetMetal#material-definition-sheet"
     last_selected_mds = "none"
 
 
-    ##########################################################################################################
+    ###############################################################################################
     # View Provider
-    ##########################################################################################################
+    ###############################################################################################
 
     class SMUnfoldViewProvider(SheetMetalTools.SMViewProvider):
         """Part / Part WB style ViewProvider."""
 
         def getIcon(self):
-            return os.path.join(SheetMetalTools.icons_path, 'SheetMetal_Unfold.svg')
-        
+            return os.path.join(SheetMetalTools.icons_path, "SheetMetal_Unfold.svg")
+
         def claimChildren(self):
             objs = []
             for itemName in self.Object.UnfoldSketches:
@@ -344,27 +338,29 @@ if SheetMetalTools.isGuiLoaded():
         def getTaskPanel(self, obj):
             return SMUnfoldTaskPanel(obj)
 
-    ##########################################################################################################
+
+    ###############################################################################################
     # Task Panel
-    ##########################################################################################################
+    ###############################################################################################
 
     class SMUnfoldTaskPanel:
         """Task Panel for the unfold function."""
 
         def __init__(self, obj):
-            QtCore.QDir.addSearchPath('Icons', SheetMetalTools.icons_path)
+            QtCore.QDir.addSearchPath("Icons", SheetMetalTools.icons_path)
             self.obj = obj
             self.form = SheetMetalTools.taskLoadUI("UnfoldOptions.ui")
-            obj.Proxy.addVerifyProperties(obj) # Make sure all properties are added
+
+            # Make sure all properties are added.
+            obj.Proxy.addVerifyProperties(obj)
+
             self.setupUi(obj)
 
         def _boolToState(self, bool):
             return QtCore.Qt.Checked if bool else QtCore.Qt.Unchecked
 
         def _isManualKSelected(self):
-            return self.form.availableMds.currentIndex() == (
-                self.form.availableMds.count() - 1
-            )
+            return self.form.availableMds.currentIndex() == (self.form.availableMds.count() - 1)
 
         def _isNoMdsSelected(self):
             return self.form.availableMds.currentIndex() == 0
@@ -382,7 +378,6 @@ if SheetMetalTools.isGuiLoaded():
                 self.obj.MaterialSheet = newsheet
                 self.recomputeObject()
 
-
         def _getLastSelectedMdsIndex(self):
             materialSheet = self.obj.MaterialSheet
             if materialSheet == "_none":
@@ -396,9 +391,8 @@ if SheetMetalTools.isGuiLoaded():
 
         def checkKFactorValid(self):
             if self.obj.MaterialSheet == "_none":
-                msg = translate(
-                    "Logger", "Unfold operation needs to know K-factor value(s) to be used."
-                )
+                msg = translate("Logger",
+                                "Unfold operation needs to know K-factor value(s) to be used.")
                 SMLogger.warning(msg)
                 msg += translate(
                     "QMessageBox",
@@ -421,16 +415,20 @@ if SheetMetalTools.isGuiLoaded():
             self.InternalColor = OUTLINESKETCHCOLOR
             self.BendLineColor = BENDLINESKETCHCOLOR
             self.populateMdsList()
-            SheetMetalTools.taskConnectSelectionSingle(
-                self.form.pushFace, self.form.txtFace, obj, "baseObject", ["Face"])
+            SheetMetalTools.taskConnectSelectionSingle(self.form.pushFace, self.form.txtFace, obj,
+                                                       "baseObject", ["Face"])
             SheetMetalTools.taskConnectColor(obj.Proxy, self.form.genColor, "SketchColor")
             SheetMetalTools.taskConnectColor(obj.Proxy, self.form.bendColor, "BendLineColor")
             SheetMetalTools.taskConnectColor(obj.Proxy, self.form.internalColor, "InternalColor")
-            SheetMetalTools.taskConnectCheck(obj, self.form.chkSketch, "GenerateSketch", self.chkSketchChange)
-            SheetMetalTools.taskConnectCheck(obj, self.form.chkSeparate, "SeparateSketchLayers", self.chkSketchChange)
-            SheetMetalTools.taskConnectCheck(obj, self.form.chkManualUpdate, "ManualRecompute", self.chkManualChanged)
+            SheetMetalTools.taskConnectCheck(obj, self.form.chkSketch, "GenerateSketch",
+                                             self.chkSketchChange)
+            SheetMetalTools.taskConnectCheck(obj, self.form.chkSeparate, "SeparateSketchLayers",
+                                             self.chkSketchChange)
+            SheetMetalTools.taskConnectCheck(obj, self.form.chkManualUpdate, "ManualRecompute",
+                                             self.chkManualChanged)
             SheetMetalTools.taskConnectSpin(obj, self.form.floatKFactor, "KFactor")
-            SheetMetalTools.taskConnectSpin(obj.Proxy, self.form.transSpin, "UnfoldTransparency", bindFunction = False)
+            SheetMetalTools.taskConnectSpin(obj.Proxy, self.form.transSpin, "UnfoldTransparency",
+                                            bindFunction=False)
             self.form.pushUnfold.clicked.connect(self.unfoldPressed)
             self.form.pushExport.clicked.connect(self.doExport)
             self.form.availableMds.currentIndexChanged.connect(self.availableMdsChacnge)
@@ -440,29 +438,29 @@ if SheetMetalTools.isGuiLoaded():
             self.availableMdsChacnge()
             self.chkSketchChange()
             # self.form.update()
-        
+
         def updateKFactor(self, updateCheck):
             if self.obj.KFactorStandard == "ansi":
                 if updateCheck:
                     self.form.kfactorAnsi.setChecked(True)
-                self.form.floatKFactor.setProperty("value", self.obj.KFactor) 
+                self.form.floatKFactor.setProperty("value", self.obj.KFactor)
                 self.form.floatKFactor.setProperty("maximum", 1.0)
             else:
                 if updateCheck:
                     self.form.kfactorDin.setChecked(True)
                 self.form.floatKFactor.setProperty("maximum", 2.0)
-                self.form.floatKFactor.setProperty("value", self.obj.KFactor) 
-            
+                self.form.floatKFactor.setProperty("value", self.obj.KFactor)
+
         def kfactorStdChanged(self):
             if self.form.kfactorAnsi.isChecked():
                 self.obj.KFactorStandard = "ansi"
-                self.obj.KFactor = self.obj.KFactor / 2.0
+                self.obj.KFactor /= 2.0
             else:
                 self.obj.KFactorStandard = "din"
-                self.obj.KFactor = self.obj.KFactor * 2.0
+                self.obj.KFactor *= 2.0
             self.updateKFactor(False)
 
-        def recomputeObject(self, closeTask = False):
+        def recomputeObject(self, closeTask=False):
             SheetMetalTools.smForceRecompute = True
             if closeTask:
                 SheetMetalTools.taskAccept(self)
@@ -479,9 +477,9 @@ if SheetMetalTools.isGuiLoaded():
             self.obj.ViewObject.Transparency = self.obj.Proxy.UnfoldTransparency
             SheetMetalTools.taskSaveDefaults(self.obj, smUnfoldDefaultVars)
             SheetMetalTools.taskSaveDefaults(self.obj.Proxy, smUnfoldNonSavedDefaultVars)
-
             # self._updateSelectedMds()
             # kFactorTable = self.getKFactorTable()
+            return None
 
         def reject(self):
             FreeCAD.ActiveDocument.abortTransaction()
@@ -495,7 +493,7 @@ if SheetMetalTools.isGuiLoaded():
             sheetnames = SheetMetalKfactor.getSpreadSheetNames()
             self.form.availableMds.clear()
 
-            self.form.availableMds.addItem(translate("SheetMetal","Please select"))
+            self.form.availableMds.addItem(translate("SheetMetal", "Please select"))
             for mds in sheetnames:
                 if mds.Label.startswith("material_"):
                     self.form.availableMds.addItem(mds.Label)
@@ -511,7 +509,7 @@ if SheetMetalTools.isGuiLoaded():
             else:
                 self.form.availableMds.setCurrentIndex(1)
 
-        def chkSketchChange(self, _value = None):
+        def chkSketchChange(self, _value=None):
             genSketch = self.form.chkSketch.isChecked()
             self.form.chkSeparate.setEnabled(genSketch)
             self.form.genColor.setEnabled(genSketch)
@@ -533,15 +531,17 @@ if SheetMetalTools.isGuiLoaded():
                 return False
             self.recomputeObject()
             self.chkSketchChange()
+            return None
 
         def availableMdsChacnge(self):
             self.form.groupManualFactor.setEnabled(self._isManualKSelected())
             self._updateSelectedMds()
             #self.form.kFactSpin.setEnabled(isManualK)
 
-    ##########################################################################################################
+
+    ###############################################################################################
     # Commands
-    ##########################################################################################################
+    ###############################################################################################
 
     class SMUnfoldCommandClass:
         """Unfold object."""
@@ -554,18 +554,18 @@ if SheetMetalTools.isGuiLoaded():
             Gui.addLanguagePath(LanguagePath)
             Gui.updateLocale()
             return {
-                "Pixmap": os.path.join(
-                    iconPath, "SheetMetal_Unfold.svg"
-                ),  # the name of a svg file available in the resources
-                "MenuText": translate("SheetMetal", "Unfold"),
-                "Accel": "U",
-                "ToolTip": translate(
-                    "SheetMetal",
-                    "Flatten folded sheet metal object.\n"
-                    "1. Select flat face on sheetmetal shape.\n"
-                    "2. Change parameters from task Panel to create unfold Shape & Flatten drawing.",
-                ),
-            }
+                    # The name of a svg file available in the resources.
+                    "Pixmap": os.path.join(iconPath, "SheetMetal_Unfold.svg"),
+                    "MenuText": translate("SheetMetal", "Unfold"),
+                    "Accel": "U",
+                    "ToolTip": translate(
+                        "SheetMetal",
+                        "Flatten folded sheet metal object.\n"
+                        "1. Select flat face on sheetmetal shape.\n"
+                        "2. Change parameters from task Panel to create "
+                        "unfold Shape & Flatten drawing.",
+                        ),
+                    }
 
         def Activated(self):
             sel = Gui.Selection.getSelectionEx()[0]
@@ -579,39 +579,37 @@ if SheetMetalTools.isGuiLoaded():
             newObj.Label = label
             SMUnfold(newObj, selobj, sel.SubElementNames)
             SMUnfoldViewProvider(newObj.ViewObject)
-            SheetMetalTools.smAddNewObject(
-                selobj, newObj, activeBody, SMUnfoldTaskPanel)
+            SheetMetalTools.smAddNewObject(selobj, newObj, activeBody, SMUnfoldTaskPanel)
 
         def IsActive(self):
-            if (
-                len(Gui.Selection.getSelection()) != 1
-                or len(Gui.Selection.getSelectionEx()[0].SubElementNames) != 1
+            if (len(Gui.Selection.getSelection()) != 1
+                    or len(Gui.Selection.getSelectionEx()[0].SubElementNames) != 1
             ):
                 return False
             selFace = Gui.Selection.getSelectionEx()[0].SubObjects[0]
             return isinstance(selFace.Surface, Part.Plane)
-        
+
+
     class SMRecomputeUnfoldsCommandClass:
         """Recompute all unfold objects marked for manual recompute."""
 
         def GetResources(self):
             __dir__ = os.path.dirname(__file__)
             iconPath = os.path.join(__dir__, "Resources", "icons")
-            # add translations path
+            # Add translations path.
             LanguagePath = os.path.join(__dir__, "translations")
             Gui.addLanguagePath(LanguagePath)
             Gui.updateLocale()
             return {
-                "Pixmap": os.path.join(
-                    iconPath, "SheetMetal_UnfoldUpdate.svg"
-                ),  # the name of a svg file available in the resources
-                "MenuText": translate("SheetMetal", "Unfold Update"),
-                "Accel": "UU",
-                "ToolTip": translate(
-                    "SheetMetal",
-                    "Update all unfold objects.\n"
-                ),
-            }
+                    # The name of a svg file available in the resources.
+                    "Pixmap": os.path.join(iconPath, "SheetMetal_UnfoldUpdate.svg"),
+                    "MenuText": translate("SheetMetal", "Unfold Update"),
+                    "Accel": "UU",
+                    "ToolTip": translate(
+                        "SheetMetal",
+                        "Update all unfold objects.\n"
+                        ),
+                    }
 
         def Activated(self):
             SheetMetalTools.smForceRecompute = True
@@ -623,6 +621,7 @@ if SheetMetalTools.isGuiLoaded():
         def IsActive(self):
             return len(SheetMetalTools.smObjectsToRecompute) > 0
 
+
     class SMUnfoldUnattendedCommandClass:
         """Unfold object."""
 
@@ -630,18 +629,17 @@ if SheetMetalTools.isGuiLoaded():
             __dir__ = os.path.dirname(__file__)
             iconPath = os.path.join(__dir__, "Resources", "icons")
             return {
-                "Pixmap": os.path.join(
-                    iconPath, "SheetMetal_UnfoldUnattended.svg"
-                ),  # the name of a svg file available in the resources
-                "MenuText": translate("SheetMetal", "Unattended Unfold"),
-                "Accel": "U",
-                "ToolTip": translate(
-                    "SheetMetal",
-                    "Flatten folded sheet metal object with default options\n"
-                    "1. Select flat face on sheetmetal shape.\n"
-                    "2. Click this command to unfold the object with last used parameters.",
-                ),
-            }
+                    # The name of a svg file available in the resources.
+                    "Pixmap": os.path.join(iconPath, "SheetMetal_UnfoldUnattended.svg"),
+                    "MenuText": translate("SheetMetal", "Unattended Unfold"),
+                    "Accel": "U",
+                    "ToolTip": translate(
+                        "SheetMetal",
+                        "Flatten folded sheet metal object with default options\n"
+                        "1. Select flat face on sheetmetal shape.\n"
+                        "2. Click this command to unfold the object with last used parameters.",
+                        ),
+                    }
 
         def Activated(self):
             sel = Gui.Selection.getSelectionEx()[0]
@@ -660,13 +658,11 @@ if SheetMetalTools.isGuiLoaded():
             return
 
         def IsActive(self):
-            if (
-                len(Gui.Selection.getSelection()) != 1
-                or len(Gui.Selection.getSelectionEx()[0].SubElementNames) != 1
+            if (len(Gui.Selection.getSelection()) != 1
+                    or len(Gui.Selection.getSelectionEx()[0].SubElementNames) != 1
             ):
                 return False
             selFace = Gui.Selection.getSelectionEx()[0].SubObjects[0]
-
             return isinstance(selFace.Surface, Part.Plane)
 
 

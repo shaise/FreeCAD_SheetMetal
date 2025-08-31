@@ -1,5 +1,4 @@
-# -*- coding: utf-8 -*-
-##############################################################################
+########################################################################
 #
 #  InitGui.py
 #
@@ -21,53 +20,57 @@
 #  MA 02110-1301, USA.
 #
 #
-##############################################################################
+########################################################################
 
 import os
+
 import FreeCAD
-from FreeCAD import Gui
+
 import SheetMetalTools
 from engineering_mode import engineering_mode_enabled
 
-# add translations path
+Gui = FreeCAD.Gui
 SMWBPath = SheetMetalTools.mod_path
 SMIconPath = SheetMetalTools.icons_path
 
+# Add translations path.
 LanguagePath = os.path.join(SMWBPath, "Resources", "translations")
 Gui.addLanguagePath(LanguagePath)
 Gui.updateLocale()
 
 
 class SMWorkbench(Workbench):
+    global SHEETMETALWB_VERSION
     global SMIconPath
     global SMWBPath
-    global SHEETMETALWB_VERSION
     global engineering_mode_enabled
 
     MenuText = FreeCAD.Qt.translate("SheetMetal", "Sheet Metal")
     ToolTip = FreeCAD.Qt.translate(
         "SheetMetal",
         "Sheet Metal workbench allows for designing and unfolding sheet metal parts",
-    )
+        )
     Icon = os.path.join(SMIconPath, "SMLogo.svg")
 
     def Initialize(self):
-        """This function is executed when FreeCAD starts."""
-        import SheetMetalCmd  # import here all the needed files that create your FreeCAD commands
-        import SheetMetalExtendCmd
-        import SheetMetalUnfolder
-        import SheetMetalBaseCmd
-        import SheetMetalFoldCmd
-        import SheetMetalRelief
-        import SheetMetalJunction
-        import SheetMetalBend
-        import SketchOnSheetMetalCmd
-        import ExtrudedCutout
-        import SheetMetalCornerReliefCmd
-        import SheetMetalFormingCmd
-        import SheetMetalUnfoldCmd
-        import SheetMetalBaseShapeCmd
+        """Execute when FreeCAD starts."""
         import os.path
+
+        # Import all the needed files that create the workbench commands.
+        import ExtrudedCutout
+        import SheetMetalBaseCmd
+        import SheetMetalBaseShapeCmd
+        import SheetMetalBend
+        import SheetMetalCmd
+        import SheetMetalCornerReliefCmd
+        import SheetMetalExtendCmd
+        import SheetMetalFoldCmd
+        import SheetMetalFormingCmd
+        import SheetMetalJunction
+        import SheetMetalRelief
+        import SheetMetalUnfoldCmd
+        import SheetMetalUnfolder
+        import SketchOnSheetMetalCmd
 
         self.list = [
             "SheetMetal_AddBase",
@@ -84,38 +87,38 @@ class SMWorkbench(Workbench):
             "SheetMetal_AddCutout",
             "SheetMetal_Forming",
             "SheetMetal_BaseShape",
-        ]  # A list of command names created in the line above
+            ]
+
         if engineering_mode_enabled():
-            self.list.insert(
-                self.list.index("SheetMetal_Unfold") + 1, "SheetMetal_UnattendedUnfold"
-            )
-        self.appendToolbar(
-            FreeCAD.Qt.translate("SheetMetal", "Sheet Metal"), self.list
-        )  # creates a new toolbar with your commands
-        self.appendMenu(
-            FreeCAD.Qt.translate("SheetMetal", "&Sheet Metal"), self.list
-        )  # creates a new menu
-        # self.appendMenu(["An existing Menu","My submenu"],self.list) # appends a submenu to an existing menu
+            self.list.insert(self.list.index("SheetMetal_Unfold") + 1,
+                             "SheetMetal_UnattendedUnfold")
+
+        # Create a new toolbar with commands.
+        self.appendToolbar(FreeCAD.Qt.translate("SheetMetal", "Sheet Metal"), self.list)
+        # Create a new menu.
+        self.appendMenu(FreeCAD.Qt.translate("SheetMetal", "&Sheet Metal"), self.list)
+        # # Append a submenu to an existing menu.
+        # self.appendMenu(["An existing Menu","My submenu"],self.list)
         Gui.addPreferencePage(os.path.join(SMWBPath, "Resources/panels/SMprefs.ui"), "SheetMetal")
         Gui.addIconPath(SMIconPath)
 
     def Activated(self):
-        """This function is executed when the workbench is activated."""
+        """Execute when the workbench is activated."""
         return
 
     def Deactivated(self):
-        """This function is executed when the workbench is deactivated."""
+        """Execute when the workbench is deactivated."""
         return
 
     def ContextMenu(self, recipient):
-        """This is executed whenever the user right-clicks on screen."""
-        # "recipient" will be either "view" or "tree"
-        self.appendContextMenu(
-            FreeCAD.Qt.translate("SheetMetal", "Sheet Metal"), self.list
-        )  # add commands to the context menu
+        """Execute whenever the user right-clicks on screen."""
+        # `recipient` will be either `view` or `tree`.
+        #
+        # Add commands to the context menu.
+        self.appendContextMenu(FreeCAD.Qt.translate("SheetMetal", "Sheet Metal"), self.list)
 
     def GetClassName(self):
-        # this function is mandatory if this is a full python workbench
+        # This function is mandatory if this is a full python workbench.
         return "Gui::PythonWorkbench"
 
 
