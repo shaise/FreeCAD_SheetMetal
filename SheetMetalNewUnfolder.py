@@ -386,7 +386,8 @@ class TangentFaces:
 
     @staticmethod
     def compare(face1: Part.Face, face2: Part.Face) -> bool:
-        # order types to simplify pattern matching
+        # determine tangency of two faces, checking as many surface geometry
+        # combinations as possible
         s1 = face1.Surface
         s2 = face2.Surface
         type1 = s1.TypeId
@@ -407,62 +408,65 @@ class TangentFaces:
         if needs_swap:
             s2, s1 = s1, s2
         cls = TangentFaces
+        res = False
         if s1.TypeId == "Part::GeomPlane":
             # Plane.
             if s2.TypeId == "Part::GeomPlane":
-                return cls.compare_plane_plane(s1, s2)
+                res = cls.compare_plane_plane(s1, s2)
             elif s2.TypeId == "Part::GeomCylinder":
-                return cls.compare_plane_cylinder(s1, s2)
+                res = cls.compare_plane_cylinder(s1, s2)
             elif s2.TypeId == "Part::GeomToroid":
-                return cls.compare_plane_torus(s1, s2)
+                res = cls.compare_plane_torus(s1, s2)
             elif s2.TypeId == "Part::GeomSphere":
-                return cls.compare_plane_sphere(s1, s2)
+                res = cls.compare_plane_sphere(s1, s2)
             elif s2.TypeId == "Part::GeomSurfaceOfExtrusion":
-                return cls.compare_plane_extrusion(s1, s2)
+                res = cls.compare_plane_extrusion(s1, s2)
             elif s2.TypeId == "Part::GeomCone":
-                return cls.compare_plane_cone(s1, s2)
-            # Cylinder.
+                res = cls.compare_plane_cone(s1, s2)
         elif s1.TypeId == "Part::GeomCylinder":
+            # Cylinder.
             if s2.TypeId == "Part::GeomCylinder":
-                return cls.compare_cylinder_cylinder(s1, s2)
+                res = cls.compare_cylinder_cylinder(s1, s2)
             elif s2.TypeId == "Part::GeomToroid":
-                return cls.compare_cylinder_torus(s1, s2)
+                res = cls.compare_cylinder_torus(s1, s2)
             elif s2.TypeId == "Part::GeomSphere":
-                return cls.compare_cylinder_sphere(s1, s2)
+                res = cls.compare_cylinder_sphere(s1, s2)
             elif s2.TypeId == "Part::GeomSurfaceOfExtrusion":
-                return cls.compare_cylinder_extrusion(s1, s2)
+                res = cls.compare_cylinder_extrusion(s1, s2)
             elif s2.TypeId == "Part::GeomCone":
-                return cls.compare_cylinder_cone(s1, s2)
+                res = cls.compare_cylinder_cone(s1, s2)
         elif s1.TypeId == "Part::GeomToroid":
             # Torus.
             if s2.TypeId == "Part::GeomToroid":
-                return cls.compare_torus_torus(s1, s2)
+                res = cls.compare_torus_torus(s1, s2)
             elif s2.TypeId == "Part::GeomSphere":
-                return cls.compare_torus_sphere(s1, s2)
+                res = cls.compare_torus_sphere(s1, s2)
             elif s2.TypeId == "Part::GeomSurfaceOfExtrusion":
-                return cls.compare_torus_extrusion(s1, s2)
+                res = cls.compare_torus_extrusion(s1, s2)
             elif s2.TypeId == "Part::GeomCone":
-                return cls.compare_torus_cone(s1, s2)
+                res = cls.compare_torus_cone(s1, s2)
         elif s1.TypeId == "Part::GeomSphere":
             # Sphere.
             if s2.TypeId == "Part::GeomSphere":
-                return cls.compare_sphere_sphere(s1, s2)
+                res = cls.compare_sphere_sphere(s1, s2)
             elif s2.TypeId == "Part::GeomSurfaceOfExtrusion":
-                return cls.compare_sphere_extrusion(s1, s2)
+                res = cls.compare_sphere_extrusion(s1, s2)
             elif s2.TypeId == "Part::GeomCone":
-                return cls.compare_sphere_cone(s1, s2)
+                res = cls.compare_sphere_cone(s1, s2)
         elif s1.TypeId == "Part::GeomSurfaceOfExtrusion":
             # Extrusion.
             if s2.TypeId == "Part::GeomSurfaceOfExtrusion":
-                return cls.compare_extrusion_extrusion(s1, s2)
+                res = cls.compare_extrusion_extrusion(s1, s2)
             elif s2.TypeId == "Part::GeomCone":
-                return cls.compare_extrusion_cone(s1, s2)
+                res = cls.compare_extrusion_cone(s1, s2)
         elif s1.TypeId == "Part::GeomCone":
             # Cone.
             if s2.TypeId == "Part::GeomCone":
-                return cls.compare_cone_cone(s1, s2)
-        # All other cases.
-        return False
+                res = cls.compare_cone_cone(s1, s2)
+        # emit a warning if there are bends across unsupported geometry types
+        well_supported_types = {"Part::GeomPlane", "Part::GeomCylinder"}
+        warn = res and not set([type1, type2]) <= well_supported_types
+        return res, warn
 
 
 class UVRef(Enum):
@@ -1009,15 +1013,25 @@ def build_graph_of_tangent_faces(shp: Part.Shape, root: int) -> nx.Graph:
     # onto themselves other than self-adjacent faces, edges should
     # always have 2 face ancestors this assumption is probably only
     # valid for watertight solids.
+    saw_warning = False
     for edge_index, faces in filter(lambda c: len(c[1]) == 2, candidates):
         face_a, face_b = faces
-        if TangentFaces.compare(face_a, face_b):
+        tangent_result, possible_geom_warning = TangentFaces.compare(face_a, face_b)
+        saw_warning |= possible_geom_warning
+        if tangent_result:
             graph_of_shape_faces.add_edge(
                 index_lookup[face_a.hashCode()],
                 index_lookup[face_b.hashCode()],
                 # Store indexes in the label attr for debugging.
                 label=edge_index,
             )
+    # emit a warning if the shape has bends across unsupported face types
+    if saw_warning:
+        msg = (
+            "This shape appears to have bends across surfaces that are not planes or cylinders."
+            " Unfolding it may produce unexpected results.\n"
+        )
+        FreeCAD.Console.PrintWarning(msg)
     # graph_of_shape_faces should have at least three connected subgraphs
     # (top side, bottom side, and sheet edge sides of the sheetmetal part).
     # We only care about the subgraph that includes the selected root face.
