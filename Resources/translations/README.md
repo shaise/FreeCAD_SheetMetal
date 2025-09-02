@@ -12,7 +12,7 @@ then find your language, look for the **Sheet Metal** project and do the transla
 ## Maintainers
 
 > [!NOTE]
-> All commands **must** be run in `./Resorces/translations/` directory.
+> All commands **must** be run in `./Resources/translations/` directory.
 
 > [!WARNING]
 > If you want to update/release the files you need to have installed

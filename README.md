@@ -130,7 +130,7 @@ SheetMetal WB can be installed via the [Addon Manager](https://github.com/FreeCA
                       - Update translations by [@hasecilu][hasecilu].  
                       - Fix python compatibility by [@Syres916][Syres916].  
                       - Extruded cutout fixes by [@sheetmetalman][sheetmetalman].  
-                      - Fix round relief apect ratio limitations.  
+                      - Fix round relief aspect ratio limitations.  
 * V0.6.00 03 Dec 2024:  Code refactoring, Remove duplication, Add GUI to most functions.  
 * V0.5.10 25 Nov 2024:  Extruded Cutout: add improvements and fixes by [@sheetmetalman][sheetmetalman].  
                       - Update translations from CrowdIn by [@hasecilu][hasecilu].  
