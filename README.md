@@ -97,7 +97,7 @@ SheetMetal WB can be installed via the [Addon Manager](https://github.com/FreeCA
 
 #### Release notes:
 * V0.7.50 04 Sep 2025:  Fix issues with gaps and inner material.  
-                      - Fix typosby [@luzpaz][luzpaz].  
+                      - Fix typos by [@luzpaz][luzpaz].  
                       - Refactoring SheetMetal code by [@zokhasan][zokhasan].  
                       - BaseShape: hide setting instead disable by [@zokhasan][zokhasan].  
                       - keep Windows LibPack 0.21.x users working by [@Syres916][Syres916].  
@@ -328,3 +328,4 @@ SheetMetal WB can be installed via the [Addon Manager](https://github.com/FreeCA
 
 ## License
 GPLv3 (see [LICENSE](LICENSE))
+
