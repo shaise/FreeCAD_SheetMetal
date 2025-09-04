@@ -1493,9 +1493,9 @@ def smBend(
             dist = AlenEdge.valueAt(AlenEdge.FirstParameter).distanceToLine(
                 Ref_lenEdge.Curve.Location, Ref_lenEdge.Curve.Direction
             )
-            # print(dist)
-            if dist < smEpsilon:
-                cutgap1 *= -1.0
+            # print(dist, smEpsilon)
+            # if dist < smEpsilon:
+            #     cutgap1 *= -1.0
             cutgap_1 = (AlenEdge.valueAt(AlenEdge.LastParameter)
                         - Ref_lenEdge.valueAt(Ref_lenEdge.FirstParameter)
                         ).Length
@@ -1506,14 +1506,15 @@ def smBend(
             dist = AlenEdge.valueAt(AlenEdge.LastParameter).distanceToLine(
                 Ref_lenEdge.Curve.Location, Ref_lenEdge.Curve.Direction)
             # print(dist)
-            if dist < smEpsilon:
-                cutgap2 *= -1.0
-            # print([cutgap1, cutgap2])
+            # if dist < smEpsilon:
+            #     cutgap2 *= -1.0
+            # print([cutgap1, cutgap2, AlenEdge])
             CutFace = smMakeFace(AlenEdge, thkDir, thk, cutgap1, cutgap2, op="SMC")
-            # Part.show(CutFace2, "CutFace2")
+            # Part.show(CutFace, "CutFace")
             CutSolid = CutFace.extrude(FaceDir * offset)
             # Part.show(CutSolid, "CutSolid")
             CfaceSolid = Cface.extrude(thkDir * thk)
+            # Part.show(CutSolid, "CutSolidCut")
             CutSolid = CutSolid.common(CfaceSolid)
             CutSolids.append(CutSolid)
 
