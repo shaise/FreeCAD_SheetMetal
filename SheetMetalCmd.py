@@ -1480,7 +1480,8 @@ def smBend(
                                         # Part.show(RfaceE, "RfaceSolid2")
                                         CutSolids.append(RfaceE)
                                         break
-
+            
+            # print([Noffset1, Noffset2, agap1, agap2, minReliefgap])
             # Remove offset solid from sheet metal, if inside offset.
             Ref_lenEdge = lenEdge.copy().translate(FaceDir * -offset)
             cutgap_1 = (AlenEdge.valueAt(AlenEdge.FirstParameter)
@@ -1493,7 +1494,10 @@ def smBend(
             dist = AlenEdge.valueAt(AlenEdge.FirstParameter).distanceToLine(
                 Ref_lenEdge.Curve.Location, Ref_lenEdge.Curve.Direction
             )
-            # print(dist, smEpsilon)
+
+            cutgap1 = agap1 - cutgap1
+
+            # print(dist, smEpsilon, cutgap1, cutgap_1, cutgap_2)
             # if dist < smEpsilon:
             #     cutgap1 *= -1.0
             cutgap_1 = (AlenEdge.valueAt(AlenEdge.LastParameter)
@@ -1505,17 +1509,19 @@ def smBend(
             cutgap2 = min(cutgap_1, cutgap_2)
             dist = AlenEdge.valueAt(AlenEdge.LastParameter).distanceToLine(
                 Ref_lenEdge.Curve.Location, Ref_lenEdge.Curve.Direction)
-            # print(dist)
+
+            # print(dist, smEpsilon, cutgap2, cutgap_1, cutgap_2)
             # if dist < smEpsilon:
             #     cutgap2 *= -1.0
             # print([cutgap1, cutgap2, AlenEdge])
-            CutFace = smMakeFace(AlenEdge, thkDir, thk, cutgap1, cutgap2, op="SMC")
+            CutFace = smMakeFace(AlenEdge, thkDir, thk, agap1, agap2, op="SMC")
             # Part.show(CutFace, "CutFace")
             CutSolid = CutFace.extrude(FaceDir * offset)
             # Part.show(CutSolid, "CutSolid")
             CfaceSolid = Cface.extrude(thkDir * thk)
-            # Part.show(CutSolid, "CutSolidCut")
+            # Part.show(CfaceSolid, "CfaceSolid")
             CutSolid = CutSolid.common(CfaceSolid)
+            # Part.show(CutSolid, "CutSolid")
             CutSolids.append(CutSolid)
 
         # Produce Main Solid for Inside Bends.
