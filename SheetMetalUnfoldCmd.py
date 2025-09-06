@@ -221,7 +221,10 @@ class SMUnfold:
         if obj.MaterialSheet in ["_manual", "_none"]:
             bac = BendAllowanceCalculator.from_single_value(obj.KFactor, obj.KFactorStandard)
         else:
+            print("Using MDS:", obj.MaterialSheet)
             sheet = FreeCAD.ActiveDocument.getObject(obj.MaterialSheet)
+            if sheet is None:
+                sheet = FreeCAD.ActiveDocument.getObjectsByLabel(obj.MaterialSheet)[0]
             bac = BendAllowanceCalculator.from_spreadsheet(sheet)
         sel_face, unfolded_shape, bend_lines, root_normal = SheetMetalNewUnfolder.getUnfold(
             bac, baseObject, baseFace
