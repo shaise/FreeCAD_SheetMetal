@@ -861,7 +861,6 @@ def getBendetail(selItemNames, MainObject, bendR, bendA, isflipped, offset, gap1
         for Cface in list2:
             if not (Cface.isSame(selFace)):
                 break
-
         # main Length Edge
         revAxisV.normalize()
         if thkDir is None:
@@ -925,7 +924,7 @@ def InsideEdge(edgelist):
         for j, ed in enumerate(edgelist):
             if i != j:
                 section = e.section(ed)
-                if section.Vertexes:
+                if section.Vertexes:   
                     edgeShape = BOPTools.JoinAPI.cutout_legacy(e, ed, tolerance=0.0)
                     e = edgeShape
         # Part.show(e,"newedge")
@@ -1207,6 +1206,17 @@ def smMiter(
     # print(miterA1List, miterA2List, gap1List, gap2List, extgap1List, extgap2List)
     return miterA1List, miterA2List, gap1List, gap2List, extgap1List, extgap2List
 
+def smCalcCutGap(trimedEdge, origEdge, edgePos, bendGap, reliefW, reliefD):
+    gap_1 = (origEdge.valueAt(edgePos)
+                - trimedEdge.valueAt(trimedEdge.FirstParameter)).Length
+    gap_2 = (origEdge.valueAt(edgePos)
+                - trimedEdge.valueAt(trimedEdge.LastParameter)).Length
+    gap = min(gap_1, gap_2)
+    minSpace = gap + reliefW
+    if gap > 0.0:
+        minSpace += reliefD
+    cutgap = bendGap if bendGap > minSpace else 0.0
+    return cutgap
 
 def smBend(
     thk,
@@ -1384,9 +1394,16 @@ def smBend(
 
         # `CutSolids` list for collecting Solids.
         CutSolids = []
+
+        # Calculate cut gap to avoid small faces.
+        Ref_lenEdge = noGap_lenEdge.copy().translate(FaceDir * -offset)
+        cutgap1 = smCalcCutGap(Ref_lenEdge, AlenEdge, AlenEdge.FirstParameter, 
+                                agap1, reliefW, reliefD)
+        cutgap2 = smCalcCutGap(Ref_lenEdge, AlenEdge, AlenEdge.LastParameter, 
+                                agap2, reliefW, reliefD)
         # Remove relief if needed.
         if reliefD > 0.0 and reliefW > 0.0:
-            if agap1 > minReliefgap:
+            if agap1 > minReliefgap and cutgap1 > 0.0:
                 reliefFace1 = smMakeReliefFace(lenEdge, FaceDir * -1, gap1 - reliefW, reliefW,
                                                reliefD, reliefType, op="SMF")
                 reliefSolid1 = reliefFace1.extrude(thkDir * thk)
@@ -1398,7 +1415,7 @@ def smBend(
                     reliefSolid1 = reliefFace1.extrude(thkDir * thk)
                     # Part.show(reliefSolid1, "reliefSolid1")
                     CutSolids.append(reliefSolid1)
-            if agap2 > minReliefgap:
+            if agap2 > minReliefgap and cutgap2 > 0.0:
                 reliefFace2 = smMakeReliefFace(lenEdge, FaceDir * -1, lenEdge.Length - gap2,
                                                reliefW, reliefD, reliefType, op="SMFF")
                 reliefSolid2 = reliefFace2.extrude(thkDir * thk)
@@ -1481,40 +1498,7 @@ def smBend(
                                         CutSolids.append(RfaceE)
                                         break
             
-            # print([Noffset1, Noffset2, agap1, agap2, minReliefgap])
-            # Remove offset solid from sheet metal, if inside offset.
-            Ref_lenEdge = lenEdge.copy().translate(FaceDir * -offset)
-            cutgap_1 = (AlenEdge.valueAt(AlenEdge.FirstParameter)
-                        - Ref_lenEdge.valueAt(Ref_lenEdge.FirstParameter)
-            ).Length
-            cutgap_2 = (AlenEdge.valueAt(AlenEdge.FirstParameter)
-                        - Ref_lenEdge.valueAt(Ref_lenEdge.LastParameter)
-            ).Length
-            cutgap1 = min(cutgap_1, cutgap_2)
-            dist = AlenEdge.valueAt(AlenEdge.FirstParameter).distanceToLine(
-                Ref_lenEdge.Curve.Location, Ref_lenEdge.Curve.Direction
-            )
-
-            cutgap1 = agap1 - cutgap1
-
-            # print(dist, smEpsilon, cutgap1, cutgap_1, cutgap_2)
-            # if dist < smEpsilon:
-            #     cutgap1 *= -1.0
-            cutgap_1 = (AlenEdge.valueAt(AlenEdge.LastParameter)
-                        - Ref_lenEdge.valueAt(Ref_lenEdge.FirstParameter)
-                        ).Length
-            cutgap_2 = (AlenEdge.valueAt(AlenEdge.LastParameter)
-                        - Ref_lenEdge.valueAt(Ref_lenEdge.LastParameter)
-                        ).Length
-            cutgap2 = min(cutgap_1, cutgap_2)
-            dist = AlenEdge.valueAt(AlenEdge.LastParameter).distanceToLine(
-                Ref_lenEdge.Curve.Location, Ref_lenEdge.Curve.Direction)
-
-            # print(dist, smEpsilon, cutgap2, cutgap_1, cutgap_2)
-            # if dist < smEpsilon:
-            #     cutgap2 *= -1.0
-            # print([cutgap1, cutgap2, AlenEdge])
-            CutFace = smMakeFace(AlenEdge, thkDir, thk, agap1, agap2, op="SMC")
+            CutFace = smMakeFace(AlenEdge, thkDir, thk, cutgap1, cutgap2, op="SMC")
             # Part.show(CutFace, "CutFace")
             CutSolid = CutFace.extrude(FaceDir * offset)
             # Part.show(CutSolid, "CutSolid")
