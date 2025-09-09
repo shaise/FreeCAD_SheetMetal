@@ -848,6 +848,18 @@ def smEdge(selFaceName, MainObject):
     # print(str(revAxisV))
     return seledge, selFace, thk, revAxisV, thkDir
 
+def CheckEdgeFlip(checkEdge, refEdge):
+    # Check if edge direction is same as reference edge, flip if not.
+    p1 = refEdge.valueAt(refEdge.FirstParameter)
+    p2 = refEdge.valueAt(refEdge.LastParameter)
+    v2 = p2 - p1
+    p1 = checkEdge.valueAt(checkEdge.FirstParameter)
+    p2 = checkEdge.valueAt(checkEdge.LastParameter)
+    v1 = p2 - p1
+    angle = math.degrees(v1.getAngle(v2))
+    if angle > 90.0:
+        return Part.makeLine(p2, p1)
+    return checkEdge
 
 def getBendetail(selItemNames, MainObject, bendR, bendA, isflipped, offset, gap1, gap2):
     mainlist = []
@@ -900,7 +912,7 @@ def getBendetail(selItemNames, MainObject, bendR, bendA, isflipped, offset, gap1
             # print(dist)
             slice_wire = Cface.slice(FaceDir, dist + offset)
             # print(slice_wire)
-            trimLenEdge = slice_wire[0].Edges[0]
+            trimLenEdge = CheckEdgeFlip(slice_wire[0].Edges[0], lenEdge)
         else:
             # Produce Offset Edge.
             trimLenEdge = lenEdge.copy()
@@ -1546,10 +1558,11 @@ def smBend(
             # Create wall.
             Wall_face = smMakeFace(lenEdge, FaceDir, extLen, gap1 - extend1, gap2 - extend2,
                                    miterA1List[i], miterA2List[i], op="SMW")
+            # Part.show(Wall_face, "Wall_face")
             wallSolid = Wall_face.extrude(thkDir * thk)
             # Part.show(wallSolid, "wallSolid")
             wallSolid.rotate(revAxisP, revAxisV, bendA)
-            # Part.show(wallSolid.Faces[2])
+            # Part.show(wallSolid, "wallSolid-rotated")
             thk_faceList.append(wallSolid.Faces[2])
 
         if not unfold:

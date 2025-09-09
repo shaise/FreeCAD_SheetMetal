@@ -96,6 +96,7 @@ SheetMetal WB can be installed via the [Addon Manager](https://github.com/FreeCA
 * FreeCAD Forum announcement/discussion [thread](https://forum.freecadweb.org/viewtopic.php?f=3&t=60818) 
 
 #### Release notes:
+* V0.7.52 09 Sep 2025:  Fix possible mismatch between outside and inside material.
 * V0.7.51 06 Sep 2025:  Fix some more gaps and inner material cases.
                       - Fix bug when material spreadsheet is renamed
 * V0.7.50 04 Sep 2025:  Fix issues with gaps and inner material.  
