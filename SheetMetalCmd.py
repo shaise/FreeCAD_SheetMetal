@@ -912,7 +912,10 @@ def getBendetail(selItemNames, MainObject, bendR, bendA, isflipped, offset, gap1
             # print(dist)
             slice_wire = Cface.slice(FaceDir, dist + offset)
             # print(slice_wire)
-            trimLenEdge = CheckEdgeFlip(slice_wire[0].Edges[0], lenEdge)
+            trimLenEdge = slice_wire[0].Edges[0]
+            if gap1 != gap2:
+                # Check if edge direction is same as reference edge, flip if not.
+                trimLenEdge = CheckEdgeFlip(trimLenEdge, lenEdge)
         else:
             # Produce Offset Edge.
             trimLenEdge = lenEdge.copy()
