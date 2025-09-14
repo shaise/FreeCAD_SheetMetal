@@ -30,38 +30,9 @@ import Part
 
 import SheetMetalBendSolid
 import SheetMetalTools
+from SheetMetalCornerReliefCmd import bendAngle
 
 smEpsilon = SheetMetalTools.smEpsilon
-
-
-def bendAngle(theFace, edge_vec):
-    # Start to investigate the angles
-    # at `self.__Shape.Faces[face_idx].ParameterRange[0]`.
-    # Part.show(theFace,"theFace")
-    # valuelist = theFace.ParameterRange
-    # print(valuelist)
-    angle_0 = theFace.ParameterRange[0]
-    angle_1 = theFace.ParameterRange[1]
-
-    # Idea: identify the angle
-    # at `edge_vec = P_edge.Vertexes[0].copy().Point`.
-    # This will be = `angle_start`.
-    # Calculate the tan_vec from `valueAt`.
-    edgeAngle, edgePar = theFace.Surface.parameter(edge_vec)
-    # print("the angles: ", angle_0, " ", angle_1, " ", edgeAngle, " ", edgeAngle - 2*math.pi)
-    if SheetMetalTools.smIsEqualAngle(angle_0, edgeAngle):
-        angle_start = angle_0
-        angle_end = angle_1
-    else:
-        angle_start = angle_1
-        angle_end = angle_0
-    bend_angle = angle_end - angle_start
-    # # Need to have the angle_tan before correcting the sign.
-    # angle_tan = angle_start + bend_angle/6.0
-    if bend_angle < 0.0:
-        bend_angle = -bend_angle
-    # print(math.degrees(bend_angle))
-    return math.degrees(bend_angle)
 
 
 def smSketchOnSheetMetal(kfactor=0.5, sketch="", flipped=False, selFaceNames="", MainObject=None):
