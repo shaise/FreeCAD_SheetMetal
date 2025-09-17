@@ -1422,13 +1422,13 @@ def smBend(
                 reliefFace1 = smMakeReliefFace(lenEdge, FaceDir * -1, gap1 - reliefW, reliefW,
                                                reliefD, reliefType, op="SMF")
                 reliefSolid1 = reliefFace1.extrude(thkDir * thk)
-                # Part.show(reliefSolid1, "reliefSolid1")
+                # Part.show(reliefSolid1, "reliefSolid1a")
                 CutSolids.append(reliefSolid1)
                 if inside:
                     reliefFace1 = smMakeReliefFace(lenEdge, FaceDir * -1, gap1 - reliefW, reliefW,
-                                                   offset, reliefType, op="SMF")
+                                                   offset, "Rectangle", op="SMF")
                     reliefSolid1 = reliefFace1.extrude(thkDir * thk)
-                    # Part.show(reliefSolid1, "reliefSolid1")
+                    # Part.show(reliefSolid1, "reliefSolid1b")
                     CutSolids.append(reliefSolid1)
             if agap2 > minReliefgap and cutgap2 > 0.0:
                 reliefFace2 = smMakeReliefFace(lenEdge, FaceDir * -1, lenEdge.Length - gap2,
@@ -1438,7 +1438,7 @@ def smBend(
                 CutSolids.append(reliefSolid2)
                 if inside:
                     reliefFace2 = smMakeReliefFace(lenEdge, FaceDir * -1, lenEdge.Length - gap2,
-                                                   reliefW, offset, reliefType, op="SMFF")
+                                                   reliefW, offset, "Rectangle", op="SMFF")
                     reliefSolid2 = reliefFace2.extrude(thkDir * thk)
                     # Part.show(reliefSolid2, "reliefSolid2")
                     CutSolids.append(reliefSolid2)
