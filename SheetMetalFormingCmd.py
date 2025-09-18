@@ -212,10 +212,6 @@ if SheetMetalTools.isGuiLoaded():
 
     icons_path = SheetMetalTools.icons_path
 
-    # Add translations path.
-    Gui.addLanguagePath(SheetMetalTools.language_path)
-    Gui.updateLocale()
-
 
     ###############################################################################################
     # View providers
