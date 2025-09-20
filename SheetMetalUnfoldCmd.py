@@ -552,10 +552,6 @@ if SheetMetalTools.isGuiLoaded():
         def GetResources(self):
             __dir__ = os.path.dirname(__file__)
             iconPath = os.path.join(__dir__, "Resources", "icons")
-            # add translations path
-            LanguagePath = os.path.join(__dir__, "translations")
-            Gui.addLanguagePath(LanguagePath)
-            Gui.updateLocale()
             return {
                     # The name of a svg file available in the resources.
                     "Pixmap": os.path.join(iconPath, "SheetMetal_Unfold.svg"),
@@ -599,10 +595,6 @@ if SheetMetalTools.isGuiLoaded():
         def GetResources(self):
             __dir__ = os.path.dirname(__file__)
             iconPath = os.path.join(__dir__, "Resources", "icons")
-            # Add translations path.
-            LanguagePath = os.path.join(__dir__, "translations")
-            Gui.addLanguagePath(LanguagePath)
-            Gui.updateLocale()
             return {
                     # The name of a svg file available in the resources.
                     "Pixmap": os.path.join(iconPath, "SheetMetal_UnfoldUpdate.svg"),
