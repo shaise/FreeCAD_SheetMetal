@@ -1040,7 +1040,7 @@ class SheetTree(object):
         # Part.show(Sf1, "cutFace" + str(theNode.idx+1) + "_")
         # cut_solid = Sf1.extrude(tan_vec.multiply(5.0))
         cut_solid = Sf1.extrude(tan_vec.multiply(self.__thickness))
-        Part.show(cut_solid, "cut_solid" + str(theNode.idx+1) + "_")
+        # Part.show(cut_solid, "cut_solid" + str(theNode.idx+1) + "_")
         # cut_opposite = Sf1.extrude(tan_vec.multiply(-5.0))
 
         cutFaces_node = self.f_list[fIdx].cut(cut_solid)
