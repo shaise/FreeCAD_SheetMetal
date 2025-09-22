@@ -456,6 +456,17 @@ if SheetMetalTools.isGuiLoaded():
             SheetMetalTools.taskConnectSpin(obj, self.form.unitYOffset, "YOffset")
             self.form.groupReliefType.buttonToggled.connect(self.reliefTypeChanged)
             self.form.groupReliefSize.buttonToggled.connect(self.reliefSizingTypeChanged)
+            self.form.AddRemove.clicked.connect(self.select_clicked)
+
+        def select_clicked(self):
+            """Execute when the 'Select' button is clicked.
+
+            Note:
+                The 'Select' button and the 'Preview' button is the same
+                button.
+
+            """
+            SheetMetalTools.SelectionObserver.manager(task_panel=self)
 
         def updateForm(self):
             reliefType = self.obj.ReliefSketch

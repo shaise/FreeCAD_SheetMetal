@@ -262,8 +262,8 @@ if SheetMetalTools.isGuiLoaded():
             obj.Proxy.addVerifyProperties(obj)
 
             self.sheerSelParams = SheetMetalTools.taskConnectSelection(
-                self.form.pushSelShear, self.form.treeShear, self.obj, ["Face"],
-                self.form.pushClearShear, "toolShearFaces", False
+                self.form.AddRemove, self.form.tree, self.obj, ["Face"],
+                self.form.pushClearSel, "toolShearFaces", False
             )
             if obj.toolObject is not None:
                 self.sheerSelParams.ConstrainToObject = obj.toolObject[0]
@@ -281,11 +281,22 @@ if SheetMetalTools.isGuiLoaded():
             SheetMetalTools.taskConnectSpin(obj, self.form.unitOffsetX, "OffsetX")
             SheetMetalTools.taskConnectSpin(obj, self.form.unitOffsetY, "OffsetY")
             SheetMetalTools.taskConnectSpin(obj, self.form.unitAngle, "angle")
+            self.form.AddRemove.clicked.connect(self.select_clicked)
+
+        def select_clicked(self):
+            """Execute when the 'Select' button is clicked.
+
+            Note:
+                The 'Select' button and the 'Preview' button is the same
+                button.
+
+            """
+            SheetMetalTools.SelectionObserver.manager(task_panel=self)
 
         def toolChanged(self, _sp, selobj, _selobj_items):
             if self.obj.toolShearFaces is None or self.obj.toolShearFaces[0] is not selobj:
                 self.obj.toolShearFaces = (selobj, [])
-                SheetMetalTools.taskPopulateSelectionList(self.form.treeShear,
+                SheetMetalTools.taskPopulateSelectionList(self.form.tree,
                                                           self.obj.toolShearFaces)
                 self.sheerSelParams.ConstrainToObject = selobj
 

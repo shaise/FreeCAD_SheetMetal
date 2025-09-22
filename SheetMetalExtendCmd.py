@@ -378,6 +378,17 @@ if SheetMetalTools.isGuiLoaded():
             SheetMetalTools.taskConnectSpin(obj, self.form.OffsetB, "gap2")
             SheetMetalTools.taskConnectSpin(obj, self.form.Length, "length")
             SheetMetalTools.taskConnectCheck(obj, self.form.RefineCheckbox, "Refine")
+            self.form.AddRemove.clicked.connect(self.select_clicked)
+
+        def select_clicked(self):
+            """Execute when the 'Select' button is clicked.
+
+            Note:
+                The 'Select' button and the 'Preview' button is the same
+                button.
+
+            """
+            SheetMetalTools.SelectionObserver.manager(task_panel=self)
 
         def isAllowedAlterSelection(self):
             return True

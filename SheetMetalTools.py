@@ -70,6 +70,93 @@ if isGuiLoaded():
         diag.exec_()
 
 
+    class SelectionObserver:
+
+        """Synchronize the task panel widget with the selection.
+
+        Used in SheetMetal Workbench commands that use a list of
+        objects. Works after press a Select button from a task panel to
+        select objects and until exiting the selection mode.
+
+        """
+
+        def __init__(self, task_panel):
+            """Initializes an instance of SelectionObserver.
+
+            Args:
+                task_panel: Task panel of the SheetMetal command.
+
+            """
+            self.task_panel = task_panel
+            self.widget = task_panel.form.tree
+            self.widget.destroyed.connect(self._delete_observer)
+
+        def sync_selection(self):
+            """Update the selection list in the task panel widget."""
+            self.widget.clear()
+            for obj in Gui.Selection.getCompleteSelection():
+                item = QtGui.QTreeWidgetItem(self.widget)
+                item.setIcon(0, QtGui.QIcon(":/icons/Tree_Part.svg"))
+                item.setText(0, obj.ObjectName)
+                item.setText(1, obj.SubElementNames[0])
+
+        def addSelection(self, *args):
+            """Execute when adding an object to the selection.
+
+            Note:
+                The name of this function must be the same as in
+                the `FreeCADGui.Selection`.
+
+            """
+            self.sync_selection()
+
+        def clearSelection(self, *args):
+            """Execute when clearing the selection.
+
+            Note:
+                The name of this function must be the same as in
+                the `FreeCADGui.Selection`.
+
+            """
+            self.sync_selection()
+
+        def removeSelection(self, *args):
+            """Execute when removing an object from the selection.
+
+            Note:
+                The name of this function must be the same as in
+                the `FreeCADGui.Selection`.
+
+            """
+            self.sync_selection()
+
+        @classmethod
+        def _delete_observer(cls):
+            """Uninstall an observer."""
+            if hasattr(cls, "observer"):
+                Gui.Selection.removeObserver(getattr(cls, "observer"))
+                delattr(cls, "observer")
+
+        @classmethod
+        def manager(cls, task_panel):
+            """Manage the creation and deletion of an Observer.
+
+            Create the Observer when the 'Select' button is pressed from
+            a task panel to select objects and delete the Observer when
+            the selection is complete.
+
+            Args:
+                task_panel: task panel for a SheetMetal workbench tool.
+
+            """
+            clear_button = task_panel.form.pushClearSel
+            if clear_button.isVisible():
+                setattr(cls, "observer", cls(task_panel))
+                Gui.Selection.addObserver(getattr(cls, "observer"))
+            else:
+                cls._delete_observer()
+
+
     class SMSingleSelectionObserver:
         """Used for tasks that needs to be aware of selection
          changes.
