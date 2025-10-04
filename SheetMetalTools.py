@@ -70,6 +70,104 @@ if isGuiLoaded():
         diag.exec_()
 
 
+    class SelectionObserver:
+
+        """Synchronize the task panel widget with the selection.
+
+        Used in task panels of SheetMetal Workbench commands that use
+        QTreeWidget as a list of objects. Works after press a 'Select'
+        button from a task panel to select objects and until exiting
+        the selection mode.
+
+        """
+
+        def __new__(cls, params_):
+            """Manage the creation and deletion of an Observer.
+
+            Create the Observer when the 'Select' button is pressed from
+            a task panel to select objects and delete the Observer when
+            the selection is complete.
+
+            Note:
+                Called from the `taskConnectSelection` function.
+
+            Args:
+                params_: An instance of SMSelectionParameters class.
+
+            """
+            if params_.ClearButton.isVisible():
+                if not hasattr(cls, "observer"):
+                    setattr(cls, "observer", super().__new__(cls))
+                    Gui.Selection.addObserver(getattr(cls, "observer"))
+                    return getattr(cls, "observer")
+                else:
+                    return None
+            else:
+                cls._delete_observer()
+                return None
+
+        def __init__(self, params_):
+            """Initialize an instance of SelectionObserver.
+
+            Args:
+                params_: An instance of SMSelectionParameters class.
+
+            """
+            self.widget = params_.dispWidget
+            self.widget.destroyed.connect(self._delete_observer)
+
+        def sync_selection(self):
+            """Update the selection list in the task panel widget."""
+            scrollbar = self.widget.verticalScrollBar()
+            scrollbar_position = scrollbar.value()
+            self.widget.clear()
+
+            for obj in Gui.Selection.getCompleteSelection():
+                item = QtGui.QTreeWidgetItem(self.widget)
+                item.setIcon(0, QtGui.QIcon(":/icons/Tree_Part.svg"))
+                item.setText(0, obj.ObjectName)
+                item.setText(1, obj.SubElementNames[0])
+
+            scrollbar.setValue(scrollbar_position)
+
+        def addSelection(self, *args):
+            """Execute when adding an object to the selection.
+
+            Note:
+                The name of this function must be the same as in
+                the `FreeCADGui.Selection`.
+
+            """
+            self.sync_selection()
+
+        def clearSelection(self, *args):
+            """Execute when clearing the selection.
+
+            Note:
+                The name of this function must be the same as in
+                the `FreeCADGui.Selection`.
+
+            """
+            self.sync_selection()
+
+        def removeSelection(self, *args):
+            """Execute when removing an object from the selection.
+
+            Note:
+                The name of this function must be the same as in
+                the `FreeCADGui.Selection`.
+
+            """
+            self.sync_selection()
+
+        @classmethod
+        def _delete_observer(cls):
+            """Uninstall an observer."""
+            if hasattr(cls, "observer"):
+                Gui.Selection.removeObserver(getattr(cls, "observer"))
+                delattr(cls, "observer")
+
+
     class SMSingleSelectionObserver:
         """Used for tasks that needs to be aware of selection
          changes.
@@ -327,6 +425,7 @@ if isGuiLoaded():
             clearButton.clicked.connect(Gui.Selection.clearSelection)
         sp.OriginalText = addRemoveButton.text()
         addRemoveButton.clicked.connect(lambda _value: _taskMultiSelectionModeClicked(sp))
+        addRemoveButton.clicked.connect(lambda: SelectionObserver(sp))
         return sp
 
 
