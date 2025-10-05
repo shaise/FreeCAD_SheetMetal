@@ -123,10 +123,7 @@ if isGuiLoaded():
             self.widget.clear()
 
             for obj in Gui.Selection.getCompleteSelection():
-                item = QtGui.QTreeWidgetItem(self.widget)
-                item.setIcon(0, QtGui.QIcon(":/icons/Tree_Part.svg"))
-                item.setText(0, obj.ObjectName)
-                item.setText(1, obj.SubElementNames[0])
+                add_qtreewidget_item(self.widget, obj.ObjectName, obj.SubElementNames[0])
 
             scrollbar.setValue(scrollbar_position)
 
@@ -333,6 +330,21 @@ if isGuiLoaded():
                     obj.Visibility = False
 
 
+    def add_qtreewidget_item(widget, obj_name, sub_name):
+        """Add an item to a QTreeWidget with presetting.
+
+        Args:
+            widget: The QTreeWidget to which the item will be added.
+            obj_name: Name of the object.
+            sub_name: Name of the sub-element.
+
+        """
+        item = QtGui.QTreeWidgetItem(widget)
+        item.setIcon(0, QtGui.QIcon(":/icons/Tree_Part.svg"))
+        item.setText(0, obj_name)
+        item.setText(1, sub_name)
+
+
     # Task panel helper code.
     def taskPopulateSelectionList(qwidget, baseObject):
         qwidget.clear()
@@ -342,11 +354,7 @@ if isGuiLoaded():
         if not isinstance(items, list):
             items = [items]
         for subf in items:
-            # FreeCAD.Console.PrintLog("item: " + subf + "\n")
-            item = QtGui.QTreeWidgetItem(qwidget)
-            item.setText(0, obj.Name)
-            item.setIcon(0, QtGui.QIcon(":/icons/Tree_Part.svg"))
-            item.setText(1, subf)
+            add_qtreewidget_item(qwidget, obj.Name, subf)
 
 
     def taskPopulateSelectionSingle(textbox, selObject):
