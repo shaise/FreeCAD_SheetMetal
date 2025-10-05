@@ -135,7 +135,8 @@ if isGuiLoaded():
                 the `FreeCADGui.Selection`.
 
             """
-            self.sync_selection()
+            _, obj_name, sub_name, _ = args
+            add_qtreewidget_item(self.widget, obj_name, sub_name)
 
         def clearSelection(self, *args):
             """Execute when clearing the selection.
