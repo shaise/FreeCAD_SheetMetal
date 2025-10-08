@@ -116,6 +116,9 @@ if isGuiLoaded():
             self.widget = params_.dispWidget
             self.widget.destroyed.connect(self._delete_observer)
 
+            self.widget.setMouseTracking(True)
+            self.widget.entered.connect(self._highlight_element)
+
         def sync_selection(self):
             """Update the selection list in the task panel widget."""
             scrollbar = self.widget.verticalScrollBar()
@@ -162,8 +165,34 @@ if isGuiLoaded():
         def _delete_observer(cls):
             """Uninstall an observer."""
             if hasattr(cls, "observer"):
+                cls.observer.widget.entered.disconnect(cls._highlight_element)
                 Gui.Selection.removeObserver(getattr(cls, "observer"))
                 delattr(cls, "observer")
+
+        @staticmethod
+        def _highlight_element(index):
+            """Highlight a 3D element correspond to QTreeWidget item.
+
+            Find the item's position for QTreeWidget item into
+            QModelIndex and using that position to get access to the
+            3D element in the global selection list. After that
+            preselect that element in 3D for highlighting.
+
+            Args:
+                index: QModelIndex of the hovered item in QTreeWidget.
+
+            """
+            try:
+                item = Gui.Selection.getCompleteSelection()[index.row()]
+            except IndexError:
+                return None
+            item_name = ".".join((item.ObjectName, item.SubElementNames[0]))
+            parent = item.Object.getParent()
+            try:
+                Gui.Selection.setPreselection(parent, item_name)
+            except ValueError:
+                return None
+            return None
 
 
     class SMSingleSelectionObserver:
