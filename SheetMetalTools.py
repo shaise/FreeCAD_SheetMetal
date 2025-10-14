@@ -70,6 +70,131 @@ if isGuiLoaded():
         diag.exec_()
 
 
+    class SelectionObserver:
+
+        """Synchronize the task panel widget with the selection.
+
+        Used in task panels of SheetMetal Workbench commands that use
+        QTreeWidget as a list of objects. Works after press a 'Select'
+        button from a task panel to select objects and until exiting
+        the selection mode.
+
+        """
+
+        def __new__(cls, params_):
+            """Manage the creation and deletion of an Observer.
+
+            Create the Observer when the 'Select' button is pressed from
+            a task panel to select objects and delete the Observer when
+            the selection is complete.
+
+            Note:
+                Called from the `taskConnectSelection` function.
+
+            Args:
+                params_: An instance of SMSelectionParameters class.
+
+            """
+            if params_.ClearButton.isVisible():
+                if not hasattr(cls, "observer"):
+                    setattr(cls, "observer", super().__new__(cls))
+                    Gui.Selection.addObserver(getattr(cls, "observer"))
+                    return getattr(cls, "observer")
+                else:
+                    return None
+            else:
+                cls._delete_observer()
+                return None
+
+        def __init__(self, params_):
+            """Initialize an instance of SelectionObserver.
+
+            Args:
+                params_: An instance of SMSelectionParameters class.
+
+            """
+            self.widget = params_.dispWidget
+            self.widget.destroyed.connect(self._delete_observer)
+
+            self.widget.setMouseTracking(True)
+            self.widget.entered.connect(self._highlight_element)
+
+        def sync_selection(self):
+            """Update the selection list in the task panel widget."""
+            scrollbar = self.widget.verticalScrollBar()
+            scrollbar_position = scrollbar.value()
+            self.widget.clear()
+
+            for obj in Gui.Selection.getCompleteSelection():
+                add_qtreewidget_item(self.widget, obj.ObjectName, obj.SubElementNames[0])
+
+            scrollbar.setValue(scrollbar_position)
+
+        def addSelection(self, *args):
+            """Execute when adding an object to the selection.
+
+            Note:
+                The name of this function must be the same as in
+                the `FreeCADGui.Selection`.
+
+            """
+            _, obj_name, sub_name, _ = args
+            add_qtreewidget_item(self.widget, obj_name, sub_name)
+
+        def clearSelection(self, *args):
+            """Execute when clearing the selection.
+
+            Note:
+                The name of this function must be the same as in
+                the `FreeCADGui.Selection`.
+
+            """
+            self.sync_selection()
+
+        def removeSelection(self, *args):
+            """Execute when removing an object from the selection.
+
+            Note:
+                The name of this function must be the same as in
+                the `FreeCADGui.Selection`.
+
+            """
+            self.sync_selection()
+
+        @classmethod
+        def _delete_observer(cls):
+            """Uninstall an observer."""
+            if hasattr(cls, "observer"):
+                cls.observer.widget.entered.disconnect(cls._highlight_element)
+                Gui.Selection.removeObserver(getattr(cls, "observer"))
+                delattr(cls, "observer")
+
+        @staticmethod
+        def _highlight_element(index):
+            """Highlight a 3D element correspond to QTreeWidget item.
+
+            Find the item's position for QTreeWidget item into
+            QModelIndex and using that position to get access to the
+            3D element in the global selection list. After that
+            preselect that element in 3D for highlighting.
+
+            Args:
+                index: QModelIndex of the hovered item in QTreeWidget.
+
+            """
+            try:
+                item = Gui.Selection.getCompleteSelection()[index.row()]
+            except IndexError:
+                return None
+            item_name = ".".join((item.ObjectName, item.SubElementNames[0]))
+            parent = item.Object.getParent()
+            try:
+                Gui.Selection.setPreselection(parent, item_name)
+            except ValueError:
+                return None
+            return None
+
+
     class SMSingleSelectionObserver:
         """Used for tasks that needs to be aware of selection
          changes.
@@ -235,6 +360,21 @@ if isGuiLoaded():
                     obj.Visibility = False
 
 
+    def add_qtreewidget_item(widget, obj_name, sub_name):
+        """Add an item to a QTreeWidget with presetting.
+
+        Args:
+            widget: The QTreeWidget to which the item will be added.
+            obj_name: Name of the object.
+            sub_name: Name of the sub-element.
+
+        """
+        item = QtGui.QTreeWidgetItem(widget)
+        item.setIcon(0, QtGui.QIcon(":/icons/Tree_Part.svg"))
+        item.setText(0, obj_name)
+        item.setText(1, sub_name)
+
+
     # Task panel helper code.
     def taskPopulateSelectionList(qwidget, baseObject):
         qwidget.clear()
@@ -244,11 +384,7 @@ if isGuiLoaded():
         if not isinstance(items, list):
             items = [items]
         for subf in items:
-            # FreeCAD.Console.PrintLog("item: " + subf + "\n")
-            item = QtGui.QTreeWidgetItem(qwidget)
-            item.setText(0, obj.Name)
-            item.setIcon(0, QtGui.QIcon(":/icons/Tree_Part.svg"))
-            item.setText(1, subf)
+            add_qtreewidget_item(qwidget, obj.Name, subf)
 
 
     def taskPopulateSelectionSingle(textbox, selObject):
@@ -327,6 +463,7 @@ if isGuiLoaded():
             clearButton.clicked.connect(Gui.Selection.clearSelection)
         sp.OriginalText = addRemoveButton.text()
         addRemoveButton.clicked.connect(lambda _value: _taskMultiSelectionModeClicked(sp))
+        addRemoveButton.clicked.connect(lambda: SelectionObserver(sp))
         return sp
 
 
