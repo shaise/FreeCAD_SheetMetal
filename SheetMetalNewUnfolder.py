@@ -764,20 +764,13 @@ class Edge2DCleanup:
     @staticmethod
     def check_err(curve1: Part.Edge, curve2: Part.Edge) -> float:
         max_err = 0.00
+        # Use the discretize function to make sure that we will compare
+        # equidistants points. Some BSplineCurve that are in fact straight lines
+        # have not always their parameters equidistants.
+        pts1 = curve1.discretize(discretization_quantity)
+        pts2 = curve2.discretize(discretization_quantity)
         for i in range(discretization_quantity):
-            curve1_parameter = (curve1.FirstParameter
-                                + (curve1.LastParameter - curve1.FirstParameter)
-                                * (i + 1)
-                                / (discretization_quantity + 1)
-                                )
-            curve2_parameter = (curve2.FirstParameter
-                                + (curve2.LastParameter - curve2.FirstParameter)
-                                * (i + 1)
-                                / (discretization_quantity + 1)
-                                )
-            err = curve1.valueAt(curve1_parameter).distanceToPoint(
-                curve2.valueAt(curve2_parameter)
-            )
+            err = pts1[i].distanceToPoint(pts2[i])
             if err > max_err:
                 max_err = err
         return max_err
