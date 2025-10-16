@@ -719,20 +719,19 @@ class BendAllowanceCalculator:
         number_of_columns = 0
         radius_thickness_list = []
         k_factor_list = []
-        while next_rt_value := sheet.getContents("A" + str(number_of_columns + 2)):
+        while sheet.getContents("A" + str(number_of_columns + 2)):
+            radius_thickness_list.append(sheet.get("A" + str(number_of_columns + 2)))
             number_of_columns += 1
-            radius_thickness_list.append(float(next_rt_value))
         # Read corresponding k-factor values from the B column
         # and throw an error if we find an empty cell too early.
         for i in range(number_of_columns):
-            next_kf_value = sheet.getContents("B" + str(i + 2))
-            if not next_kf_value:
+            if not sheet.getContents("B" + str(i + 2)):
                 errmsg = (
                     "material definition sheet has an empty "
                     f"cell in the K-factors column (cell B{i + 2})"
                 )
                 raise ValueError(errmsg)
-            k_factor_list.append(float(next_kf_value))
+            k_factor_list.append(sheet.get("B" + str(i + 2)))
         instance.radius_thickness_values = radius_thickness_list
         instance.k_factor_values = k_factor_list
         return instance
