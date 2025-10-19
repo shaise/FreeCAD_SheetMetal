@@ -187,7 +187,7 @@ if isGuiLoaded():
             except IndexError:
                 return None
             item_name = ".".join((item.ObjectName, item.SubElementNames[0]))
-            parent = item.Object.getParent()
+            parent = smGetParentBody(item.Object)
             try:
                 Gui.Selection.setPreselection(parent, item_name)
             except ValueError:
@@ -343,7 +343,7 @@ if isGuiLoaded():
         # is Gui.Selection.addSelection(obj, subObjects).
         docName = obj.Document.Name
         if smIsPartDesign(obj):
-            bodyName = obj.getParent().Name
+            bodyName = smGetParentBody(obj).Name
             for subObj in subObjects:
                 subName = f"{obj.Name}.{subObj}"
                 Gui.Selection.addSelection(docName, bodyName, subName)
@@ -1101,16 +1101,6 @@ def smAddEnumProperty(obj, name, proptip, enumlist, defval=None, paramgroup="Par
         setattr(obj, name, enumlist)
         if defval is not None:
             setattr(obj, name, defval)
-
-
-def smGetBodyOfItem(obj):
-    if hasattr(obj, "getParent"):
-        return obj.getParent()
-    elif hasattr(obj, "getParents"):  # Probably FreeCadLink version.
-        parent, _ = obj.getParents()[0]
-        return parent
-    return None
-
 
 def smGetThickness(obj, foldface):
     normal = foldface.normalAt(0, 0)

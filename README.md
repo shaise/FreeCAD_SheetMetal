@@ -96,6 +96,8 @@ SheetMetal WB can be installed via the [Addon Manager](https://github.com/FreeCA
 * FreeCAD Forum announcement/discussion [thread](https://forum.freecadweb.org/viewtopic.php?f=3&t=60818) 
 
 #### Release notes:
+* V0.7.56 19 Oct 2025:  Sync selections with task panel lists by [@zokhasan][zokhasan].  
+                      - Fix compatability with linkstage branch.  
 * V0.7.55 20 Sep 2025:  Remove some debug code from unfolder.  
                       - Remove redundant translation commands by [@zokhasan][zokhasan].  
 * V0.7.54 17 Sep 2025:  Fix round relief bug.  
