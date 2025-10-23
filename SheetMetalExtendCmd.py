@@ -271,7 +271,7 @@ def smExtrude(extLength=10.0, gap1=0.0, gap2=0.0, subtraction=False, offset=0.02
 
 
 class SMExtrudeWall:
-    def __init__(self, obj, selobj, sel_items):
+    def __init__(self, obj, selobj, sel_items, selSketch=None):
         """Add SheetMetal Wall by Extending."""
         _tip_ = FreeCAD.Qt.translate("App::Property", "Length of Wall")
         obj.addProperty("App::PropertyLength", "length", "Parameters", _tip_).length = 10.0
@@ -283,7 +283,7 @@ class SMExtrudeWall:
         obj.addProperty("App::PropertyLinkSub", "baseObject", "Parameters",
                         _tip_).baseObject = (selobj, sel_items)
         _tip_ = FreeCAD.Qt.translate("App::Property", "Wall Sketch")
-        obj.addProperty("App::PropertyLink", "Sketch", "ParametersExt", _tip_)
+        obj.addProperty("App::PropertyLink", "Sketch", "ParametersExt", _tip_).Sketch = selSketch
         _tip_ = FreeCAD.Qt.translate("App::Property", "Use Subtraction")
         obj.addProperty("App::PropertyBool", "UseSubtraction", "ParametersExt",
                         _tip_).UseSubtraction = False
@@ -307,7 +307,7 @@ class SMExtrudeWall:
             _tip_ = FreeCAD.Qt.translate("App::Property", "Wall Sketch")
             fp.addProperty("App::PropertyLink", "Sketch", "ParametersExt", _tip_)
             _tip_ = FreeCAD.Qt.translate("App::Property", "Use Subtraction")
-            fp.addProperty("App::PropertyDistance", "Offset", "ParametersExt", _tip_).Offset = 0.02
+            fp.addProperty("App::PropertyDistance", "Offset", "ParametersExt", _tip_).Offset = "0.2 mm"
             _tip_ = FreeCAD.Qt.translate("App::Property", "Use Refine")
             fp.addProperty("App::PropertyBool", "Refine", "ParametersExt", _tip_).Refine = False
         if not hasattr(fp, "UseSubtraction"):
@@ -316,7 +316,7 @@ class SMExtrudeWall:
                 useSub = fp.UseSubstraction  # Compatibility with old files.
             _tip_ = FreeCAD.Qt.translate("App::Property", "Use Subtraction")
             fp.addProperty("App::PropertyBool", "UseSubtraction", "ParametersExt",
-                           _tip_).UseSubtraction = fp.UseSubstraction
+                           _tip_).UseSubtraction = useSub
         # Pass selected object shape.
         Main_Object = fp.baseObject[0].Shape.copy()
         face = fp.baseObject[1]
@@ -329,6 +329,9 @@ class SMExtrudeWall:
                              sketch=fp.Sketch,
                              selFaceNames=face,
                              selObject=Main_Object)
+        if fp.Sketch :
+            fp.Sketch.ViewObject.Visibility = False
+
 
 
 ###################################################################################################
@@ -374,16 +377,30 @@ if SheetMetalTools.isGuiLoaded():
             self.selParams = SheetMetalTools.taskConnectSelection(self.form.AddRemove,
                                                                   self.form.tree, self.obj,
                                                                   ["Face"], self.form.pushClearSel)
+            SheetMetalTools.taskConnectSelectionSingle(self.form.buttSelSketch,
+                                                       self.form.txtSelSketch, obj, "Sketch",
+                                                       ("Sketcher::SketchObject", []))
             SheetMetalTools.taskConnectSpin(obj, self.form.OffsetA, "gap1")
             SheetMetalTools.taskConnectSpin(obj, self.form.OffsetB, "gap2")
             SheetMetalTools.taskConnectSpin(obj, self.form.Length, "length")
+            SheetMetalTools.taskConnectSpin(obj, self.form.Offset, "Offset")
             SheetMetalTools.taskConnectCheck(obj, self.form.RefineCheckbox, "Refine")
+            SheetMetalTools.taskConnectCheck(obj, self.form.checkIntersectClear, "UseSubtraction")
+            self.form.buttClearSketch.clicked.connect(self.clearPressed)
 
         def isAllowedAlterSelection(self):
             return True
 
         def isAllowedAlterView(self):
             return True
+        
+        def clearPressed(self):
+            if self.obj.Sketch is None:
+                return
+            self.obj.Sketch.ViewObject.Visibility = True
+            self.obj.Sketch = None
+            self.form.txtSelSketch.setText("")
+            self.obj.recompute()
 
         def accept(self):
             SheetMetalTools.taskAccept(self)
@@ -418,7 +435,10 @@ if SheetMetalTools.isGuiLoaded():
             newObj, activeBody = SheetMetalTools.smCreateNewObject(selobj, "Extend")
             if newObj is None:
                 return
-            SMExtrudeWall(newObj, selobj, sel.SubElementNames)
+            selSketch = None
+            if (len(Gui.Selection.getSelection()) > 1):
+                selSketch = Gui.Selection.getSelection()[1]
+            SMExtrudeWall(newObj, selobj, sel.SubElementNames, selSketch)
             SMViewProviderTree(newObj.ViewObject)
             SheetMetalTools.smAddNewObject(selobj, newObj, activeBody, SMExtendWallTaskPanel)
             return
@@ -426,12 +446,15 @@ if SheetMetalTools.isGuiLoaded():
         def IsActive(self):
             if (
                 len(Gui.Selection.getSelection()) < 1
+                or len(Gui.Selection.getSelection()) > 2
                 or len(Gui.Selection.getSelectionEx()[0].SubElementNames) < 1
             ):
                 return False
-            for selobj in Gui.Selection.getSelection():
-                if selobj.isDerivedFrom("Sketcher::SketchObject"):
-                    return False
+            selobj = Gui.Selection.getSelection()[0]
+            if selobj.isDerivedFrom("Sketcher::SketchObject"):
+                return False
+            if len(Gui.Selection.getSelection()) == 2 and not Gui.Selection.getSelection()[1].isDerivedFrom("Sketcher::SketchObject"):
+                return False 
             for selFace in Gui.Selection.getSelectionEx()[0].SubObjects:
                 if isinstance(selFace, Part.Vertex):
                     return False
