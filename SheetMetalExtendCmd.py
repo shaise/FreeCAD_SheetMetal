@@ -151,7 +151,7 @@ def smgetSubface(face, obj, edge, thk):
     return wallsolidlist
 
 
-def smExtrude(extLength=10.0, gap1=0.0, gap2=0.0, subtraction=False, offset=0.02,
+def smExtrude(extLength=10.0, gap1=0.0, gap2=0.0, subtraction=False, offset=0.2,
               refine=True, sketch="", selFaceNames="", selObject="", ):
     import BOPTools.SplitFeatures
 
@@ -215,6 +215,7 @@ def smExtrude(extLength=10.0, gap1=0.0, gap2=0.0, subtraction=False, offset=0.02
                 break
         # Part.show(SplitSolid1, "SplitSolid1")
 
+        SplitSolid2 = None
         for SplitSolid in SplitSolids.Solids:
             if not (SplitSolid.isSame(SplitSolid1)):
                 SplitSolid2 = SplitSolid
@@ -224,30 +225,33 @@ def smExtrude(extLength=10.0, gap1=0.0, gap2=0.0, subtraction=False, offset=0.02
         # Make solid from sketch, if sketch is present.
         solidlist = []
         if sketches:
+            overlap_solidlist = []
             Wall_face = Part.makeFace(sketch.Shape.Wires, "Part::FaceMakerBullseye")
             check_face = Wall_face.common(Cface)
             if not check_face.Faces:
                 thkDir *= -1
             wallSolid = Wall_face.extrude(thkDir * thk)
+            if (wallSolid.Volume - smEpsilon) < 0.0:
+                raise SheetMetalTools.SMException("Incorrect face selected. Please select a side face.")
             # Part.show(wallSolid, "wallSolid")
             solidlist.append(wallSolid)
             # To find Overlapping Solid, non thickness side Face that
             # touch Overlapping Solid.
-            overlap_solid = wallSolid.common(SplitSolid2)
-            # Part.show(overlap_solid, "overlap_solid")
-            overlap_solidlist = []
-            if overlap_solid.Faces:
-                substract_face = smTouchFace(wallSolid, SplitSolid2, thk)
-                # Part.show(substract_face, "substract_face")
-                # # To get solids that aligned/normal to touching face.
-                overlap_solidlist = smgetSubface(substract_face, overlap_solid, lenEdge, thk)
-            # Substract solid from Initial Solid.
-            if subtraction:
-                for solid in overlap_solidlist:
-                    CutSolid = solid.makeOffsetShape(offset, 0.0, fill=False, join=2)
-                    # Part.show(CutSolid, "CutSolid")
-                    finalShape = finalShape.cut(CutSolid)
-                    # Part.show(finalShape, "finalShape")
+            if SplitSolid2:
+                overlap_solid = wallSolid.common(SplitSolid2)
+                # Part.show(overlap_solid, "overlap_solid")
+                if overlap_solid.Faces:
+                    substract_face = smTouchFace(wallSolid, SplitSolid2, thk)
+                    # Part.show(substract_face, "substract_face")
+                    # # To get solids that aligned/normal to touching face.
+                    overlap_solidlist = smgetSubface(substract_face, overlap_solid, lenEdge, thk)
+                # Substract solid from Initial Solid.
+                if subtraction:
+                    for solid in overlap_solidlist:
+                        CutSolid = solid.makeOffsetShape(offset, 0.0, fill=False, join=2)
+                        # Part.show(CutSolid, "CutSolid")
+                        finalShape = finalShape.cut(CutSolid)
+                        # Part.show(finalShape, "finalShape")
         elif extLength > 0.0:
             # Create wall, if edge or face selected.
             Wall_face = smMakeFace(lenEdge, FaceDir, extLength, gap1, gap2, op="SMW")
@@ -288,7 +292,7 @@ class SMExtrudeWall:
         obj.addProperty("App::PropertyBool", "UseSubtraction", "ParametersExt",
                         _tip_).UseSubtraction = False
         _tip_ = FreeCAD.Qt.translate("App::Property", "Offset for subtraction")
-        obj.addProperty("App::PropertyDistance", "Offset", "ParametersExt", _tip_).Offset = 0.02
+        obj.addProperty("App::PropertyDistance", "Offset", "ParametersExt", _tip_).Offset = 0.2
         _tip_ = FreeCAD.Qt.translate("App::Property", "Use Refine")
         obj.addProperty("App::PropertyBool", "Refine", "ParametersExt", _tip_).Refine = True
         obj.Proxy = self
@@ -307,7 +311,7 @@ class SMExtrudeWall:
             _tip_ = FreeCAD.Qt.translate("App::Property", "Wall Sketch")
             fp.addProperty("App::PropertyLink", "Sketch", "ParametersExt", _tip_)
             _tip_ = FreeCAD.Qt.translate("App::Property", "Use Subtraction")
-            fp.addProperty("App::PropertyDistance", "Offset", "ParametersExt", _tip_).Offset = "0.2 mm"
+            fp.addProperty("App::PropertyDistance", "Offset", "ParametersExt", _tip_).Offset = 0.2
             _tip_ = FreeCAD.Qt.translate("App::Property", "Use Refine")
             fp.addProperty("App::PropertyBool", "Refine", "ParametersExt", _tip_).Refine = False
         if not hasattr(fp, "UseSubtraction"):
