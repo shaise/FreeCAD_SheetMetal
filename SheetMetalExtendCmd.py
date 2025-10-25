@@ -390,6 +390,12 @@ if SheetMetalTools.isGuiLoaded():
             SheetMetalTools.taskConnectSpin(obj, self.form.Offset, "Offset")
             SheetMetalTools.taskConnectCheck(obj, self.form.RefineCheckbox, "Refine")
             SheetMetalTools.taskConnectCheck(obj, self.form.checkIntersectClear, "UseSubtraction")
+            isStandardExtend = self.obj.Sketch is None
+            self.form.groupExtend.setVisible(isStandardExtend)
+            self.form.groupExtendBySketch.setVisible(not isStandardExtend)
+
+            # for now disable clear sketch button since we have a seperate command for that
+            self.form.buttClearSketch.setVisible(False)
             self.form.buttClearSketch.clicked.connect(self.clearPressed)
 
         def isAllowedAlterSelection(self):
@@ -427,9 +433,51 @@ if SheetMetalTools.isGuiLoaded():
                     "ToolTip": FreeCAD.Qt.translate(
                         "SheetMetal",
                         "Extends one or more face, on existing sheet metal.\n"
-                        "1. Select edges or thickness side faces to create walls.\n"
-                        "2. Select a sketch in property editor to create tabs. \n"
-                        "3. Use Property editor to modify other parameters",
+                        "1. Select edges or thickness side faces to extend walls.\n"
+                        "2. Use Property-editor / Task-panel to modify other parameters",
+                        ),
+                    }
+
+        def Activated(self):
+            sel = Gui.Selection.getSelectionEx()[0]
+            selobj = sel.Object
+            newObj, activeBody = SheetMetalTools.smCreateNewObject(selobj, "Extend")
+            if newObj is None:
+                return
+            SMExtrudeWall(newObj, selobj, sel.SubElementNames, None)
+            SMViewProviderTree(newObj.ViewObject)
+            SheetMetalTools.smAddNewObject(selobj, newObj, activeBody, SMExtendWallTaskPanel)
+            return
+
+        def IsActive(self):
+            if (
+                len(Gui.Selection.getSelection()) != 1
+                or len(Gui.Selection.getSelectionEx()[0].SubElementNames) < 1
+            ):
+                return False
+            selobj = Gui.Selection.getSelection()[0]
+            if selobj.isDerivedFrom("Sketcher::SketchObject"):
+                return False
+            for selFace in Gui.Selection.getSelectionEx()[0].SubObjects:
+                if isinstance(selFace, Part.Vertex):
+                    return False
+            return True
+
+    class SMExtendBySketchCommandClass:
+        """Extrude by sketch."""
+
+        def GetResources(self):
+            return {
+                    # The name of a svg file available in the resources.
+                    "Pixmap": os.path.join(icons_path, "SheetMetal_ExtendBySketch.svg"),
+                    "MenuText": FreeCAD.Qt.translate("SheetMetal", "Extend by Sketch"),
+                    "Accel": "T",
+                    "ToolTip": FreeCAD.Qt.translate(
+                        "SheetMetal",
+                        "Extends a side face using a sketch.\n"
+                        "1. Select a thickness side face to extend.\n"
+                        "2. Select a sketch to shape the extension (Good for creating tabs).\n"
+                        "3. Use Property-editor / Task-panel to modify other parameters",
                         ),
                     }
 
@@ -449,15 +497,14 @@ if SheetMetalTools.isGuiLoaded():
 
         def IsActive(self):
             if (
-                len(Gui.Selection.getSelection()) < 1
-                or len(Gui.Selection.getSelection()) > 2
-                or len(Gui.Selection.getSelectionEx()[0].SubElementNames) < 1
+                len(Gui.Selection.getSelection()) != 2
+                or len(Gui.Selection.getSelectionEx()[0].SubElementNames) != 1
             ):
                 return False
             selobj = Gui.Selection.getSelection()[0]
             if selobj.isDerivedFrom("Sketcher::SketchObject"):
                 return False
-            if len(Gui.Selection.getSelection()) == 2 and not Gui.Selection.getSelection()[1].isDerivedFrom("Sketcher::SketchObject"):
+            if not Gui.Selection.getSelection()[1].isDerivedFrom("Sketcher::SketchObject"):
                 return False 
             for selFace in Gui.Selection.getSelectionEx()[0].SubObjects:
                 if isinstance(selFace, Part.Vertex):
@@ -466,3 +513,4 @@ if SheetMetalTools.isGuiLoaded():
 
 
     Gui.addCommand("SheetMetal_Extrude", SMExtrudeCommandClass())
+    Gui.addCommand("SheetMetal_ExtendBySketch", SMExtendBySketchCommandClass())

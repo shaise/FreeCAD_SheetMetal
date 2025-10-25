@@ -78,7 +78,7 @@
     </widget>
    </item>
    <item>
-    <widget class="QGroupBox" name="groupBox">
+    <widget class="QGroupBox" name="groupExtend">
      <property name="title">
       <string>Extend</string>
      </property>
@@ -134,18 +134,11 @@
         </property>
        </widget>
       </item>
-      <item row="3" column="0">
-       <widget class="QCheckBox" name="RefineCheckbox">
-        <property name="text">
-         <string>Refine</string>
-        </property>
-       </widget>
-      </item>
      </layout>
     </widget>
    </item>
    <item>
-    <widget class="QGroupBox" name="groupBox_2">
+    <widget class="QGroupBox" name="groupExtendBySketch">
      <property name="title">
       <string>Extend by sketch</string>
      </property>
@@ -192,6 +185,13 @@
        </widget>
       </item>
      </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QCheckBox" name="RefineCheckbox">
+     <property name="text">
+      <string>Refine</string>
+     </property>
     </widget>
    </item>
    <item>
