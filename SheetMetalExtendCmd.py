@@ -353,7 +353,10 @@ if SheetMetalTools.isGuiLoaded():
         """Part WB style ViewProvider."""
 
         def getIcon(self):
-            return os.path.join(icons_path, "SheetMetal_Extrude.svg")
+            if self.Object.Sketch:
+                return os.path.join(icons_path, "SheetMetal_ExtendBySketch.svg")
+            else:
+                return os.path.join(icons_path, "SheetMetal_Extrude.svg")
 
         def getTaskPanel(self, obj):
             return SMExtendWallTaskPanel(obj)
