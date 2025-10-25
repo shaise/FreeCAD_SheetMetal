@@ -96,6 +96,7 @@ SheetMetal WB can be installed via the [Addon Manager](https://github.com/FreeCA
 * FreeCAD Forum announcement/discussion [thread](https://forum.freecadweb.org/viewtopic.php?f=3&t=60818) 
 
 #### Release notes:
+* V0.7.58 25 Oct 2025:  Add reverse-extend feature.  
 * V0.7.57 23 Oct 2025:  Allow formulas im material sheets by  [@UR-0][UR-0].  
                       - Reinstate extend by sketch functionality.  
 * V0.7.56 19 Oct 2025:  Sync selections with task panel lists by [@zokhasan][zokhasan].  

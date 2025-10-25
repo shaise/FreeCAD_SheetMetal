@@ -36,6 +36,7 @@ Base = FreeCAD.Base
 # of any changes in modeling logic.
 smElementMapVersion = "sm1."
 smEpsilon = SheetMetalTools.smEpsilon
+translate = FreeCAD.Qt.translate
 
 # List of properties to be saved as defaults.
 smExtrudeDefaultVars = ["Refine"]
@@ -151,7 +152,7 @@ def smgetSubface(face, obj, edge, thk):
     return wallsolidlist
 
 
-def smExtrude(extLength=10.0, gap1=0.0, gap2=0.0, subtraction=False, offset=0.2,
+def smExtrude(extLength=10.0, gap1=0.0, gap2=0.0, reversed=False, subtraction=False, offset=0.2,
               refine=True, sketch="", selFaceNames="", selObject="", ):
     import BOPTools.SplitFeatures
 
@@ -196,10 +197,10 @@ def smExtrude(extLength=10.0, gap1=0.0, gap2=0.0, subtraction=False, offset=0.2,
         FaceDir = selFace.normalAt(0, 0)
 
         # If sketch is as wall.
-        sketches = False
+        useSketch = False
         if sketch:
             if sketch.Shape.Wires[0].isClosed():
-                sketches = True
+                useSketch = True
             else:
                 pass
 
@@ -223,18 +224,17 @@ def smExtrude(extLength=10.0, gap1=0.0, gap2=0.0, subtraction=False, offset=0.2,
         # Part.show(SplitSolid2, "SplitSolid2")
 
         # Make solid from sketch, if sketch is present.
-        solidlist = []
-        if sketches:
+        extendsolid = None
+        if useSketch:
             overlap_solidlist = []
             Wall_face = Part.makeFace(sketch.Shape.Wires, "Part::FaceMakerBullseye")
-            check_face = Wall_face.common(Cface)
-            if not check_face.Faces:
+            if not Wall_face.isCoplanar(Cface, smEpsilon):
                 thkDir *= -1
             wallSolid = Wall_face.extrude(thkDir * thk)
             if (wallSolid.Volume - smEpsilon) < 0.0:
                 raise SheetMetalTools.SMException("Incorrect face selected. Please select a side face.")
             # Part.show(wallSolid, "wallSolid")
-            solidlist.append(wallSolid)
+            extendsolid = wallSolid
             # To find Overlapping Solid, non thickness side Face that
             # touch Overlapping Solid.
             if SplitSolid2:
@@ -254,17 +254,23 @@ def smExtrude(extLength=10.0, gap1=0.0, gap2=0.0, subtraction=False, offset=0.2,
                         # Part.show(finalShape, "finalShape")
         elif extLength > 0.0:
             # Create wall, if edge or face selected.
+            if reversed:
+                FaceDir *= -1
             Wall_face = smMakeFace(lenEdge, FaceDir, extLength, gap1, gap2, op="SMW")
-            wallSolid = Wall_face.extrude(thkDir * thk)
-            # Part.show(wallSolid, "wallSolid")
-            solidlist.append(wallSolid)
+            # Part.show(Wall_face, "Wall_face")
+            extendsolid = Wall_face.extrude(thkDir * thk)
+            # Part.show(extendsolid, "extendsolid")
 
         # Fuse All solid created to Split solid.
-        if len(solidlist) > 0:
-            resultSolid = SplitSolid1.fuse(solidlist[0])
-            # Part.show(resultSolid, "resultSolid")
-            # # Merge final list.
-            finalShape = finalShape.cut(resultSolid)
+        if extendsolid:
+            if reversed and not useSketch:
+                finalShape = finalShape.cut(SplitSolid1)
+                resultSolid = SplitSolid1.cut(extendsolid)
+            else:
+                resultSolid = SplitSolid1.fuse(extendsolid)
+                # Part.show(resultSolid, "resultSolid")
+                # # Merge final list.
+                finalShape = finalShape.cut(resultSolid)
             # Part.show(finalShape, "finalShape")
             finalShape = finalShape.fuse(resultSolid)
 
@@ -277,56 +283,50 @@ def smExtrude(extLength=10.0, gap1=0.0, gap2=0.0, subtraction=False, offset=0.2,
 class SMExtrudeWall:
     def __init__(self, obj, selobj, sel_items, selSketch=None):
         """Add SheetMetal Wall by Extending."""
-        _tip_ = FreeCAD.Qt.translate("App::Property", "Length of Wall")
+        _tip_ = translate("App::Property", "Length of Wall")
         obj.addProperty("App::PropertyLength", "length", "Parameters", _tip_).length = 10.0
-        _tip_ = FreeCAD.Qt.translate("App::Property", "Gap from left side")
+        _tip_ = translate("App::Property", "Gap from left side")
         obj.addProperty("App::PropertyDistance", "gap1", "Parameters", _tip_).gap1 = 0.0
-        _tip_ = FreeCAD.Qt.translate("App::Property", "Gap from right side")
+        _tip_ = translate("App::Property", "Gap from right side")
         obj.addProperty("App::PropertyDistance", "gap2", "Parameters", _tip_).gap2 = 0.0
-        _tip_ = FreeCAD.Qt.translate("App::Property", "Base object")
+        _tip_ = translate("App::Property", "Base object")
         obj.addProperty("App::PropertyLinkSub", "baseObject", "Parameters",
                         _tip_).baseObject = (selobj, sel_items)
-        _tip_ = FreeCAD.Qt.translate("App::Property", "Wall Sketch")
-        obj.addProperty("App::PropertyLink", "Sketch", "ParametersExt", _tip_).Sketch = selSketch
-        _tip_ = FreeCAD.Qt.translate("App::Property", "Use Subtraction")
-        obj.addProperty("App::PropertyBool", "UseSubtraction", "ParametersExt",
-                        _tip_).UseSubtraction = False
-        _tip_ = FreeCAD.Qt.translate("App::Property", "Offset for subtraction")
-        obj.addProperty("App::PropertyDistance", "Offset", "ParametersExt", _tip_).Offset = 0.2
-        _tip_ = FreeCAD.Qt.translate("App::Property", "Use Refine")
-        obj.addProperty("App::PropertyBool", "Refine", "ParametersExt", _tip_).Refine = True
+        self.addVerifyProperties(obj, selSketch)
         obj.Proxy = self
         SheetMetalTools.taskRestoreDefaults(obj, smExtrudeDefaultVars)
-
-    def addVerifyProperties(self, obj):
-        pass
 
     def getElementMapVersion(self, _fp, ver, _prop, restored):
         if not restored:
             return smElementMapVersion + ver
         return None
 
+    def addVerifyProperties(self, obj, selSketch=None):
+        SheetMetalTools.smAddBoolProperty(obj, "reversed",
+                translate("App::Property", "Reverse extend direction (cut)"), False, "Parameters")
+        SheetMetalTools.smAddProperty(obj, "App::PropertyLink", "Sketch", 
+                translate("App::Property", "Wall Sketch"), selSketch, "ParametersExt")
+        SheetMetalTools.smAddBoolProperty(obj, "UseSubtraction",
+                translate("App::Property", "Use Subtraction"), False, "ParametersExt")
+        SheetMetalTools.smAddDistanceProperty(obj, "Offset",
+                translate("App::Property", "Offset for subtraction"), 0.2, "ParametersExt")
+        SheetMetalTools.smAddBoolProperty(obj, "Refine",
+                translate("App::Property", "Use Refine"), True, "ParametersExt")
+        if hasattr(obj, "UseSubstraction"):
+                obj.UseSubtraction = obj.UseSubstraction  # Compatibility with old files.
+        
+
     def execute(self, fp):
-        if not hasattr(fp, "Sketch"):
-            _tip_ = FreeCAD.Qt.translate("App::Property", "Wall Sketch")
-            fp.addProperty("App::PropertyLink", "Sketch", "ParametersExt", _tip_)
-            _tip_ = FreeCAD.Qt.translate("App::Property", "Use Subtraction")
-            fp.addProperty("App::PropertyDistance", "Offset", "ParametersExt", _tip_).Offset = 0.2
-            _tip_ = FreeCAD.Qt.translate("App::Property", "Use Refine")
-            fp.addProperty("App::PropertyBool", "Refine", "ParametersExt", _tip_).Refine = False
-        if not hasattr(fp, "UseSubtraction"):
-            useSub = False
-            if hasattr(fp, "UseSubstraction"):
-                useSub = fp.UseSubstraction  # Compatibility with old files.
-            _tip_ = FreeCAD.Qt.translate("App::Property", "Use Subtraction")
-            fp.addProperty("App::PropertyBool", "UseSubtraction", "ParametersExt",
-                           _tip_).UseSubtraction = useSub
+        """Execute SheetMetal Wall by Extruding."""
+        self.addVerifyProperties(fp)
+
         # Pass selected object shape.
         Main_Object = fp.baseObject[0].Shape.copy()
         face = fp.baseObject[1]
         fp.Shape = smExtrude(extLength=fp.length.Value,
                              gap1=fp.gap1.Value,
                              gap2=fp.gap2.Value,
+                             reversed=fp.reversed,
                              subtraction=fp.UseSubtraction,
                              offset=fp.Offset.Value,
                              refine=fp.Refine,
@@ -390,6 +390,7 @@ if SheetMetalTools.isGuiLoaded():
             SheetMetalTools.taskConnectSpin(obj, self.form.Offset, "Offset")
             SheetMetalTools.taskConnectCheck(obj, self.form.RefineCheckbox, "Refine")
             SheetMetalTools.taskConnectCheck(obj, self.form.checkIntersectClear, "UseSubtraction")
+            SheetMetalTools.taskConnectCheck(obj, self.form.checkReversed, "reversed")
             isStandardExtend = self.obj.Sketch is None
             self.form.groupExtend.setVisible(isStandardExtend)
             self.form.groupExtendBySketch.setVisible(not isStandardExtend)
@@ -428,9 +429,9 @@ if SheetMetalTools.isGuiLoaded():
             return {
                     # The name of a svg file available in the resources.
                     "Pixmap": os.path.join(icons_path, "SheetMetal_Extrude.svg"),
-                    "MenuText": FreeCAD.Qt.translate("SheetMetal", "Extend Face"),
+                    "MenuText": translate("SheetMetal", "Extend Face"),
                     "Accel": "E",
-                    "ToolTip": FreeCAD.Qt.translate(
+                    "ToolTip": translate(
                         "SheetMetal",
                         "Extends one or more face, on existing sheet metal.\n"
                         "1. Select edges or thickness side faces to extend walls.\n"
@@ -470,9 +471,9 @@ if SheetMetalTools.isGuiLoaded():
             return {
                     # The name of a svg file available in the resources.
                     "Pixmap": os.path.join(icons_path, "SheetMetal_ExtendBySketch.svg"),
-                    "MenuText": FreeCAD.Qt.translate("SheetMetal", "Extend by Sketch"),
+                    "MenuText": translate("SheetMetal", "Extend by Sketch"),
                     "Accel": "T",
-                    "ToolTip": FreeCAD.Qt.translate(
+                    "ToolTip": translate(
                         "SheetMetal",
                         "Extends a side face using a sketch.\n"
                         "1. Select a thickness side face to extend.\n"

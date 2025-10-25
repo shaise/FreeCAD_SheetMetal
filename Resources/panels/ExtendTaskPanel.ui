@@ -83,13 +83,6 @@
       <string>Extend</string>
      </property>
      <layout class="QGridLayout" name="gridLayout_2">
-      <item row="2" column="1">
-       <widget class="Gui::QuantitySpinBox" name="OffsetB" native="true">
-        <property name="unit" stdset="0">
-         <string notr="true">mm</string>
-        </property>
-       </widget>
-      </item>
       <item row="0" column="1">
        <widget class="Gui::QuantitySpinBox" name="Length" native="true">
         <property name="unit" stdset="0">
@@ -100,17 +93,17 @@
         </property>
        </widget>
       </item>
-      <item row="0" column="0">
-       <widget class="QLabel" name="label_3">
-        <property name="text">
-         <string>Length</string>
+      <item row="2" column="1">
+       <widget class="Gui::QuantitySpinBox" name="OffsetB" native="true">
+        <property name="unit" stdset="0">
+         <string notr="true">mm</string>
         </property>
        </widget>
       </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="label_4">
-        <property name="text">
-         <string>Offset A</string>
+      <item row="1" column="1">
+       <widget class="Gui::QuantitySpinBox" name="OffsetA" native="true">
+        <property name="unit" stdset="0">
+         <string notr="true">mm</string>
         </property>
        </widget>
       </item>
@@ -127,10 +120,24 @@
         </property>
        </widget>
       </item>
-      <item row="1" column="1">
-       <widget class="Gui::QuantitySpinBox" name="OffsetA" native="true">
-        <property name="unit" stdset="0">
-         <string notr="true">mm</string>
+      <item row="1" column="0">
+       <widget class="QLabel" name="label_4">
+        <property name="text">
+         <string>Offset A</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0">
+       <widget class="QLabel" name="label_3">
+        <property name="text">
+         <string>Length</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0">
+       <widget class="QCheckBox" name="checkReversed">
+        <property name="text">
+         <string>Reversed</string>
         </property>
        </widget>
       </item>
