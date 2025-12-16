@@ -215,10 +215,17 @@ class TangentFaces:
         # approximately r1 + r2.
         return (
             SheetMetalTools.smIsParallel(c1.Axis, c2.Axis)
-            and abs(
-                c1.Center.distanceToLine(c2.Center, c2.Axis) - (c1.Radius + c2.Radius)
+            and (
+                abs(
+                    c1.Center.distanceToLine(c2.Center, c2.Axis)
+                    - (c1.Radius + c2.Radius)
+                )
+                < eps
             )
-            < eps
+            or (
+                abs(c1.Center.distanceToLine(c2.Center, c2.Axis) < eps)
+                and (abs(c1.Radius - c2.Radius) < eps)
+            )
         )
 
     @staticmethod
