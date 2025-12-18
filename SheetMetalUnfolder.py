@@ -3157,7 +3157,9 @@ def getUnfoldSketches(
                                            existingSketches)
     sketches.append(unfold_sketch_outline)
     if tidy:
-        SMLogger.error(FreeCAD.Qt.translate("Logger", f"tidying up {unfold_base_label}_Sketch_Outline"))
+        SMLogger.error(
+            FreeCAD.Qt.translate(
+                "Logger", "Tidying up {label}").format(label=f"{unfold_base_label}_Sketch_Outline"))
     intEdgs = []
     idx = []
     for i, e in enumerate(faceEdgs):
