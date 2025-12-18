@@ -3093,7 +3093,7 @@ def SMmakeSketchfromEdges(edges, name):
 
 
 def getUnfoldSketches(
-    obj
+    obj_label
     shape,
     foldLines,
     norm,
@@ -3109,9 +3109,9 @@ def getUnfoldSketches(
     unfoldobj_shape = shape
 
     try:
-        unfoldobj_label = obj.Label + "_Unfolded"
+        unfold_base_label = obj_label + "_Unfolded"
     except:
-        unfoldobj_label = "Unfolded"
+        unfold_base_label = "Unfolded"
 
     for face in shape.Faces:
         fnorm = face.normalAt(0, 0)
@@ -3127,7 +3127,7 @@ def getUnfoldSketches(
         foldEdges = projectEx(co, norm)[0]
         if not splitSketches:
             edges.append(foldEdges)
-    unfold_sketch = generateSketch(edges, f"{unfoldobj_label}_Sketch", sketchColor)
+    unfold_sketch = generateSketch(edges, f"{unfold_base_label}_Sketch", sketchColor)
     sketches = [unfold_sketch]
     if not splitSketches:
         return sketches
@@ -3153,11 +3153,11 @@ def getUnfoldSketches(
         owEdgs = unfold_sketch.Shape.Edges
         faceEdgs = unfold_sketch.Shape.Edges
 
-    unfold_sketch_outline = generateSketch(owEdgs, f"{unfoldobj_label}_Sketch_Outline", sketchColor
+    unfold_sketch_outline = generateSketch(owEdgs, f"{unfold_base_label}_Sketch_Outline", sketchColor
                                            existingSketches)
     sketches.append(unfold_sketch_outline)
     if tidy:
-        SMLogger.error(FreeCAD.Qt.translate("Logger", f"tidying up {unfoldobj_label}_Sketch_Outline"))
+        SMLogger.error(FreeCAD.Qt.translate("Logger", f"tidying up {unfold_base_label}_Sketch_Outline"))
     intEdgs = []
     idx = []
     for i, e in enumerate(faceEdgs):
@@ -3168,11 +3168,11 @@ def getUnfoldSketches(
         if i not in idx:
             intEdgs.append(e)
     if len(intEdgs) > 0:
-        unfold_sketch_internal = generateSketch(intEdgs, f"{unfoldobj_label}_Sketch_Internal", 
+        unfold_sketch_internal = generateSketch(intEdgs, f"{unfold_base_label}_Sketch_Internal",
                                                 internalSketchColor, existingSketches)
         sketches.append(unfold_sketch_internal)
     if len(foldLines) > 0 and splitSketches:
-        unfold_sketch_bend = generateSketch(foldEdges, f"{unfoldobj_label}_Sketch_bends", bendSketchColor
+        unfold_sketch_bend = generateSketch(foldEdges, f"{unfold_base_label}_Sketch_bends", bendSketchColor
                                             existingSketches)
         sketches.append(unfold_sketch_bend)
     return sketches
