@@ -3093,7 +3093,7 @@ def SMmakeSketchfromEdges(edges, name):
 
 
 def getUnfoldSketches(
-    obj_label
+    obj_label,
     shape,
     foldLines,
     norm,
@@ -3153,7 +3153,7 @@ def getUnfoldSketches(
         owEdgs = unfold_sketch.Shape.Edges
         faceEdgs = unfold_sketch.Shape.Edges
 
-    unfold_sketch_outline = generateSketch(owEdgs, f"{unfold_base_label}_Sketch_Outline", sketchColor
+    unfold_sketch_outline = generateSketch(owEdgs, f"{unfold_base_label}_Sketch_Outline", sketchColor,
                                            existingSketches)
     sketches.append(unfold_sketch_outline)
     if tidy:
@@ -3174,7 +3174,7 @@ def getUnfoldSketches(
                                                 internalSketchColor, existingSketches)
         sketches.append(unfold_sketch_internal)
     if len(foldLines) > 0 and splitSketches:
-        unfold_sketch_bend = generateSketch(foldEdges, f"{unfold_base_label}_Sketch_bends", bendSketchColor
+        unfold_sketch_bend = generateSketch(foldEdges, f"{unfold_base_label}_Sketch_bends", bendSketchColor,
                                             existingSketches)
         sketches.append(unfold_sketch_bend)
     return sketches
