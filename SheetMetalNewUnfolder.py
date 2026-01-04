@@ -1353,6 +1353,7 @@ def getUnfold(
 
 
 def getUnfoldSketches(
+    obj_label,
     selected_face: Part.Face,
     unfolded_shape: Part.Shape,
     bend_lines: Part.Compound,
@@ -1369,6 +1370,9 @@ def getUnfoldSketches(
     # Create transform to move the sketch profiles nicely to the origin.
     sketch_align_transform = SketchExtraction.move_to_origin(sketch_profile, selected_face)
 
+    if obj_label is None:
+        obj_label = "Unfolded"
+
     if not split_sketches:
         sketch_profile = Part.makeCompound(
             [sketch_profile, *inner_wires, *hole_wires, bend_lines]
@@ -1379,7 +1383,7 @@ def getUnfoldSketches(
     sketch_profile = sketch_profile.transformed(sketch_align_transform)
     # Organize the unfold sketch layers in a group.
     sketch_doc_obj = SketchExtraction.edges_to_sketch_object(
-        sketch_profile.Edges, "Unfold_Sketch", existing_sketches, sketch_color
+        sketch_profile.Edges, f"{obj_label}_Sketch", existing_sketches, sketch_color
     )
     sketch_objects_list = [sketch_doc_obj]
     # Bend lines are sometimes not present.
@@ -1387,7 +1391,7 @@ def getUnfoldSketches(
         bend_lines = bend_lines.transformed(sketch_align_transform)
         bend_lines_doc_obj = SketchExtraction.edges_to_sketch_object(
             bend_lines.Edges,
-            "Unfold_Sketch_Bends",
+            f"{obj_label}_Sketch_Bends",
             existing_sketches,
             bend_sketch_color,
         )
@@ -1398,7 +1402,7 @@ def getUnfoldSketches(
         inner_lines = Part.makeCompound(inner_wires).transformed(sketch_align_transform)
         inner_lines_doc_obj = SketchExtraction.edges_to_sketch_object(
             inner_lines.Edges,
-            "Unfold_Sketch_Internal",
+            f"{obj_label}_Sketch_Internal",
             existing_sketches,
             internal_sketch_color,
         )
@@ -1407,7 +1411,7 @@ def getUnfoldSketches(
         hole_lines = Part.makeCompound(hole_wires).transformed(sketch_align_transform)
         hole_lines_doc_obj = SketchExtraction.edges_to_sketch_object(
             hole_lines.Edges,
-            "Unfold_Sketch_Holes",
+            f"{obj_label}_Sketch_Holes",
             existing_sketches,
             internal_sketch_color,
         )

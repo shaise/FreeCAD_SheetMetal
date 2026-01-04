@@ -233,6 +233,7 @@ class SMUnfold:
         sketches = []
         if obj.GenerateSketch and unfolded_shape is not None:
             sketches = SheetMetalNewUnfolder.getUnfoldSketches(
+                obj.Label,
                 sel_face,
                 unfolded_shape, 
                 bend_lines,
