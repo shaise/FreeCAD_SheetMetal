@@ -30,6 +30,7 @@ import Part
 
 import SheetMetalTools
 
+SMException = SheetMetalTools.SMException
 smEpsilon = SheetMetalTools.smEpsilon
 translate = FreeCAD.Qt.translate
 
@@ -124,7 +125,7 @@ class SMBendWall:
                         _tip_).toolObject = (seltool, seltool_items)
         _tip_ = translate(
             "App::Property",
-            "Sketch containing circle's points to multiply and pattern the embossed feature")
+            "Sketch containing points to locate multiple instances of the embossed feature")
         obj.addProperty("App::PropertyLink", "Sketch", "Parameters1", _tip_)
         # Add other properties (is necessary this way to not cause
         # errors on old files).
@@ -178,15 +179,27 @@ class SMBendWall:
             ]
         offsetlist = []
         if fp.Sketch:
+            pt1 = base_face.CenterOfMass
             sketch = fp.Sketch.Shape
             for e in sketch.Edges:
                 # print(type(e.Curve))
                 if isinstance(e.Curve, (Part.Circle, Part.ArcOfCircle)):
-                    pt1 = base_face.CenterOfMass
                     pt2 = e.Curve.Center
                     offsetPoint = pt2 - pt1
-                    # print(offsetPoint)
+                    #print(offsetPoint, pt2, pt1)
                     offsetlist.append(offsetPoint)
+
+            for v in sketch.Vertexes:
+                # print(type(e.Curve))
+                if len(sketch.ancestorsOfType(v, Part.Edge)) == 0:
+                    pt2 = v.Point
+                    offsetPoint = pt2 - pt1
+                    #print(offsetPoint, pt2, pt1)
+                    offsetlist.append(offsetPoint)
+            if len(offsetlist) == 0:
+                error = translate("SheetMetal", 
+                                  "No points/circles found in sketch to place forming feature.")
+                raise SMException(error)
         else:
             offsetlist.append(FreeCAD.Vector(fp.OffsetX, fp.OffsetY, 0))
 

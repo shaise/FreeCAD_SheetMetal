@@ -258,6 +258,12 @@
            </item>
            <item>
             <widget class="QRadioButton" name="svgExport">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
              <property name="text">
               <string>SVG</string>
              </property>
@@ -266,30 +272,38 @@
              </attribute>
             </widget>
            </item>
+           <item>
+            <widget class="QPushButton" name="pushExport">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="font">
+              <font>
+               <pointsize>10</pointsize>
+               <weight>75</weight>
+               <bold>true</bold>
+              </font>
+             </property>
+             <property name="text">
+              <string>Export</string>
+             </property>
+             <property name="icon">
+              <iconset>
+               <normalon>Icons:SheetMetal_UnfoldExport.svg</normalon>
+              </iconset>
+             </property>
+             <property name="iconSize">
+              <size>
+               <width>20</width>
+               <height>20</height>
+              </size>
+             </property>
+            </widget>
+           </item>
           </layout>
-         </item>
-         <item>
-          <widget class="QPushButton" name="pushExport">
-           <property name="font">
-            <font>
-             <pointsize>14</pointsize>
-            </font>
-           </property>
-           <property name="text">
-            <string>Export</string>
-           </property>
-           <property name="icon">
-            <iconset>
-             <normalon>Icons:SheetMetal_UnfoldExport.svg</normalon>
-            </iconset>
-           </property>
-           <property name="iconSize">
-            <size>
-             <width>32</width>
-             <height>32</height>
-            </size>
-           </property>
-          </widget>
          </item>
         </layout>
        </widget>
@@ -349,6 +363,12 @@
     <layout class="QHBoxLayout" name="horizontalLayout_9">
      <item>
       <widget class="QCheckBox" name="chkManualUpdate">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
        <property name="text">
         <string>Manual update</string>
        </property>
@@ -356,9 +376,17 @@
      </item>
      <item>
       <widget class="QPushButton" name="pushUnfold">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
        <property name="font">
         <font>
-         <pointsize>14</pointsize>
+         <pointsize>10</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
         </font>
        </property>
        <property name="text">
@@ -371,8 +399,8 @@
        </property>
        <property name="iconSize">
         <size>
-         <width>32</width>
-         <height>32</height>
+         <width>20</width>
+         <height>20</height>
         </size>
        </property>
       </widget>
