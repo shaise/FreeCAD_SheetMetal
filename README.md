@@ -97,8 +97,9 @@ SheetMetal WB can be installed via the [Addon Manager](https://github.com/FreeCA
 
 #### Release notes:
 * V0.7.60 04 Jan 2026:  Fix unfolder bugs by [@alexneufeld][alexneufeld] and [@povauboin][povauboin].  
-                      - Adjust unfolder task panel design
-                      - Support point patterns in SheetMetal forming
+                      - Better naming of unfolder sketches by [@leoheck][leoheck].  
+                      - Adjust unfolder task panel design.  
+                      - Support point patterns in SheetMetal forming.  
 * V0.7.58 25 Oct 2025:  Add reverse-extend feature.  
 * V0.7.57 23 Oct 2025:  Allow formulas in material sheets by  [@UR-0][UR-0].  
                       - Reinstate extend by sketch functionality.  
@@ -334,6 +335,7 @@ SheetMetal WB can be installed via the [Addon Manager](https://github.com/FreeCA
 [zokhasan]: https://github.com/zokhasan
 [UR-0]: https://github.com/UR-0
 [povauboin]: https://github.com/povauboin
+[leoheck]: https://github.com/leoheck
 [topic82482]: https://forum.freecad.org/viewtopic.php?t=82482
 [30]: https://github.com/shaise/FreeCAD_SheetMetal/issues/30
 [33]: https://github.com/shaise/FreeCAD_SheetMetal/issues/33
