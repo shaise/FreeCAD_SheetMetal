@@ -71,6 +71,7 @@ class SMWorkbench(Workbench):
         import SheetMetalUnfoldCmd
         import SheetMetalUnfolder
         import SketchOnSheetMetalCmd
+        import SheetMetalSketch
 
         self.list = [
             "SheetMetal_AddBase",
@@ -88,6 +89,7 @@ class SMWorkbench(Workbench):
             "SheetMetal_AddCutout",
             "SheetMetal_Forming",
             "SheetMetal_BaseShape",
+            "SheetMetal_NewSketch",
             ]
 
         if engineering_mode_enabled():

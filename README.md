@@ -96,6 +96,7 @@ SheetMetal WB can be installed via the [Addon Manager](https://github.com/FreeCA
 * FreeCAD Forum announcement/discussion [thread](https://forum.freecadweb.org/viewtopic.php?f=3&t=60818) 
 
 #### Release notes:
+* V0.7.61 24 Jan 2026:  Add 'New Sketch' button to eliminate wb switching.  
 * V0.7.60 04 Jan 2026:  Fix unfolder bugs by [@alexneufeld][alexneufeld] and [@povauboin][povauboin].  
                       - Better naming of unfolder sketches by [@leoheck][leoheck].  
                       - Adjust unfolder task panel design.  
