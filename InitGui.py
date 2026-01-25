@@ -74,6 +74,8 @@ class SMWorkbench(Workbench):
         import SheetMetalSketch
 
         self.list = [
+            "SheetMetal_BaseShape",
+            "SheetMetal_NewSketch",
             "SheetMetal_AddBase",
             "SheetMetal_AddWall",
             "SheetMetal_Extrude",
@@ -88,8 +90,6 @@ class SMWorkbench(Workbench):
             "SheetMetal_SketchOnSheet",
             "SheetMetal_AddCutout",
             "SheetMetal_Forming",
-            "SheetMetal_BaseShape",
-            "SheetMetal_NewSketch",
             ]
 
         if engineering_mode_enabled():
