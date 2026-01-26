@@ -157,6 +157,8 @@ class SMBendWall:
         if len(seltool_items) > 1:
             obj.toolObject = (seltool, seltool_items[0])
             obj.toolShearFaces = (seltool, seltool_items[1:])
+        elif obj.toolShearFaces is None:
+            obj.toolShearFaces = (seltool, [])
 
     def execute(self, fp):
         """Print a short message when doing a recomputation.
@@ -327,32 +329,39 @@ if SheetMetalTools.isGuiLoaded():
                     }
 
         def Activated(self):
-            doc = FreeCAD.ActiveDocument
-            view = Gui.ActiveDocument.ActiveView
-            activeBody = None
+            # doc = FreeCAD.ActiveDocument
+            # view = Gui.ActiveDocument.ActiveView
+            # activeBody = None
             sel = Gui.Selection.getSelectionEx()
             selobj = Gui.Selection.getSelectionEx()[0].Object
-            viewConf = SheetMetalTools.GetViewConfig(selobj)
-            if hasattr(view, "getActiveObject"):
-                activeBody = view.getActiveObject("pdbody")
-            if not SheetMetalTools.smIsOperationLegal(activeBody, selobj):
+            # viewConf = SheetMetalTools.GetViewConfig(selobj)
+            # if hasattr(view, "getActiveObject"):
+            #     activeBody = view.getActiveObject("pdbody")
+            # if not SheetMetalTools.smIsOperationLegal(activeBody, selobj):
+            #     return
+            # doc.openTransaction("WallForming")
+            # if activeBody is None or not SheetMetalTools.smIsPartDesign(selobj):
+            #     a = doc.addObject("Part::FeaturePython", "WallForming")
+            #     SMBendWall(a, selobj, sel[0].SubElementNames, sel[1].Object,
+            #                sel[1].SubElementNames)
+            #     SMFormingVP(a.ViewObject)
+            # else:
+            #     # FreeCAD.Console.PrintLog("found active body: " + activeBody.Name)
+            #     a = doc.addObject("PartDesign::FeaturePython", "WallForming")
+            #     SMBendWall(a, selobj, sel[0].SubElementNames, sel[1].Object,
+            #                sel[1].SubElementNames)
+            #     SMFormingPDVP(a.ViewObject)
+            #     activeBody.addObject(a)
+            newObj, activeBody = SheetMetalTools.smCreateNewObject(selobj, "WallForming")
+            if newObj is None:
                 return
-            doc.openTransaction("WallForming")
-            if activeBody is None or not SheetMetalTools.smIsPartDesign(selobj):
-                a = doc.addObject("Part::FeaturePython", "WallForming")
-                SMBendWall(a, selobj, sel[0].SubElementNames, sel[1].Object,
-                           sel[1].SubElementNames)
-                SMFormingVP(a.ViewObject)
-            else:
-                # FreeCAD.Console.PrintLog("found active body: " + activeBody.Name)
-                a = doc.addObject("PartDesign::FeaturePython", "WallForming")
-                SMBendWall(a, selobj, sel[0].SubElementNames, sel[1].Object,
-                           sel[1].SubElementNames)
-                SMFormingPDVP(a.ViewObject)
-                activeBody.addObject(a)
-            SheetMetalTools.SetViewConfig(a, viewConf)
-            doc.recompute()
-            doc.commitTransaction()
+            SMBendWall(newObj, selobj, sel[0].SubElementNames, sel[1].Object,
+                       sel[1].SubElementNames)
+            SMFormingVP(newObj.ViewObject)
+            SheetMetalTools.smAddNewObject(selobj, newObj, activeBody, SMFormingWallTaskPanel)
+            # SheetMetalTools.SetViewConfig(a, viewConf)
+            # doc.recompute()
+            # doc.commitTransaction()
             return
 
         def IsActive(self):
