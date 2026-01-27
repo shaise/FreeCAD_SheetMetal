@@ -45,6 +45,8 @@ smObjectsToRecompute = set()
 translatedPreviewText = translate("SheetMetalTools", "Preview")
 cancelText = translate("SheetMetalTools", "Cancel...")
 clearText = translate("SheetMetalTools", "Clear...")
+selClearSelText = translate("SheetMetalTools", "Clear Selected")
+selClearAllText = translate("SheetMetalTools", "Clear All")
 
 
 def isGuiLoaded():
@@ -106,14 +108,15 @@ if isGuiLoaded():
                 cls._delete_observer()
                 return None
 
-        def __init__(self, params_):
+        def __init__(self, selParams):
             """Initialize an instance of SelectionObserver.
 
             Args:
                 params_: An instance of SMSelectionParameters class.
 
             """
-            self.widget = params_.dispWidget
+            self.sp = selParams
+            self.widget = selParams.dispWidget
             self.widget.destroyed.connect(self._delete_observer)
 
             self.widget.setMouseTracking(True)
@@ -126,7 +129,7 @@ if isGuiLoaded():
             self.widget.clear()
 
             for obj in Gui.Selection.getCompleteSelection():
-                add_qtreewidget_item(self.widget, obj.ObjectName, obj.SubElementNames[0])
+                add_qtreewidget_item(self.widget, obj.ObjectName, obj.SubElementNames[0], True)
 
             scrollbar.setValue(scrollbar_position)
 
@@ -139,7 +142,7 @@ if isGuiLoaded():
 
             """
             _, obj_name, sub_name, _ = args
-            add_qtreewidget_item(self.widget, obj_name, sub_name)
+            add_qtreewidget_item(self.widget, obj_name, sub_name, True)
 
         def clearSelection(self, *args):
             """Execute when clearing the selection.
@@ -360,7 +363,7 @@ if isGuiLoaded():
                     obj.Visibility = False
 
 
-    def add_qtreewidget_item(widget, obj_name, sub_name):
+    def add_qtreewidget_item(qwidget, obj_name, sub_name, showCheckBoxes=False):
         """Add an item to a QTreeWidget with presetting.
 
         Args:
@@ -369,14 +372,17 @@ if isGuiLoaded():
             sub_name: Name of the sub-element.
 
         """
-        item = QtGui.QTreeWidgetItem(widget)
+        item = QtGui.QTreeWidgetItem(qwidget)
         item.setIcon(0, QtGui.QIcon(":/icons/Tree_Part.svg"))
         item.setText(0, obj_name)
         item.setText(1, sub_name)
+        if showCheckBoxes:
+            item.setCheckState(0, QtCore.Qt.Unchecked)
 
 
     # Task panel helper code.
-    def taskPopulateSelectionList(qwidget, baseObject):
+    def taskPopulateSelectionList(qwidget, baseObject, showCheckBoxes=False):
+        print("Populate selection list checkboxes:", showCheckBoxes)
         qwidget.clear()
         if baseObject is None:
             return
@@ -384,7 +390,7 @@ if isGuiLoaded():
         if not isinstance(items, list):
             items = [items]
         for subf in items:
-            add_qtreewidget_item(qwidget, obj.Name, subf)
+            add_qtreewidget_item(qwidget, obj.Name, subf, showCheckBoxes)
 
 
     def taskPopulateSelectionSingle(textbox, selObject):
@@ -404,6 +410,13 @@ if isGuiLoaded():
                 task.form.setWindowIcon(QtGui.QIcon(task.obj.ViewObject.Proxy.getIcon()))
         return
 
+    def _taskMultiSelSetCheckBoxState(sp: SMSelectionParameters, state: bool):
+        for index in range(sp.dispWidget.topLevelItemCount()):
+            item = sp.dispWidget.topLevelItem(index)
+            if state:
+                item.setCheckState(0, QtCore.Qt.Unchecked)
+            else:
+                item.setFlags(item.flags() & ~QtCore.Qt.ItemIsUserCheckable)
 
     def _taskMultiSelectionModeClicked(sp: SMSelectionParameters):
         baseObj = getattr(sp.obj, sp.propetyName)
@@ -420,12 +433,14 @@ if isGuiLoaded():
             sp.addRemoveButton.setText(translatedPreviewText)
             if sp.ClearButton is not None:
                 sp.ClearButton.setVisible(True)
+                _taskMultiSelSetCheckBoxState(sp, True)
             sp.SelectState = False
         else:
             selObj, selSubNames = sp.verifySelection()
             if selObj is not None:
                 if sp.ClearButton is not None:
                     sp.ClearButton.setVisible(False)
+                    _taskMultiSelSetCheckBoxState(sp, False)
                 setattr(sp.obj, sp.propetyName, (selObj, selSubNames))
                 # updateSelectionElements(sp.obj, sp.allowedTypes, sp.propetyName)
                 baseObj = getattr(sp.obj, sp.propetyName)
@@ -437,9 +452,45 @@ if isGuiLoaded():
                     sp.obj.Visibility = True
                 sp.addRemoveButton.setText(sp.OriginalText)
                 sp.SelectState = True
-                taskPopulateSelectionList(sp.dispWidget, baseObj)
+                taskPopulateSelectionList(sp.dispWidget, baseObj, False)
                 if sp.ValueChangedCallback is not None:
                     sp.ValueChangedCallback(sp, selObj, selSubNames)
+
+    def _taskMultiSelGetUnSelectedItems(sp: SMSelectionParameters):
+        selectedItems = []
+        for index in range(sp.dispWidget.topLevelItemCount()):
+            item = sp.dispWidget.topLevelItem(index)
+            if not (item.checkState(0) == QtCore.Qt.Checked):
+                selectedItems.append((item.text(0), item.text(1)))
+        return selectedItems
+
+    def _taskMultiSelHasSelectedItems(sp: SMSelectionParameters):
+        for index in range(sp.dispWidget.topLevelItemCount()):
+            item = sp.dispWidget.topLevelItem(index)
+            if item.checkState(0) == QtCore.Qt.Checked:
+                return True
+        return False
+
+    def _taskMultiSelCheckChanged(sp: SMSelectionParameters, 
+                                  _item: QtGui.QTreeWidgetItem = None, _col: int = 0):
+        if sp.ClearButton is None:
+            return
+        if _taskMultiSelHasSelectedItems(sp):
+            sp.ClearButton.setText(selClearSelText)
+        else:
+            sp.ClearButton.setText(selClearAllText)
+        
+    def _taskMultiSelClearClicked(sp: SMSelectionParameters):
+        if not _taskMultiSelHasSelectedItems(sp):
+            Gui.Selection.clearSelection()
+            return
+        remainingItems = _taskMultiSelGetUnSelectedItems(sp)
+        selSubObj = []
+        for objName, subName in remainingItems:
+            selSubObj.append(subName)
+        baseObj = getattr(sp.obj, sp.propetyName)
+        Gui.Selection.clearSelection()
+        smSelectSubObjects(baseObj[0], selSubObj)
 
 
     def taskConnectSelection(addRemoveButton, treeWidget, obj, allowedTypes, clearButton=None,
@@ -453,17 +504,16 @@ if isGuiLoaded():
         baseObj = getattr(obj, propetyName)
         treeWidget.header().setSectionResizeMode(QHeaderView.ResizeToContents)
 
-        taskPopulateSelectionList(treeWidget, baseObj)
-        # delete_shortcut = QtWidgets.QShortcut(QtGui.QKeySequence(QtCore.Qt.Key_Delete),
-        #                                       treeWidget)
-        # delete_shortcut.activated.connect(
-        #         lambda: _delete_selected_items(treeWidget, obj))
+        taskPopulateSelectionList(treeWidget, baseObj, False)
         if clearButton is not None:
             clearButton.setVisible(False)
-            clearButton.clicked.connect(Gui.Selection.clearSelection)
+            clearButton.clicked.connect(lambda _value: _taskMultiSelClearClicked(sp))
+            
         sp.OriginalText = addRemoveButton.text()
+        treeWidget.itemChanged.connect(lambda item, col: _taskMultiSelCheckChanged(sp, item, col))
         addRemoveButton.clicked.connect(lambda _value: _taskMultiSelectionModeClicked(sp))
         addRemoveButton.clicked.connect(lambda: SelectionObserver(sp))
+        _taskMultiSelCheckChanged(sp)
         return sp
 
 

@@ -26,7 +26,6 @@
 import os
 
 import FreeCAD
-import Part
 
 import SheetMetalTools
 
@@ -34,7 +33,6 @@ import SheetMetalTools
 # Gui code
 ###################################################################################################
 if SheetMetalTools.isGuiLoaded():
-    from PySide import QtCore, QtGui
     translate = FreeCAD.Qt.translate
     Gui = FreeCAD.Gui
 
