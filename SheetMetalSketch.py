@@ -39,7 +39,7 @@ if SheetMetalTools.isGuiLoaded():
     Gui = FreeCAD.Gui
 
     def smActivatePDSketch():
-        Gui.runCommand("PartDesign_CompSketches")
+        Gui.runCommand("PartDesign_NewSketch")
 
     def smActivatePartSketch():
         Gui.runCommand("Sketcher_NewSketch")
@@ -63,7 +63,7 @@ if SheetMetalTools.isGuiLoaded():
         """Activate Part/PartDesign sketcher."""
 
         def GetResources(self):
-            icon = ':/icons/general/Sketcher_NewSketch.svg'
+            icon = os.path.join(SheetMetalTools.icons_path, "Sketcher_NewSketch.svg")
             return {
                 "Pixmap": icon,  # the name of a svg file available in the resources
                 "MenuText": translate("SheetMetal", "New Sketch"),
