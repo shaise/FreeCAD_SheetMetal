@@ -382,7 +382,6 @@ if isGuiLoaded():
 
     # Task panel helper code.
     def taskPopulateSelectionList(qwidget, baseObject, showCheckBoxes=False):
-        print("Populate selection list checkboxes:", showCheckBoxes)
         qwidget.clear()
         if baseObject is None:
             return
