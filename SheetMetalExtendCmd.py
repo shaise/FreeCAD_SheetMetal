@@ -151,7 +151,7 @@ def smgetSubface(face, obj, edge, thk):
         wallsolidlist.append(wallSolid)
     return wallsolidlist
 
-def smExtendBySketch(sketch, selObject, refine=True, subtraction=False, offset=0.2):
+def smExtendBySketch(sketch, selObject, refine=True, enableClearance=False, clearanceOffset=0.2):
     finalShape = selObject.Shape.copy()
     attachedObj, attachedFaceNames = sketch.AttachmentSupport[0]
     attachedShape = attachedObj.Shape
@@ -173,14 +173,28 @@ def smExtendBySketch(sketch, selObject, refine=True, subtraction=False, offset=0
             break
     thickness = thicknessEdge.Length
     extrudeDir = attachedFace.normalAt(0, 0)
-    overlap_solidlist = []
     Wall_face = Part.makeFace(sketch.Shape.Wires, "Part::FaceMakerBullseye")
     # if not Wall_face.isCoplanar(Cface, smEpsilon):
     #     thkDir *= -1
-    wallSolid = Wall_face.extrude(extrudeDir * thickness * -1)
+    extrudeVector = extrudeDir * thickness * -1
+    wallSolid = Wall_face.extrude(extrudeVector)
     if (wallSolid.Volume - smEpsilon) < 0.0:
         raise SheetMetalTools.SMException("Incorrect face selected. Please select a side face.")
     # Part.show(wallSolid, "wallSolid")
+
+    if enableClearance:
+        topfaceSolid = attachedFace.extrude(extrudeVector)
+        # Part.show(topfaceSolid)
+        restSolid = finalShape.cut(topfaceSolid)
+        # Part.show(restSolid)
+        overlapSolid = restSolid.common(wallSolid)
+        cutTool = overlapSolid.makeOffsetShape(clearanceOffset, 0.0, fill=False, join=2)
+        numSolids = len(finalShape.Solids)
+        cutShape = finalShape.cut(cutTool)
+        if numSolids == len(cutShape.Solids):
+            finalShape = cutShape
+        else:
+            wallSolid = wallSolid.cut(cutTool)
 
     finalShape = finalShape.fuse(wallSolid)
 
@@ -190,12 +204,217 @@ def smExtendBySketch(sketch, selObject, refine=True, subtraction=False, offset=0
     return finalShape
 
 
-def smExtrude(extLength=10.0, gap1=0.0, gap2=0.0, reversed=False, subtraction=False, offset=0.2,
-              refine=True, sketch="", selFaceNames="", selObject="", ):
+def _getFlangeFaceBySketch(sketch, selObject):
+    attachedObj, attachedFaceNames = sketch.AttachmentSupport[0]
+    attachedShape = attachedObj.Shape
+    attachedFace = attachedShape.getElement(
+        SheetMetalTools.getElementFromTNP(attachedFaceNames[0])
+    )
+    # ToDo: make sure attachedObj is same as selObject
+    #       make sure sketch is valid (sketch.Shape.Wires[0].isClosed())
+    return attachedFace
+    
+def _getFlangeFaceAndEdgeBySelection(baseSolid, selItemName):
+    selItem = baseSolid.getElement(SheetMetalTools.getElementFromTNP(selFaceName))
+    if type(selItem) == Part.Face:
+        len = 0.
+        flangeEdge = None
+        for edge in selFace.Edges:
+            if abs(edge.Length) > len:
+                len = abs(edge.Length)
+                flangeEdge = edge
+    else:
+        flangeEdge = selItem
+        Facelist = baseSolid.ancestorsOfType(selItem, Part.Face)
+        if Facelist[0].Area > Facelist[1].Area:
+            FlangeFace = Facelist[0]
+        else:
+            FlangeFace = Facelist[1]
+        
+    selFace = SheetMetalTools.smGetFaceByEdge(selItem, baseSolid)
+    pass
+
+def _detectThicknessByFlangeFace(baseSolid, flangeFace):
+    thicknessEdge = None
+    for vert in flangeFace.Vertexes:
+        edgeList = baseSolid.ancestorsOfType(vert, Part.Edge)
+        if (len(edgeList) != 3):
+            continue 
+        for edge in edgeList:
+            edge_common = edge.common(flangeFace)
+            if len(edge_common.Edges) == 0:
+                thicknessEdge = edge
+                break
+        if thicknessEdge:
+            break
+    return thicknessEdge.Length
+
+def _getExtendSolidBySketch(sketch, extrudeDir, thickness):
+    sketchFace = Part.makeFace(sketch.Shape.Wires, "Part::FaceMakerBullseye")
+    extrudeVector = extrudeDir * thickness
+    extendSolid = sketchFace.extrude(extrudeVector)
+    return extendSolid
+
+def _getExtendSolidBySketch(sideFace, extrudeDir, thickness, length, reversed, gap1, gap2):
+    faceDir = sideFace.normalAt(0, 0)
+    if reversed:
+        faceDir *= -1
+    Wall_face = smMakeFace(lenEdge, faceDir, length, gap1, gap2, op="SMW")
+    # Part.show(Wall_face, "Wall_face")
+    extendsolid = Wall_face.extrude(extrudeDir * thk)
+ 
+def smExtrude2(extLength=10.0, gap1=0.0, gap2=0.0, reversed=False, enableClearance=False, offset=0.2,
+              refine=True, sketch="", selFaceNames="", selObject="" ):
     import BOPTools.SplitFeatures
 
+    baseSolid = selObject.Shape.copy()
     if sketch:
-        return smExtendBySketch(sketch, selObject, refine)
+
+    #     return smExtendBySketch(sketch, selObject, refine, enableClearance, offset)
+
+    finalShape = baseSolid
+    for selFaceName in selFaceNames:
+        selItem = baseSolid.getElement(SheetMetalTools.getElementFromTNP(selFaceName))
+        selFace = SheetMetalTools.smGetFaceByEdge(selItem, baseSolid)
+
+        # Find the narrow edge.
+        thk = 999999.
+        thkEdge = None
+        for edge in selFace.Edges:
+            if abs(edge.Length) < thk:
+                thk = abs(edge.Length)
+                thkEdge = edge
+
+        # Find a length edge.
+        p0 = thkEdge.valueAt(thkEdge.FirstParameter)
+        for lenEdge in selFace.Edges:
+            p1 = lenEdge.valueAt(lenEdge.FirstParameter)
+            p2 = lenEdge.valueAt(lenEdge.LastParameter)
+            if lenEdge.isSame(thkEdge):
+                continue
+            if (p1 - p0).Length < smEpsilon:
+                break
+            if (p2 - p0).Length < smEpsilon:
+                break
+
+        # Find the large face connected with selected face.
+        list2 = baseSolid.ancestorsOfType(lenEdge, Part.Face)
+        for Cface in list2:
+            if not (Cface.isSame(selFace)):
+                break
+        # Part.show(Cface, "Cface")
+
+        # Main Length Edge, Extrusion direction
+        #    MlenEdge = lenEdge
+        #    leng = MlenEdge.Length
+        pThkDir1 = selFace.CenterOfMass
+        pThkDir2 = lenEdge.Curve.value(lenEdge.Curve.parameter(pThkDir1))
+        thkDir = pThkDir1.sub(pThkDir2).normalize()
+        FaceDir = selFace.normalAt(0, 0)
+
+
+        # Split solid Based on Top Face into two solid.
+        Topface_Solid = Cface.Wires[0].extrude(Cface.normalAt(0, 0) * -thk)
+        # Part.show(Topface_Solid, "Topface_Solid")
+        SplitSolids = BOPTools.SplitAPI.slice(finalShape, Topface_Solid.Faces, "Standard", 0.0)
+        # Part.show(SplitSolids, "SplitSolids")
+        for SplitSolid in SplitSolids.Solids:
+            check_face = SplitSolid.common(Cface)
+            if check_face.Faces:
+                SplitSolid1 = SplitSolid
+                break
+        # Part.show(SplitSolid1, "SplitSolid1")
+
+        SplitSolid2 = None
+        for SplitSolid in SplitSolids.Solids:
+            if not (SplitSolid.isSame(SplitSolid1)):
+                SplitSolid2 = SplitSolid
+                break
+        # Part.show(SplitSolid2, "SplitSolid2")
+
+        # Make solid from sketch, if sketch is present.
+        extendsolid = None
+        if useSketch:
+            attachedObj, attachedFaceNames = sketch.AttachmentSupport[0]
+            attachedShape = attachedObj.Shape
+            attachedFace = attachedShape.getElement(
+                SheetMetalTools.getElementFromTNP(attachedFaceNames[0])
+            )
+            # Find thickess edge by examining all edges attached to an attached face vertex.
+            thicknessEdge = None
+            for vert in attachedFace.Vertexes:
+                edgeList = attachedShape.ancestorsOfType(vert, Part.Edge)
+                if (len(edgeList) != 3):
+                    continue 
+                for edge in edgeList:
+                    edge_common = edge.common(attachedFace)
+                    if len(edge_common.Edges) == 0:
+                        thicknessEdge = edge
+                        break
+                if thicknessEdge:
+                    break
+            thickness = thicknessEdge.Length
+            extrudeDir = attachedFace.normalAt(0, 0)
+            overlap_solidlist = []
+            Wall_face = Part.makeFace(sketch.Shape.Wires, "Part::FaceMakerBullseye")
+            # if not Wall_face.isCoplanar(Cface, smEpsilon):
+            #     thkDir *= -1
+            wallSolid = Wall_face.extrude(extrudeDir * thickness * -1)
+            if (wallSolid.Volume - smEpsilon) < 0.0:
+                raise SheetMetalTools.SMException("Incorrect face selected. Please select a side face.")
+            # Part.show(wallSolid, "wallSolid")
+            extendsolid = wallSolid
+            # To find Overlapping Solid, non thickness side Face that
+            # touch Overlapping Solid.
+            if SplitSolid2:
+                overlap_solid = wallSolid.common(SplitSolid2)
+                Part.show(overlap_solid, "overlap_solid")
+                if overlap_solid.Faces:
+                    substract_face = smTouchFace(wallSolid, SplitSolid2, thk)
+                    # Part.show(substract_face, "substract_face")
+                    # # To get solids that aligned/normal to touching face.
+                    overlap_solidlist = smgetSubface(substract_face, overlap_solid, lenEdge, thk)
+                # Substract solid from Initial Solid.
+                if enableClearance:
+                    for solid in overlap_solidlist:
+                        CutSolid = solid.makeOffsetShape(offset, 0.0, fill=False, join=2)
+                        Part.show(CutSolid, "CutSolid")
+                        finalShape = finalShape.cut(CutSolid)
+                        # Part.show(finalShape, "finalShape")
+        elif extLength > 0.0:
+            # Create wall, if edge or face selected.
+            if reversed:
+                FaceDir *= -1
+            Wall_face = smMakeFace(lenEdge, FaceDir, extLength, gap1, gap2, op="SMW")
+            # Part.show(Wall_face, "Wall_face")
+            extendsolid = Wall_face.extrude(thkDir * thk)
+            # Part.show(extendsolid, "extendsolid")
+
+        # Fuse All solid created to Split solid.
+        if extendsolid:
+            if reversed and not useSketch:
+                finalShape = finalShape.cut(SplitSolid1)
+                resultSolid = SplitSolid1.cut(extendsolid)
+            else:
+                resultSolid = SplitSolid1.fuse(extendsolid)
+                # Part.show(resultSolid, "resultSolid")
+                # # Merge final list.
+                finalShape = finalShape.cut(resultSolid)
+            # Part.show(finalShape, "finalShape")
+            finalShape = finalShape.fuse(resultSolid)
+
+    # Part.show(finalShape, "finalShape")
+    if refine:
+        finalShape = finalShape.removeSplitter()
+    return finalShape
+
+
+def smExtrude(extLength=10.0, gap1=0.0, gap2=0.0, reversed=False, enableClearance=False, offset=0.2,
+              refine=True, sketch="", selFaceNames="", selObject="" ):
+    import BOPTools.SplitFeatures
+
+    # if sketch:
+    #     return smExtendBySketch(sketch, selObject, refine, enableClearance, offset)
 
     baseSolid = selObject.Shape.copy()
     finalShape = baseSolid
@@ -228,7 +447,7 @@ def smExtrude(extLength=10.0, gap1=0.0, gap2=0.0, reversed=False, subtraction=Fa
         for Cface in list2:
             if not (Cface.isSame(selFace)):
                 break
-        Part.show(Cface, "Cface")
+        # Part.show(Cface, "Cface")
 
         # Main Length Edge, Extrusion direction
         #    MlenEdge = lenEdge
@@ -301,17 +520,17 @@ def smExtrude(extLength=10.0, gap1=0.0, gap2=0.0, reversed=False, subtraction=Fa
             # touch Overlapping Solid.
             if SplitSolid2:
                 overlap_solid = wallSolid.common(SplitSolid2)
-                # Part.show(overlap_solid, "overlap_solid")
+                Part.show(overlap_solid, "overlap_solid")
                 if overlap_solid.Faces:
                     substract_face = smTouchFace(wallSolid, SplitSolid2, thk)
                     # Part.show(substract_face, "substract_face")
                     # # To get solids that aligned/normal to touching face.
                     overlap_solidlist = smgetSubface(substract_face, overlap_solid, lenEdge, thk)
                 # Substract solid from Initial Solid.
-                if subtraction:
+                if enableClearance:
                     for solid in overlap_solidlist:
                         CutSolid = solid.makeOffsetShape(offset, 0.0, fill=False, join=2)
-                        # Part.show(CutSolid, "CutSolid")
+                        Part.show(CutSolid, "CutSolid")
                         finalShape = finalShape.cut(CutSolid)
                         # Part.show(finalShape, "finalShape")
         elif extLength > 0.0:
@@ -389,7 +608,7 @@ class SMExtrudeWall:
                              gap1=fp.gap1.Value,
                              gap2=fp.gap2.Value,
                              reversed=fp.reversed,
-                             subtraction=fp.UseSubtraction,
+                             enableClearance=fp.UseSubtraction,
                              offset=fp.Offset.Value,
                              refine=fp.Refine,
                              sketch=fp.Sketch,
