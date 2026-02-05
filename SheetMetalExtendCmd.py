@@ -418,16 +418,16 @@ class SMExtrudeWall:
         # Pass selected object shape.
         Main_Object = fp.baseObject[0]
         face = fp.baseObject[1]
-        fp.Shape = smExtrude(extLength=fp.length.Value,
-                             gap1=fp.gap1.Value,
-                             gap2=fp.gap2.Value,
-                             reversed=fp.reversed,
-                             enableClearance=fp.UseSubtraction,
-                             offset=fp.Offset.Value,
-                             refine=fp.Refine,
-                             sketch=fp.Sketch,
-                             selItemNames=face,
-                             selObject=Main_Object)
+        fp.Shape = smExtrude2(extLength=fp.length.Value,
+                              gap1=fp.gap1.Value,
+                              gap2=fp.gap2.Value,
+                              reversed=fp.reversed,
+                              enableClearance=fp.UseSubtraction,
+                              offset=fp.Offset.Value,
+                              refine=fp.Refine,
+                              sketch=fp.Sketch,
+                              selItemNames=face,
+                              selObject=Main_Object)
         if fp.Sketch :
             fp.Sketch.ViewObject.Visibility = False
 
