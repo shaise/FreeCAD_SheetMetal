@@ -42,7 +42,7 @@ translate = FreeCAD.Qt.translate
 smExtrudeDefaultVars = ["Refine"]
 
 
-def smMakeFace(edge, dir, extLen, gap1=0.0, gap2=0.0, angle1=0.0, angle2=0.0, op=""):
+def _createExtendFace(edge, dir, extLen, gap1=0.0, gap2=0.0, angle1=0.0, angle2=0.0, op=""):
     len1 = extLen * math.tan(math.radians(angle1))
     len2 = extLen * math.tan(math.radians(angle2))
 
@@ -64,152 +64,6 @@ def smMakeFace(edge, dir, extLen, gap1=0.0, gap2=0.0, angle1=0.0, angle2=0.0, op
     if hasattr(face, "mapShapes"):
         face.mapShapes([(edge, face)], None, op)
     return face
-
-
-def smTouchFace(Face, obj, thk):
-    # # Find face Modified During loop.
-    # Part.show(Face,'Face')
-    facelist = []
-    for face in obj.Faces:
-        # Part.show(face,'face')
-        face_common = face.common(Face)
-        if not face_common.Faces:
-            continue
-        edge = face.Vertexes[0].extrude(face.normalAt(0, 0) * -thk * 2)
-        # Part.show(edge,'edge')
-        edge_common = obj.common(edge)
-        # Part.show(edge_common,'edge_common')
-        if (edge_common.Edges[0].Length - thk) < smEpsilon:
-            facelist.append(face)
-            break
-    return facelist[0]
-
-
-def smgetSubface(face, obj, edge, thk):
-    # Project thickness side edge to get one side rectangle.
-    normal = face.normalAt(0, 0)
-    faceVert = face.Vertexes[0].Point
-    pt1 = edge.Vertexes[0].Point.projectToPlane(faceVert, normal)
-    pt2 = edge.Vertexes[1].Point.projectToPlane(faceVert, normal)
-    vec1 = pt2 - pt1
-
-    # Find min & max point of cut shape.
-    wallsolidlist = []
-    for solid in obj.Solids:
-        pt_list = []
-        for vertex in solid.Vertexes:
-            poi = vertex.Point
-            pt = poi.projectToPlane(faceVert, normal)
-            pt_list.append(pt)
-        p1 = Base.Vector(
-            min([pts.x for pts in pt_list]),
-            min([pts.y for pts in pt_list]),
-            min([pts.z for pts in pt_list]),
-        )
-        p2 = Base.Vector(
-            max([pts.x for pts in pt_list]),
-            max([pts.y for pts in pt_list]),
-            max([pts.z for pts in pt_list]),
-        )
-        # print([p1, p2])
-
-        # Find angle between diagonal & thickness side edge.
-        vec2 = p2 - p1
-        angle1 = vec2.getAngle(vec1)
-        angle = math.degrees(angle1)
-        # print(angle)
-
-        # Check & correct orientation of diagonal edge rotation.
-        e = Part.makeLine(p1, p2)
-        # Part.show(e, "diag line2")
-        e.rotate(p1, normal, -angle)
-        vec2 = (e.valueAt(e.LastParameter) - e.valueAt(e.FirstParameter)).normalize()
-        coeff = vec2.dot(vec1.normalize())
-        # print(coeff)
-        if coeff != 1.0:
-            angle = 90 - angle
-
-        # Create Cut Rectangle Face from min/max points & angle.
-        e = Part.Line(p1, p2).toShape()
-        # Part.show(e, "diag lineb")
-        e1 = e.copy()
-        e1.rotate(p1, normal, -angle)
-        e2 = e.copy()
-        e2.rotate(p2, normal, 90 - angle)
-        section1 = e1.section(e2)
-        # Part.show(section1,'section1')
-        p3 = section1.Vertexes[0].Point
-        e3 = e.copy()
-        e3.rotate(p1, normal, 90 - angle)
-        e4 = e.copy()
-        e4.rotate(p2, normal, -angle)
-        section2 = e3.section(e4)
-        Part.show(e, "diag e")
-        Part.show(e1, "diag 1e")
-        Part.show(e2, "diag 2e")
-        Part.show(e3, "diag 3e")
-        Part.show(e4, "diag 4e")
-        # Part.show(section2,'section2')
-        p4 = section2.Vertexes[0].Point
-        w = Part.makePolygon([p1, p3, p2, p4, p1])
-        # Part.show(w, "wire")
-        face = Part.Face(w)
-        wallSolid = face.extrude(normal * -thk)
-        wallsolidlist.append(wallSolid)
-    return wallsolidlist
-
-def smExtendBySketch(sketch, selObject, refine=True, enableClearance=False, clearanceOffset=0.2):
-    finalShape = selObject.Shape.copy()
-    attachedObj, attachedFaceNames = sketch.AttachmentSupport[0]
-    attachedShape = attachedObj.Shape
-    attachedFace = attachedShape.getElement(
-        SheetMetalTools.getElementFromTNP(attachedFaceNames[0])
-    )
-    # Find thickess edge by examining all edges attached to an attached face vertex.
-    thicknessEdge = None
-    for vert in attachedFace.Vertexes:
-        edgeList = attachedShape.ancestorsOfType(vert, Part.Edge)
-        if (len(edgeList) != 3):
-            continue 
-        for edge in edgeList:
-            edge_common = edge.common(attachedFace)
-            if len(edge_common.Edges) == 0:
-                thicknessEdge = edge
-                break
-        if thicknessEdge:
-            break
-    thickness = thicknessEdge.Length
-    extrudeDir = attachedFace.normalAt(0, 0)
-    Wall_face = Part.makeFace(sketch.Shape.Wires, "Part::FaceMakerBullseye")
-    # if not Wall_face.isCoplanar(Cface, smEpsilon):
-    #     thkDir *= -1
-    extrudeVector = extrudeDir * thickness * -1
-    wallSolid = Wall_face.extrude(extrudeVector)
-    if (wallSolid.Volume - smEpsilon) < 0.0:
-        raise SheetMetalTools.SMException("Incorrect face selected. Please select a side face.")
-    # Part.show(wallSolid, "wallSolid")
-
-    if enableClearance:
-        topfaceSolid = attachedFace.extrude(extrudeVector)
-        # Part.show(topfaceSolid)
-        restSolid = finalShape.cut(topfaceSolid)
-        # Part.show(restSolid)
-        overlapSolid = restSolid.common(wallSolid)
-        cutTool = overlapSolid.makeOffsetShape(clearanceOffset, 0.0, fill=False, join=2)
-        numSolids = len(finalShape.Solids)
-        cutShape = finalShape.cut(cutTool)
-        if numSolids == len(cutShape.Solids):
-            finalShape = cutShape
-        else:
-            wallSolid = wallSolid.cut(cutTool)
-
-    finalShape = finalShape.fuse(wallSolid)
-
-    # Part.show(finalShape, "finalShape")
-    if refine:
-        finalShape = finalShape.removeSplitter()
-    return finalShape
-
 
 def _getTopFaceBySketch(sketch, baseSolid):
     _attachedObj, attachedFaceNames = sketch.AttachmentSupport[0]
@@ -266,7 +120,7 @@ def _getExtendSolidByEdge(sideFace, sideEdge, extrudeDir, thickness, length, rev
     faceDir = sideFace.normalAt(0, 0)
     if reversed:
         faceDir *= -1
-    sketchFace = smMakeFace(sideEdge, faceDir, length, gap1, gap2, op="SMW")
+    sketchFace = _createExtendFace(sideEdge, faceDir, length, gap1, gap2, op="SMW")
     # Part.show(sketchFace, "sketchFace")
     extendsolid = sketchFace.extrude(extrudeDir * thickness)
     return extendsolid
@@ -305,7 +159,7 @@ def _projectFaceToPlane(face, planeFace):
         return None
     return Part.makeFace(wire)
 
-def smExtrude2(extLength=10.0, gap1=0.0, gap2=0.0, reversed=False, enableClearance=False, offset=0.2,
+def smExtrude(extLength=10.0, gap1=0.0, gap2=0.0, reversed=False, enableClearance=False, offset=0.2,
               refine=True, sketch="", selItemNames="", selObject="" ):
     import BOPTools.SplitFeatures
 
