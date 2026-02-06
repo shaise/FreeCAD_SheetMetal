@@ -29,6 +29,7 @@ import FreeCAD
 import Part
 
 import SheetMetalTools
+SMException = SheetMetalTools.SMException
 
 Base = FreeCAD.Base
 
@@ -94,21 +95,15 @@ def _getFacesAndEdgeBySelection(baseSolid, selItemName):
     return topFace, sideFace, flangeEdge
 
 def _detectThicknessByFlangeFace(baseSolid, flangeFace):
-    thicknessEdge = None
-    for vert in flangeFace.Vertexes:
-        edgeList = baseSolid.ancestorsOfType(vert, Part.Edge)
-        if (len(edgeList) != 3):
-            continue 
-        for edge in edgeList:
-            if not isinstance(edge.Curve, Part.Line):
-                break
-            edge_common = edge.common(flangeFace)
-            if len(edge_common.Edges) == 0:
-                thicknessEdge = edge
-                break
-        if thicknessEdge:
-            break
-    return thicknessEdge.Length
+    vert = flangeFace.Vertexes[0]
+    norm = flangeFace.normalAt(0, 0)
+    line = Part.makeLine(vert.Point, vert.Point - norm * 999999.0)
+    intersect = line.common(baseSolid)
+    for edges in intersect.Edges:
+        if vert.Point.isEqual(edges.Vertexes[0].Point, smEpsilon) or \
+           vert.Point.isEqual(edges.Vertexes[1].Point, smEpsilon):
+            return edges.Length
+    raise SMException("Unable to detect thickness from selected item.")
 
 def _getExtendSolidBySketch(sketch, extrudeDir, thickness):
     sketchFace = Part.makeFace(sketch.Shape.Wires, "Part::FaceMakerBullseye")

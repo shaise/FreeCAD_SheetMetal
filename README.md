@@ -96,6 +96,7 @@ SheetMetal WB can be installed via the [Addon Manager](https://github.com/FreeCA
 * FreeCAD Forum announcement/discussion [thread](https://forum.freecad.org/viewtopic.php?f=3&t=60818) 
 
 #### Release notes:
+* V0.7.65 06 Feb 2026:  Better detection of sheet metal thickness.  
 * V0.7.64 04 Feb 2026:  Refactor extend feature.  
 * V0.7.63 27 Jan 2026:  Fix 'New Sketch' feature compatibility with Link branch.  
                       - Add option to delete selection items from the task panel.  
