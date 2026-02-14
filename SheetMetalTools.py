@@ -49,6 +49,45 @@ selClearSelText = translate("SheetMetalTools", "Clear Selected")
 selClearAllText = translate("SheetMetalTools", "Clear All")
 
 
+def taskSaveDefaults(obj, varList):
+    for var in varList:
+        if isinstance(var, tuple):
+            var, saveVar = var
+        else:
+            saveVar = "default" + var
+        val = getattr(obj, var)
+        if hasattr(val, "Value"):
+            val = val.Value
+        if isinstance(val, bool):
+            params.SetBool(saveVar, val)
+        elif isinstance(val, float):
+            params.SetFloat(saveVar, val)
+        elif isinstance(val, int):
+            params.SetInt(saveVar, val)
+        else:
+            params.SetString(saveVar, str(val))
+
+
+def taskRestoreDefaults(obj, varList):
+    for var in varList:
+        if isinstance(var, tuple):
+            var, saveVar = var
+        else:
+            saveVar = "default" + var
+        val = getattr(obj, var)
+        if hasattr(val, "Value"):
+            val = val.Value
+        if isinstance(val, bool):
+            newVal = params.GetBool(saveVar, val)
+        elif isinstance(val, float):
+            newVal = params.GetFloat(saveVar, val)
+        elif isinstance(val, int):
+            newVal = params.GetInt(saveVar, val)
+        else:
+            newVal = params.GetString(saveVar, str(val))
+        setattr(obj, var, newVal)
+
+
 def isGuiLoaded():
     if hasattr(FreeCAD, "GuiUp"):
         return FreeCAD.GuiUp
@@ -748,44 +787,6 @@ if isGuiLoaded():
         FreeCAD.ActiveDocument.recompute()
         Gui.ActiveDocument.resetEdit()
 
-
-    def taskSaveDefaults(obj, varList):
-        for var in varList:
-            if isinstance(var, tuple):
-                var, saveVar = var
-            else:
-                saveVar = "default" + var
-            val = getattr(obj, var)
-            if hasattr(val, "Value"):
-                val = val.Value
-            if isinstance(val, bool):
-                params.SetBool(saveVar, val)
-            elif isinstance(val, float):
-                params.SetFloat(saveVar, val)
-            elif isinstance(val, int):
-                params.SetInt(saveVar, val)
-            else:
-                params.SetString(saveVar, str(val))
-
-
-    def taskRestoreDefaults(obj, varList):
-        for var in varList:
-            if isinstance(var, tuple):
-                var, saveVar = var
-            else:
-                saveVar = "default" + var
-            val = getattr(obj, var)
-            if hasattr(val, "Value"):
-                val = val.Value
-            if isinstance(val, bool):
-                newVal = params.GetBool(saveVar, val)
-            elif isinstance(val, float):
-                newVal = params.GetFloat(saveVar, val)
-            elif isinstance(val, int):
-                newVal = params.GetInt(saveVar, val)
-            else:
-                newVal = params.GetString(saveVar, str(val))
-            setattr(obj, var, newVal)
 
 
     def taskLoadUI(*args):
