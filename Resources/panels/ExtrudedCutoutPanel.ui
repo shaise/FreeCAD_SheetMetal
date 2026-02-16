@@ -346,12 +346,12 @@
  <customwidgets>
   <customwidget>
    <class>Gui::QuantitySpinBox</class>
-   <extends>QWidget</extends>
+   <extends>QDoubleSpinBox</extends>
    <header>Gui/QuantitySpinBox.h</header>
   </customwidget>
   <customwidget>
    <class>Gui::IntSpinBox</class>
-   <extends>QWidget</extends>
+   <extends>QSpinBox</extends>
    <header>gui::intspinbox.h</header>
   </customwidget>
  </customwidgets>

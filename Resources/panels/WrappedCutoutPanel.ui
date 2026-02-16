@@ -142,7 +142,7 @@
  <customwidgets>
   <customwidget>
    <class>Gui::DoubleSpinBox</class>
-   <extends>QWidget</extends>
+   <extends>QDoubleSpinBox</extends>
    <header>gui::doublespinbox.h</header>
   </customwidget>
  </customwidgets>
