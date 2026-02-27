@@ -25,22 +25,435 @@ import FreeCAD
 import Part
 import SheetMetalTools
 import os
+import DraftGeomUtils
 
 translate = FreeCAD.Qt.translate
+from SheetMetalTools import SMException
 
 # List of properties to be saved as defaults.
 smFromSolidDefaultVars = ["Radius", "Thickness", "KFactor"]
 
+
+# helper functions:
+
+def smCreateCircularFaceLoft(edge, radius):
+    """
+    Create a circular face with the given radius at the start of the edge,
+    oriented such that the face normal aligns with the edge tangent,
+    and then sweep this face along the edge to create a solid.
+    """
+    try:
+        # Get properties at the start of the edge
+        u = edge.FirstParameter
+        pos = edge.valueAt(u)
+        tangent = edge.tangentAt(u)
+        
+        # Create the circular profile
+        # Part.Circle(Center, Normal, Radius)
+        circleGeo = Part.Circle(pos, tangent, radius)
+        circleEdge = circleGeo.toShape()
+        profileWire = Part.Wire([circleEdge])
+        # Create the loft (pipe) along the edge using makePipeShell
+        pathWire = Part.Wire([edge])
+        solidPipe = pathWire.makePipeShell([profileWire], True, True) # isSolid=True, isFrenet=True
+        
+        # makePipeShell returns a shape, if isSolid=True it should be a solid
+        # but let's be safe and wrap it or check
+        return solidPipe
+    except Exception as e:
+        FreeCAD.Console.PrintError(f"smCreateCircularFaceLoft failed: {e}\n")
+        return None
+
+    
+from OCC.Core import ChFi2d
+from OCC import Core
+
+def smAnalizeCorner(edge1, edge2):
+    """ Find the corner point and 2 directions of 2 connected edges.
+    """
+    # extracting vertices
+    p1 = edge1.valueAt(edge1.FirstParameter)
+    p2 = edge1.valueAt(edge1.LastParameter)
+    p3 = edge2.valueAt(edge2.FirstParameter)
+    p4 = edge2.valueAt(edge2.LastParameter)
+
+    #find common vertex
+    if p1.isEqual(p3, SheetMetalTools.smEpsilon):
+        commonPoint = p1
+        dir1 = edge1.tangentAt(edge1.FirstParameter)
+        dir2 = edge2.tangentAt(edge2.FirstParameter)
+    elif p1.isEqual(p4, SheetMetalTools.smEpsilon):
+        commonPoint = p1
+        dir1 = edge1.tangentAt(edge1.FirstParameter)
+        dir2 = edge2.tangentAt(edge2.LastParameter)
+    elif p2.isEqual(p3, SheetMetalTools.smEpsilon):
+        commonPoint = p2
+        dir1 = edge1.tangentAt(edge1.LastParameter)
+        dir2 = edge2.tangentAt(edge2.FirstParameter)
+    elif p2.isEqual(p4, SheetMetalTools.smEpsilon):
+        commonPoint = p2
+        dir1 = edge1.tangentAt(edge1.LastParameter)
+        dir2 = edge2.tangentAt(edge2.LastParameter)
+    else:
+        print("Edges don't share a common vertex - cannot fillet directly")
+        return None, None, None
+    return commonPoint, dir1, dir2
+    
+
+def smMakeFilletBetweenEdges(e1, e2, r, commonPoint, dir1, dir2):
+    # asuming edges are in a plane
+    if commonPoint is None:
+        return None
+    normdir = dir1.cross(dir2)
+    if normdir.Length < SheetMetalTools.smEpsilon:
+        print("Edges are parallel - cannot fillet directly")
+        return None
+    # normdir.normalize()
+    filletApi = ChFi2d.ChFi2d_FilletAPI()
+    OccPnt = Core.gp.gp_Pnt(*commonPoint)
+    pln = Core.gp.gp_Pln(OccPnt, Core.gp.gp_Dir(*normdir))
+    occE1 = Core.TopoDS.topods.Edge(Part.__toPythonOCC__(e1))
+    occE2 = Core.TopoDS.topods.Edge(Part.__toPythonOCC__(e2))
+    filletApi.Init(occE1, occE2, pln)
+    try:
+        if filletApi.Perform(r):
+            occArc = filletApi.Result(OccPnt, occE1, occE2)
+            return ([Part.__fromPythonOCC__(occE1),
+                      Part.__fromPythonOCC__(occE2),
+                      Part.__fromPythonOCC__(occArc)])
+    except Exception as e:
+        print("OCC Fillet api failed: " + str(e))
+        return None
+
+
+def smProjectEdgeOnPlane(edge, vertex, normal):
+    """Project an edge onto a plane defined by a vertex and a normal."""
+    plane = Part.Plane(vertex.Point, normal)
+    splnplaneShape = plane.toShape()
+    projectedEdges = splnplaneShape.project([edge]).Edges
+    projectedEdge = projectedEdges[0] if projectedEdges and len(projectedEdges) > 0 else None
+    return projectedEdge
+
+def smFindEdgeAdjacentToedgeOnFace(edge, vertex, face):
+    """Find an edge on the face that is adjacent to the given edge."""
+    for e in face.Edges:
+        if e.isSame(edge):
+            continue
+        # Check if edges share a vertex
+        for v in e.Vertexes:
+            if vertex.isSame(v):
+                return e
+    return None
+
+def smGetVertexBetweenFilletAndEdge(edge, filletEdge):
+    """Get the vertex between fillet and FilletEdge, and the relative length cut from original edge."""
+    newLength = edge.Length - filletEdge.Length
+    if newLength <= 0:
+        return None
+    relativeLength = newLength / edge.Length
+    v1 = filletEdge.Vertexes[0]
+    v2 = filletEdge.Vertexes[1]
+    if edge.valueAt(edge.FirstParameter).isEqual(v1.Point, SheetMetalTools.smEpsilon) or \
+       edge.valueAt(edge.LastParameter).isEqual(v1.Point, SheetMetalTools.smEpsilon):
+        return v2, relativeLength
+    else:
+        return v1, relativeLength
+    
+def smGenerateEdgeTypeDatabase(shape, selEdgeNames, selFaceNames):
+    """Generate a database of edge types for the shape."""
+    edgeTypeDB = {}
+    for egde in shape.Edges:
+        edgeTypeDB[egde.hashCode()] = "bend"
+    for edgeName in selEdgeNames:
+        hashCode = shape.getElement(edgeName).hashCode()
+        edgeTypeDB[hashCode] = "seam"
+    for faceName in selFaceNames:
+        face = shape.getElement(faceName)
+        for edge in face.Edges:
+            if edgeTypeDB[edge.hashCode()] == "flange":
+                edgeTypeDB[edge.hashCode()] = "ignore"
+            else:
+                edgeTypeDB[edge.hashCode()] = "flange"
+    return edgeTypeDB
+
+def smGetConcavityTypeBetweenFaces(face1, point, dir1, dir2):
+    """Get the concavity type of the bend between two faces.
+       We do it by checking the normal of the face at the point on the face 
+       closest to the average of the two directions.
+       If the normal is pointing in the same direction as the average direction, 
+       the bend is concave. Otherwise, it is convex.
+    """
+
+    p1 = point + dir1 * 0.01
+    p2 = point + dir2 * 0.01
+    
+    avgPoint = Part.Vertex(p1.add(p2) / 2)
+    dist, points, _extra = avgPoint.distToShape(face1)
+    result = "flat"
+    if dist > SheetMetalTools.smEpsilon:
+        projPoint1 = points[0][1]
+        projDir = avgPoint.Point.sub(projPoint1).normalize()
+        u, v = face1.Surface.parameter(projPoint1)
+        normal = face1.normalAt(u, v)
+        dot = projDir.dot(normal)
+        if dot > 0:
+            result = "concave"
+            l1 = Part.makeLine(point, point + dir1)
+            l2 = Part.makeLine(point, point + dir2)
+            l3 = Part.makeLine(point, normal)
+            Part.show(l1, "l1dir")
+            Part.show(l2, "l2dir")
+            Part.show(l3, "normal")
+            Part.show(face1, "face")
+            Part.show(avgPoint, "avgPoint")
+            Part.show(Part.Vertex(projPoint1), "projPoint1")
+        else:
+            result = "convex"
+    return result
+
+def smCalculateBendEdgeInfo(edgeInfo, radius, thickness, invertDir):
+    """
+    Calculate the fillet between two faces connected by the given edge.
+    :return: fillet arc
+    """
+    # Find 2 edges on each face that are adjacent to the given edge
+    edge = edgeInfo.edge
+
+    vertex0 = edge.Vertexes[0]
+    vertex1 = edge.Vertexes[1]
+    edgeFace1 = smFindEdgeAdjacentToedgeOnFace(edge, vertex0, edgeInfo.face1)
+    edgeFace2 = smFindEdgeAdjacentToedgeOnFace(edge, vertex0, edgeInfo.face2)
+    # project the edges onto the plane defined by the edge and its direction
+    edgeDir = vertex0.Point.sub(vertex1.Point).normalize()
+    projectedEdge1 = smProjectEdgeOnPlane(edgeFace1, vertex0, edgeDir)
+    projectedEdge2 = smProjectEdgeOnPlane(edgeFace2, vertex0, edgeDir)
+
+    commonPoint, dir1, dir2 = smAnalizeCorner(projectedEdge1, projectedEdge2)
+    concavityType = smGetConcavityTypeBetweenFaces(edgeInfo.face1, commonPoint, dir1, dir2)
+    edgeInfo.concavityType = concavityType
+    # print("Concavity type: ", concavityType)
+    if concavityType == "concave":
+        invertDir = not invertDir
+    if invertDir:
+        radius = radius + thickness
+
+    # create fillet between the two projected edges
+    filletEdges = smMakeFilletBetweenEdges(projectedEdge1, projectedEdge2, 
+                                            radius, commonPoint, dir1, dir2)
+    if filletEdges is None:
+        return None
+    # we need find the edge part from the vertex to the fillet start point
+    _rightFilletEdge, _leftFilletEdge, filletArc = filletEdges
+    # Part.show(filletArc, "filletArc")
+    return filletArc
+
+def smCompareDirections(dir1, dir2, epsilon = SheetMetalTools.smEpsilon):
+    if dir1.isEqual(dir2, epsilon):
+        return "same"
+    if dir1.isEqual(-dir2, epsilon):
+        return "opposite"
+    return "other"
+
+def smExtendEdgeBothSides(edge, distance):
+    pt1 = edge.Vertexes[0].Point
+    pt2 = edge.Vertexes[1].Point
+    dir = (pt2 - pt1).normalize()
+    pt1 = pt1 - dir * distance
+    pt2 = pt2 + dir * distance
+    return Part.makeLine(pt1, pt2)
+
+
+class smfsEdgeInfo:
+    """Represent edge information in solid to sheet map."""
+
+    def __init__(self, edge, solid, type):
+        """Initialize the edge info with a values."""
+        self.edge = edge
+        self.bendEdge = edge
+        self.solid = solid
+        self.type = type
+        connected_faces = solid.ancestorsOfType(edge, Part.Face)
+        self.edgeDir = (edge.Vertexes[0].Point - edge.Vertexes[1].Point).normalize()
+
+        if len(connected_faces) < 2:
+            print("Could not find two faces connected by the given edge")
+        else:
+            self.face1, self.face2 = connected_faces[:2]  # Take the first two connected faces
+        if type == "bend":
+            self.extendedEdge = smExtendEdgeBothSides(edge, edge.Length * 10)
+
+    def analizeBend(self, radius, thickness, invertDir):
+        self.filletArc = smCalculateBendEdgeInfo(self, radius, thickness, invertDir)
+        if self.filletArc is None:
+            self.type = "ignore"
+
+    def getJunctionAtVertex(self, vertex):
+        """Get the junction at the given vertex."""
+        for junction in self.juctionList:
+            if junction.vertex.isSame(vertex):
+                return junction
+        return None
+
+    def adjustBendEdge(self, newEdge):
+        self.bendEdge = self.bendEdge.common(newEdge)
+
+class smfsFaceInfo:
+    """Represent face information in solid to sheet map."""
+    def __init__(self, face, solid, isRemoved = False):
+        """Initialize the face info with a values."""
+        self.face = face
+        self.modifiedFace = face.copy()
+        self.solid = solid
+        self.isRemoved = isRemoved
+
+    def cutEdge(self, edgePipe):
+        if self.isRemoved:
+            print("Face is removed")
+            return
+        cutFace = self.modifiedFace.cut(edgePipe)
+        self.modifiedFace = cutFace.Faces[0]
+        # Part.show(self.modifiedFace, "modifiedFace")
+
+    def detectBendEdge(self, edgeInfo, cutRadius):
+        cornerEdge = edgeInfo.edge
+        cornerEdgeDir = edgeInfo.edgeDir
+        for edge in self.modifiedFace.Edges:
+            edgeDir = (edge.Vertexes[0].Point - edge.Vertexes[1].Point).normalize()
+            dirTest = smCompareDirections(edgeDir, cornerEdgeDir)
+            if dirTest == "other":
+                continue
+            dist, points, _extra = edge.Vertexes[0].distToShape(cornerEdge)
+            if abs(dist - cutRadius) > SheetMetalTools.smEpsilon:
+                continue
+            projPoint1 = points[0][1]
+            dist, points, _extra = edge.Vertexes[1].distToShape(cornerEdge)
+            projPoint2 = points[0][1]
+            bendEdge = Part.makeLine(projPoint1, projPoint2)
+            edgeInfo.adjustBendEdge(bendEdge)
+
+class smfsSolidInfo:
+    """Build mapped solid information."""
+    def __init__(self, solid, selEdgeNames, selFaceNames):
+        """Initialize the solid info with a values."""
+        self.debugCount = 0
+        self.solid = solid
+        self.faceInfoDict = {}
+        self.edgeInfoDict = {}
+        self.edgeTypeDB = smGenerateEdgeTypeDatabase(solid, selEdgeNames, selFaceNames)
+        for face in solid.Faces:
+            isRemoved = False
+            for removedName in selFaceNames:
+                removed_face = solid.getElement(removedName)
+                if face.isSame(removed_face):
+                    isRemoved = True
+                    break
+            self.faceInfoDict[face.hashCode()] = smfsFaceInfo(face, solid, isRemoved)
+        for edge in solid.Edges:
+            edgeType = self.edgeTypeDB[edge.hashCode()]
+            edgeInfo = smfsEdgeInfo(edge, solid, edgeType)
+            edgeInfo.faceInf1 = self.faceInfoDict[edgeInfo.face1.hashCode()]
+            edgeInfo.faceInf2 = self.faceInfoDict[edgeInfo.face2.hashCode()]
+            self.edgeInfoDict[edge.hashCode()] = edgeInfo
+
+    def analizeBends(self, radius, thickness, invertDir):
+        for edgeInfo in self.edgeInfoDict.values():
+            if edgeInfo.type == "bend":
+                edgeInfo.analizeBend(radius, thickness, invertDir)
+
+    def ripSeams(self, radius):
+        for edgeInfo in self.edgeInfoDict.values():
+            if edgeInfo.type == "bend":
+                continue
+            edgePipe = smCreateCircularFaceLoft(edgeInfo.edge, radius)
+            if edgePipe is None:
+                continue
+            edgeInfo.faceInf1.cutEdge(edgePipe)
+            edgeInfo.faceInf2.cutEdge(edgePipe)
+
+    def cutBend(self, edgeInfo, faceInfo):
+        arc = edgeInfo.filletArc
+        if arc.Vertexes[0].isCoplanar(faceInfo.face):
+            vert = arc.Vertexes[0]
+        else:
+            vert = arc.Vertexes[1]
+
+        cutRadius = (vert.Point - edgeInfo.edge.Vertexes[0].Point).Length
+        edgePipe = smCreateCircularFaceLoft(edgeInfo.extendedEdge, cutRadius)
+        if edgePipe is None:
+            return 0
+        faceInfo.cutEdge(edgePipe)
+        self.debugCount += 1
+        return cutRadius
+
+    def cutBends(self):
+        for edgeInfo in self.edgeInfoDict.values():
+            if edgeInfo.type != "bend":
+                continue
+            edgeInfo.cutRadius1 = self.cutBend(edgeInfo, edgeInfo.faceInf1)
+            edgeInfo.cutRadius2 = self.cutBend(edgeInfo, edgeInfo.faceInf2)
+
+        for edgeInfo in self.edgeInfoDict.values():
+            if edgeInfo.type != "bend":
+                continue
+            edgeInfo.faceInf1.detectBendEdge(edgeInfo, edgeInfo.cutRadius1)
+            edgeInfo.faceInf2.detectBendEdge(edgeInfo, edgeInfo.cutRadius2)
+
+    def generateBends(self):
+        self.bendFaces = []
+        for edgeInfo in self.edgeInfoDict.values():
+            if edgeInfo.type != "bend":
+                continue
+            startPoint = edgeInfo.bendEdge.Vertexes[0].Point
+            endPoint = edgeInfo.bendEdge.Vertexes[1].Point
+            arc = edgeInfo.filletArc
+            arc.translate(startPoint - edgeInfo.edge.Vertexes[0].Point)
+            bendFace = arc.extrude(endPoint - startPoint)
+            self.bendFaces.append(bendFace)
+
+    def makeShell(self):
+        shellFaces = []
+        for faceInfo in self.faceInfoDict.values():
+            if not faceInfo.isRemoved:
+                shellFaces.append(faceInfo.modifiedFace)
+        shellFaces.extend(self.bendFaces)
+        return Part.makeShell(shellFaces)
+
+def smMakeSheetMetalFromSolid(shape, removeFaces, ripEdges, radius, thickness, tolerance, invert):
+    solidInfo = smfsSolidInfo(shape, ripEdges, removeFaces)
+    solidInfo.analizeBends(radius, thickness, invert)
+    ripRadius = tolerance
+    if invert:
+        ripRadius += thickness
+    solidInfo.ripSeams(ripRadius)
+    solidInfo.cutBends()
+    solidInfo.generateBends()
+    shell = solidInfo.makeShell()
+    solid = None
+    try:
+        solid = shell.makeOffsetShape(thickness, 0.001, fill=True)
+    except:
+        print("makeOffsetShape failed")
+        solid = shell
+    return solid
+
 class SMFromSolid:
-    def __init__(self, obj):
-        obj.addProperty("App::PropertyLink", "baseObject", "Parameters", "Base object")
-        obj.addProperty("App::PropertyLinkSubList", "removeFaces", "Parameters", "Faces to remove")
-        obj.addProperty("App::PropertyLinkSubList", "ripEdges", "Parameters", "Edges to rip (seams)")
+    def __init__(self, obj, selobj, sel_items):
+        obj.addProperty("App::PropertyLinkSub", "baseObject", "Parameters", 
+                        "Base object").baseObject = (selobj, [])
+        faces = []
+        edges = []
+        for sub in sel_items:
+            if sub.startswith("Face"):
+                faces.append(sub)
+            elif sub.startswith("Edge"):
+                edges.append(sub)
+        
+        obj.addProperty("App::PropertyLinkSub", "removeFaces", "Parameters", "Faces to remove").removeFaces = (selobj, faces)
+        obj.addProperty("App::PropertyLinkSub", "ripEdges", "Parameters", "Edges to rip (seams)").ripEdges = (selobj, edges)
         
         SheetMetalTools.smAddLengthProperty(obj, "Radius", "Bend Radius", 1.0)
         SheetMetalTools.smAddLengthProperty(obj, "Thickness", "Wall Thickness", 1.0)
-        SheetMetalTools.smAddFloatProperty(obj, "KFactor", "K Factor", 0.5)
-        
+        obj.addProperty("App::PropertyFloatConstraint", "KFactor", "Parameters", "K Factor").KFactor = (0.5, 0.0, 1.0, 0.01)
         SheetMetalTools.taskRestoreDefaults(obj, smFromSolidDefaultVars)
         obj.Proxy = self
 
@@ -48,166 +461,11 @@ class SMFromSolid:
         if not fp.baseObject:
             return
 
-        base_shape = fp.baseObject.Shape
+        base_shape = fp.baseObject[0].Shape
         if not base_shape.Faces:
             return
 
-        # Get faces to keep (all faces minus removed faces)
-        faces_to_remove_names = []
-        if fp.removeFaces:
-            # Handle LinkSubList format which might vary slightly
-            # It usually returns a list of tuples or strings depending on version/context, 
-            # but standard property access gives us the object and subelement names.
-            # Here we assume removeFaces contains the subelement names if linked to the same object.
-            # Actually, LinkSubList is [ (obj, [name1, name2]) ] or similar.
-            
-            # Let's rely on the property value structure:
-            # It is a list of tuples: [(object, [list of subelement names])]
-            for link_ref in fp.removeFaces:
-                obj = link_ref[0]
-                if obj == fp.baseObject: # Ensure we are talking about the base object
-                    faces_to_remove_names.extend(link_ref[1])
-
-        faces_to_keep = []
-        for face in base_shape.Faces:
-            # We need to find the name of this face in the base object
-            # This is tricky without the element map, but we can check geometric strict inclusion/equality?
-            # Or rely on getElement/getElementName if available.
-            # A safer way for topological stability is relying on the standard ExpFace names if the geometry hasn't changed,
-            # but mapped names are better.
-            
-            # For now, let's use the standard "FaceN" matching if possible, or geometry check.
-            # NOTE: FreeCAD's internal naming can be fragile.
-            
-            # Let's try to identify if this face is in the remove list.
-            # We will use the 'getElement' from the shape if possible to check against selected subelements.
-            
-            is_removed = False
-            for removed_name in faces_to_remove_names:
-                removed_face = base_shape.getElement(removed_name)
-                if face.isSame(removed_face):
-                    is_removed = True
-                    break
-            
-            if not is_removed:
-                faces_to_keep.append(face)
-
-        if not faces_to_keep:
-             # If all faces removed, nothing to do
-            return
-
-        shell = Part.makeShell(faces_to_keep)
-        
-        # Now identify edges to fillet (bend) vs edges to keep sharp (rip/seam).
-        # We need to find shared edges between the remaining faces.
-        # Edges that are shared by 2 faces in the shell are candidates for bends.
-        # If an edge is in "ripEdges", we skip filleting it.
-        
-        rip_edges_names = []
-        if fp.ripEdges:
-            for link_ref in fp.ripEdges:
-                obj = link_ref[0]
-                if obj == fp.baseObject:
-                    rip_edges_names.extend(link_ref[1])
-        
-        # We need to collect edges that we WANT to fillet.
-        # Part.makeFillet requires a shell (or solid) and a list of edges.
-        
-        edges_to_fillet = []
-        
-        # Iterate over all edges in the shell
-        # We only care about edges that connect two faces. 
-        # Shell.Edges includes boundary edges too (connected to only 1 face).
-        # We should NOT fillet boundary edges.
-        
-        # Build an edge map to count face usage? 
-        # Or just use the native `Part.Shape.getEdges()` logic?
-        # Actually, `makeFillet` on a shell might fillet the boundaries if we ask it to.
-        # We only want to fillet the "ridges".
-        
-        # Helper to check if edge is in rip list
-        def is_rip_edge(e):
-            for rip_name in rip_edges_names:
-                rip_edge = base_shape.getElement(rip_name)
-                # Note: The edge in the shell might have different orientation or be a copy.
-                # `isSame` checks for geometric/topological identity.
-                if e.isSame(rip_edge):
-                    return True
-            return False
-
-        # Find edges shared by at least 2 faces in the NEW shell.
-        # Since we made a shell from faces, `shell.Edges` contains all edges.
-        # We need to know which ones are "inner" seams.
-        
-        # A robust way: 
-        # go through each edge in the shell.
-        # Check if it IsSame as any edge in the rip list.
-        # If NOT in rip list, AND it is shared by 2 faces of the shell, add to fillet list.
-        
-        # How to check if shared by 2 faces efficiently?
-        # `shell.removeSplitter()` might help to sew? `makeShell` usually creates a sewn shape if faces share edges.
-        # If `makeShell` just groups them, we might need `Part.Compound` converted to `Shell` and then fixed?
-        # `Part.makeShell` usually creates a valid shell.
-        
-        # Lets check edge connections
-        # We can iterate unique edges.
-        
-        import collections
-        
-        # This is a generic approach to find shared edges
-        # But `makeFillet` needs edges from the shell itself.
-        
-        shell_edges = shell.Edges
-        for e in shell_edges:
-            # Check if this edge is a seam/rip
-            if is_rip_edge(e):
-                continue
-                
-            # Check topology: Is this edge shared by 2 faces in the *shell*?
-            # We can use `shell.getConnectedFaces(e)`? No, that method doesn't exist on Shape.
-            # We can count how many faces in `faces_to_keep` contain this edge.
-            
-            count = 0
-            for f in faces_to_keep:
-                for fe in f.Edges:
-                    if fe.isSame(e):
-                        count += 1
-            
-            if count >= 2:
-                # It is a bend!
-                edges_to_fillet.append(e)
-
-        if edges_to_fillet and fp.Radius > 0:
-            try:
-                # 0 create a fillet
-                # We need to pass the shell and the edges
-                # makeFillet(radius, edgeList) -> returns a new Shape
-                shell = shell.makeFillet(fp.Radius, edges_to_fillet)
-            except Exception as e:
-                FreeCAD.Console.PrintError(f"SheetMetalFromSolid: Fillet failed: {e}\n")
-
-        # Now thicken the shell
-        # makeOffsetShape(offset, tolerance, inter=False, self_inter=False, offsetMode=0, join=0, fill=True)
-        # join=0 (Arc), 1 (Tangent), 2 (Intersection)
-        # fill=True to make a solid
-        
-        # Thickness direction:
-        # Usually positive is "outwards" relative to face normals.
-        # If we selected a solid, faces point outwards.
-        # If we want to maintain the INNER dimensions (the solid was the mold), we thicken OUTWARDS (+Thickness).
-        # If the solid represented the bounding box, maybe we want INWARDS (-Thickness).
-        
-        # Standard sheet metal usually assumes the base shape is the MOLD (inner shape).
-        # So we offset by +Thickness.
-        
-        try:
-            # Using 1e-4 tolerance, join=0 (rounded corners if needed, though we already filleted)
-            # If we filleted, the corners are round. 
-            solid = shell.makeOffsetShape(fp.Thickness, 0.001, fill=True)
-            fp.Shape = solid
-        except Exception as e:
-            FreeCAD.Console.PrintError(f"SheetMetalFromSolid: Thicken failed: {e}\n")
-            fp.Shape = shell # Fallback to shell invocation
+        fp.Shape = smMakeSheetMetalFromSolid(base_shape, fp.removeFaces[1], fp.ripEdges[1], fp.Radius.Value, fp.Thickness.Value, 0.1, False)
 
     def __getstate__(self):
         return None
@@ -246,14 +504,14 @@ if SheetMetalTools.isGuiLoaded():
                 obj, ["Face"], self.form.btnClearFaces, "removeFaces", hideObject=False
             )
             # Constrain selection to the base object
-            self.selFaces.ConstrainToObject = obj.baseObject
+            self.selFaces.ConstrainToObject = obj.baseObject[0]
 
             # Selection for Rip Edges
             self.selEdges = SheetMetalTools.taskConnectSelection(
                 self.form.btnRipEdges, self.form.listRipEdges,
                 obj, ["Edge"], self.form.btnClearEdges, "ripEdges", hideObject=False
             )
-            self.selEdges.ConstrainToObject = obj.baseObject
+            self.selEdges.ConstrainToObject = obj.baseObject[0]
 
         def accept(self):
             SheetMetalTools.taskAccept(self)
@@ -277,45 +535,23 @@ if SheetMetalTools.isGuiLoaded():
             }
 
         def Activated(self):
-            sel_ex = Gui.Selection.getSelectionEx()
-            if not sel_ex:
+            sel = Gui.Selection.getSelectionEx()
+            if not sel:
                 SheetMetalTools.smWarnDialog("Please select a solid object first.")
                 return
-            
-            selection_item = sel_ex[0]
-            base_obj = selection_item.Object
-            
+            selobj = sel[0].Object           
             # Ensure it has Shape
-            if not hasattr(base_obj, "Shape"):
+            if not hasattr(selobj, "Shape"):
                  SheetMetalTools.smWarnDialog("Selection is not a geometric object.")
                  return
 
-            new_obj, active_body = SheetMetalTools.smCreateNewObject(base_obj, "SheetMetal")
+            new_obj, active_body = SheetMetalTools.smCreateNewObject(selobj, "SolidToSheet")
             if new_obj is None:
                 return
 
-            SMFromSolid(new_obj)
+            SMFromSolid(new_obj, selobj, sel[0].SubElementNames)
             SMFromSolidViewProvider(new_obj.ViewObject)
-            
-            new_obj.baseObject = base_obj
-            
-            # Process pre-selected sub-elements
-            faces = []
-            edges = []
-            for sub in selection_item.SubElementNames:
-                if sub.startswith("Face"):
-                    faces.append(sub)
-                elif sub.startswith("Edge"):
-                    edges.append(sub)
-            
-            if faces:
-                new_obj.removeFaces = [(base_obj, faces)]
-            if edges:
-                new_obj.ripEdges = [(base_obj, edges)]
-
-            # We assume the user wants to work on the selected object.
-            
-            SheetMetalTools.smAddNewObject(base_obj, new_obj, active_body, SMFromSolidTaskPanel)
+            SheetMetalTools.smAddNewObject(selobj, new_obj, active_body, SMFromSolidTaskPanel)
 
         def IsActive(self):
             return len(Gui.Selection.getSelection()) == 1
