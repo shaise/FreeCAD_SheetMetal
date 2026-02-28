@@ -100,8 +100,9 @@ def smAnalizeCorner(edge1, edge2):
     return commonPoint, dir1, dir2
     
 
-def smMakeFilletBetweenEdges(e1, e2, r, commonPoint, dir1, dir2):
+def smMakeFilletBetweenEdges(e1, e2, r):
     # asuming edges are in a plane
+    commonPoint, dir1, dir2 = smAnalizeCorner(e1, e2)
     if commonPoint is None:
         return None
     normdir = dir1.cross(dir2)
@@ -124,6 +125,46 @@ def smMakeFilletBetweenEdges(e1, e2, r, commonPoint, dir1, dir2):
     except Exception as e:
         print("OCC Fillet api failed: " + str(e))
         return None
+
+def showVect(point, vect, name = "vect"):
+    edge = Part.makeLine(point, point + vect)
+    Part.show(edge, name)
+
+# non occ version. not working yet
+def smMakeFilletBetweenEdges1(edge1, edge2, r):
+    commonPoint, dir1, dir2 = smAnalizeCorner(edge1, edge2)
+    if commonPoint == None:
+        return None
+    
+    normdir = dir1.cross(dir2)
+    if normdir.Length < SheetMetalTools.smEpsilon:
+        print("Edges are parallel - cannot fillet directly")
+        return None
+    
+    showVect(commonPoint, dir1, "dir1")
+    showVect(commonPoint, dir2, "dir1")
+    showVect(commonPoint, normdir, "normal")
+    circleGeo = Part.Circle(commonPoint, normdir, r)
+    circleEdge = circleGeo.toShape()
+    Part.show(circleEdge)
+    # normdir.normalize()
+    filletApi = Part.ChFi2d.FilletAPI()
+    pln = Part.Plane(commonPoint, normdir)
+    filletApi.init(Part.Wire([edge1, edge2]), pln)
+    return filletApi
+    # if filletApi.perform(r):
+    #     return filletApi.Result()
+    # return None
+    # try:
+    #     if filletApi.Perform(r):
+    #         occArc = filletApi.Result(OccPnt, occE1, occE2)
+    #         return ([Part.__fromPythonOCC__(occE1),
+    #                   Part.__fromPythonOCC__(occE2),
+    #                   Part.__fromPythonOCC__(occArc)])
+    # except Exception as e:
+    #     print("OCC Fillet api failed: " + str(e))
+    #     return None
+
 
 
 def smProjectEdgeOnPlane(edge, vertex, normal):
@@ -176,40 +217,42 @@ def smGenerateEdgeTypeDatabase(shape, selEdgeNames, selFaceNames):
                 edgeTypeDB[edge.hashCode()] = "flange"
     return edgeTypeDB
 
-def smGetConcavityTypeBetweenFaces(face1, point, dir1, dir2):
-    """Get the concavity type of the bend between two faces.
-       We do it by checking the normal of the face at the point on the face 
-       closest to the average of the two directions.
-       If the normal is pointing in the same direction as the average direction, 
-       the bend is concave. Otherwise, it is convex.
-    """
+def smGetIntersectionPoint(curve, face):
+    points, _extra = curve.intersect(face.Surface)
+    for pt in points:
+        v = FreeCAD.Vector(pt.X, pt.Y, pt.Z)
+        if face.isInside(v, SheetMetalTools.smEpsilon, False):
+            return v
+    return None
 
-    p1 = point + dir1 * 0.01
-    p2 = point + dir2 * 0.01
-    
-    avgPoint = Part.Vertex(p1.add(p2) / 2)
-    dist, points, _extra = avgPoint.distToShape(face1)
-    result = "flat"
-    if dist > SheetMetalTools.smEpsilon:
-        projPoint1 = points[0][1]
-        projDir = avgPoint.Point.sub(projPoint1).normalize()
-        u, v = face1.Surface.parameter(projPoint1)
-        normal = face1.normalAt(u, v)
-        dot = projDir.dot(normal)
-        if dot > 0:
-            result = "concave"
-            l1 = Part.makeLine(point, point + dir1)
-            l2 = Part.makeLine(point, point + dir2)
-            l3 = Part.makeLine(point, normal)
-            Part.show(l1, "l1dir")
-            Part.show(l2, "l2dir")
-            Part.show(l3, "normal")
-            Part.show(face1, "face")
-            Part.show(avgPoint, "avgPoint")
-            Part.show(Part.Vertex(projPoint1), "projPoint1")
-        else:
-            result = "convex"
-    return result
+def smGetEdgeConcavityType(solid, edge):
+    """Get the concavity type of the bend between two faces.
+       We do it by taking 2 points on the faces near the edge, find the
+       average point between them and check if it is inside or outside the solid.
+       If it is inside, the bend is convex. Otherwise, it is concave.
+    """
+    connected_faces = solid.ancestorsOfType(edge, Part.Face)
+    face1, face2 = connected_faces[:2]  # Take the first two connected faces
+    try:
+        # Get properties at the start of the edge
+        u = (edge.FirstParameter + edge.LastParameter) / 2.0
+        pos = edge.valueAt(u)
+        tangent = edge.tangentAt(u)
+        
+        # Create the circular profile
+        # Part.Circle(Center, Normal, Radius)
+        circleGeo = Part.Circle(pos, tangent, 0.01)
+        pt1 = smGetIntersectionPoint(circleGeo, face1)
+        pt2 = smGetIntersectionPoint(circleGeo, face2)
+        avgPt = (pt1 + pt2) / 2
+        if solid.isInside(avgPt, SheetMetalTools.smEpsilon, False):
+            return "convex"
+        return "concave"
+        
+    except Exception as e:
+        FreeCAD.Console.PrintError(f"smCreateCircularFaceLoft failed: {e}\n")
+        return None
+
 
 def smCalculateBendEdgeInfo(edgeInfo, radius, thickness, invertDir):
     """
@@ -228,8 +271,7 @@ def smCalculateBendEdgeInfo(edgeInfo, radius, thickness, invertDir):
     projectedEdge1 = smProjectEdgeOnPlane(edgeFace1, vertex0, edgeDir)
     projectedEdge2 = smProjectEdgeOnPlane(edgeFace2, vertex0, edgeDir)
 
-    commonPoint, dir1, dir2 = smAnalizeCorner(projectedEdge1, projectedEdge2)
-    concavityType = smGetConcavityTypeBetweenFaces(edgeInfo.face1, commonPoint, dir1, dir2)
+    concavityType = smGetEdgeConcavityType(edgeInfo.solid, edge)
     edgeInfo.concavityType = concavityType
     # print("Concavity type: ", concavityType)
     if concavityType == "concave":
@@ -238,8 +280,7 @@ def smCalculateBendEdgeInfo(edgeInfo, radius, thickness, invertDir):
         radius = radius + thickness
 
     # create fillet between the two projected edges
-    filletEdges = smMakeFilletBetweenEdges(projectedEdge1, projectedEdge2, 
-                                            radius, commonPoint, dir1, dir2)
+    filletEdges = smMakeFilletBetweenEdges(projectedEdge1, projectedEdge2, radius)
     if filletEdges is None:
         return None
     # we need find the edge part from the vertex to the fillet start point
