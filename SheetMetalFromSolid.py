@@ -85,18 +85,20 @@ def smAnalizeCorner(edge1, edge2):
     elif p1.isEqual(p4, SheetMetalTools.smEpsilon):
         commonPoint = p1
         dir1 = edge1.tangentAt(edge1.FirstParameter)
-        dir2 = edge2.tangentAt(edge2.LastParameter)
+        dir2 = -edge2.tangentAt(edge2.LastParameter)
     elif p2.isEqual(p3, SheetMetalTools.smEpsilon):
         commonPoint = p2
-        dir1 = edge1.tangentAt(edge1.LastParameter)
+        dir1 = -edge1.tangentAt(edge1.LastParameter)
         dir2 = edge2.tangentAt(edge2.FirstParameter)
     elif p2.isEqual(p4, SheetMetalTools.smEpsilon):
         commonPoint = p2
-        dir1 = edge1.tangentAt(edge1.LastParameter)
-        dir2 = edge2.tangentAt(edge2.LastParameter)
+        dir1 = -edge1.tangentAt(edge1.LastParameter)
+        dir2 = -edge2.tangentAt(edge2.LastParameter)
     else:
-        print("Edges don't share a common vertex - cannot fillet directly")
+        print("Edges don't share a common vertex")
         return None, None, None
+    dir1.normalize()
+    dir2.normalize()
     return commonPoint, dir1, dir2
     
 
@@ -254,6 +256,23 @@ def smGetEdgeConcavityType(solid, edge):
         return None
 
 
+def smGetVertexConcavityType(face, vertex):
+    """Get the concavity type of a corner on a face.
+       We do it by taking 2 points on the edges connected to the vertex, find the
+       average point between them and check if it is inside or outside the face.
+       If it is inside, the corner is convex. Otherwise, it is concave.
+    """
+    edges = face.ancestorsOfType(vertex, Part.Edge)
+    edge1, edge2 = edges[:2]  # Take the first two connected edges
+    commonPoint, dir1, dir2 = smAnalizeCorner(edge1, edge2)
+    pt1 = commonPoint.add(dir1 * 0.01)
+    pt2 = commonPoint.add(dir2 * 0.01)
+    avgPt = (pt1 + pt2) / 2
+    if face.isInside(avgPt, SheetMetalTools.smEpsilon, False):
+        return "convex"
+    return "concave"
+
+
 def smCalculateBendEdgeInfo(edgeInfo, radius, thickness, invertDir):
     """
     Calculate the fillet between two faces connected by the given edge.
@@ -303,6 +322,17 @@ def smExtendEdgeBothSides(edge, distance):
     pt2 = pt2 + dir * distance
     return Part.makeLine(pt1, pt2)
 
+def smDisplayNormals(solid):
+    for face in solid.Faces:
+        u,v = face.Surface.parameter(face.Vertexes[0].Point)
+        p = face.valueAt(u, v)
+        n = face.normalAt(u,v)
+        Part.show(Part.makeLine(p, p + n * 5), "normal")
+
+def smDisplayEdgeDirection(edge):
+    p = edge.valueAt(edge.LastParameter)
+    dir = -edge.tangentAt(edge.LastParameter)
+    Part.show(Part.makeLine(p, p + dir * 5), "tangentDir")
 
 class smfsEdgeInfo:
     """Represent edge information in solid to sheet map."""
@@ -471,10 +501,16 @@ def smMakeSheetMetalFromSolid(shape, removeFaces, ripEdges, radius, thickness, t
     shell = solidInfo.makeShell()
     solid = None
     try:
-        solid = shell.makeOffsetShape(thickness, 0.001, fill=True)
+        for shellPart in shell.Shells:
+            s = shellPart.makeOffsetShape(thickness, 0.001, fill=True)
+            solid = s if solid is None else solid.fuse(s)
     except:
-        print("makeOffsetShape failed")
-        solid = shell
+        #smDisplayNormals(shell)
+        print("shell.makeOffsetShape failed, trying face by face")
+        Part.show(shell, "shell")
+        for face in shell.Faces:
+            s = face.makeOffsetShape(thickness, 0.001, fill=True)
+            solid = s if solid is None else solid.fuse(s)
     return solid
 
 class SMFromSolid:
