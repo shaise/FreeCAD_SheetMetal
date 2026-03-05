@@ -43,6 +43,11 @@ def smCreateCircularFaceLoft(edge, radius):
     and then sweep this face along the edge to create a solid.
     """
     try:
+        if type(edge) is Part.Edge:
+            pathWire = Part.Wire([edge])
+        else:
+            pathWire = edge
+            edge = pathWire.Edges[0]
         # Get properties at the start of the edge
         u = edge.FirstParameter
         pos = edge.valueAt(u)
@@ -54,8 +59,8 @@ def smCreateCircularFaceLoft(edge, radius):
         circleEdge = circleGeo.toShape()
         profileWire = Part.Wire([circleEdge])
         # Create the loft (pipe) along the edge using makePipeShell
-        pathWire = Part.Wire([edge])
-        solidPipe = pathWire.makePipeShell([profileWire], True, True) # isSolid=True, isFrenet=True
+        
+        solidPipe = pathWire.makePipeShell([profileWire], True, True, 1) # isSolid=True, isFrenet=True
         
         # makePipeShell returns a shape, if isSolid=True it should be a solid
         # but let's be safe and wrap it or check
@@ -127,6 +132,103 @@ def smMakeFilletBetweenEdges(e1, e2, r):
     except Exception as e:
         print("OCC Fillet api failed: " + str(e))
         return None
+
+def smFilletFaceCorner(face, vertex, radius):
+    """
+    Fillet a corner of a face at the given vertex with the given radius.
+    Returns a new face with the corner replaced by a fillet arc,
+    or None if the fillet failed.
+    """
+    # Step 1: find the two edges meeting at this vertex on the face
+    edges = face.ancestorsOfType(vertex, Part.Edge)
+    if len(edges) < 2:
+        print("Vertex is not a corner (fewer than 2 edges)")
+        return None
+    edge1, edge2 = edges[0], edges[1]
+
+    # Step 2: compute fillet — returns [trimmed_e1, trimmed_e2, arc]
+    result = smMakeFilletBetweenEdges(edge1, edge2, radius)
+    if result is None:
+        print("Fillet failed")
+        return None
+    trimmedE1, trimmedE2, arc = result
+
+    # Step 3: rebuild the face wire replacing the two original edges
+    newEdges = []
+    for e in face.Edges:
+        if e.isSame(edge1):
+            newEdges.append(trimmedE1)
+        elif e.isSame(edge2):
+            newEdges.append(trimmedE2)
+        else:
+            newEdges.append(e)
+    newEdges.append(arc)   # insert the fillet arc
+
+    try:
+        wire = Part.Wire(Part.__sortEdges__(newEdges))
+        return Part.Face(wire)
+    except Exception as ex:
+        print(f"Failed to rebuild face: {ex}")
+        return None
+
+def smEdgeBelongsToFace(edge, face):
+    return any(e.isSame(edge) for e in face.Edges)
+
+def smEdgesAreEqual(e1, e2, tol=SheetMetalTools.smEpsilon):
+    """
+    Check if two, separately created edges are equal
+    """
+    p1a = e1.valueAt(e1.FirstParameter)
+    p1b = e1.valueAt(e1.LastParameter)
+    p2a = e2.valueAt(e2.FirstParameter)
+    p2b = e2.valueAt(e2.LastParameter)
+    return (p1a.isEqual(p2a, tol) and p1b.isEqual(p2b, tol)) or \
+           (p1a.isEqual(p2b, tol) and p1b.isEqual(p2a, tol))
+
+
+def smGetListOfAttachedEdges(shape, face):
+    '''
+    Get list of edges attached to the face but not part of the face
+    '''
+    attEdges = []
+    for vertex in face.Vertexes:
+        edges = shape.ancestorsOfType(vertex, Part.Edge)
+        for edge in edges:
+            if not smEdgeBelongsToFace(edge, face):
+                attEdges.append(edge)
+    return attEdges
+
+def smFilletFaceCornersBasedOnAttachedEdges(shape, face, edgeInfoDict):
+    """
+    Fillet all corners of a face based on attached edges
+    """
+    attEdges = smGetListOfAttachedEdges(shape, face)
+    filletEdgesConcave = []
+    filletEdgesConvex = []
+    for edge in attEdges:
+        edgeInfo = edgeInfoDict[edge.hashCode()]
+        if edgeInfo.type != "bend":
+            continue
+        if edgeInfo.concavityType == "concave":
+            filletEdgesConcave.append(edge)
+            radConcave = edgeInfo.bendRadius
+        elif edgeInfo.concavityType == "convex":
+            filletEdgesConvex.append(edge)
+            radConvex = edgeInfo.bendRadius
+    isFaceModified = False
+    if len(filletEdgesConcave) > 0:
+        shape = shape.makeFillet(radConcave, filletEdgesConcave)
+        isFaceModified = True
+    if len(filletEdgesConvex) > 0:
+        shape = shape.makeFillet(radConvex, filletEdgesConvex)
+        isFaceModified = True
+    if isFaceModified:
+        for f in shape.Faces:
+            if face.isCoplanar(f):
+                face = f
+                break
+    return face
+        
 
 def showVect(point, vect, name = "vect"):
     edge = Part.makeLine(point, point + vect)
@@ -219,19 +321,22 @@ def smGenerateEdgeTypeDatabase(shape, selEdgeNames, selFaceNames):
                 edgeTypeDB[edge.hashCode()] = "flange"
     return edgeTypeDB
 
-def smGetIntersectionPoint(curve, face):
-    points, _extra = curve.intersect(face.Surface)
-    for pt in points:
-        v = FreeCAD.Vector(pt.X, pt.Y, pt.Z)
-        if face.isInside(v, SheetMetalTools.smEpsilon, False):
-            return v
-    return None
+def smGetFaceTangentAtPos(face, pos, edgeTangent):
+    u, v = face.Surface.parameter(pos)
+    normal = face.normalAt(u, v).normalize()
+    edgeTangent = edgeTangent.normalize()
+    tangent = edgeTangent.cross(normal).normalize()
+    testPoint = pos + tangent * 0.01
+    if face.isInside(testPoint, SheetMetalTools.smEpsilon, False):
+        return tangent
+    else:
+        return -tangent
 
 def smGetEdgeConcavityType(solid, edge):
     """Get the concavity type of the bend between two faces.
-       We do it by taking 2 points on the faces near the edge, find the
-       average point between them and check if it is inside or outside the solid.
-       If it is inside, the bend is convex. Otherwise, it is concave.
+       We do it by getting the tangents of the two faces perpendicular to the 
+       edge center, take two points on each tangent at small distance from the 
+       center, and check if the average point is inside or outside the solid.
     """
     connected_faces = solid.ancestorsOfType(edge, Part.Face)
     face1, face2 = connected_faces[:2]  # Take the first two connected faces
@@ -239,14 +344,14 @@ def smGetEdgeConcavityType(solid, edge):
         # Get properties at the start of the edge
         u = (edge.FirstParameter + edge.LastParameter) / 2.0
         pos = edge.valueAt(u)
-        tangent = edge.tangentAt(u)
-        
-        # Create the circular profile
-        # Part.Circle(Center, Normal, Radius)
-        circleGeo = Part.Circle(pos, tangent, 0.01)
-        pt1 = smGetIntersectionPoint(circleGeo, face1)
-        pt2 = smGetIntersectionPoint(circleGeo, face2)
+        tangent = edge.tangentAt(u).normalize()
+        tangent1 = smGetFaceTangentAtPos(face1, pos, tangent)
+        tangent2 = smGetFaceTangentAtPos(face2, pos, tangent)
+        pt1 = pos + tangent1 * 0.01
+        pt2 = pos + tangent2 * 0.01
         avgPt = (pt1 + pt2) / 2
+        if (avgPt.isEqual(pos, SheetMetalTools.smEpsilon)):
+            return "flat"
         if solid.isInside(avgPt, SheetMetalTools.smEpsilon, False):
             return "convex"
         return "concave"
@@ -268,6 +373,8 @@ def smGetVertexConcavityType(face, vertex):
     pt1 = commonPoint.add(dir1 * 0.01)
     pt2 = commonPoint.add(dir2 * 0.01)
     avgPt = (pt1 + pt2) / 2
+    if (avgPt.isEqual(commonPoint, SheetMetalTools.smEpsilon)):
+        return "flat"
     if face.isInside(avgPt, SheetMetalTools.smEpsilon, False):
         return "convex"
     return "concave"
@@ -297,6 +404,7 @@ def smCalculateBendEdgeInfo(edgeInfo, radius, thickness, invertDir):
         invertDir = not invertDir
     if invertDir:
         radius = radius + thickness
+    edgeInfo.bendRadius = radius
 
     # create fillet between the two projected edges
     filletEdges = smMakeFilletBetweenEdges(projectedEdge1, projectedEdge2, radius)
@@ -377,9 +485,17 @@ class smfsFaceInfo:
         self.solid = solid
         self.isRemoved = isRemoved
 
+    def adjustFacesShape(self, edgeInfoDict):
+        self.modifiedFace = smFilletFaceCornersBasedOnAttachedEdges(
+            self.solid, self.face, edgeInfoDict)
+
+    def offsetEdge(self, amount):
+        if self.isRemoved:
+            return
+        self.modifiedFace = self.modifiedFace.makeOffset(-amount)
+
     def cutEdge(self, edgePipe):
         if self.isRemoved:
-            print("Face is removed")
             return
         cutFace = self.modifiedFace.cut(edgePipe)
         self.modifiedFace = cutFace.Faces[0]
@@ -431,15 +547,22 @@ class smfsSolidInfo:
             if edgeInfo.type == "bend":
                 edgeInfo.analizeBend(radius, thickness, invertDir)
 
+    def adjustFacesShape(self):
+        for faceInfo in self.faceInfoDict.values():
+            faceInfo.adjustFacesShape(self.edgeInfoDict)
+
     def ripSeams(self, radius):
-        for edgeInfo in self.edgeInfoDict.values():
-            if edgeInfo.type == "bend":
-                continue
-            edgePipe = smCreateCircularFaceLoft(edgeInfo.edge, radius)
-            if edgePipe is None:
-                continue
-            edgeInfo.faceInf1.cutEdge(edgePipe)
-            edgeInfo.faceInf2.cutEdge(edgePipe)
+        for faceInfo in self.faceInfoDict.values():
+            try:
+                faceInfo.offsetEdge(radius)
+            except Exception as e:
+                # if offset fails (face is not flat), try to cut the face 
+                # with a pipe
+                print("Offset failed, trying to cut face with a pipe")
+                pipe = smCreateCircularFaceLoft(faceInfo.face.OuterWire, radius)
+                if pipe is None:
+                    continue
+                faceInfo.cutEdge(pipe)
 
     def cutBend(self, edgeInfo, faceInfo):
         arc = edgeInfo.filletArc
@@ -492,6 +615,7 @@ class smfsSolidInfo:
 def smMakeSheetMetalFromSolid(shape, removeFaces, ripEdges, radius, thickness, tolerance, invert):
     solidInfo = smfsSolidInfo(shape, ripEdges, removeFaces)
     solidInfo.analizeBends(radius, thickness, invert)
+    solidInfo.adjustFacesShape()
     ripRadius = tolerance
     if invert:
         ripRadius += thickness
