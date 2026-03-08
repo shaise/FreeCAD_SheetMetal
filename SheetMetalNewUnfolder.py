@@ -1089,6 +1089,8 @@ def unroll_cylinder(
         ]
     half_bend_width = Vector((vmax - vmin) / 2, 0)
     bend_line = Part.makeLine(mirror_base_pos + half_bend_width, mirror_base_pos - half_bend_width)
+    intScale = 100 if bend_direction == BendDirection.UP else -100
+    bend_line.Tag = int(degrees(bend_angle) * intScale)  # Store the bend angle in the tag for use during sketch extraction.
     return flattened_edges, bend_line
 
 
@@ -1195,7 +1197,6 @@ def compute_unbend_transform(
     overall_transform.transform(Vector(), allowance_transform)
     overall_transform.transform(Vector(), alignment_transform)
     return alignment_transform, overall_transform, uvref
-
 
 def unfold(
     shape: Part.Shape, root_face_index: int, bac: BendAllowanceCalculator
@@ -1315,9 +1316,22 @@ def unfold(
     return list_of_sketch_lines, list_of_bend_lines
 
 
+class BendInfo:
+    def __init__(self, bend_line: Part.Edge, bend_angle: float):
+        self.bend_line = bend_line
+        self.bend_angle = bend_angle
+
+    def getLabelLocation(self, sketch_normal: Vector, distance: float) -> tuple[Vector, Vector]:
+        center_parameter = 0.5 * (self.bend_line.FirstParameter + self.bend_line.LastParameter)
+        center = self.bend_line.valueAt(center_parameter)
+        label_direction = self.bend_line.tangentAt(center_parameter)
+        perp_direction = sketch_normal.cross(label_direction).normalize()
+        label_position = center + perp_direction * distance
+        return label_position, label_direction
+
 def getUnfold(
     bac: BendAllowanceCalculator, solid: Part.Feature, facename: str
-) -> tuple[Part.Face, Part.Shape, Part.Compound, Vector]:
+) -> tuple[Part.Face, Part.Shape, Part.Compound, Vector, list[BendInfo]]:
     object_placement = solid.Placement.toMatrix()
     shp = solid.Shape.transformed(object_placement.inverse())
     if hasattr(shp, "findSubShape"):
@@ -1338,6 +1352,7 @@ def getUnfold(
     thickness = EstimateThickness.using_best_method(shp, root_face_index)
     sketch_lines = [e.transformed(sketch_align_transform) for e in sketch_lines]
     bend_lines = [e.transformed(sketch_align_transform) for e in bend_lines]
+    bend_infodata = [BendInfo(e, e.Tag / 100.0) for e in bend_lines]
     sketch_wirelist = Edge2DCleanup.clean_and_structure_geometry(sketch_lines)
     root_normal = shp.Faces[root_face_index].normalAt(0, 0)
     face = Part.makeFace(sketch_wirelist, "Part::FaceMakerBullseye")
@@ -1349,7 +1364,8 @@ def getUnfold(
     trimmed_bend_lines = bend_lines_compound.common(
         unbent_solid.translated(Vector(0.0, 0.0, 0.5 * thickness))
     ).transformed(sketch_align_transform.inverse())
-    return shp.Faces[root_face_index], inplace_unbend, trimmed_bend_lines, root_normal
+   
+    return shp.Faces[root_face_index], inplace_unbend, trimmed_bend_lines, root_normal, bend_infodata
 
 
 def getUnfoldSketches(
@@ -1363,6 +1379,7 @@ def getUnfoldSketches(
     sketch_color: str = "#000080",
     bend_sketch_color: str = "#c00000",
     internal_sketch_color: str = "#ff5733",
+    bend_infodata: list[BendInfo] = None,
 ) -> list[Part.Feature]:
     sketch_profile, inner_wires, hole_wires = SketchExtraction.extract_manually(
         unfolded_shape, root_normal
@@ -1385,6 +1402,9 @@ def getUnfoldSketches(
     sketch_doc_obj = SketchExtraction.edges_to_sketch_object(
         sketch_profile.Edges, f"{obj_label}_Sketch", existing_sketches, sketch_color
     )
+    for bend_info in bend_infodata or []:
+        label_pos, label_dir = bend_info.getLabelLocation(Vector(0, 0, 1), distance=5)
+        print(f"Label position for bend line at {label_pos} with direction {label_dir}")
     sketch_objects_list = [sketch_doc_obj]
     # Bend lines are sometimes not present.
     if bend_lines and bend_lines.Edges:

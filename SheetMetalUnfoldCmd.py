@@ -226,7 +226,7 @@ class SMUnfold:
             if sheet is None:
                 sheet = FreeCAD.ActiveDocument.getObjectsByLabel(obj.MaterialSheet)[0]
             bac = BendAllowanceCalculator.from_spreadsheet(sheet)
-        sel_face, unfolded_shape, bend_lines, root_normal = SheetMetalNewUnfolder.getUnfold(
+        sel_face, unfolded_shape, bend_lines, root_normal, bend_infodata = SheetMetalNewUnfolder.getUnfold(
             bac, baseObject, baseFace
         )
 
@@ -243,6 +243,7 @@ class SMUnfold:
                 obj.Proxy.SketchColor,
                 obj.Proxy.InternalColor,
                 obj.Proxy.BendLineColor,
+                bend_infodata=bend_infodata,
             )
         return unfolded_shape, sketches
 
