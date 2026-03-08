@@ -78,6 +78,7 @@ class SMWorkbench(Workbench):
             "SheetMetal_NewSketch",
             "SheetMetal_AddBase",
             "SheetMetal_AddWall",
+            "SheetMetal_AddHem",
             "SheetMetal_Extrude",
             "SheetMetal_ExtendBySketch",
             "SheetMetal_AddFoldWall",
