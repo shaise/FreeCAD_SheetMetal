@@ -229,8 +229,10 @@ class TangentFaces:
                 )
                 < eps
             )
+            # alternative condition: 2 coaxial cylinders with the same radius
             or (
                 abs(c1.Center.distanceToLine(c2.Center, c2.Axis) < eps)
+                and SheetMetalTools.smIsParallel(c1.Axis, c2.Axis)
                 and (abs(c1.Radius - c2.Radius) < eps)
             )
         )
@@ -376,35 +378,58 @@ class TangentFaces:
         )
 
     @staticmethod
-    def compare_plane_extrusion(p: Part.Plane, ex: Part.SurfaceOfExtrusion) -> bool:
-        return False  # TODO
+    def compare_surfaces_via_sample(s1, s2, shared_edge: Part.Edge) -> bool:
+        # compare surface tangency by sampling at the centerpoint of a linear edge
+        if shared_edge.Curve.TypeId != "Part::GeomLine":
+            return False
+        test_point = shared_edge.CenterOfMass
+        value_1 = s1.projectPoint(test_point, "LowerDistanceParameters")
+        value_2 = s2.projectPoint(test_point, "LowerDistanceParameters")
+        normal_1 = s1.normal(*value_1)
+        normal_2 = s2.normal(*value_2)
+        return SheetMetalTools.smIsParallel(normal_1, normal_2)
+
+    @staticmethod
+    def compare_plane_extrusion(
+        p: Part.Plane, ex: Part.SurfaceOfExtrusion, shared_edge: Part.Edge
+    ) -> bool:
+        return TangentFaces.compare_surfaces_via_sample(p, ex, shared_edge)
 
     @staticmethod
     def compare_cylinder_extrusion(
-        c: Part.Cylinder, ex: Part.SurfaceOfExtrusion
+        c: Part.Cylinder, ex: Part.SurfaceOfExtrusion, shared_edge: Part.Edge
     ) -> bool:
-        return False  # TODO
+        return TangentFaces.compare_surfaces_via_sample(c, ex, shared_edge)
 
     @staticmethod
     def compare_torus_extrusion(t: Part.Toroid, ex: Part.SurfaceOfExtrusion) -> bool:
-        return False  # TODO
+        # a toroid and surface of revolution are only ever tangent at individial points, not across a line.
+        # Threefore, just return false
+        return False
 
     @staticmethod
     def compare_sphere_extrusion(s: Part.Sphere, ex: Part.SurfaceOfExtrusion) -> bool:
-        return False  # TODO
+        # these 2 surface types are never tangent across a line
+        return False
 
     @staticmethod
     def compare_extrusion_extrusion(
-        ex1: Part.SurfaceOfExtrusion, ex2: Part.SurfaceOfExtrusion
+        ex1: Part.SurfaceOfExtrusion,
+        ex2: Part.SurfaceOfExtrusion,
+        shared_edge: Part.Edge,
     ) -> bool:
-        return False  # TODO
+        return TangentFaces.compare_surfaces_via_sample(ex1, ex2, shared_edge)
 
     @staticmethod
-    def compare_extrusion_cone(ex: Part.SurfaceOfExtrusion, cn: Part.Cone) -> bool:
-        return False  # TODO
+    def compare_extrusion_cone(
+        ex: Part.SurfaceOfExtrusion, cn: Part.Cone, shared_edge: Part.Edge
+    ) -> bool:
+        return TangentFaces.compare_surfaces_via_sample(ex, cn, shared_edge)
 
     @staticmethod
-    def compare(face1: Part.Face, face2: Part.Face) -> bool:
+    def compare(
+        face1: Part.Face, face2: Part.Face, shared_edge: Part.Edge
+    ) -> tuple[bool, bool]:
         # determine tangency of two faces, checking as many surface geometry
         # combinations as possible
         s1 = face1.Surface
@@ -439,7 +464,7 @@ class TangentFaces:
             elif s2.TypeId == "Part::GeomSphere":
                 res = cls.compare_plane_sphere(s1, s2)
             elif s2.TypeId == "Part::GeomSurfaceOfExtrusion":
-                res = cls.compare_plane_extrusion(s1, s2)
+                res = cls.compare_plane_extrusion(s1, s2, shared_edge)
             elif s2.TypeId == "Part::GeomCone":
                 res = cls.compare_plane_cone(s1, s2)
         elif s1.TypeId == "Part::GeomCylinder":
@@ -451,7 +476,7 @@ class TangentFaces:
             elif s2.TypeId == "Part::GeomSphere":
                 res = cls.compare_cylinder_sphere(s1, s2)
             elif s2.TypeId == "Part::GeomSurfaceOfExtrusion":
-                res = cls.compare_cylinder_extrusion(s1, s2)
+                res = cls.compare_cylinder_extrusion(s1, s2, shared_edge)
             elif s2.TypeId == "Part::GeomCone":
                 res = cls.compare_cylinder_cone(s1, s2)
         elif s1.TypeId == "Part::GeomToroid":
@@ -475,9 +500,9 @@ class TangentFaces:
         elif s1.TypeId == "Part::GeomSurfaceOfExtrusion":
             # Extrusion.
             if s2.TypeId == "Part::GeomSurfaceOfExtrusion":
-                res = cls.compare_extrusion_extrusion(s1, s2)
+                res = cls.compare_extrusion_extrusion(s1, s2, shared_edge)
             elif s2.TypeId == "Part::GeomCone":
-                res = cls.compare_extrusion_cone(s1, s2)
+                res = cls.compare_extrusion_cone(s1, s2, shared_edge)
         elif s1.TypeId == "Part::GeomCone":
             # Cone.
             if s2.TypeId == "Part::GeomCone":
@@ -1077,7 +1102,10 @@ def build_graph_of_tangent_faces(shp: Part.Shape, root: int) -> nx.Graph:
     saw_warning = False
     for edge_index, faces in filter(lambda c: len(c[1]) == 2, candidates):
         face_a, face_b = faces
-        tangent_result, possible_geom_warning = TangentFaces.compare(face_a, face_b)
+        shared_edge = shp.Edges[edge_index]
+        tangent_result, possible_geom_warning = TangentFaces.compare(
+            face_a, face_b, shared_edge
+        )
         saw_warning |= possible_geom_warning
         if tangent_result:
             graph_of_shape_faces.add_edge(
