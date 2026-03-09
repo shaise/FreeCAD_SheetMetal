@@ -35,6 +35,7 @@ from FreeCAD import Matrix, Placement, Rotation, Vector
 from TechDraw import projectEx as project_shape_to_plane
 
 import SheetMetalTools
+import SheetMetalText
 
 try:
     import networkx as nx
@@ -1326,8 +1327,23 @@ class BendInfo:
         center = self.bend_line.valueAt(center_parameter)
         label_direction = self.bend_line.tangentAt(center_parameter)
         perp_direction = sketch_normal.cross(label_direction).normalize()
+        if perp_direction.y < 0:
+            perp_direction =  perp_direction.negative()
+            label_direction = label_direction.negative()
         label_position = center + perp_direction * distance
+
         return label_position, label_direction
+    
+def getBendLabels(bend_infodata: list[BendInfo], bend_label_size: float = 2.0) -> Part.Compound:
+    if not bend_infodata:
+        return Part.makeCompound([])
+    label_edges = []    
+    for bend_info in bend_infodata:
+        label_text = f"{bend_info.bend_angle:.2f}".rstrip("0").rstrip(".") + "^"
+        label_pos, label_dir = bend_info.getLabelLocation(Vector(0, 0, 1), distance=bend_label_size / 3.0)
+        label_comp = SheetMetalText.smtGenerateText(label_text, label_pos, bend_label_size, label_dir)
+        label_edges.extend(label_comp.Edges)
+    return Part.makeCompound(label_edges)
 
 def getUnfold(
     bac: BendAllowanceCalculator, solid: Part.Feature, facename: str
@@ -1379,7 +1395,9 @@ def getUnfoldSketches(
     sketch_color: str = "#000080",
     bend_sketch_color: str = "#c00000",
     internal_sketch_color: str = "#ff5733",
-    bend_infodata: list[BendInfo] = None,
+    bend_infodata: list[BendInfo] = [],
+    bend_label_color: str = "#33c033",
+    bend_label_size: float = 2.0,
 ) -> list[Part.Feature]:
     sketch_profile, inner_wires, hole_wires = SketchExtraction.extract_manually(
         unfolded_shape, root_normal
@@ -1387,12 +1405,15 @@ def getUnfoldSketches(
     # Create transform to move the sketch profiles nicely to the origin.
     sketch_align_transform = SketchExtraction.move_to_origin(sketch_profile, selected_face)
 
+    bend_labels = getBendLabels(bend_infodata, bend_label_size)
+
     if obj_label is None:
         obj_label = "Unfolded"
 
     if not split_sketches:
+        bend_labels_transformed = bend_labels.transformed(sketch_align_transform.inverse()) 
         sketch_profile = Part.makeCompound(
-            [sketch_profile, *inner_wires, *hole_wires, bend_lines]
+            [sketch_profile, *inner_wires, *hole_wires, bend_lines, bend_labels_transformed]
         )
         inner_wires = None
         hole_wires = None
@@ -1436,4 +1457,13 @@ def getUnfoldSketches(
             internal_sketch_color,
         )
         sketch_objects_list.append(hole_lines_doc_obj)
+    if bend_labels and bend_labels.Edges:
+        bend_labels_doc_obj = SketchExtraction.edges_to_sketch_object(
+            bend_labels.Edges,
+            f"{obj_label}_Sketch_Bend_Labels",
+            existing_sketches,
+            bend_label_color,
+        )
+        bend_labels_doc_obj.ViewObject.PointSize = 0
+        sketch_objects_list.append(bend_labels_doc_obj)
     return sketch_objects_list

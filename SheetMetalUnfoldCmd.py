@@ -79,12 +79,14 @@ smUnfoldNonSavedDefaultVars = [
     "SketchColor",
     "InternalColor",
     "BendLineColor",
+    "BendLabelColor",
     "ExportType",
 ]
 
 GENSKETCHCOLOR = "#000080"
 OUTLINESKETCHCOLOR = "#c00000"
 BENDLINESKETCHCOLOR = "#ff5733"
+BENDLABELCOLOR = "#33ff33"
 KFACTOR = 0.40
 
 
@@ -132,6 +134,7 @@ class SMUnfold:
         self.SketchColor = GENSKETCHCOLOR
         self.InternalColor = OUTLINESKETCHCOLOR
         self.BendLineColor = BENDLINESKETCHCOLOR
+        self.BendLabelColor = BENDLABELCOLOR
         self.UnfoldTransparency = 0
         self.ExportType = "dxf"
         self.visibleSketches = []
@@ -185,6 +188,15 @@ class SMUnfold:
             "Hidden",
             attribs=8,  # Output only - no recompute if changed
         )
+        SheetMetalTools.smAddBoolProperty(obj,
+            "ShowBendAngles",
+            translate("SheetMetal", "Show bend angles on the unfold sketch"),
+            True,
+        )
+        SheetMetalTools.smAddLengthProperty(obj,
+                "FontSize",
+                translate("App::Property", "Font size for bend angle labels"),
+                2.0)
         # SheetMetalTools.smAddProperty(
         #     obj,
         #     "App::PropertyBool",
@@ -232,6 +244,8 @@ class SMUnfold:
 
         sketches = []
         if obj.GenerateSketch and unfolded_shape is not None:
+            if not obj.ShowBendAngles:
+                bend_infodata = []
             sketches = SheetMetalNewUnfolder.getUnfoldSketches(
                 obj.Label,
                 sel_face,
@@ -244,6 +258,8 @@ class SMUnfold:
                 obj.Proxy.InternalColor,
                 obj.Proxy.BendLineColor,
                 bend_infodata=bend_infodata,
+                bend_label_color=obj.Proxy.BendLabelColor,
+                bend_label_size=obj.FontSize,
             )
         return unfolded_shape, sketches
 
@@ -420,21 +436,28 @@ if SheetMetalTools.isGuiLoaded():
             self.SketchColor = GENSKETCHCOLOR
             self.InternalColor = OUTLINESKETCHCOLOR
             self.BendLineColor = BENDLINESKETCHCOLOR
+            self.BendLabelColor = BENDLABELCOLOR
             self.populateMdsList()
             SheetMetalTools.taskConnectSelectionSingle(self.form.pushFace, self.form.txtFace, obj,
                                                        "baseObject", ["Face"])
             SheetMetalTools.taskConnectColor(obj.Proxy, self.form.genColor, "SketchColor")
             SheetMetalTools.taskConnectColor(obj.Proxy, self.form.bendColor, "BendLineColor")
             SheetMetalTools.taskConnectColor(obj.Proxy, self.form.internalColor, "InternalColor")
+            SheetMetalTools.taskConnectColor(obj.Proxy, self.form.bendLabelColor, "BendLabelColor")
             SheetMetalTools.taskConnectCheck(obj, self.form.chkSketch, "GenerateSketch",
                                              self.chkSketchChange)
             SheetMetalTools.taskConnectCheck(obj, self.form.chkSeparate, "SeparateSketchLayers",
                                              self.chkSketchChange)
+            SheetMetalTools.taskConnectCheck(obj, self.form.chkAngleLabels, "ShowBendAngles",
+                                             self.chkSketchChange)
+            SheetMetalTools.taskConnectCheck(obj, self.form.chkManualUpdate, "ManualRecompute",
+                                             self.chkManualChanged)
             SheetMetalTools.taskConnectCheck(obj, self.form.chkManualUpdate, "ManualRecompute",
                                              self.chkManualChanged)
             SheetMetalTools.taskConnectSpin(obj, self.form.floatKFactor, "KFactor")
             SheetMetalTools.taskConnectSpin(obj.Proxy, self.form.transSpin, "UnfoldTransparency",
                                             bindFunction=False)
+            SheetMetalTools.taskConnectSpin(obj, self.form.fontSize, "FontSize")
             self.form.pushUnfold.clicked.connect(self.unfoldPressed)
             self.form.pushExport.clicked.connect(self.doExport)
             self.form.availableMds.currentIndexChanged.connect(self.availableMdsChacnge)
