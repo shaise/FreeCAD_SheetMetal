@@ -73,17 +73,17 @@
             </widget>
            </item>
            <item>
-            <widget class="Gui::DoubleSpinBox" name="floatKFactor" native="true">
+            <widget class="Gui::DoubleSpinBox" name="floatKFactor">
              <property name="sizePolicy">
               <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                <horstretch>0</horstretch>
                <verstretch>0</verstretch>
               </sizepolicy>
              </property>
-             <property name="maximum" stdset="0">
+             <property name="maximum">
               <double>1.000000000000000</double>
              </property>
-             <property name="singleStep" stdset="0">
+             <property name="singleStep">
               <double>0.010000000000000</double>
              </property>
             </widget>
@@ -175,6 +175,37 @@
        </layout>
       </item>
       <item>
+       <widget class="QCheckBox" name="chkAngleLabels">
+        <property name="text">
+         <string>Show bend angles labels</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_7">
+        <property name="sizeConstraint">
+         <enum>QLayout::SetDefaultConstraint</enum>
+        </property>
+        <item>
+         <widget class="QLabel" name="label_7">
+          <property name="text">
+           <string>Label font size</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="Gui::QuantitySpinBox" name="fontSize">
+          <property name="minimum">
+           <double>0.100000000000000</double>
+          </property>
+          <property name="unit" stdset="0">
+           <string notr="true">mm</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
        <widget class="QCheckBox" name="chkSeparate">
         <property name="text">
          <string>Separate projection layers</string>
@@ -232,6 +263,33 @@
         </item>
         <item>
          <widget class="Gui::ColorButton" name="internalColor"/>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_12">
+        <item>
+         <widget class="QLabel" name="label_8">
+          <property name="text">
+           <string>Bend labels color</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer_5">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="Gui::ColorButton" name="bendLabelColor"/>
         </item>
        </layout>
       </item>
@@ -432,6 +490,11 @@
    <class>Gui::ColorButton</class>
    <extends>QPushButton</extends>
    <header>Gui/Widgets.h</header>
+  </customwidget>
+  <customwidget>
+   <class>Gui::QuantitySpinBox</class>
+   <extends>QDoubleSpinBox</extends>
+   <header>Gui/QuantitySpinBox.h</header>
   </customwidget>
  </customwidgets>
  <resources/>
