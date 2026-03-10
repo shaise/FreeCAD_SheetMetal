@@ -251,7 +251,7 @@ class SMExtrudeWall:
         SheetMetalTools.smAddProperty(obj, "App::PropertyLink", "Sketch", 
                 translate("App::Property", "Wall Sketch"), selSketch, "ParametersExt")
         SheetMetalTools.smAddBoolProperty(obj, "UseSubtraction",
-                translate("App::Property", "Use Subtraction"), False, "ParametersExt")
+                translate("App::Property", "Use Subtraction"), True, "ParametersExt")
         SheetMetalTools.smAddDistanceProperty(obj, "Offset",
                 translate("App::Property", "Offset for subtraction"), 0.2, "ParametersExt")
         SheetMetalTools.smAddBoolProperty(obj, "Refine",
