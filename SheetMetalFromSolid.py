@@ -622,7 +622,9 @@ class smfsSolidInfo:
         shellFaces.extend(self.bendFaces)
         return Part.makeShell(shellFaces)
 
-def smMakeSheetMetalFromSolid(shape, removeFaces, ripEdges, radius, thickness, tolerance, invert):
+def smMakeSheetMetalFromSolid(shape, selItems, radius, thickness, tolerance, invert):
+    removeFaces = [sub for sub in selItems if sub.startswith("Face")]
+    ripEdges = [sub for sub in selItems if sub.startswith("Edge")]
     solidInfo = smfsSolidInfo(shape, ripEdges, removeFaces)
     solidInfo.analizeBends(radius, thickness, invert)
     solidInfo.groupFaces()
@@ -650,18 +652,11 @@ def smMakeSheetMetalFromSolid(shape, removeFaces, ripEdges, radius, thickness, t
 
 class SMFromSolid:
     def __init__(self, obj, selobj, sel_items):
+        print("Creating SMFromSolid with sel_items: ", sel_items)
         obj.addProperty("App::PropertyLinkSub", "baseObject", "Parameters", 
-                        "Base object").baseObject = (selobj, [])
-        faces = []
-        edges = []
-        for sub in sel_items:
-            if sub.startswith("Face"):
-                faces.append(sub)
-            elif sub.startswith("Edge"):
-                edges.append(sub)
-        
-        obj.addProperty("App::PropertyLinkSub", "removeFaces", "Parameters", "Faces to remove").removeFaces = (selobj, faces)
-        obj.addProperty("App::PropertyLinkSub", "ripEdges", "Parameters", "Edges to rip (seams)").ripEdges = (selobj, edges)
+                        "Base object").baseObject = (selobj, sel_items)
+        # obj.addProperty("App::PropertyLinkSub", "removeFaces", "Parameters", "Faces to remove").removeFaces = (selobj, faces)
+        # obj.addProperty("App::PropertyLinkSub", "ripEdges", "Parameters", "Edges to rip (seams)").ripEdges = (selobj, edges)
         
         SheetMetalTools.smAddLengthProperty(obj, "Radius", "Bend Radius", 1.0)
         SheetMetalTools.smAddLengthProperty(obj, "Thickness", "Wall Thickness", 1.0)
@@ -677,7 +672,7 @@ class SMFromSolid:
         if not base_shape.Faces:
             return
 
-        fp.Shape = smMakeSheetMetalFromSolid(base_shape, fp.removeFaces[1], fp.ripEdges[1], fp.Radius.Value, fp.Thickness.Value, 0.1, False)
+        fp.Shape = smMakeSheetMetalFromSolid(base_shape, fp.baseObject[1], fp.Radius.Value, fp.Thickness.Value, 0.1, False)
 
     def __getstate__(self):
         return None
@@ -713,7 +708,7 @@ if SheetMetalTools.isGuiLoaded():
             # Selection for Remove Faces
             self.selFaces = SheetMetalTools.taskConnectSelection(
                 self.form.btnRemoveFaces, self.form.listRemoveFaces,
-                obj, ["Face"], self.form.btnClearFaces, "removeFaces", hideObject=False
+                obj, ["Face"], self.form.btnClearFaces, "baseObject"
             )
             # Constrain selection to the base object
             self.selFaces.ConstrainToObject = obj.baseObject[0]
@@ -721,7 +716,7 @@ if SheetMetalTools.isGuiLoaded():
             # Selection for Rip Edges
             self.selEdges = SheetMetalTools.taskConnectSelection(
                 self.form.btnRipEdges, self.form.listRipEdges,
-                obj, ["Edge"], self.form.btnClearEdges, "ripEdges", hideObject=False
+                obj, ["Edge"], self.form.btnClearEdges, "baseObject"
             )
             self.selEdges.ConstrainToObject = obj.baseObject[0]
 
