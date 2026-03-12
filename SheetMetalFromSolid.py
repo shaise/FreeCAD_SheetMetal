@@ -234,42 +234,6 @@ def showVect(point, vect, name = "vect"):
     edge = Part.makeLine(point, point + vect)
     Part.show(edge, name)
 
-# non occ version. not working yet
-def smMakeFilletBetweenEdges1(edge1, edge2, r):
-    commonPoint, dir1, dir2 = smAnalizeCorner(edge1, edge2)
-    if commonPoint == None:
-        return None
-    
-    normdir = dir1.cross(dir2)
-    if normdir.Length < SheetMetalTools.smEpsilon:
-        print("Edges are parallel - cannot fillet directly")
-        return None
-    
-    showVect(commonPoint, dir1, "dir1")
-    showVect(commonPoint, dir2, "dir1")
-    showVect(commonPoint, normdir, "normal")
-    circleGeo = Part.Circle(commonPoint, normdir, r)
-    circleEdge = circleGeo.toShape()
-    Part.show(circleEdge)
-    # normdir.normalize()
-    filletApi = Part.ChFi2d.FilletAPI()
-    pln = Part.Plane(commonPoint, normdir)
-    filletApi.init(Part.Wire([edge1, edge2]), pln)
-    return filletApi
-    # if filletApi.perform(r):
-    #     return filletApi.Result()
-    # return None
-    # try:
-    #     if filletApi.Perform(r):
-    #         occArc = filletApi.Result(OccPnt, occE1, occE2)
-    #         return ([Part.__fromPythonOCC__(occE1),
-    #                   Part.__fromPythonOCC__(occE2),
-    #                   Part.__fromPythonOCC__(occArc)])
-    # except Exception as e:
-    #     print("OCC Fillet api failed: " + str(e))
-    #     return None
-
-
 
 def smProjectEdgeOnPlane(edge, vertex, normal):
     """Project an edge onto a plane defined by a vertex and a normal."""
@@ -400,6 +364,8 @@ def smCalculateBendEdgeInfo(edgeInfo, radius, thickness, invertDir):
     concavityType = smGetEdgeConcavityType(edgeInfo.solid, edge)
     edgeInfo.concavityType = concavityType
     # print("Concavity type: ", concavityType)
+    if concavityType == "flat":
+        return None
     if concavityType == "concave":
         invertDir = not invertDir
     if invertDir:
@@ -451,6 +417,7 @@ class smfsEdgeInfo:
         self.bendEdge = edge
         self.solid = solid
         self.type = type
+        self.concavityType = "unknown"
         connected_faces = solid.ancestorsOfType(edge, Part.Face)
         self.edgeDir = (edge.Vertexes[0].Point - edge.Vertexes[1].Point).normalize()
 
@@ -484,6 +451,7 @@ class smfsFaceInfo:
         self.modifiedFace = face.copy()
         self.solid = solid
         self.isRemoved = isRemoved
+        self.groupId = 0
 
     def adjustFacesShape(self, edgeInfoDict):
         self.modifiedFace = smFilletFaceCornersBasedOnAttachedEdges(
@@ -498,7 +466,12 @@ class smfsFaceInfo:
         if self.isRemoved:
             return
         cutFace = self.modifiedFace.cut(edgePipe)
-        self.modifiedFace = cutFace.Faces[0]
+        maxArea = 0
+        for face in cutFace.Faces:
+            area = face.Area
+            if area > maxArea:
+                maxArea = area
+                self.modifiedFace = face
         # Part.show(self.modifiedFace, "modifiedFace")
 
     def detectBendEdge(self, edgeInfo, cutRadius):
@@ -547,21 +520,58 @@ class smfsSolidInfo:
             if edgeInfo.type == "bend":
                 edgeInfo.analizeBend(radius, thickness, invertDir)
 
+    def getConnectedFaces(self, faceInfo):
+        """Get all flat-connected faces to the given face."""
+        connectedFaces = [faceInfo]
+        for edge in faceInfo.face.Edges:
+            edgeInfo = self.edgeInfoDict[edge.hashCode()]
+            if edgeInfo.concavityType != "flat":
+                continue
+            if edgeInfo.faceInf1.groupId == 0:
+                edgeInfo.faceInf1.groupId = faceInfo.groupId
+                connectedFaces.extend(self.getConnectedFaces(edgeInfo.faceInf1))
+            if edgeInfo.faceInf2.groupId == 0:
+                edgeInfo.faceInf2.groupId = faceInfo.groupId
+                connectedFaces.extend(self.getConnectedFaces(edgeInfo.faceInf2))
+        return connectedFaces
+
+    def groupFaces(self):
+        groupId = 1
+        self.flatFaceGroups = []
+        for faceInfo in self.faceInfoDict.values():
+            if faceInfo.isRemoved:
+                continue
+            if faceInfo.groupId != 0:
+                continue
+            faceInfo.groupId = groupId
+            # Part.show(faceInfo.face, f"face_{groupId}")
+            flatFaceGroup = self.getConnectedFaces(faceInfo)
+            # print(f"Flat face group {groupId}: ", len(flatFaceGroup))
+            self.flatFaceGroups.append(flatFaceGroup)
+            groupId += 1
+
     def adjustFacesShape(self):
         for faceInfo in self.faceInfoDict.values():
             faceInfo.adjustFacesShape(self.edgeInfoDict)
 
     def ripSeams(self, radius):
-        for faceInfo in self.faceInfoDict.values():
-            try:
-                faceInfo.offsetEdge(radius)
-            except Exception as e:
-                # if offset fails (face is not flat), try to cut the face 
-                # with a pipe
-                print("Offset failed, trying to cut face with a pipe")
-                pipe = smCreateCircularFaceLoft(faceInfo.face.OuterWire, radius)
-                if pipe is None:
+        for faceGroup in self.flatFaceGroups:
+            if len(faceGroup) == 1:
+                faceInfo = faceGroup[0]
+                if faceInfo.face.Surface.TypeId == 'Part::GeomPlane':
+                    faceInfo.offsetEdge(radius)
                     continue
+            edges = []
+            for faceInfo in faceGroup:
+                for edge in faceInfo.face.OuterWire.Edges:
+                    edgeInfo = self.edgeInfoDict[edge.hashCode()]
+                    if edgeInfo.concavityType != "flat":
+                        edges.append(edge)
+            wire = Part.Wire(Part.__sortEdges__(edges))
+            pipe = smCreateCircularFaceLoft(wire, radius)
+            if pipe is None:
+                continue
+            for faceInfo in faceGroup:
                 faceInfo.cutEdge(pipe)
 
     def cutBend(self, edgeInfo, faceInfo):
@@ -615,6 +625,7 @@ class smfsSolidInfo:
 def smMakeSheetMetalFromSolid(shape, removeFaces, ripEdges, radius, thickness, tolerance, invert):
     solidInfo = smfsSolidInfo(shape, ripEdges, removeFaces)
     solidInfo.analizeBends(radius, thickness, invert)
+    solidInfo.groupFaces()
     solidInfo.adjustFacesShape()
     ripRadius = tolerance
     if invert:
