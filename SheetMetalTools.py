@@ -49,6 +49,45 @@ selClearSelText = translate("SheetMetalTools", "Clear Selected")
 selClearAllText = translate("SheetMetalTools", "Clear All")
 
 
+def taskSaveDefaults(obj, varList):
+    for var in varList:
+        if isinstance(var, tuple):
+            var, saveVar = var
+        else:
+            saveVar = "default" + var
+        val = getattr(obj, var)
+        if hasattr(val, "Value"):
+            val = val.Value
+        if isinstance(val, bool):
+            params.SetBool(saveVar, val)
+        elif isinstance(val, float):
+            params.SetFloat(saveVar, val)
+        elif isinstance(val, int):
+            params.SetInt(saveVar, val)
+        else:
+            params.SetString(saveVar, str(val))
+
+
+def taskRestoreDefaults(obj, varList):
+    for var in varList:
+        if isinstance(var, tuple):
+            var, saveVar = var
+        else:
+            saveVar = "default" + var
+        val = getattr(obj, var)
+        if hasattr(val, "Value"):
+            val = val.Value
+        if isinstance(val, bool):
+            newVal = params.GetBool(saveVar, val)
+        elif isinstance(val, float):
+            newVal = params.GetFloat(saveVar, val)
+        elif isinstance(val, int):
+            newVal = params.GetInt(saveVar, val)
+        else:
+            newVal = params.GetString(saveVar, str(val))
+        setattr(obj, var, newVal)
+
+
 def isGuiLoaded():
     if hasattr(FreeCAD, "GuiUp"):
         return FreeCAD.GuiUp
@@ -260,19 +299,33 @@ if isGuiLoaded():
                 return False
             if len(allowedTypes) == 0:
                 return True
+            if isinstance(allowedTypes[0], str):
+                for element in selSubNames:
+                    if not smStripTrailingNumber(element) in allowedTypes:
+                        return False
+                return True
             for allowedSubType in allowedTypes:
-                res = False
-                if not isinstance(allowedSubType, str):
-                    res = self.matchAllowedType(selobj, selSubNames, allowedSubType)
-                else:
-                    res = True
-                    for element in selSubNames:
-                        if not smStripTrailingNumber(element) in allowedSubType:
-                            res = False
-                            break
-                if res:
+                if self.matchAllowedType(selobj, selSubNames, allowedSubType):
                     return True
             return False
+        
+        def getAllowedSubObjects(self):
+            origprop = getattr(self.obj, self.propetyName)
+            selobj, selSubNames = origprop
+            allowedObjList = []
+            for subObject in selSubNames:
+                if self.matchAllowedType(selobj, [subObject], self.allowedTypes):
+                    allowedObjList.append(subObject)
+            return allowedObjList
+        
+        def getOtherSubObjects(self):
+            origprop = getattr(self.obj, self.propetyName)
+            selobj, selSubNames = origprop
+            otherObjList = []
+            for subObject in selSubNames:
+                if not self.matchAllowedType(selobj, [subObject], self.allowedTypes):
+                    otherObjList.append(subObject)
+            return otherObjList
 
         def getAllowedTypesList(self, allowedTypes):
             allowedObjType = ""
@@ -296,7 +349,7 @@ if isGuiLoaded():
             selSubNames = []
             if len(selection) > 0:
                 selobj = selection[0].Object
-                selSubNames = selection[0].SubElementNames
+                selSubNames = list(selection[0].SubElementNames)
             if selobj.isDerivedFrom("App::Link"):
                 selobj = selobj.LinkedObject
 
@@ -426,7 +479,8 @@ if isGuiLoaded():
             if baseObj is not None:
                 sp.ObjWasVisible = baseObj[0].Visibility
                 baseObj[0].Visibility = True
-                smSelectSubObjects(baseObj[0], baseObj[1])
+                selobjs = sp.getAllowedSubObjects()
+                smSelectSubObjects(baseObj[0], selobjs)
             # Gui.Selection.addSelection(baseObj[0],baseObj[1])  # Does not work on binder.
             smSelectGreedy()
             sp.addRemoveButton.setText(translatedPreviewText)
@@ -440,7 +494,9 @@ if isGuiLoaded():
                 if sp.ClearButton is not None:
                     sp.ClearButton.setVisible(False)
                     _taskMultiSelSetCheckBoxState(sp, False)
-                setattr(sp.obj, sp.propetyName, (selObj, selSubNames))
+                joinedSubNames = selSubNames.copy()
+                joinedSubNames.extend(sp.getOtherSubObjects())
+                setattr(sp.obj, sp.propetyName, (selObj, joinedSubNames))
                 # updateSelectionElements(sp.obj, sp.allowedTypes, sp.propetyName)
                 baseObj = getattr(sp.obj, sp.propetyName)
                 Gui.Selection.clearSelection()
@@ -451,9 +507,9 @@ if isGuiLoaded():
                     sp.obj.Visibility = True
                 sp.addRemoveButton.setText(sp.OriginalText)
                 sp.SelectState = True
-                taskPopulateSelectionList(sp.dispWidget, baseObj, False)
+                taskPopulateSelectionList(sp.dispWidget,(selObj, selSubNames), False)
                 if sp.ValueChangedCallback is not None:
-                    sp.ValueChangedCallback(sp, selObj, selSubNames)
+                    sp.ValueChangedCallback(sp, selObj, joinedSubNames)
 
     def _taskMultiSelGetUnSelectedItems(sp: SMSelectionParameters):
         selectedItems = []
@@ -502,8 +558,8 @@ if isGuiLoaded():
         sp.ClearButton = clearButton
         baseObj = getattr(obj, propetyName)
         treeWidget.header().setSectionResizeMode(QHeaderView.ResizeToContents)
-
-        taskPopulateSelectionList(treeWidget, baseObj, False)
+        filteredBaseObj = (baseObj[0], sp.getAllowedSubObjects())
+        taskPopulateSelectionList(treeWidget, filteredBaseObj, False)
         if clearButton is not None:
             clearButton.setVisible(False)
             clearButton.clicked.connect(lambda _value: _taskMultiSelClearClicked(sp))
@@ -748,44 +804,6 @@ if isGuiLoaded():
         FreeCAD.ActiveDocument.recompute()
         Gui.ActiveDocument.resetEdit()
 
-
-    def taskSaveDefaults(obj, varList):
-        for var in varList:
-            if isinstance(var, tuple):
-                var, saveVar = var
-            else:
-                saveVar = "default" + var
-            val = getattr(obj, var)
-            if hasattr(val, "Value"):
-                val = val.Value
-            if isinstance(val, bool):
-                params.SetBool(saveVar, val)
-            elif isinstance(val, float):
-                params.SetFloat(saveVar, val)
-            elif isinstance(val, int):
-                params.SetInt(saveVar, val)
-            else:
-                params.SetString(saveVar, str(val))
-
-
-    def taskRestoreDefaults(obj, varList):
-        for var in varList:
-            if isinstance(var, tuple):
-                var, saveVar = var
-            else:
-                saveVar = "default" + var
-            val = getattr(obj, var)
-            if hasattr(val, "Value"):
-                val = val.Value
-            if isinstance(val, bool):
-                newVal = params.GetBool(saveVar, val)
-            elif isinstance(val, float):
-                newVal = params.GetFloat(saveVar, val)
-            elif isinstance(val, int):
-                newVal = params.GetInt(saveVar, val)
-            else:
-                newVal = params.GetString(saveVar, str(val))
-            setattr(obj, var, newVal)
 
 
     def taskLoadUI(*args):

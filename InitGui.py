@@ -72,11 +72,13 @@ class SMWorkbench(Workbench):
         import SheetMetalUnfolder
         import SketchOnSheetMetalCmd
         import SheetMetalSketch
+        import SheetMetalFromSolid
 
         self.list = [
             "SheetMetal_BaseShape",
             "SheetMetal_NewSketch",
             "SheetMetal_AddBase",
+            "SheetMetal_FromSolid",
             "SheetMetal_AddWall",
             "SheetMetal_Extrude",
             "SheetMetal_ExtendBySketch",
