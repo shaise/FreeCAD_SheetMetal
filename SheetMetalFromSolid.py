@@ -600,6 +600,33 @@ class smfsSolidInfo:
                 shellFaces.append(faceInfo.modifiedFace)
         shellFaces.extend(self.bendFaces)
         return Part.makeShell(shellFaces)
+    
+    def verifyNormal(self, shell):
+        """Verify the normal of the given face is pointing outside the solid.
+           If not, reverse the face.
+        """
+        # find a flat face to test the normal direction, we can take the first face of the shell
+        for face in shell.Faces:
+            if isinstance(face.Surface, Part.Plane):
+                break
+        else:
+            return False
+        # find a modified face corresponding to the given face
+        centerMass = face.CenterOfMass
+        for faceInfo in self.faceInfoDict.values():
+            if faceInfo.modifiedFace.CenterOfMass.isEqual(centerMass, SheetMetalTools.smEpsilon):
+                break
+        else:
+            return False
+        
+        u,v = face.Surface.parameter(face.Vertexes[0].Point)
+        n1 = face.normalAt(u,v)
+        u,v = faceInfo.face.Surface.parameter(face.Vertexes[0].Point)
+        n2 = faceInfo.face.normalAt(u,v)
+        # print("Normal verification: ", n1, n2)
+        if n1.isEqual(n2, SheetMetalTools.smEpsilon):
+            return True
+        return False
 
 def smMakeSheetMetalFromSolid(shape, selItems, radius, thickness, tolerance, invert):
     removeFaces = [sub for sub in selItems if sub.startswith("Face")]
@@ -616,6 +643,9 @@ def smMakeSheetMetalFromSolid(shape, selItems, radius, thickness, tolerance, inv
     solidInfo.cutBends()
     solidInfo.generateBends()
     shell = solidInfo.makeShell()
+    if not solidInfo.verifyNormal(shell):
+        shell.reverse()
+
     #Part.show(shell, "shell")
     solid = None
     try:
