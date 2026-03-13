@@ -719,7 +719,13 @@ if SheetMetalTools.isGuiLoaded():
                 "Pixmap": os.path.join(SheetMetalTools.icons_path, "SheetMetal_FromSolid.svg"),
                 "MenuText": translate("SheetMetal", "Convert to Sheet Metal"),
                 "Accel": "C, S",
-                "ToolTip": translate("SheetMetal", "Convert a solid to a sheet metal object"),
+                "ToolTip": translate(
+                    "SheetMetal",
+                    "Convert a solid to a sheet metal object.\n"
+                    "1. Select faces to remove from end result SheetMetal.\n"
+                    "2. Select edges to rip (mark a seam).\n"
+                    "3. Use Task Panel editor to modify other parameters.",
+                    ),
             }
 
         def Activated(self):
