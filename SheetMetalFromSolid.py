@@ -31,7 +31,7 @@ translate = FreeCAD.Qt.translate
 from SheetMetalTools import SMException
 
 # List of properties to be saved as defaults.
-smFromSolidDefaultVars = ["Radius", "Thickness", "KFactor"]
+smFromSolidDefaultVars = ["Radius", "Thickness", "Invert"]
 
 
 # helper functions:
@@ -611,6 +611,7 @@ def smMakeSheetMetalFromSolid(shape, selItems, radius, thickness, tolerance, inv
     ripRadius = tolerance
     if invert:
         ripRadius += thickness
+        thickness = -thickness
     solidInfo.ripSeams(ripRadius)
     solidInfo.cutBends()
     solidInfo.generateBends()
@@ -633,14 +634,25 @@ class SMFromSolid:
     def __init__(self, obj, selobj, sel_items):
         obj.addProperty("App::PropertyLinkSub", "baseObject", "Parameters", 
                         "Base object").baseObject = (selobj, sel_items)
-        # obj.addProperty("App::PropertyLinkSub", "removeFaces", "Parameters", "Faces to remove").removeFaces = (selobj, faces)
-        # obj.addProperty("App::PropertyLinkSub", "ripEdges", "Parameters", "Edges to rip (seams)").ripEdges = (selobj, edges)
-        
-        SheetMetalTools.smAddLengthProperty(obj, "Radius", "Bend Radius", 1.0)
-        SheetMetalTools.smAddLengthProperty(obj, "Thickness", "Wall Thickness", 1.0)
-        obj.addProperty("App::PropertyFloatConstraint", "KFactor", "Parameters", "K Factor").KFactor = (0.5, 0.0, 1.0, 0.01)
         SheetMetalTools.taskRestoreDefaults(obj, smFromSolidDefaultVars)
+        self.addVerifyProperties(obj)
         obj.Proxy = self
+
+    def addVerifyProperties(self, obj):
+        SheetMetalTools.smAddLengthProperty(obj,
+            "Radius",
+            translate("App::Property", "Bend Radius"),
+            1.0)
+        SheetMetalTools.smAddLengthProperty(obj,
+            "Thickness",
+            translate("App::Property", "Thickness of sheetmetal"),
+            1.0)
+        SheetMetalTools.smAddBoolProperty(obj, 
+            "Invert", 
+            translate("App::Property", "Invert bend direction"),
+            False)
+
+        
 
     def execute(self, fp):
         if not fp.baseObject:
@@ -649,8 +661,9 @@ class SMFromSolid:
         base_shape = fp.baseObject[0].Shape
         if not base_shape.Faces:
             return
-
-        fp.Shape = smMakeSheetMetalFromSolid(base_shape, fp.baseObject[1], fp.Radius.Value, fp.Thickness.Value, 0.1, False)
+        self.addVerifyProperties(fp)
+        fp.Shape = smMakeSheetMetalFromSolid(base_shape, fp.baseObject[1], fp.Radius.Value, 
+                                             fp.Thickness.Value, 0.1, fp.Invert)
 
     def __getstate__(self):
         return None
@@ -673,30 +686,20 @@ if SheetMetalTools.isGuiLoaded():
     class SMFromSolidTaskPanel:
         def __init__(self, obj):
             self.obj = obj
-            self.form = SheetMetalTools.taskLoadUI("CreateFromSolid.ui") # We need to create this UI file!
-            # Or we can build it programmatically if we don't want to create a .ui file, 
-            # but SheetMetalTools relies on .ui.
-            # Wait, `CreateBaseShape.ui` exists. Maybe I can reuse/modify a similar one or create a new one.
-            # I will create a new UI file `CreateFromSolid.ui` as well.
+            self.form = SheetMetalTools.taskLoadUI("CreateFromSolid.ui")
+            obj.Proxy.addVerifyProperties(obj)
             
             SheetMetalTools.taskConnectSpin(obj, self.form.spinRadius, "Radius")
             SheetMetalTools.taskConnectSpin(obj, self.form.spinThickness, "Thickness")
-            SheetMetalTools.taskConnectSpin(obj, self.form.spinKFactor, "KFactor")
+            SheetMetalTools.taskConnectCheck(obj, self.form.checkInvert, "Invert")
             
             # Selection for Remove Faces
             self.selFaces = SheetMetalTools.taskConnectSelection(
-                self.form.btnRemoveFaces, self.form.listRemoveFaces,
-                obj, ["Face"], self.form.btnClearFaces, "baseObject"
+                self.form.btnRemoveFaces, self.form.listFacesAndEdges,
+                obj, ["Face", "Edge"], self.form.btnClearFaces, "baseObject"
             )
             # Constrain selection to the base object
             self.selFaces.ConstrainToObject = obj.baseObject[0]
-
-            # Selection for Rip Edges
-            self.selEdges = SheetMetalTools.taskConnectSelection(
-                self.form.btnRipEdges, self.form.listRipEdges,
-                obj, ["Edge"], self.form.btnClearEdges, "baseObject"
-            )
-            self.selEdges.ConstrainToObject = obj.baseObject[0]
 
         def accept(self):
             SheetMetalTools.taskAccept(self)

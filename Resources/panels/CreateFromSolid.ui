@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>335</width>
-    <height>634</height>
+    <width>318</width>
+    <height>416</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -20,6 +20,9 @@
       <string>Parameters</string>
      </property>
      <layout class="QFormLayout" name="formLayout">
+      <property name="fieldGrowthPolicy">
+       <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+      </property>
       <item row="0" column="0">
        <widget class="QLabel" name="label">
         <property name="text">
@@ -60,24 +63,11 @@
         </property>
        </widget>
       </item>
-            <item row="2" column="0">
-       <widget class="QLabel" name="label_3">
+      <item row="2" column="0">
+       <widget class="QCheckBox" name="checkInvert">
         <property name="text">
-         <string>K-Factor</string>
+         <string>Invert</string>
         </property>
-       </widget>
-      </item>
-      <item row="2" column="1">
-       <widget class="Gui::DoubleSpinBox" name="spinKFactor">
-        <property name="prefEntry" stdset="0">
-         <string>defaultKFactor</string>
-        </property>
-        <property name="prefPath" stdset="0">
-         <string>Mod/SheetMetal</string>
-        </property>
-           <property name="singleStep">
-    <double>0.100000000000000</double>
-   </property>
        </widget>
       </item>
      </layout>
@@ -86,7 +76,7 @@
    <item>
     <widget class="QGroupBox" name="groupBox_2">
      <property name="title">
-      <string>Remove Faces</string>
+      <string>Faces to remove and seam edges</string>
      </property>
      <layout class="QVBoxLayout" name="verticalLayout_2">
       <item>
@@ -111,57 +101,7 @@
        </layout>
       </item>
       <item>
-       <widget class="QTreeWidget" name="listRemoveFaces">
-        <property name="rootIsDecorated">
-         <bool>false</bool>
-        </property>
-        <attribute name="headerVisible">
-         <bool>false</bool>
-        </attribute>
-        <column>
-         <property name="text">
-          <string>Object</string>
-         </property>
-        </column>
-        <column>
-         <property name="text">
-          <string>Element</string>
-         </property>
-        </column>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-   </item>
-   <item>
-    <widget class="QGroupBox" name="groupBox_3">
-     <property name="title">
-      <string>Rip Edges (Seams)</string>
-     </property>
-     <layout class="QVBoxLayout" name="verticalLayout_3">
-      <item>
-       <layout class="QHBoxLayout" name="horizontalLayout_2">
-        <item>
-         <widget class="QPushButton" name="btnRipEdges">
-          <property name="text">
-           <string>Select</string>
-          </property>
-          <property name="checkable">
-           <bool>true</bool>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="btnClearEdges">
-          <property name="text">
-           <string>Clear</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </item>
-      <item>
-       <widget class="QTreeWidget" name="listRipEdges">
+       <widget class="QTreeWidget" name="listFacesAndEdges">
         <property name="rootIsDecorated">
          <bool>false</bool>
         </property>
@@ -198,16 +138,11 @@
    </item>
   </layout>
  </widget>
-  <customwidgets>
+ <customwidgets>
   <customwidget>
    <class>Gui::QuantitySpinBox</class>
    <extends>QDoubleSpinBox</extends>
    <header>Gui/QuantitySpinBox.h</header>
-  </customwidget>
-  <customwidget>
-   <class>Gui::DoubleSpinBox</class>
-   <extends>QDoubleSpinBox</extends>
-   <header>Gui/DoubleSpinBox.h</header>
   </customwidget>
  </customwidgets>
  <resources/>
