@@ -634,8 +634,8 @@ class SMFromSolid:
     def __init__(self, obj, selobj, sel_items):
         obj.addProperty("App::PropertyLinkSub", "baseObject", "Parameters", 
                         "Base object").baseObject = (selobj, sel_items)
-        SheetMetalTools.taskRestoreDefaults(obj, smFromSolidDefaultVars)
         self.addVerifyProperties(obj)
+        SheetMetalTools.taskRestoreDefaults(obj, smFromSolidDefaultVars)
         obj.Proxy = self
 
     def addVerifyProperties(self, obj):
