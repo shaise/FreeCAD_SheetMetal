@@ -39,6 +39,37 @@ smAddHemDefaultVars = ["HemType", ("width", "defaultWidth"),
 translate = FreeCAD.Qt.translate
 
 
+# Finds the root of f() in the given interval
+def bisection_method(f, min_interval, max_interval, eps):
+    a = min_interval
+    b = max_interval
+
+    fa = f(a)
+    fb = f(b)
+
+    if fa * fb > 0:
+        raise ValueError("Function must have opposite signs at the interval endpoints.")
+
+    c = 0.5 * (a + b)
+    prev_c = c + 2 * eps  # ensure the loop starts
+
+    while abs(c - prev_c) >= eps:
+        prev_c = c
+
+        fc = f(c)
+
+        if fa * fc < 0:
+            b = c
+            fb = fc
+        else:
+            a = c
+            fa = fc
+
+        c = 0.5 * (a + b)
+
+    return c
+
+
 class SMHem:
     def __init__(self, obj, selobj, sel_items, refAngOffset=None, checkRefFace=False):
         """Add Hem on an edge."""
@@ -54,7 +85,7 @@ class SMHem:
         SheetMetalTools.smAddEnumProperty(obj,
                 "HemType",
                 translate("App::Property", "Hem Type"),
-                ["Flat", "Teardrop", "Rolled"])
+                ["Flat", "Open", "Teardrop", "Rolled"])
         SheetMetalTools.smAddLengthProperty(obj,
                 "radius",
                 translate("App::Property", "Bend Radius"),
@@ -63,10 +94,18 @@ class SMHem:
                 "width",
                 translate("App::Property", "Width of Hem"),
                 10.0)
+        SheetMetalTools.smAddAngleProperty(obj,
+                "rollangle",
+                translate("App::Property", "Roll angle"),
+                225.0)
+        SheetMetalTools.smAddBoolProperty(obj,
+                "opened",
+                translate("App::Property", "Opened hem"),
+                False)
         SheetMetalTools.smAddLengthProperty(obj,
-                "clearance",
-                translate("App::Property", "Clearance of Hem"),
-                0.0)
+                "opening",
+                translate("App::Property", "Opening of Hem"),
+                1.0)
         SheetMetalTools.smAddDistanceProperty(obj,
                 "gap1",
                 translate("App::Property", "Gap from Left Side"),
@@ -271,22 +310,39 @@ class SMHem:
 
         # Compute geometrical parameters for selected hem type
         for i, _ in enumerate(LegLengthList):
-            if fp.HemType == "Flat": # has a width and clearance, and bend radius (if clearance)
+            if fp.HemType == "Flat":
                 bendAList[i] = 180.0
-                bendR = fp.clearance.Value/2.0 # still 0 if no clearance
-            elif fp.HemType == "Teardrop": # has a width, clearance, and bend radius
-                if fp.clearance.Value == 0.0:
-                    theta = math.atan(fp.radius.Value/fp.width.Value)
-                    bendAList[i] = 180.0 + 2*math.degrees(theta)
-                    LegLengthList[i] = fp.width.Value
+                bendR = 0.0
+                LegLengthList[i] = fp.width.Value - thk
+            elif fp.HemType == "Open":
+                bendAList[i] = 180.0
+                bendR = fp.opening.Value/2.0
+                LegLengthList[i] = fp.width.Value - bendR - thk
+            elif fp.HemType == "Teardrop":
+                if fp.width.Value == thk + bendR: # degenerate teardrop hem
+                    bendAList[i] = 270
+                    LegLengthList[i] = bendR - fp.opening.Value
+                else: # regular teardrop hem
+                    Lp = fp.width.Value
+                    Lbend = bendR + thk
+                    H = fp.opening.Value
+                    equation = lambda L: L - Lp + Lbend + thk*math.sin(2*math.atan(bendR/L))
+                    print(equation(Lp-thk), equation(Lp))
+                    L = bisection_method(equation, Lp-Lbend-thk, Lp-Lbend, 1.0e-9)
+                    if fp.opening.Value == 0.0:
+                        theta = math.atan(bendR/L)
+                        bendAList[i] = 180.0 + 2*math.degrees(theta)
+                        LegLengthList[i] = L
+                    else:
+                        theta = math.atan((L-math.sqrt(L**2-2.0*bendR*H+H**2))/H)
+                        bendAList[i] = 180.0 + math.degrees(2*theta)
+                        LegLengthList[i] = H*(math.cos(2*theta)-1)/math.sin(2*theta)+L
+            elif fp.HemType == "Rolled":
+                max_rollangle = 270.0 + math.degrees(math.asin(bendR/(bendR+thk)))
+                if fp.opened:
+                    bendAList[i] = fp.rollangle.Value
                 else:
-                    w = fp.width.Value
-                    c = fp.clearance.Value
-                    theta = math.atan((w-math.sqrt(w**2-2.0*bendR*c+c**2))/c)
-                    bendAList[i] = 180.0 + math.degrees(2*theta)
-                    LegLengthList[i] = c*(math.cos(2*theta)-1)/math.sin(2*theta)+w
-            elif fp.HemType == "Rolled": # has bend radius, no clearance, and no width
-                bendAList[i] = 270.0 + math.degrees(math.asin(bendR/(bendR+thk)))
+                    bendAList[i] = max_rollangle
                 LegLengthList[i] = 0.0
                 allowedAutoMiter = False
 
