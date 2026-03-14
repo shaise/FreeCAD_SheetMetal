@@ -26,6 +26,7 @@ import Part
 import SheetMetalTools
 import os
 import DraftGeomUtils
+import math
 
 translate = FreeCAD.Qt.translate
 from SheetMetalTools import SMException
@@ -69,9 +70,6 @@ def smCreateCircularFaceLoft(edge, radius):
         FreeCAD.Console.PrintError(f"smCreateCircularFaceLoft failed: {e}\n")
         return None
 
-    
-from OCC.Core import ChFi2d
-from OCC import Core
 
 def smAnalizeCorner(edge1, edge2):
     """ Find the corner point and 2 directions of 2 connected edges.
@@ -106,32 +104,11 @@ def smAnalizeCorner(edge1, edge2):
     dir2.normalize()
     return commonPoint, dir1, dir2
     
-
-def smMakeFilletBetweenEdges(e1, e2, r):
-    # asuming edges are in a plane
-    commonPoint, dir1, dir2 = smAnalizeCorner(e1, e2)
-    if commonPoint is None:
-        return None
-    normdir = dir1.cross(dir2)
-    if normdir.Length < SheetMetalTools.smEpsilon:
-        print("Edges are parallel - cannot fillet directly")
-        return None
-    # normdir.normalize()
-    filletApi = ChFi2d.ChFi2d_FilletAPI()
-    OccPnt = Core.gp.gp_Pnt(*commonPoint)
-    pln = Core.gp.gp_Pln(OccPnt, Core.gp.gp_Dir(*normdir))
-    occE1 = Core.TopoDS.topods.Edge(Part.__toPythonOCC__(e1))
-    occE2 = Core.TopoDS.topods.Edge(Part.__toPythonOCC__(e2))
-    filletApi.Init(occE1, occE2, pln)
-    try:
-        if filletApi.Perform(r):
-            occArc = filletApi.Result(OccPnt, occE1, occE2)
-            return ([Part.__fromPythonOCC__(occE1),
-                      Part.__fromPythonOCC__(occE2),
-                      Part.__fromPythonOCC__(occArc)])
-    except Exception as e:
-        print("OCC Fillet api failed: " + str(e))
-        return None
+def smMakeFilletBetweenEdges(edge1, edge2, radius):
+    """ Get the projection angle between two faces connected by an edge."""
+    wire = Part.Wire([edge1, edge2])
+    fillet = DraftGeomUtils.filletWire(wire, radius)
+    return [fillet.Edges[0], fillet.Edges[2], fillet.Edges[1]]
 
 def smEdgeBelongsToFace(edge, face):
     return any(e.isSame(edge) for e in face.Edges)
@@ -344,6 +321,7 @@ class smfsEdgeInfo:
         self.shape = shape
         self.type = type
         self.concavityType = "unknown"
+        self.ripRadius = 0.0
         connected_faces = shape.ancestorsOfType(edge, Part.Face)
         self.edgeDir = (edge.Vertexes[0].Point - edge.Vertexes[1].Point).normalize()
 
@@ -352,6 +330,8 @@ class smfsEdgeInfo:
             self.face2 = None
         else:
             self.face1, self.face2 = connected_faces[:2]  # Take the first two connected faces
+            self.generateSectionsAndTangents()
+            self.calculateConcavityType()
         if self.type == "bend":
             self.extendedEdge = smExtendEdgeBothSides(edge, edge.Length * 10)
 
@@ -388,10 +368,17 @@ class smfsEdgeInfo:
             else:
                 self.concavityType = "convex"
         return self.concavityType
+    
+    def calculateRipRadius(self, tolerance, thickness, invert):
+        if self.concavityType == "concave":
+            invert = not invert
+        if not invert:
+            self.ripRadius = tolerance
+        else:
+            faceAngle = self.tangent1.getAngle(self.tangent2)
+            self.ripRadius = (thickness + tolerance) / math.tan(faceAngle / 2)
 
-    def analizeBend(self, radius, thickness, invertDir):
-        self.generateSectionsAndTangents()
-        self.calculateConcavityType()
+    def analyzeBend(self, radius, thickness, invertDir):
         self.filletArc = smCalculateBendEdgeInfo(self, radius, thickness, invertDir)
         if self.filletArc is None:
             self.type = "ignore"
@@ -478,10 +465,12 @@ class smfsShapeInfo:
             edgeInfo.faceInf2 = self.faceInfoDict[edgeInfo.face2.hashCode()] if edgeInfo.face2 else None
             self.edgeInfoDict[edge.hashCode()] = edgeInfo
 
-    def analizeBends(self, radius, thickness, invertDir):
+    def analyzeEdges(self, radius, thickness, invertDir, tolerance):
         for edgeInfo in self.edgeInfoDict.values():
             if edgeInfo.type == "bend":
-                edgeInfo.analizeBend(radius, thickness, invertDir)
+                edgeInfo.analyzeBend(radius, thickness, invertDir)
+            if edgeInfo.type == "seam":
+                edgeInfo.calculateRipRadius(tolerance, thickness, invertDir)
 
     def getConnectedFaces(self, faceInfo):
         """Get all flat-connected faces to the given face."""
@@ -517,20 +506,30 @@ class smfsShapeInfo:
         for faceInfo in self.faceInfoDict.values():
             faceInfo.adjustFacesShape(self.edgeInfoDict)
 
-    def ripSeams(self, radius):
+    def ripSeams(self):
         for faceGroup in self.flatFaceGroups:
+            radius = 0
+            # for single flat face, we can just offset the face by the rip radius
             if len(faceGroup) == 1:
                 faceInfo = faceGroup[0]
                 if faceInfo.face.Surface.TypeId == 'Part::GeomPlane':
+                    for edge in faceInfo.face.OuterWire.Edges:
+                        edgeInfo = self.edgeInfoDict[edge.hashCode()]
+                        radius = max(radius, edgeInfo.ripRadius)
                     faceInfo.offsetEdge(radius)
                     continue
+            
+            # for multiple connected faces, we need to loft a pipe along the seam edges and cut it from the faces
             edges = []
             for faceInfo in faceGroup:
                 for edge in faceInfo.face.OuterWire.Edges:
                     edgeInfo = self.edgeInfoDict[edge.hashCode()]
                     if edgeInfo.concavityType != "flat":
+                        radius = max(radius, edgeInfo.ripRadius)
                         edges.append(edge)
             wire = Part.Wire(Part.__sortEdges__(edges))
+            if radius < SheetMetalTools.smEpsilon:
+                continue
             pipe = smCreateCircularFaceLoft(wire, radius)
             if pipe is None:
                 continue
@@ -620,14 +619,14 @@ def smMakeSheetMetalFromSolid(shape, selItems, radius, thickness, tolerance, inv
     removeFaces = [sub for sub in selItems if sub.startswith("Face")]
     ripEdges = [sub for sub in selItems if sub.startswith("Edge")]
     shapeInfo = smfsShapeInfo(shape, ripEdges, removeFaces)
-    shapeInfo.analizeBends(radius, thickness, invert)
+    shapeInfo.analyzeEdges(radius, thickness, invert, tolerance)
     shapeInfo.groupFaces()
     shapeInfo.adjustFacesShape()
     ripRadius = tolerance
     if invert:
         ripRadius += thickness
         thickness = -thickness
-    shapeInfo.ripSeams(ripRadius)
+    shapeInfo.ripSeams()
     shapeInfo.cutBends()
     shapeInfo.generateBends()
     shell = shapeInfo.makeShell()

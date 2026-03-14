@@ -96,6 +96,8 @@ SheetMetal WB can be installed via the [Addon Manager](https://github.com/FreeCA
 * FreeCAD Forum announcement/discussion [thread](https://forum.freecad.org/viewtopic.php?f=3&t=60818) 
 
 #### Release notes:
+* V0.8.03 15 Mar 2026:  Better handle seam tolerances - Solid to Sheet tool.  
+                      - Remove OCC lib dependency.  
 * V0.8.02 14 Mar 2026:  Solid to Sheet Metal tool support for shells as well.  
 * V0.8.01 13 Mar 2026:  Fix possible shell flip in Solid to Sheet Metal tool.  
 * V0.8.00 13 Mar 2026:  Add new command: Solid to Sheet Metal.  
