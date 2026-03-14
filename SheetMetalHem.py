@@ -327,7 +327,6 @@ class SMHem:
                     Lbend = bendR + thk
                     H = fp.opening.Value
                     equation = lambda L: L - Lp + Lbend + thk*math.sin(2*math.atan(bendR/L))
-                    print(equation(Lp-thk), equation(Lp))
                     L = bisection_method(equation, Lp-Lbend-thk, Lp-Lbend, 1.0e-9)
                     if fp.opening.Value == 0.0:
                         theta = math.atan(bendR/L)
