@@ -346,8 +346,8 @@ if SheetMetalTools.isGuiLoaded():
         def getIcon(self):
             return os.path.join(icons_path, "SheetMetal_AddHem.svg")
 
-        def getTaskPanel(self, obj):
-            return SMBendWallTaskPanel(obj)
+        #def getTaskPanel(self, obj):
+        #    return SMBendWallTaskPanel(obj)
 
 
     class SMViewProviderFlat(SMViewProviderTree):
