@@ -48,7 +48,7 @@ def bisection_method(f, min_interval, max_interval, eps):
     fb = f(b)
 
     if fa * fb > 0:
-        raise ValueError("Function must have opposite signs at the interval endpoints.")
+        raise ValueError("Teardrop hem has unexpected incorrect geometry")
 
     c = 0.5 * (a + b)
     prev_c = c + 2 * eps  # ensure the loop starts
@@ -68,6 +68,76 @@ def bisection_method(f, min_interval, max_interval, eps):
         c = 0.5 * (a + b)
 
     return c
+
+
+def generateOpenHem(thickness, width, opening):
+    if opening < 0:
+        raise ValueError("Opening must be positive")
+    
+    if width > 0.5*opening + thickness:
+        bendRadius = 0.5*opening
+        legLength = width - bendRadius - thickness
+        bendAngle = 180
+        return (legLength, bendAngle, bendRadius)
+    else:
+        raise ValueError("Width must be greater than the bend width (equal to bend radius + thickness)")
+
+def generateRolledHem(thickness, radius, rollAngle=None):
+    maxRollAngle = 270.0 + math.degrees(math.asin(radius/(radius+thickness)))
+    legLength = 0.0
+    bendRadius = radius
+
+    if rollAngle is None:
+        bendAngle = maxRollAngle
+        return (legLength, bendAngle, bendRadius)
+    elif 0.0 < rollAngle <= maxRollAngle:
+        bendAngle = rollAngle
+        return (legLength, bendAngle, bendRadius)
+    elif rollAngle < 0.0:
+        raise ValueError("Roll angle must be strictly positive")
+    elif rollAngle > maxRollAngle:
+        raise ValueError("Roll angle must not exceed physical maximum ({}°)".format(maxRollAngle))
+
+def generateTeardropHem(thickness, radius, width, opening=0.0):
+    Lp = width
+    R = radius
+    t = thickness
+    Lbend = R + t
+    H = opening
+
+    if H < 0:
+        raise ValueError("Opening must be positive")
+
+    if width >= 2*Lbend:
+        legLength = 0.0
+        bendRadius = R
+        bendAngle = 0.0
+
+        if width == 2*Lbend: # Degenerate teardrop hem
+            bendAngle = 270.0
+            if H < R:
+                legLength = R - H
+            else:
+                raise ValueError("Opening must be smaller than bend radius")
+        else: # Regular teadrop hem
+            equation = lambda L: L - Lp + Lbend + t*math.sin(2*math.atan(R/L))
+            precision = 1.0e-9
+            L = bisection_method(equation, Lp-Lbend-t, Lp-Lbend, precision)
+
+            if H == 0.0:
+                theta = math.atan(R/L)
+                bendAngle = 180.0 + 2*math.degrees(theta)
+                legLength = L
+            elif H == 2*bendRadius:
+                legLength, _, bendRadius = generateOpenHem(t, Lp-Lbend, opening)
+            else:
+                theta = math.atan((L-math.sqrt(L**2-2.0*R*H+H**2))/H)
+                bendAngle = 180.0 + math.degrees(2*theta)
+                legLength = H*(math.cos(2*theta)-1)/math.sin(2*theta)+L
+        
+        return (legLength, bendAngle, bendRadius)
+    else:
+        raise ValueError("Width must be greater or equal than the bend width (equal to bend radius + thickness)")
 
 
 class SMHem:
@@ -310,40 +380,24 @@ class SMHem:
 
         # Compute geometrical parameters for selected hem type
         for i, _ in enumerate(LegLengthList):
+            values = ()
             if fp.HemType == "Flat":
-                bendAList[i] = 180.0
-                bendR = 0.0
-                LegLengthList[i] = fp.width.Value - thk
+                values = generateOpenHem(thk, fp.width.Value, 0.0)
             elif fp.HemType == "Open":
-                bendAList[i] = 180.0
-                bendR = fp.opening.Value/2.0
-                LegLengthList[i] = fp.width.Value - bendR - thk
+                values = generateOpenHem(thk, fp.width.Value, fp.opening.Value)
             elif fp.HemType == "Teardrop":
-                if fp.width.Value == thk + bendR: # degenerate teardrop hem
-                    bendAList[i] = 270
-                    LegLengthList[i] = bendR - fp.opening.Value
-                else: # regular teardrop hem
-                    Lp = fp.width.Value
-                    Lbend = bendR + thk
-                    H = fp.opening.Value
-                    equation = lambda L: L - Lp + Lbend + thk*math.sin(2*math.atan(bendR/L))
-                    L = bisection_method(equation, Lp-Lbend-thk, Lp-Lbend, 1.0e-9)
-                    if fp.opening.Value == 0.0:
-                        theta = math.atan(bendR/L)
-                        bendAList[i] = 180.0 + 2*math.degrees(theta)
-                        LegLengthList[i] = L
-                    else:
-                        theta = math.atan((L-math.sqrt(L**2-2.0*bendR*H+H**2))/H)
-                        bendAList[i] = 180.0 + math.degrees(2*theta)
-                        LegLengthList[i] = H*(math.cos(2*theta)-1)/math.sin(2*theta)+L
-            elif fp.HemType == "Rolled":
-                max_rollangle = 270.0 + math.degrees(math.asin(bendR/(bendR+thk)))
                 if fp.opened:
-                    bendAList[i] = fp.rollangle.Value
+                    values = generateTeardropHem(thk, bendR,fp.width.Value)
                 else:
-                    bendAList[i] = max_rollangle
-                LegLengthList[i] = 0.0
+                    values = generateTeardropHem(thk, bendR,fp.width.Value, fp.opening.Value)
+            elif fp.HemType == "Rolled":
                 allowedAutoMiter = False
+                if fp.opened:
+                    values = generateRolledHem(thk, bendR, fp.rollangle.Value)
+                else:
+                    values = generateRolledHem(thk, bendR)
+
+            LegLengthList[i], bendAList[i], bendR = values
 
         for i, LegLength in enumerate(LegLengthList):
             s, f = smBend(
