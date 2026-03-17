@@ -2,7 +2,7 @@
 #
 #  SheetMetalCmd.py
 #
-#  Copyright 2015 Shai Seger <shaise at gmail dot com>
+#  Copyright 2026 Thomas D (@pierreporte)
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
