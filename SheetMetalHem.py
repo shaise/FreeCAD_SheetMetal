@@ -93,7 +93,7 @@ def generateRolledHem(thickness, radius, rollAngle=None):
     elif 0.0 < rollAngle <= maxRollAngle:
         bendAngle = rollAngle
         return (legLength, bendAngle, bendRadius)
-    elif rollAngle < 0.0:
+    elif rollAngle <= 0.0:
         raise ValueError("Roll angle must be strictly positive")
     elif rollAngle > maxRollAngle:
         raise ValueError("Roll angle must not exceed physical maximum ({}°)".format(maxRollAngle))
