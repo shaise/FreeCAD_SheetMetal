@@ -188,14 +188,6 @@ class SMHem:
                 "invert",
                 translate("App::Property", "Invert Bend Direction"),
                 False)
-        SheetMetalTools.smAddDistanceProperty(obj,
-                "extend1",
-                translate("App::Property", "Extend from Left Side"),
-                0.0)
-        SheetMetalTools.smAddDistanceProperty(obj,
-                "extend2",
-                translate("App::Property", "Extend from Right Side"),
-                0.0)
         SheetMetalTools.smAddEnumProperty(obj,
                 "BendType",
                 translate("App::Property", "Bend Type"),
@@ -364,13 +356,6 @@ class SMHem:
         fp.LegLengthList = LegLengthList
         # print(LegLengthList)
 
-        # Extend value needed for first bend set only.
-        extend1_list = [0.0 for n in LegLengthList]
-        extend2_list = [0.0 for n in LegLengthList]
-        extend1_list[0] = fp.extend1.Value
-        extend2_list[0] = fp.extend2.Value
-        # print(extend1_list, extend2_list)
-
         # Gap value needed for first bend set only.
         gap1_list = [0.0 for n in LegLengthList]
         gap2_list = [0.0 for n in LegLengthList]
@@ -416,8 +401,8 @@ class SMHem:
                 reliefW=fp.reliefw.Value,
                 reliefD=fp.reliefd.Value,
                 minReliefgap=fp.minReliefGap.Value,
-                extend1=extend1_list[i],
-                extend2=extend2_list[i],
+                #extend1=extend1_list[i],
+                #extend2=extend2_list[i],
                 kfactor=fp.kfactor,
                 #offset=offsetValue,
                 ReliefFactor=fp.ReliefFactor,
