@@ -191,7 +191,7 @@ class SMHem:
         SheetMetalTools.smAddEnumProperty(obj,
                 "BendType",
                 translate("App::Property", "Bend Type"),
-                ["Material Outside", "Material Inside", "Thickness Outside", "Offset"])
+                ["Material Outside", "Material Inside", "Thickness Outside"])
         SheetMetalTools.smAddLengthProperty(obj,
                 "reliefw",
                 translate("App::Property", "Relief Width"),
@@ -276,31 +276,6 @@ class SMHem:
                 translate("App::Property", "Leg Lenghts List"),
                 None,
                 "ParametersEx3")
-        SheetMetalTools.smAddBoolProperty(obj,
-                "Perforate",
-                FreeCAD.Qt.translate("App::Property", "Enable Perforation"),
-                False,
-                "ParametersPerforation")
-        SheetMetalTools.smAddAngleProperty(obj,
-                "PerforationAngle",
-                FreeCAD.Qt.translate("App::Property", "Perforation Angle"),
-                0.0,
-                "ParametersPerforation")
-        SheetMetalTools.smAddLengthProperty(obj,
-                "PerforationInitialLength",
-                FreeCAD.Qt.translate("App::Property", "Initial Perforation Length"),
-                5.0,
-                "ParametersPerforation")
-        SheetMetalTools.smAddLengthProperty(obj,
-                "PerforationMaxLength",
-                FreeCAD.Qt.translate("App::Property", "Perforation Max Length"),
-                5.0,
-                "ParametersPerforation")
-        SheetMetalTools.smAddLengthProperty(obj,
-                "NonperforationMaxLength",
-                FreeCAD.Qt.translate("App::Property", "Non-Perforation Max Length"),
-                5.0,
-                "ParametersPerforation")
         SheetMetalTools.smAddProperty(obj,
                 "App::PropertyLinkSub",
                 "OffsetFaceReference",
@@ -412,13 +387,13 @@ class SMHem:
                 MainObject=Main_Object,
                 #sketch=fp.Sketch,
                 mingap=fp.minGap.Value,
-                maxExtendGap=fp.maxExtendDist.Value,
+                maxExtendGap=fp.maxExtendDist.Value)
                 #LengthSpec=fp.LengthSpec,
-                Perforate=fp.Perforate,
-                PerforationAngle=fp.PerforationAngle.Value,
-                PerforationInitialLength=fp.PerforationInitialLength.Value,
-                PerforationMaxLength=fp.PerforationMaxLength.Value,
-                NonperforationMaxLength=fp.NonperforationMaxLength.Value)
+                #Perforate=fp.Perforate,
+                #PerforationAngle=fp.PerforationAngle.Value,
+                #PerforationInitialLength=fp.PerforationInitialLength.Value,
+                #PerforationMaxLength=fp.PerforationMaxLength.Value,
+                #NonperforationMaxLength=fp.NonperforationMaxLength.Value)
             faces = smGetFace(f, s)
             face = faces
             Main_Object = s
