@@ -299,6 +299,53 @@ class SMHem:
                 "Supplementary angle reference",
                 False,
                 "ParametersEx")
+        
+    def onChanged(self, fp, prop):
+        # https://forum.freecad.org/viewtopic.php?t=46388
+        hidden = 2
+        visible = 0
+        if prop == "HemType":
+            if fp.HemType == "Flat":
+                fp.setEditorMode("opened", hidden)
+                fp.setEditorMode("opening", hidden)
+                fp.setEditorMode("radius", hidden)
+                fp.setEditorMode("rollangle", hidden)
+                fp.setEditorMode("width", visible)
+            elif fp.HemType == "Open":
+                fp.setEditorMode("opened", hidden)
+                fp.setEditorMode("radius", hidden)
+                fp.setEditorMode("rollangle", hidden)
+                fp.setEditorMode("opening", visible)
+                fp.setEditorMode("width", visible)
+            elif fp.HemType == "Teardrop":
+                fp.setEditorMode("opened", visible)
+                if fp.opened:
+                    fp.setEditorMode("opening", visible)
+                else:
+                    fp.setEditorMode("opening", hidden)
+                fp.setEditorMode("radius", visible)
+                fp.setEditorMode("rollangle", hidden)
+                fp.setEditorMode("width", visible)
+            elif fp.HemType == "Rolled":
+                fp.setEditorMode("opened", visible)
+                if fp.opened:
+                    fp.setEditorMode("rollangle", visible)
+                else:
+                    fp.setEditorMode("rollangle", hidden)
+                fp.setEditorMode("radius", visible)
+                fp.setEditorMode("opening", hidden)
+                fp.setEditorMode("width", hidden)
+        elif prop == "opened":
+            if fp.HemType == "Teardrop":
+                if fp.opened:
+                    fp.setEditorMode("opening", visible)
+                else:
+                    fp.setEditorMode("opening", hidden)
+            elif fp.HemType == "Rolled":
+                if fp.opened:
+                    fp.setEditorMode("rollangle", visible)
+                else:
+                    fp.setEditorMode("rollangle", hidden)
 
     def getElementMapVersion(self, _fp, ver, _prop, restored):
         if not restored:
@@ -376,24 +423,15 @@ class SMHem:
                 reliefW=fp.reliefw.Value,
                 reliefD=fp.reliefd.Value,
                 minReliefgap=fp.minReliefGap.Value,
-                #extend1=extend1_list[i],
-                #extend2=extend2_list[i],
                 kfactor=fp.kfactor,
-                #offset=offsetValue,
                 ReliefFactor=fp.ReliefFactor,
                 UseReliefFactor=fp.UseReliefFactor,
                 automiter=allowedAutoMiter,
                 selFaceNames=face,
                 MainObject=Main_Object,
-                #sketch=fp.Sketch,
                 mingap=fp.minGap.Value,
                 maxExtendGap=fp.maxExtendDist.Value)
-                #LengthSpec=fp.LengthSpec,
-                #Perforate=fp.Perforate,
-                #PerforationAngle=fp.PerforationAngle.Value,
-                #PerforationInitialLength=fp.PerforationInitialLength.Value,
-                #PerforationMaxLength=fp.PerforationMaxLength.Value,
-                #NonperforationMaxLength=fp.NonperforationMaxLength.Value)
+
             faces = smGetFace(f, s)
             face = faces
             Main_Object = s
