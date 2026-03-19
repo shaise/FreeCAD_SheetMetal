@@ -1221,17 +1221,15 @@ def smMiter(
     # print(miterA1List, miterA2List, gap1List, gap2List, extgap1List, extgap2List)
     return miterA1List, miterA2List, gap1List, gap2List, extgap1List, extgap2List
 
-def smCalcCutGap(trimedEdge, origEdge, edgePos, bendGap, reliefW, reliefD):
+def smCalcCutGap(trimedEdge, origEdge, edgePos, bendGap, extend, reliefW, reliefD):
+    if extend < SheetMetalTools.smEpsilon:
+        return -min(reliefW, bendGap)
     gap_1 = (origEdge.valueAt(edgePos)
                 - trimedEdge.valueAt(trimedEdge.FirstParameter)).Length
     gap_2 = (origEdge.valueAt(edgePos)
                 - trimedEdge.valueAt(trimedEdge.LastParameter)).Length
     gap = min(gap_1, gap_2)
-    minSpace = gap + reliefW
-    if gap > 0.0:
-        minSpace += reliefD
-    cutgap = bendGap if bendGap > minSpace else 0.0
-    return cutgap
+    return -gap
 
 def smBend(
     thk,
@@ -1411,14 +1409,10 @@ def smBend(
         CutSolids = []
 
         # Calculate cut gap to avoid small faces.
-        Ref_lenEdge = noGap_lenEdge.copy().translate(FaceDir * -offset)
-        cutgap1 = smCalcCutGap(Ref_lenEdge, AlenEdge, AlenEdge.FirstParameter, 
-                                agap1, reliefW, reliefD)
-        cutgap2 = smCalcCutGap(Ref_lenEdge, AlenEdge, AlenEdge.LastParameter, 
-                                agap2, reliefW, reliefD)
+        # Ref_lenEdge = noGap_lenEdge.copy().translate(FaceDir * -offset)
         # Remove relief if needed.
         if reliefD > 0.0 and reliefW > 0.0:
-            if agap1 > minReliefgap and cutgap1 > 0.0:
+            if agap1 > minReliefgap: # and cutgap1 > 0.0:
                 reliefFace1 = smMakeReliefFace(lenEdge, FaceDir * -1, gap1 - reliefW, reliefW,
                                                reliefD, reliefType, op="SMF")
                 reliefSolid1 = reliefFace1.extrude(thkDir * thk)
@@ -1430,7 +1424,7 @@ def smBend(
                     reliefSolid1 = reliefFace1.extrude(thkDir * thk)
                     # Part.show(reliefSolid1, "reliefSolid1b")
                     CutSolids.append(reliefSolid1)
-            if agap2 > minReliefgap and cutgap2 > 0.0:
+            if agap2 > minReliefgap: # and cutgap2 > 0.0:
                 reliefFace2 = smMakeReliefFace(lenEdge, FaceDir * -1, lenEdge.Length - gap2,
                                                reliefW, reliefD, reliefType, op="SMFF")
                 reliefSolid2 = reliefFace2.extrude(thkDir * thk)
@@ -1513,9 +1507,15 @@ def smBend(
                                         CutSolids.append(RfaceE)
                                         break
             
-            CutFace = smMakeFace(AlenEdge, thkDir, thk, cutgap1, cutgap2, op="SMC")
+            # print([cutgap1, cutgap2])
+            Ref_lenEdge = AlenEdge.copy().translate(FaceDir * -offset)
+            cutgap1 = smCalcCutGap(lenEdge, Ref_lenEdge, Ref_lenEdge.FirstParameter, 
+                                    agap1, extend1, reliefW, reliefD)
+            cutgap2 = smCalcCutGap(lenEdge, Ref_lenEdge, Ref_lenEdge.LastParameter, 
+                                    agap2, extend2, reliefW, reliefD)
+            CutFace = smMakeFace(lenEdge, thkDir, thk, cutgap1, cutgap2, op="SMC")
             # Part.show(CutFace, "CutFace")
-            CutSolid = CutFace.extrude(FaceDir * offset)
+            CutSolid = CutFace.extrude(FaceDir * -offset)
             # Part.show(CutSolid, "CutSolid")
             CfaceSolid = Cface.extrude(thkDir * thk)
             # Part.show(CfaceSolid, "CfaceSolid")
