@@ -70,17 +70,25 @@ def bisection_method(f, min_interval, max_interval, eps):
     return c
 
 
-def generateOpenHem(thickness, width, opening):
+def generateOpenHem(thickness, width, includeBend, opening):
     if opening < 0:
         raise ValueError("Opening must be positive")
     
-    if width > 0.5*opening + thickness:
-        bendRadius = 0.5*opening
-        legLength = width - bendRadius - thickness
-        bendAngle = 180
-        return (legLength, bendAngle, bendRadius)
+    bendRadius = 0.5*opening
+    bendAngle = 180
+    legLength = width
+
+    if includeBend:
+        if width > 0.5*opening + thickness:
+            legLength -= (bendRadius + thickness)
+        else:
+            raise ValueError("Width must be greater than the bend width (equal to bend radius + thickness)")
     else:
-        raise ValueError("Width must be greater than the bend width (equal to bend radius + thickness)")
+        if width <= 0:
+            raise ValueError("Width must be strictly positive")
+        
+    return (legLength, bendAngle, bendRadius)
+
 
 def generateRolledHem(thickness, radius, rollAngle=None):
     maxRollAngle = 270.0 + math.degrees(math.asin(radius/(radius+thickness)))
@@ -98,12 +106,15 @@ def generateRolledHem(thickness, radius, rollAngle=None):
     elif rollAngle > maxRollAngle:
         raise ValueError("Roll angle must not exceed physical maximum ({}°)".format(maxRollAngle))
 
-def generateTeardropHem(thickness, radius, width, opening=0.0):
+def generateTeardropHem(thickness, radius, width, includeBend, opening=0.0):
     Lp = width
     R = radius
     t = thickness
     Lbend = R + t
     H = opening
+
+    if not includeBend:
+        Lp += Lbend
 
     if H < 0:
         raise ValueError("Opening must be positive")
@@ -160,6 +171,10 @@ class SMHem:
                 "radius",
                 translate("App::Property", "Bend Radius"),
                 1.0)
+        SheetMetalTools.smAddBoolProperty(obj,
+                "IncludeBend",
+                translate("App::Property", "Include Bend"),
+                True)
         SheetMetalTools.smAddLengthProperty(obj,
                 "width",
                 translate("App::Property", "Width of Hem"),
@@ -301,7 +316,6 @@ class SMHem:
                 "ParametersEx")
         
     def onChanged(self, fp, prop):
-        # https://forum.freecad.org/viewtopic.php?t=46388
         hidden = 2
         visible = 0
         if prop == "HemType":
@@ -311,12 +325,14 @@ class SMHem:
                 fp.setEditorMode("radius", hidden)
                 fp.setEditorMode("rollangle", hidden)
                 fp.setEditorMode("width", visible)
+                fp.setEditorMode("IncludeBend", visible)
             elif fp.HemType == "Open":
                 fp.setEditorMode("opened", hidden)
                 fp.setEditorMode("radius", hidden)
                 fp.setEditorMode("rollangle", hidden)
                 fp.setEditorMode("opening", visible)
                 fp.setEditorMode("width", visible)
+                fp.setEditorMode("IncludeBend", visible)
             elif fp.HemType == "Teardrop":
                 fp.setEditorMode("opened", visible)
                 if fp.opened:
@@ -326,6 +342,7 @@ class SMHem:
                 fp.setEditorMode("radius", visible)
                 fp.setEditorMode("rollangle", hidden)
                 fp.setEditorMode("width", visible)
+                fp.setEditorMode("IncludeBend", visible)
             elif fp.HemType == "Rolled":
                 fp.setEditorMode("opened", visible)
                 if fp.opened:
@@ -335,6 +352,7 @@ class SMHem:
                 fp.setEditorMode("radius", visible)
                 fp.setEditorMode("opening", hidden)
                 fp.setEditorMode("width", hidden)
+                fp.setEditorMode("IncludeBend", hidden)
         elif prop == "opened":
             if fp.HemType == "Teardrop":
                 if fp.opened:
@@ -389,14 +407,14 @@ class SMHem:
         for i, _ in enumerate(LegLengthList):
             values = ()
             if fp.HemType == "Flat":
-                values = generateOpenHem(thk, fp.width.Value, 0.0)
+                values = generateOpenHem(thk, fp.width.Value, fp.IncludeBend, 0.0)
             elif fp.HemType == "Open":
-                values = generateOpenHem(thk, fp.width.Value, fp.opening.Value)
+                values = generateOpenHem(thk, fp.width.Value, fp.IncludeBend, fp.opening.Value)
             elif fp.HemType == "Teardrop":
                 if fp.opened:
-                    values = generateTeardropHem(thk, bendR,fp.width.Value)
+                    values = generateTeardropHem(thk, bendR, fp.width.Value, fp.IncludeBend)
                 else:
-                    values = generateTeardropHem(thk, bendR,fp.width.Value, fp.opening.Value)
+                    values = generateTeardropHem(thk, bendR, fp.width.Value, fp.IncludeBend, fp.opening.Value)
             elif fp.HemType == "Rolled":
                 allowedAutoMiter = False
                 if fp.opened:
