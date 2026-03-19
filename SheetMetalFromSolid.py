@@ -137,6 +137,27 @@ def smGetListOfAttachedEdges(shape, face):
                 attEdges.append(edge)
     return attEdges
 
+def smIsEdgeValid(edge):
+    t = edge.Curve.TypeId
+    return t == "Part::GeomLine" or t == "Part::GeomCircle" or t == "Part::GeomEllipse"
+
+def smSimpliftyFace(face):
+    """Try to simplifty the face by converting its edges to straight or circular curves.
+    This can help to avoid some issues in later operations.
+    """
+    edges = []
+    for e in face.Edges:
+        if smIsEdgeValid(e):
+            edges.append(e)
+        else:
+            p1 = e.valueAt(e.FirstParameter)
+            p2 = e.valueAt((e.FirstParameter + e.LastParameter) / 2)
+            p3 = e.valueAt(e.LastParameter)
+            arc = Part.Arc(p1, p2, p3).toShape()
+            edges.append(arc)
+    simpFace = Part.Face(Part.Wire(Part.__sortEdges__(edges)))
+    return simpFace
+
 def smFilletFaceCornersBasedOnAttachedEdges(shape, face, edgeInfoDict):
     """
     Fillet all corners of a face based on attached edges
@@ -166,9 +187,9 @@ def smFilletFaceCornersBasedOnAttachedEdges(shape, face, edgeInfoDict):
             if face.isCoplanar(f):
                 face = f
                 break
+    # Part.show(face, "filletedFace")
     return face
         
-
 def showVect(point, vect, name = "vect"):
     edge = Part.makeLine(point, point + vect)
     Part.show(edge, name)
@@ -410,7 +431,12 @@ class smfsFaceInfo:
     def offsetEdge(self, amount):
         if self.isRemoved:
             return
-        self.modifiedFace = self.modifiedFace.makeOffset(-amount)
+        try:
+            self.modifiedFace = self.modifiedFace.makeOffset2D(-amount)
+        except:
+            #Part.show(self.modifiedFace, "faceToOffsetFailed")
+            print("offsetEdge failed")
+
 
     def cutEdge(self, edgePipe):
         if self.isRemoved:
@@ -459,6 +485,9 @@ class smfsShapeInfo:
                     break
             self.faceInfoDict[face.hashCode()] = smfsFaceInfo(face, shape, isRemoved)
         for edge in shape.Edges:
+            edgeCurveType = edge.Curve.TypeId
+            if not (edgeCurveType == "Part::GeomLine" or edgeCurveType == "Part::GeomCircle"):
+                raise SMException("Unsupported shape type: only shapes with straight and circular edges are supported.")
             edgeType = self.edgeTypeDB[edge.hashCode()]
             edgeInfo = smfsEdgeInfo(edge, shape, edgeType)
             edgeInfo.faceInf1 = self.faceInfoDict[edgeInfo.face1.hashCode()] if edgeInfo.face1 else None
@@ -507,7 +536,7 @@ class smfsShapeInfo:
             faceInfo.adjustFacesShape(self.edgeInfoDict)
 
     def ripSeams(self):
-        for faceGroup in self.flatFaceGroups:
+        for i, faceGroup in enumerate(self.flatFaceGroups):
             radius = 0
             # for single flat face, we can just offset the face by the rip radius
             if len(faceGroup) == 1:
