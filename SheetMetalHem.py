@@ -412,9 +412,9 @@ class SMHem:
                 values = generateOpenHem(thk, fp.width.Value, fp.IncludeBend, fp.opening.Value)
             elif fp.HemType == "Teardrop":
                 if fp.opened:
-                    values = generateTeardropHem(thk, bendR, fp.width.Value, fp.IncludeBend)
-                else:
                     values = generateTeardropHem(thk, bendR, fp.width.Value, fp.IncludeBend, fp.opening.Value)
+                else:
+                    values = generateTeardropHem(thk, bendR, fp.width.Value, fp.IncludeBend)
             elif fp.HemType == "Rolled":
                 allowedAutoMiter = False
                 if fp.opened:
