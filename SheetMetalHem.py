@@ -180,7 +180,7 @@ class SMHem:
                 translate("App::Property", "Width of Hem"),
                 10.0)
         SheetMetalTools.smAddAngleProperty(obj,
-                "rollangle",
+                "RollAngle",
                 translate("App::Property", "Roll angle"),
                 225.0)
         SheetMetalTools.smAddBoolProperty(obj,
@@ -288,13 +288,13 @@ class SMHem:
                 self.setEditorMode(fp, "opened", hidden)
                 self.setEditorMode(fp, "opening", hidden)
                 self.setEditorMode(fp, "radius", hidden)
-                self.setEditorMode(fp, "rollangle", hidden)
+                self.setEditorMode(fp, "RollAngle", hidden)
                 self.setEditorMode(fp, "width", visible)
                 self.setEditorMode(fp, "IncludeBend", visible)
             elif fp.HemType == "Open":
                 self.setEditorMode(fp, "opened", hidden)
                 self.setEditorMode(fp, "radius", hidden)
-                self.setEditorMode(fp, "rollangle", hidden)
+                self.setEditorMode(fp, "RollAngle", hidden)
                 self.setEditorMode(fp, "opening", visible)
                 self.setEditorMode(fp, "width", visible)
                 self.setEditorMode(fp, "IncludeBend", visible)
@@ -305,15 +305,15 @@ class SMHem:
                 else:
                     self.setEditorMode(fp, "opening", hidden)
                 self.setEditorMode(fp, "radius", visible)
-                self.setEditorMode(fp, "rollangle", hidden)
+                self.setEditorMode(fp, "RollAngle", hidden)
                 self.setEditorMode(fp, "width", visible)
                 self.setEditorMode(fp, "IncludeBend", visible)
             elif fp.HemType == "Rolled":
                 self.setEditorMode(fp, "opened", visible)
                 if fp.opened:
-                    self.setEditorMode(fp, "rollangle", visible)
+                    self.setEditorMode(fp, "RollAngle", visible)
                 else:
-                    self.setEditorMode(fp, "rollangle", hidden)
+                    self.setEditorMode(fp, "RollAngle", hidden)
                 self.setEditorMode(fp, "radius", visible)
                 self.setEditorMode(fp, "opening", hidden)
                 self.setEditorMode(fp, "width", hidden)
@@ -326,9 +326,9 @@ class SMHem:
                     self.setEditorMode(fp, "opening", hidden)
             elif fp.HemType == "Rolled":
                 if fp.opened:
-                    self.setEditorMode(fp, "rollangle", visible)
+                    self.setEditorMode(fp, "RollAngle", visible)
                 else:
-                    self.setEditorMode(fp, "rollangle", hidden)
+                    self.setEditorMode(fp, "RollAngle", hidden)
 
     def getElementMapVersion(self, _fp, ver, _prop, restored):
         if not restored:
@@ -380,7 +380,7 @@ class SMHem:
             elif fp.HemType == "Rolled":
                 allowedAutoMiter = False
                 if fp.opened:
-                    values = generateRolledHem(thk, bendR, fp.rollangle.Value)
+                    values = generateRolledHem(thk, bendR, fp.RollAngle.Value)
                 else:
                     values = generateRolledHem(thk, bendR)
 
@@ -457,6 +457,7 @@ if SheetMetalTools.isGuiLoaded():
             # selection mode. And used to rename the form field (of face
             # reference) only when necessary.
             self.activeRefGeom = None
+            self.hemTypeChanged()  # Update form for the current hem type.
             self.updateForm()
 
             # Hem parameters connects  - General.
@@ -469,6 +470,7 @@ if SheetMetalTools.isGuiLoaded():
                                              self.includeBendChanged)
             SheetMetalTools.taskConnectSpin(obj, self.form.SpinRadius, "radius")
             SheetMetalTools.taskConnectCheck(obj, self.form.checkOpen, "opened", self.openChanged)
+            SheetMetalTools.taskConnectSpin(obj, self.form.SpinAngle, "RollAngle")
             SheetMetalTools.taskConnectSpin(obj, self.form.SpinOpening, "opening")
             SheetMetalTools.taskConnectEnum(obj, self.form.positionType, "BendType", self.bendTypeChanged)
             SheetMetalTools.taskConnectCheck(obj, self.form.UnfoldCheckbox, "unfold")
@@ -528,13 +530,45 @@ if SheetMetalTools.isGuiLoaded():
             self.form.groupManualMiter.setEnabled(not isAutoMiter)
 
         def openChanged(self, isOpen):
-            pass
+            type = self.obj.HemType
+            if type == "Teardrop":
+                self.form.openingGroup.setVisible(isOpen)
+            elif type == "Rolled":
+                self.form.angleGroup.setVisible(isOpen)
 
         def includeBendChanged(self, includeBend):
             pass
 
-        def hemTypeChanged(self, index):
-            pass
+        def hemTypeChanged(self, index = -1):
+            type = self.obj.HemType
+            if type == "Flat":
+                self.form.checkOpen.setVisible(False)
+                self.form.openingGroup.setVisible(False)
+                self.form.angleGroup.setVisible(False)
+                self.form.radiusGroup.setVisible(False)
+                self.form.checkIncludeBend.setVisible(True)
+                self.form.widthGroup.setVisible(True)
+            elif type == "Open":
+                self.form.checkOpen.setVisible(False)
+                self.form.openingGroup.setVisible(True)
+                self.form.angleGroup.setVisible(False)
+                self.form.radiusGroup.setVisible(False)
+                self.form.checkIncludeBend.setVisible(True)
+                self.form.widthGroup.setVisible(True)
+            elif type == "Teardrop":
+                self.form.checkOpen.setVisible(True)
+                self.form.openingGroup.setVisible(self.obj.opened)
+                self.form.angleGroup.setVisible(False)
+                self.form.radiusGroup.setVisible(True)
+                self.form.checkIncludeBend.setVisible(True)
+                self.form.widthGroup.setVisible(True)
+            elif type == "Rolled":
+                self.form.checkOpen.setVisible(True)
+                self.form.openingGroup.setVisible(False)
+                self.form.angleGroup.setVisible(self.obj.opened)
+                self.form.radiusGroup.setVisible(True)
+                self.form.checkIncludeBend.setVisible(False)
+                self.form.widthGroup.setVisible(False)
 
         def accept(self):
             SheetMetalTools.taskAccept(self)
