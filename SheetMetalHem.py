@@ -275,95 +275,60 @@ class SMHem:
                           "Location of Neutral Line. Caution: Using ANSI standards, not DIN."),
                 (0.5, 0.0, 1.0, 0.01),
                 "ParametersEx")
-        SheetMetalTools.smAddBoolProperty(obj,
-                "sketchflip",
-                translate("App::Property", "Flip Sketch Direction"),
-                False,
-                "ParametersEx2")
-        SheetMetalTools.smAddBoolProperty(obj,
-                "sketchinvert",
-                translate("App::Property", "Invert Sketch Start"),
-                False,
-                "ParametersEx2")
-        SheetMetalTools.smAddProperty(obj,
-                "App::PropertyFloatList",
-                "LegLengthList",
-                translate("App::Property", "Leg Lenghts List"),
-                None,
-                "ParametersEx3")
-        SheetMetalTools.smAddProperty(obj,
-                "App::PropertyLinkSub",
-                "OffsetFaceReference",
-                "Face reference for offset",
-                refAngOffset,
-                "ParametersEx")
-        SheetMetalTools.smAddEnumProperty(obj,
-                "OffsetType",
-                "Offset Type",
-                ["Material Outside", "Material Inside", "Thickness Outside", "Offset"],
-                "Material Inside",
-                "ParametersEx")
-        SheetMetalTools.smAddDistanceProperty(obj,
-                "OffsetTypeOffset",
-                "Works when offset face reference is on. It offsets by "
-                "a normal distance from the offsets reference face.",
-                0.0,
-                "ParametersEx")
-        SheetMetalTools.smAddBoolProperty(obj,
-                "SupplAngleRef",
-                "Supplementary angle reference",
-                False,
-                "ParametersEx")
         
+    def setEditorMode(self, fp, prop, mode):
+        if (hasattr(fp, prop)):
+            fp.setEditorMode(prop, mode)
+
     def onChanged(self, fp, prop):
         hidden = 2
         visible = 0
         if prop == "HemType":
             if fp.HemType == "Flat":
-                fp.setEditorMode("opened", hidden)
-                fp.setEditorMode("opening", hidden)
-                fp.setEditorMode("radius", hidden)
-                fp.setEditorMode("rollangle", hidden)
-                fp.setEditorMode("width", visible)
-                fp.setEditorMode("IncludeBend", visible)
+                self.setEditorMode(fp, "opened", hidden)
+                self.setEditorMode(fp, "opening", hidden)
+                self.setEditorMode(fp, "radius", hidden)
+                self.setEditorMode(fp, "rollangle", hidden)
+                self.setEditorMode(fp, "width", visible)
+                self.setEditorMode(fp, "IncludeBend", visible)
             elif fp.HemType == "Open":
-                fp.setEditorMode("opened", hidden)
-                fp.setEditorMode("radius", hidden)
-                fp.setEditorMode("rollangle", hidden)
-                fp.setEditorMode("opening", visible)
-                fp.setEditorMode("width", visible)
-                fp.setEditorMode("IncludeBend", visible)
+                self.setEditorMode(fp, "opened", hidden)
+                self.setEditorMode(fp, "radius", hidden)
+                self.setEditorMode(fp, "rollangle", hidden)
+                self.setEditorMode(fp, "opening", visible)
+                self.setEditorMode(fp, "width", visible)
+                self.setEditorMode(fp, "IncludeBend", visible)
             elif fp.HemType == "Teardrop":
-                fp.setEditorMode("opened", visible)
+                self.setEditorMode(fp, "opened", visible)
                 if fp.opened:
-                    fp.setEditorMode("opening", visible)
+                    self.setEditorMode(fp, "opening", visible)
                 else:
-                    fp.setEditorMode("opening", hidden)
-                fp.setEditorMode("radius", visible)
-                fp.setEditorMode("rollangle", hidden)
-                fp.setEditorMode("width", visible)
-                fp.setEditorMode("IncludeBend", visible)
+                    self.setEditorMode(fp, "opening", hidden)
+                self.setEditorMode(fp, "radius", visible)
+                self.setEditorMode(fp, "rollangle", hidden)
+                self.setEditorMode(fp, "width", visible)
+                self.setEditorMode(fp, "IncludeBend", visible)
             elif fp.HemType == "Rolled":
-                fp.setEditorMode("opened", visible)
+                self.setEditorMode(fp, "opened", visible)
                 if fp.opened:
-                    fp.setEditorMode("rollangle", visible)
+                    self.setEditorMode(fp, "rollangle", visible)
                 else:
-                    fp.setEditorMode("rollangle", hidden)
-                fp.setEditorMode("radius", visible)
-                fp.setEditorMode("opening", hidden)
-                fp.setEditorMode("width", hidden)
-                fp.setEditorMode("IncludeBend", hidden)
+                    self.setEditorMode(fp, "rollangle", hidden)
+                self.setEditorMode(fp, "radius", visible)
+                self.setEditorMode(fp, "opening", hidden)
+                self.setEditorMode(fp, "width", hidden)
+                self.setEditorMode(fp, "IncludeBend", hidden)
         elif prop == "opened":
             if fp.HemType == "Teardrop":
                 if fp.opened:
-                    fp.setEditorMode("opening", visible)
+                    self.setEditorMode(fp, "opening", visible)
                 else:
-                    fp.setEditorMode("opening", hidden)
+                    self.setEditorMode(fp, "opening", hidden)
             elif fp.HemType == "Rolled":
                 if fp.opened:
-                    fp.setEditorMode("rollangle", visible)
+                    self.setEditorMode(fp, "rollangle", visible)
                 else:
-                    fp.setEditorMode("rollangle", hidden)
+                    self.setEditorMode(fp, "rollangle", hidden)
 
     def getElementMapVersion(self, _fp, ver, _prop, restored):
         if not restored:
@@ -392,9 +357,6 @@ class SMHem:
         Main_Object = fp.baseObject[0].Shape.copy()
         face = fp.baseObject[1]
         thk, thkDir = sheet_thk(Main_Object, face[0])
-
-        fp.LegLengthList = LegLengthList
-        # print(LegLengthList)
 
         # Gap value needed for first bend set only.
         gap1_list = [0.0 for n in LegLengthList]
@@ -471,8 +433,8 @@ if SheetMetalTools.isGuiLoaded():
         def getIcon(self):
             return os.path.join(icons_path, "SheetMetal_AddHem.svg")
 
-        #def getTaskPanel(self, obj):
-        #    return SMBendWallTaskPanel(obj)
+        def getTaskPanel(self, obj):
+            return SMHemTaskPanel(obj)
 
 
     class SMViewProviderFlat(SMViewProviderTree):
@@ -482,6 +444,105 @@ if SheetMetalTools.isGuiLoaded():
             Backward compatibility only.
 
         """
+    class SMHemTaskPanel:
+        """A TaskPanel for the SheetMetal."""
+
+        def __init__(self, obj):
+            QtCore.QDir.addSearchPath("Icons", icons_path)
+            self.obj = obj
+            self.form = SheetMetalTools.taskLoadUI("HemParameters.ui")
+            # Make sure all properties are added.
+            obj.Proxy.addVerifyProperties(obj)
+            # Variable to track which property should be filled when in
+            # selection mode. And used to rename the form field (of face
+            # reference) only when necessary.
+            self.activeRefGeom = None
+            self.updateForm()
+
+            # Hem parameters connects  - General.
+            self.selParams = SheetMetalTools.taskConnectSelection(
+                self.form.AddRemove, self.form.tree, self.obj, ["Edge"], self.form.pushClearSel)
+            SheetMetalTools.taskConnectEnum(obj, self.form.HemType, "HemType", self.hemTypeChanged)
+            SheetMetalTools.taskConnectSpin(obj, self.form.SpinWidth, "width")
+            self.form.buttRevHem.clicked.connect(self.revHem)  # Button click action.
+            SheetMetalTools.taskConnectCheck(obj, self.form.checkIncludeBend, "IncludeBend", 
+                                             self.includeBendChanged)
+            SheetMetalTools.taskConnectSpin(obj, self.form.SpinRadius, "radius")
+            SheetMetalTools.taskConnectCheck(obj, self.form.checkOpen, "opened", self.openChanged)
+            SheetMetalTools.taskConnectSpin(obj, self.form.SpinOpening, "opening")
+            SheetMetalTools.taskConnectEnum(obj, self.form.positionType, "BendType", self.bendTypeChanged)
+            SheetMetalTools.taskConnectCheck(obj, self.form.UnfoldCheckbox, "unfold")
+
+            # Hem parameters connects  - Offsets.
+            SheetMetalTools.taskConnectSpin(obj, self.form.gap1, "gap1")
+            SheetMetalTools.taskConnectSpin(obj, self.form.gap2, "gap2")
+            self.form.reliefTypeButtonGroup.buttonToggled.connect(self.reliefTypeUpdated)
+            SheetMetalTools.taskConnectSpin(obj, self.form.reliefWidth, "reliefw")
+            SheetMetalTools.taskConnectSpin(obj, self.form.reliefDepth, "reliefd")
+
+            # Hem parameters connects  - Miter.
+            SheetMetalTools.taskConnectCheck(obj, self.form.autoMiterCheckbox, "AutoMiter", self.autoMiterChanged)
+            SheetMetalTools.taskConnectSpin(obj, self.form.minGap, "minGap")
+            SheetMetalTools.taskConnectSpin(obj, self.form.maxExDist, "maxExtendDist")
+            SheetMetalTools.taskConnectSpin(obj, self.form.miterAngle1, "miterangle1")
+            SheetMetalTools.taskConnectSpin(obj, self.form.miterAngle2, "miterangle2")
+
+        def revHem(self):  # Button to flip the hem side.
+            self.obj.invert = not self.obj.invert
+            self.updateForm()
+
+        def isAllowedAlterSelection(self):
+            return True
+
+        def isAllowedAlterView(self):
+            return True
+
+        def bendTypeChanged(self, value):
+            pass
+
+        def reliefTypeUpdated(self):
+            self.obj.reliefType = (
+                "Rectangle" if self.form.reliefRectangle.isChecked() else "Round")
+            self.obj.Document.recompute()
+
+        # `value` parameter just to easily use this function as
+        # a callback in form connections.
+        def updateForm(self, value=None):
+            SheetMetalTools.taskPopulateSelectionList(self.form.tree, self.obj.baseObject)
+
+            # Advanced parameters update.
+            if self.obj.reliefType == "Rectangle":
+                self.form.reliefRectangle.setChecked(True)
+            else:
+                self.form.reliefRound.setChecked(True)
+
+            # Button flip the hem - updates check.
+            self.form.buttRevHem.setChecked(self.obj.invert)
+
+            # Updates the angle in model.
+            self.obj.recompute()
+            self.obj.Document.recompute()
+
+        def autoMiterChanged(self, isAutoMiter):
+            self.form.groupAutoMiter.setEnabled(isAutoMiter)
+            self.form.groupManualMiter.setEnabled(not isAutoMiter)
+
+        def openChanged(self, isOpen):
+            pass
+
+        def includeBendChanged(self, includeBend):
+            pass
+
+        def hemTypeChanged(self, index):
+            pass
+
+        def accept(self):
+            SheetMetalTools.taskAccept(self)
+            SheetMetalTools.taskSaveDefaults(self.obj, smAddHemDefaultVars)
+            return True
+
+        def reject(self):
+            SheetMetalTools.taskReject(self)
 
 
     class AddHemCommandClass:
@@ -581,11 +642,9 @@ if SheetMetalTools.isGuiLoaded():
                         newObj.setExpression("radius", root.Label + ".radius")
             newObj.baseObject[0].ViewObject.Visibility = False
             doc.recompute()
-            # 'checkRefFace' turn bendtype to 'Offset' when face
-            # reference is before the command.
-            #dialog = SMHemTaskPanel(newObj, checkRefFace)
-            #SheetMetalTools.updateTaskTitleIcon(dialog)
-            #Gui.Control.showDialog(dialog)
+            dialog = SMHemTaskPanel(newObj)
+            SheetMetalTools.updateTaskTitleIcon(dialog)
+            Gui.Control.showDialog(dialog)
             return
 
         def IsActive(self):
