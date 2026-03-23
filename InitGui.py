@@ -62,6 +62,7 @@ class SMWorkbench(Workbench):
         import SheetMetalBaseShapeCmd
         import SheetMetalBend
         import SheetMetalCmd
+        import SheetMetalHem
         import SheetMetalCornerReliefCmd
         import SheetMetalExtendCmd
         import SheetMetalFoldCmd
@@ -80,6 +81,7 @@ class SMWorkbench(Workbench):
             "SheetMetal_AddBase",
             "SheetMetal_FromSolid",
             "SheetMetal_AddWall",
+            "SheetMetal_AddHem",
             "SheetMetal_Extrude",
             "SheetMetal_ExtendBySketch",
             "SheetMetal_AddFoldWall",
