@@ -31,7 +31,7 @@
      <property name="currentIndex">
       <number>0</number>
      </property>
-     <widget class="QWidget" name="tab">
+     <widget class="QWidget" name="tabGeneral">
       <attribute name="title">
        <string>General</string>
       </attribute>
@@ -929,7 +929,7 @@ min-width: 28px;</string>
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="tab_2">
+     <widget class="QWidget" name="tabOffsets">
       <attribute name="title">
        <string>Offsets</string>
       </attribute>
@@ -1090,7 +1090,7 @@ min-width: 28px;</string>
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="tab_3">
+     <widget class="QWidget" name="tabMiter">
       <attribute name="title">
        <string>Miter</string>
       </attribute>

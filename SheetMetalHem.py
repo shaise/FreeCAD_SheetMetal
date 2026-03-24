@@ -457,6 +457,9 @@ if SheetMetalTools.isGuiLoaded():
             # selection mode. And used to rename the form field (of face
             # reference) only when necessary.
             self.activeRefGeom = None
+            # Store tab information for hiding/showing
+            self.miterTabIndex = None
+            self.miterTabTitle = None
             self.hemTypeChanged()  # Update form for the current hem type.
             self.updateForm()
 
@@ -541,34 +544,29 @@ if SheetMetalTools.isGuiLoaded():
 
         def hemTypeChanged(self, index = -1):
             type = self.obj.HemType
-            if type == "Flat":
-                self.form.checkOpen.setVisible(False)
-                self.form.openingGroup.setVisible(False)
-                self.form.angleGroup.setVisible(False)
-                self.form.radiusGroup.setVisible(False)
-                self.form.checkIncludeBend.setVisible(True)
-                self.form.widthGroup.setVisible(True)
-            elif type == "Open":
-                self.form.checkOpen.setVisible(False)
-                self.form.openingGroup.setVisible(True)
-                self.form.angleGroup.setVisible(False)
-                self.form.radiusGroup.setVisible(False)
-                self.form.checkIncludeBend.setVisible(True)
-                self.form.widthGroup.setVisible(True)
-            elif type == "Teardrop":
-                self.form.checkOpen.setVisible(True)
-                self.form.openingGroup.setVisible(self.obj.opened)
-                self.form.angleGroup.setVisible(False)
-                self.form.radiusGroup.setVisible(True)
-                self.form.checkIncludeBend.setVisible(True)
-                self.form.widthGroup.setVisible(True)
-            elif type == "Rolled":
-                self.form.checkOpen.setVisible(True)
-                self.form.openingGroup.setVisible(False)
-                self.form.angleGroup.setVisible(self.obj.opened)
-                self.form.radiusGroup.setVisible(True)
-                self.form.checkIncludeBend.setVisible(False)
-                self.form.widthGroup.setVisible(False)
+            self.form.horizLineBendAng.setVisible(not (type == "Flat"))
+            
+            # Handle Miter tab visibility
+            if type == "Rolled":
+                # Hide the Miter tab
+                if self.miterTabIndex is None:
+                    self.miterTabIndex = self.form.tabWidget.indexOf(self.form.tabMiter)
+                    if self.miterTabIndex >= 0:
+                        self.miterTabTitle = self.form.tabWidget.tabText(self.miterTabIndex)
+                        self.form.tabWidget.removeTab(self.miterTabIndex)
+            else:
+                # Show the Miter tab
+                if self.miterTabIndex is not None and self.miterTabTitle is not None:
+                    self.form.tabWidget.insertTab(self.miterTabIndex, self.form.tabMiter, self.miterTabTitle)
+                    self.miterTabIndex = None
+                    self.miterTabTitle = None
+            
+            self.form.checkOpen.setVisible(type in ["Teardrop", "Rolled"])
+            self.form.openingGroup.setVisible(type == "Open" or (type == "Teardrop" and self.obj.opened))
+            self.form.angleGroup.setVisible(type == "Rolled" and self.obj.opened)
+            self.form.radiusGroup.setVisible(type in ["Teardrop", "Rolled"])
+            self.form.checkIncludeBend.setVisible(type != "Rolled")
+            self.form.widthGroup.setVisible(type != "Rolled")
 
         def accept(self):
             SheetMetalTools.taskAccept(self)
