@@ -269,6 +269,7 @@ if SheetMetalTools.isGuiLoaded():
             if not (selobj.isDerivedFrom("Sketcher::SketchObject")
                     or selobj.isDerivedFrom("PartDesign::ShapeBinder")
                     or selobj.isDerivedFrom("PartDesign::SubShapeBinder")
+                    or selobj.isDerivedFrom("Part::Part2DObjectPython")
                     ):
                 return False
             return True
