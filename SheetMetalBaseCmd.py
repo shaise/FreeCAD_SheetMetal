@@ -270,22 +270,9 @@ if SheetMetalTools.isGuiLoaded():
                 selobj.isDerivedFrom("Sketcher::SketchObject")
                 or selobj.isDerivedFrom("PartDesign::ShapeBinder")
                 or selobj.isDerivedFrom("PartDesign::SubShapeBinder")
-                or (
-                    selobj.isDerivedFrom("Part::Part2DObjectPython")
-                    and selobj.Shape.isClosed() == True
-                )
+                or selobj.isDerivedFrom("Part::Part2DObjectPython")
             ):
                 return False
-            if (
-                selobj.isDerivedFrom("Part::Part2DObjectPython")
-                and selobj.Shape.isClosed() == True
-            ):
-                from Part import makeFace
-
-                try:
-                    Part.makeFace(selobj.Shape.Wires, "Part::FaceMakerBullseye")
-                except ValueError:
-                    return False
             return True
 
     Gui.addCommand("SheetMetal_AddBase", AddBaseCommandClass())
