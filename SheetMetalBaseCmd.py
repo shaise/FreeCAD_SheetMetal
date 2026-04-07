@@ -266,12 +266,13 @@ if SheetMetalTools.isGuiLoaded():
             if len(Gui.Selection.getSelection()) != 1:
                 return False
             selobj = Gui.Selection.getSelection()[0]
-            if not (selobj.isDerivedFrom("Sketcher::SketchObject")
-                    or selobj.isDerivedFrom("PartDesign::ShapeBinder")
-                    or selobj.isDerivedFrom("PartDesign::SubShapeBinder")
-                    ):
+            if not (
+                selobj.isDerivedFrom("Sketcher::SketchObject")
+                or selobj.isDerivedFrom("PartDesign::ShapeBinder")
+                or selobj.isDerivedFrom("PartDesign::SubShapeBinder")
+                or selobj.isDerivedFrom("Part::Part2DObjectPython")
+            ):
                 return False
             return True
-
 
     Gui.addCommand("SheetMetal_AddBase", AddBaseCommandClass())
