@@ -861,7 +861,7 @@ def CheckEdgeFlip(checkEdge, refEdge):
         return Part.makeLine(p2, p1)
     return checkEdge
 
-def getBendetail(selItemNames, MainObject, bendR, bendA, isflipped, offset, gap1, gap2):
+def getBendetail(selItemNames, MainObject, bendR, bendAngle, isflipped, offset, gap1, gap2):
     mainlist = []
     edgelist = []
     nogap_edgelist = []
@@ -888,6 +888,7 @@ def getBendetail(selItemNames, MainObject, bendR, bendA, isflipped, offset, gap1
             revAxisV *= -1
 
         flipped = isflipped
+        bendA = bendAngle
         # Restrict angle.
         if bendA < 0:
             bendA = -bendA
