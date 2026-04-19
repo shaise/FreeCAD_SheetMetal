@@ -96,6 +96,10 @@ SheetMetal WB can be installed via the [Addon Manager](https://github.com/FreeCA
 * FreeCAD Forum announcement/discussion [thread](https://forum.freecad.org/viewtopic.php?f=3&t=60818) 
 
 #### Release notes:
+* V0.8.11 19 Apr 2026:  Allow use of Draft Clone of Sketch by [@Syres916][Syres916].  
+                      - Add missing element map version.  
+                      - fix dxf export naming.  
+                      - handle multi-edge negative-angle fold issue.  
 * V0.8.10 24 Mar 2026:  New Hem command by [@pierreporte][pierreporte].  
 * V0.8.04 19 Mar 2026:  Fix bend issue with non 90deg edges.  
 * V0.8.03 15 Mar 2026:  Better handle seam tolerances - Solid to Sheet tool.  
