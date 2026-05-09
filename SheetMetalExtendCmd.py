@@ -327,7 +327,7 @@ if SheetMetalTools.isGuiLoaded():
 
             self.selParams = SheetMetalTools.taskConnectSelection(self.form.AddRemove,
                                                                   self.form.tree, self.obj,
-                                                                  ["Face"], self.form.pushClearSel)
+                                                                  ["Face", "Edge"], self.form.pushClearSel)
             SheetMetalTools.taskConnectSelectionSingle(self.form.buttSelSketch,
                                                        self.form.txtSelSketch, obj, "Sketch",
                                                        ("Sketcher::SketchObject", []))
