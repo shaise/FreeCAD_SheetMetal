@@ -303,7 +303,7 @@ if isGuiLoaded():
                 return True
             if isinstance(allowedTypes[0], str):
                 for element in selSubNames:
-                    if not smStripTrailingNumber(element) in allowedTypes:
+                    if not smGetFeatureType(element) in allowedTypes:
                         return False
                 return True
             for allowedSubType in allowedTypes:
@@ -977,6 +977,11 @@ else:
 def smStripTrailingNumber(item):
     return re.sub(r"\d+$", "", item)
 
+def smGetFeatureType(item):
+    res =smStripTrailingNumber(item)
+    if res.startswith("?"):
+        res = res[1:]
+    return res
 
 def smAddToRecompute(obj):
     smObjectsToRecompute.add(obj)
