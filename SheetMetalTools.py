@@ -100,6 +100,8 @@ if isGuiLoaded():
 
     Gui = FreeCAD.Gui
 
+    smExportDirs = {}
+
 
     def smWarnDialog(msg):
         diag = QtGui.QMessageBox(
@@ -818,6 +820,13 @@ if isGuiLoaded():
 
 
     def smGuiExportSketch(sketches, fileType, fileName, useDialog=True):
+        activeFile = FreeCAD.ActiveDocument.FileName
+        if activeFile in smExportDirs:
+            fileName = os.path.join(smExportDirs[activeFile], fileName)
+        else:
+            dirName = os.path.dirname(activeFile)
+            if dirName:
+                fileName = os.path.join(dirName, fileName)
         if useDialog:
             filePath, _ = QtGui.QFileDialog.getSaveFileName(
                 Gui.getMainWindow(),
@@ -825,6 +834,8 @@ if isGuiLoaded():
                 fileName,                       # Default file path
                 f"Vector Files (*.{fileType})"  # File type filters
             )
+            if filePath:
+                smExportDirs[activeFile] = os.path.dirname(filePath)
         else:
             filePath = fileName
         if filePath:
