@@ -96,6 +96,10 @@ SheetMetal WB can be installed via the [Addon Manager](https://github.com/FreeCA
 * FreeCAD Forum announcement/discussion [thread](https://forum.freecad.org/viewtopic.php?f=3&t=60818) 
 
 #### Release notes:
+* V0.8.12 03 Jun 2026:  Fix missing edge selections on task panel list.  
+                      - Show broken items (i.e. ?Edge1) in list so they can be dealt with.   
+                      - Remember last expot directory.  
+                      - Fix wrong color assignments in unfold sketches.  
 * V0.8.11 19 Apr 2026:  Allow use of Draft Clone of Sketch by [@Syres916][Syres916].  
                       - Add missing element map version.  
                       - fix dxf export naming.  
