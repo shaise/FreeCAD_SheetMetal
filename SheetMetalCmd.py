@@ -1815,7 +1815,7 @@ class SMBendWall:
                 FreeCAD.Qt.translate("App::Property", "Perforation Angle"),
                 0.0,
                 "ParametersPerforation")
-        SheetMetalTools.smAddDistanceProperty(obj,
+        SheetMetalTools.smAddLengthProperty(obj,
                 "PerforationInitialLength",
                 FreeCAD.Qt.translate("App::Property", "Initial Perforation Length"),
                 5.0,
