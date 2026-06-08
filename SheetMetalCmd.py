@@ -512,23 +512,25 @@ def smMakePerforationFace(
         pivotL = extLen - pivotL
         swingL = extLen - swingL
 
+    faces = []
+
     # Initial perf, near.
-    p1 = edge.valueAt(edge.FirstParameter + gap1) + dir.normalize() * pivotL
-    p2 = edge.valueAt(edge.FirstParameter + gap1 + lenIPerf1) + dir.normalize() * pivotL
-    p3 = edge.valueAt(edge.FirstParameter + gap1 + lenIPerf1) + dir.normalize() * swingL
-    p4 = edge.valueAt(edge.FirstParameter + gap1) + dir.normalize() * swingL
-    w = Part.makePolygon([p1, p2, p3, p4, p1])
-    face = Part.Face(w)
-    totalFace = face
+    if lenIPerf1 > 0:
+        p1 = edge.valueAt(edge.FirstParameter + gap1) + dir.normalize() * pivotL
+        p2 = edge.valueAt(edge.FirstParameter + gap1 + lenIPerf1) + dir.normalize() * pivotL
+        p3 = edge.valueAt(edge.FirstParameter + gap1 + lenIPerf1) + dir.normalize() * swingL
+        p4 = edge.valueAt(edge.FirstParameter + gap1) + dir.normalize() * swingL
+        w = Part.makePolygon([p1, p2, p3, p4, p1])
+        faces.append(Part.Face(w))
 
     # Initial perf, far.
-    p1 = edge.valueAt(edge.LastParameter - gap2 - lenIPerf2) + dir.normalize() * pivotL
-    p2 = edge.valueAt(edge.LastParameter - gap2) + dir.normalize() * pivotL
-    p3 = edge.valueAt(edge.LastParameter - gap2) + dir.normalize() * swingL
-    p4 = edge.valueAt(edge.LastParameter - gap2 - lenIPerf2) + dir.normalize() * swingL
-    w = Part.makePolygon([p1, p2, p3, p4, p1])
-    face = Part.Face(w)
-    totalFace = totalFace.fuse(face)
+    if lenIPerf2 > 0:
+        p1 = edge.valueAt(edge.LastParameter - gap2 - lenIPerf2) + dir.normalize() * pivotL
+        p2 = edge.valueAt(edge.LastParameter - gap2) + dir.normalize() * pivotL
+        p3 = edge.valueAt(edge.LastParameter - gap2) + dir.normalize() * swingL
+        p4 = edge.valueAt(edge.LastParameter - gap2 - lenIPerf2) + dir.normalize() * swingL
+        w = Part.makePolygon([p1, p2, p3, p4, p1])
+        faces.append(Part.Face(w))
 
     # Perforations, inner.
     for i in range(P):
@@ -538,7 +540,10 @@ def smMakePerforationFace(
         p3 = edge.valueAt(x + Lp * F) + dir.normalize() * swingL
         p4 = edge.valueAt(x) + dir.normalize() * swingL
         w = Part.makePolygon([p1, p2, p3, p4, p1])
-        face = Part.Face(w)
+        faces.append(Part.Face(w))
+
+    totalFace = faces[0]
+    for face in faces[1:]:
         totalFace = totalFace.fuse(face)
 
     if hasattr(totalFace, "mapShapes"):
