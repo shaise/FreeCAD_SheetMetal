@@ -294,6 +294,175 @@
        </layout>
       </item>
       <item>
+       <widget class="QWidget" name="groupBendCuts" native="true">
+        <layout class="QVBoxLayout" name="verticalLayout_5">
+         <property name="margin">
+          <number>0</number>
+         </property>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_13">
+           <item>
+            <widget class="QCheckBox" name="chkBendCuts">
+             <property name="text">
+              <string>Generate bend relief cuts</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <spacer name="horizontalSpacer_6">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item>
+            <widget class="Gui::ColorButton" name="cutColor">
+             <property name="color" stdset="0">
+              <color>
+               <red>0</red>
+               <green>192</green>
+               <blue>255</blue>
+              </color>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="QWidget" name="groupBendCutsBody" native="true">
+           <layout class="QVBoxLayout" name="verticalLayout_6">
+            <property name="margin">
+             <number>0</number>
+            </property>
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_14">
+              <item>
+               <widget class="QLabel" name="label_9">
+                <property name="text">
+                 <string>Relief shape</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QRadioButton" name="radioStraightCut">
+                <property name="text">
+                 <string>Straight</string>
+                </property>
+                <property name="checked">
+                 <bool>true</bool>
+                </property>
+                <attribute name="buttonGroup">
+                 <string notr="true">cutShapeGroup</string>
+                </attribute>
+               </widget>
+              </item>
+              <item>
+               <widget class="QRadioButton" name="radioSketchCut">
+                <property name="text">
+                 <string>From sketch</string>
+                </property>
+                <attribute name="buttonGroup">
+                 <string notr="true">cutShapeGroup</string>
+                </attribute>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_15">
+              <item>
+               <widget class="QLabel" name="label_10">
+                <property name="text">
+                 <string>Max material distance (bridge)</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="Gui::QuantitySpinBox" name="maxMaterialDist">
+                <property name="minimum">
+                 <double>0.000000000000000</double>
+                </property>
+                <property name="unit" stdset="0">
+                 <string notr="true">mm</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_16">
+              <item>
+               <widget class="QLabel" name="label_11">
+                <property name="text">
+                 <string>Max cut distance</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="Gui::QuantitySpinBox" name="maxCutDist">
+                <property name="minimum">
+                 <double>0.010000000000000</double>
+                </property>
+                <property name="unit" stdset="0">
+                 <string notr="true">mm</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_17">
+              <item>
+               <widget class="QLabel" name="label_12">
+                <property name="text">
+                 <string>Edge offset</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="Gui::QuantitySpinBox" name="cutEdgeOffset">
+                <property name="minimum">
+                 <double>0.000000000000000</double>
+                </property>
+                <property name="unit" stdset="0">
+                 <string notr="true">mm</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <widget class="QWidget" name="groupCutShape" native="true">
+              <layout class="QHBoxLayout" name="horizontalLayout_18">
+               <property name="margin">
+                <number>0</number>
+               </property>
+               <item>
+                <widget class="QPushButton" name="pushCutSketch">
+                 <property name="text">
+                  <string>Pick sketch</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLineEdit" name="txtCutSketch"/>
+               </item>
+              </layout>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
        <widget class="QWidget" name="groupExport" native="true">
         <layout class="QHBoxLayout" name="horizontalLayout_11">
          <property name="margin">
@@ -502,5 +671,6 @@
  <buttongroups>
   <buttongroup name="exportGroup"/>
   <buttongroup name="kFactorGroup"/>
+  <buttongroup name="cutShapeGroup"/>
  </buttongroups>
 </ui>
