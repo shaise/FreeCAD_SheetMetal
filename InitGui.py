@@ -121,8 +121,12 @@ class SMWorkbench(Workbench):
         """Execute whenever the user right-clicks on screen."""
         # `recipient` will be either `view` or `tree`.
         #
-        # Add commands to the context menu.
         self.appendContextMenu(FreeCAD.Qt.translate("SheetMetal", "Sheet Metal"), self.list)
+        if recipient and "tree" in str(recipient).lower():
+            import SheetMetalTools
+            sel = Gui.Selection.getSelection()
+            if sel and SheetMetalTools.smIsPartDesign(sel[0]):
+                self.appendContextMenu([], ["PartDesign_MoveTip"])
 
     def GetClassName(self):
         # This function is mandatory if this is a full python workbench.
