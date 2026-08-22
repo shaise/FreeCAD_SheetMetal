@@ -96,6 +96,9 @@ SheetMetal WB can be installed via the [Addon Manager](https://github.com/FreeCA
 * FreeCAD Forum announcement/discussion [thread](https://forum.freecad.org/viewtopic.php?f=3&t=60818) 
 
 #### Release notes:
+* V0.8.22 22 Aug 2026:  Support for folding marks by [@hydroid7][hydroid7].  
+                      - Add "set-tip" context menu command.  
+                      - Update translations.  
 * V0.8.21 18 Jun 2026:  Fix auto gap fill of base shape command.  
                       - Attend some lint warnings.  
 * V0.8.20 08 Jun 2026:  Update translations and translation scripts.
@@ -363,6 +366,7 @@ SheetMetal WB can be installed via the [Addon Manager](https://github.com/FreeCA
 [povauboin]: https://github.com/povauboin
 [leoheck]: https://github.com/leoheck
 [rtm7777]: https://github.com/rtm7777
+[hydroid7]: https://github.com/hydroid7
 [topic82482]: https://forum.freecad.org/viewtopic.php?t=82482
 [30]: https://github.com/shaise/FreeCAD_SheetMetal/issues/30
 [33]: https://github.com/shaise/FreeCAD_SheetMetal/issues/33

@@ -777,7 +777,7 @@ if SheetMetalTools.isGuiLoaded():
 
         def chkBendCutsChange(self, _value=None):
             genCuts = self.form.chkBendCuts.isChecked() and self.form.chkBendCuts.isEnabled()
-            self.form.groupBendCutsBody.setEnabled(genCuts)
+            self.form.groupBendCutsBody.setVisible(genCuts)
             useSketch = genCuts and self.form.radioSketchCut.isChecked()
             self.form.groupCutShape.setVisible(useSketch)
 
