@@ -121,6 +121,16 @@
          </widget>
         </item>
         <item>
+         <widget class="QRadioButton" name="radioWeld">
+          <property name="text">
+           <string>Weld</string>
+          </property>
+          <attribute name="buttonGroup">
+           <string notr="true">groupReliefType</string>
+          </attribute>
+         </widget>
+        </item>
+        <item>
          <widget class="QRadioButton" name="radioSketch">
           <property name="text">
            <string>Sketch</string>
