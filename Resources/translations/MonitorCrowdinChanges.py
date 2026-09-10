@@ -13,7 +13,7 @@ PROJECT_ID = 392231
 FILE_IDS = [32182, 32184]
 # FILE_ID = 32184
 
-CROWDIN_TOKEN = "3df4091bbee7b41494ff0ead24e0c52e75fd98efdae2282aa0c6a041bea827e0520be77f1de1eb52"
+CROWDIN_TOKEN = "<enter crowdin token>"
 STATE_FILE = Path("crowdin_state.json")
 
 
