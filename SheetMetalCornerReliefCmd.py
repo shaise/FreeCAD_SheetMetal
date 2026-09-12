@@ -592,8 +592,18 @@ def smCornerR(reliefsketch="Circle", size=3.0, ratio=1.0, xoffset=0.0, yoffset=0
                 # Part.show(BendSolidFace, "BendSolidFace")
                 # print([bendR, bendA, revAxisV, revAxisP, normal, flipped,
                 #        BendSolidFace.Faces[0].normalAt(0, 0)])
-                bendsolid = SheetMetalBendSolid.bend_solid(BendSolidFace.Faces[0], BendEdge, bendR,
-                                                           thk, neutralRadius, revAxisV, flipped)
+                face = BendSolidFace.Faces[0]
+                u, v = face.Surface.parameter(face.CenterOfMass)
+                epsilon = 0.1
+
+                moved_edge = BendEdge.copy()
+                moved_edge.translate(normal * epsilon)
+
+                moved_face = face.copy()
+                moved_face.translate(normal * epsilon)
+
+                bendsolid = SheetMetalBendSolid.bend_solid(moved_face, moved_edge, bendR,
+                                                           thk+epsilon, neutralRadius, revAxisV, flipped)
                 # Part.show(bendsolid, "bendsolid")
                 solidlist.append(bendsolid)
 
