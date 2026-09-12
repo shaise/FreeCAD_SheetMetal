@@ -110,7 +110,7 @@ def makeSketch(relieftype, size, ratio, cent, normal, addvector, weldlist = []):
         weld_cut_sketch = None
 
         if size > 0:
-            circle_cent = cent - addvector * size #maybe needet in the future
+            # circle_cent = cent - addvector * size #maybe needet in the future
             circle_cent = cent
 
             pt = find_adjacent_point(values[0]["p4"],circle_cent,normal,radius,values[0]["flipped"])
@@ -635,23 +635,27 @@ def smCornerR(reliefsketch="Circle", size=3.0, ratio=1.0, xoffset=0.0, yoffset=0
                 else:
                     BalanceFace = sketch_face
     if len(solidlist) > 1:
-        SMSolid = solidlist[0].multiFuse(solidlist[1:],0.01)
+        SMSolid = solidlist[0].multiFuse(solidlist[1:])
         # Part.show(SMSolid, "SMSolid")
         SMSolid = SMSolid.removeSplitter()
     else:
         SMSolid = solidlist[0]
     # Part.show(SMSolid, "SMSolid")
-    resultSolid = resultSolid.cut(SMSolid,0.01)
+    resultSolid = resultSolid.cut(SMSolid)
     if weldlist:
         for index,weld in enumerate(weldlist):
             cutter = solidlist[index+1]
             # Part.show(cutter,"CutterSolid")
-            weldlist[index] = weld.cut(cutter,0.01).removeSplitter()
+            weldlist[index] = weld.cut(cutter)
             # Part.show(weld,"WeldSolid")
-        resultSolid = resultSolid.multiFuse(weldlist[0:],0.01)
+        resultSolid = resultSolid.multiFuse(weldlist[0:])
 
         # Part.show(resultSolid,"resultSolid")
-        resultSolid = resultSolid.Solids[0].removeSplitter()
+        try:
+            resultSolid = resultSolid.removeSplitter()
+        except:
+            FreeCAD.Console.PrintWarning("Warning: Face cleanup not possible\n")
+
     return resultSolid
 
 
