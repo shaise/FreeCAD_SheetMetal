@@ -47,7 +47,7 @@
     </message>
     <message>
         <location filename="../../SheetMetalBend.py" line="112"/>
-        <location filename="../../SheetMetalCornerReliefCmd.py" line="369"/>
+        <location filename="../../SheetMetalCornerReliefCmd.py" line="687"/>
         <location filename="../../SheetMetalExtendCmd.py" line="236"/>
         <source>Base object</source>
         <translation type="unfinished"></translation>
@@ -251,38 +251,38 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../SheetMetalCornerReliefCmd.py" line="360"/>
+        <location filename="../../SheetMetalCornerReliefCmd.py" line="676"/>
         <source>Corner Relief Type</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../SheetMetalCornerReliefCmd.py" line="372"/>
+        <location filename="../../SheetMetalCornerReliefCmd.py" line="690"/>
         <source>Size of Shape</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../SheetMetalCornerReliefCmd.py" line="374"/>
+        <location filename="../../SheetMetalCornerReliefCmd.py" line="692"/>
         <source>Size Ratio of Shape</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../SheetMetalCornerReliefCmd.py" line="376"/>
+        <location filename="../../SheetMetalCornerReliefCmd.py" line="694"/>
         <location filename="../../SheetMetalFoldCmd.py" line="240"/>
         <source>Neutral Axis Position</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../SheetMetalCornerReliefCmd.py" line="379"/>
+        <location filename="../../SheetMetalCornerReliefCmd.py" line="697"/>
         <source>Corner Relief Sketch</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../SheetMetalCornerReliefCmd.py" line="381"/>
+        <location filename="../../SheetMetalCornerReliefCmd.py" line="699"/>
         <source>Gap from side one</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../SheetMetalCornerReliefCmd.py" line="383"/>
+        <location filename="../../SheetMetalCornerReliefCmd.py" line="701"/>
         <source>Gap from side two</source>
         <translation type="unfinished"></translation>
     </message>
@@ -925,43 +925,48 @@ double clicking on it.</source>
     </message>
     <message>
         <location filename="../panels/CornerReliefPanel.ui" line="126"/>
-        <location filename="../panels/CornerReliefPanel.ui" line="159"/>
+        <source>Weld</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../panels/CornerReliefPanel.ui" line="136"/>
+        <location filename="../panels/CornerReliefPanel.ui" line="169"/>
         <source>Sketch</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../panels/CornerReliefPanel.ui" line="178"/>
+        <location filename="../panels/CornerReliefPanel.ui" line="188"/>
         <source>X Offset</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../panels/CornerReliefPanel.ui" line="201"/>
+        <location filename="../panels/CornerReliefPanel.ui" line="211"/>
         <source>Y Offset</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../panels/CornerReliefPanel.ui" line="230"/>
-        <location filename="../panels/CornerReliefPanel.ui" line="287"/>
+        <location filename="../panels/CornerReliefPanel.ui" line="240"/>
+        <location filename="../panels/CornerReliefPanel.ui" line="297"/>
         <source>Relief Size</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../panels/CornerReliefPanel.ui" line="238"/>
+        <location filename="../panels/CornerReliefPanel.ui" line="248"/>
         <source>Absolute</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../panels/CornerReliefPanel.ui" line="248"/>
+        <location filename="../panels/CornerReliefPanel.ui" line="258"/>
         <source>Relative</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../panels/CornerReliefPanel.ui" line="328"/>
+        <location filename="../panels/CornerReliefPanel.ui" line="338"/>
         <source>Scale Factor</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../panels/CornerReliefPanel.ui" line="350"/>
+        <location filename="../panels/CornerReliefPanel.ui" line="360"/>
         <source>K Factor</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2148,12 +2153,12 @@ double clicking on it.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../SheetMetalCornerReliefCmd.py" line="521"/>
+        <location filename="../../SheetMetalCornerReliefCmd.py" line="843"/>
         <source>Add Corner Relief</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../SheetMetalCornerReliefCmd.py" line="523"/>
+        <location filename="../../SheetMetalCornerReliefCmd.py" line="845"/>
         <source>Corner Relief to metal sheet corner.
 1. Select 2 Edges (on flat face that shared with bend faces) tocreate Relief on sheetmetal.
 2. Use Property editor to modify default parameters</source>
