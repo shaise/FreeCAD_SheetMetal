@@ -36,12 +36,109 @@ smEpsilon = SheetMetalTools.smEpsilon
 # List of properties to be saved as defaults.
 smCornerReliefDefaultVars = ["Size", "SizeRatio", ("kfactor", "defaultKFactor")]
 
+def find_adjacent_point(p1, p2, plane_normal, opposite_length, side=1):
+    hypotenuse_vector = p2 - p1
+    hypotenuse = hypotenuse_vector.Length
 
-def makeSketch(relieftype, size, ratio, cent, normal, addvector):
+    if opposite_length > hypotenuse:
+        raise ValueError("Opposite side cannot be longer than the hypotenuse")
+
+    u = FreeCAD.Vector(hypotenuse_vector)
+    u.normalize()
+
+    n = FreeCAD.Vector(plane_normal)
+    n.normalize()
+
+    sideways = n.cross(u)
+    sideways.normalize()
+
+    adjacent = math.sqrt(hypotenuse**2 - opposite_length**2)
+
+    along_hypotenuse = adjacent**2 / hypotenuse
+    sideways_distance = (
+        adjacent * opposite_length / hypotenuse
+    )
+
+    p3 = p1 + u * along_hypotenuse + sideways * sideways_distance * side
+
+    return p3
+
+def makeSketch(relieftype, size, ratio, cent, normal, addvector, weldlist = []):
     # Create wire for face creation.
     if "Circle" in relieftype:
         circle = Part.makeCircle(size, cent, normal)
         sketch = Part.Wire(circle)
+    elif "Weld" in relieftype:
+        unfoldLength = weldlist[2]
+        radius = size/2
+
+        weld_sketch = []
+        values = []
+        for index,edge in enumerate(weldlist[1]):
+            flipped = -1
+            #Doing this way to be sure that v1 is facing towards the corner
+            p1: FreeCAD.Vector = edge.Vertexes[0].Point
+            p2: FreeCAD.Vector = edge.Vertexes[1].Point
+            if p1.distanceToPoint(cent) < 1e-4:
+                v = p1-p2
+            else:
+                v = p2-p1
+            v.normalize()
+            perp = v.cross(normal).normalize() * (-1 + index * 2)
+            if perp.dot(addvector) < 0:
+                perp *= -1
+                flipped *= -1
+            p3 = cent + perp*unfoldLength
+
+            weldedge = closest_edge(weldlist[0],edge,cent)
+            if weldedge:
+                width = weldedge.Length
+                p4 = p3 + v*width
+                values.append({"p1":p1,"p2":p2,"p3":p3,"p4":p4,"flipped":flipped,"v":v})
+                if index == 0:
+                    weld_sketch.append(Part.makePolygon([cent,p4,p3,cent]))
+                else:
+                    weld_sketch.append(Part.makePolygon([cent,p3,p4,cent]))
+            else:
+                p4 = FreeCAD.Vector(p3)
+                values.append({"p1":p1,"p2":p2,"p3":p3,"p4":p4,"flipped":flipped,"v":v})
+                weld_sketch.append(None)
+        
+        if weld_sketch[0] is None and weld_sketch[1] is None:
+            raise ValueError("At least 1 gap is needed")
+
+        weld_cut_sketch = None
+
+        if size > 0:
+            # circle_cent = cent - addvector * size #maybe needet in the future
+            circle_cent = cent
+
+            pt = find_adjacent_point(values[0]["p4"],circle_cent,normal,radius,values[0]["flipped"])
+            pt_op = find_adjacent_point(values[1]["p4"],circle_cent,normal,radius,-values[1]["flipped"])
+            p_circle_bottom = circle_cent - addvector*radius
+
+            L1 = Part.makeLine(values[0]["p4"],pt)
+            L2 = Part.makeLine(pt_op,values[1]["p4"])
+            L3 = Part.makeLine(values[1]["p4"],values[0]["p4"])
+
+            arc = Part.Arc(pt,p_circle_bottom,pt_op)
+            shape = Part.Shape([L1,arc,L2,L3])
+
+            weld_cut_sketch = Part.Wire(shape.Edges)
+            # Part.show(weld_cut_sketch)
+            cutter = Part.Face(weld_cut_sketch)
+            if weld_sketch[0]:
+                weld_face = Part.Face(weld_sketch[0])
+                weld_face = weld_face.cut(cutter)
+                weld_sketch[0] = weld_face.Wires[0]
+            if weld_sketch[1]:
+                weld_face = Part.Face(weld_sketch[1])
+                weld_face = weld_face.cut(cutter)
+                weld_sketch[1] = weld_face.Wires[0]
+
+        # Part.show(weld_sketch[0], "weld_sketchA")
+        # Part.show(weld_sketch[1], "weld_sketchB")
+        return weld_sketch, weld_cut_sketch
     else:
         #    diagonal_length = math.sqrt(size**2 + (ratio * size)**2)
         diagonal_length = size * 2
@@ -182,6 +279,123 @@ def getBendDetail(obj, edge1, edge2, kfactor):
     return [cornerPoint, centerPoint, largeface, thk, unfoldLength, neutralRadius]
 
 
+def closest_edge(
+        shape,
+        source_edge,
+        point,
+        tolerance=1e-4,
+        angle_tolerance_deg=5.0):
+
+    point = FreeCAD.Vector(point)
+
+    def same_vertex(v1, v2):
+        return v1.isEqual(v2, tolerance)
+
+    def shares_vertex(edge1, edge2):
+        for v1 in edge1.Vertexes:
+            for v2 in edge2.Vertexes:
+                if same_vertex(v1.Point, v2.Point):
+                    return True
+        return False
+
+    def edge_direction(edge):
+        u1, u2 = edge.ParameterRange
+        tangent = edge.tangentAt((u1 + u2) / 2.0)
+
+        if tangent.Length == 0:
+            return None
+
+        tangent.normalize()
+        return tangent
+
+    ancestors = shape.ancestorsOfType(source_edge, Part.Face)
+
+    for cylface in ancestors:
+        if isinstance(cylface.Surface, Part.Cylinder):
+            break
+
+    tester = None
+    #Edge connected to corner point
+    for edge in cylface.Edges:
+        if tester:
+            break
+        if edge.isSame(source_edge):
+            continue
+        for vertex in edge.Vertexes:
+            if same_vertex(vertex.Point, point):
+                tester = edge
+                break
+
+    #Edge above cylface
+    for edge in cylface.Edges:
+        if edge.isSame(source_edge) or edge.isSame(tester):
+            continue
+        isSharing = shares_vertex(edge,tester)
+        if isSharing:
+            top_edge = edge
+            break
+
+    ancestors = shape.ancestorsOfType(top_edge, Part.Face)
+
+    for face in ancestors:
+        if isinstance(face.Surface, Part.Cylinder):
+            continue
+        for edge in face.Edges:
+            if edge.isSame(top_edge):
+                continue
+            isSharing = shares_vertex(edge,top_edge)
+            isConnected = shares_vertex(edge,tester)
+            if isSharing and isConnected:
+                candidate = edge
+
+    source_direction = edge_direction(source_edge)
+    candidate_direction = edge_direction(candidate)
+    direction_limit = math.cos(math.radians(angle_tolerance_deg))
+
+    if abs(source_direction.dot(candidate_direction)) > direction_limit:
+        return candidate
+
+    return None
+
+def getBendSolidParameters(resultSolid, BendEdge, thk, kfactor):
+    facelist = resultSolid.ancestorsOfType(BendEdge, Part.Face)
+
+    cylface = None
+    for face in facelist:
+        if issubclass(type(face.Surface), Part.Cylinder):
+            cylface = face
+            break
+
+    if cylface is None:
+        return None
+
+    revAxisV = cylface.Surface.Axis
+    revAxisP = cylface.Surface.Center
+
+    offsetface = cylface.makeOffsetShape(
+        -thk,
+        0.0,
+        fill=False
+    )
+
+    if offsetface.Area < cylface.Area:
+        bendR = cylface.Surface.Radius - thk
+        flipped = True
+    else:
+        bendR = cylface.Surface.Radius
+        flipped = False
+
+    neutralRadius = bendR + kfactor * thk
+
+    return {
+        "revAxisP": revAxisP,
+        "revAxisV": revAxisV,
+        "bendR": bendR,
+        "thk": thk,
+        "neutralRadius": neutralRadius,
+        "flipped": flipped,
+    }
+
 def smCornerR(reliefsketch="Circle", size=3.0, ratio=1.0, xoffset=0.0, yoffset=0.0, kfactor=0.5,
               sketch=None, flipped=False, selEdgeNames="", MainObject=None):
     import BOPTools.SplitAPI
@@ -195,17 +409,39 @@ def smCornerR(reliefsketch="Circle", size=3.0, ratio=1.0, xoffset=0.0, yoffset=0
     cornerPoint, centerPoint, LargeFace, thk, unfoldLength, neutralRadius = DetailList
     normal = LargeFace.normalAt(0, 0)
     SplitLineVector = centerPoint - cornerPoint
-    if "Scaled" in reliefsketch:
+    if "Scaled" in reliefsketch and "Weld" in reliefsketch:
+        size = ratio
+    elif "Scaled" in reliefsketch:
         size = ratio * abs(SplitLineVector.Length)
     SplitLineVector.normalize()
     # print([centerPoint, cornerPoint, SplitLineVector])
     SplitLine = Part.makeLine(
-        centerPoint + SplitLineVector * size * 3,
-        cornerPoint + SplitLineVector * -size * 3,
+        centerPoint + SplitLineVector * (size + neutralRadius) * 3,
+        cornerPoint + SplitLineVector * (-size - neutralRadius) * 3,
     )
     # Part.show(SplitLine,"SplitLine")
 
-    if reliefsketch != "Sketch":
+    if "Weld" in reliefsketch:
+        sketches = makeSketch(reliefsketch, size, ratio, cornerPoint, normal, SplitLineVector, [resultSolid, REdgelist, unfoldLength])
+        if sketches[1]:
+            weldFaces = []
+            for sketch in sketches[0]:
+                if sketch is not None:
+                    face = Part.Face(sketch)
+                    weldFaces.insert(0,face)
+                else:
+                    weldFaces.insert(0,None)
+            reliefFace = Part.Face(sketches[1])
+        else:
+            weldFaces = []
+            for sketch in sketches[0]:
+                if sketch is not None:
+                    face = Part.Face(sketch)
+                    weldFaces.append(face)
+                else:
+                    weldFaces.append(None)
+            reliefFace = None
+    elif reliefsketch != "Sketch":
         sketch = makeSketch(reliefsketch, size, ratio, centerPoint, normal, SplitLineVector)
         reliefFace = Part.Face(sketch)
     else:
@@ -216,10 +452,57 @@ def smCornerR(reliefsketch="Circle", size=3.0, ratio=1.0, xoffset=0.0, yoffset=0
                                                                                0))
     # Part.show(reliefFace, "reliefFace")
 
+    solidlist = []
+    weldlist = []
+    
+    if "Weld" in reliefsketch and reliefFace == None:
+        # To check face direction.
+        if weldFaces[0]:
+            coeff = normal.dot(weldFaces[0].Faces[0].normalAt(0, 0))
+        else:
+            coeff = normal.dot(weldFaces[1].Faces[0].normalAt(0, 0))
+        if coeff < 0:
+            if weldFaces[0]:
+                weldFaces[0].reverse()
+            if weldFaces[1]:
+                weldFaces[1].reverse()
+        for index, BendEdge in enumerate(REdgelist):
+            if weldFaces[index] is None:
+                continue
+            weldFace = weldFaces[index]
+            params = getBendSolidParameters(
+                resultSolid,
+                BendEdge,
+                thk,
+                kfactor
+            )
+
+            bendsolid = SheetMetalBendSolid.bend_solid(
+                weldFace,
+                BendEdge,
+                params["bendR"],
+                params["thk"],
+                params["neutralRadius"],
+                params["revAxisV"],
+                params["flipped"]
+            )
+            weldlist.append(bendsolid)
+        if weldlist:
+            resultSolid = resultSolid.multiFuse(weldlist[0:])
+            resultSolid = resultSolid.removeSplitter()
+            return resultSolid
+        else:
+            raise ValueError("No weld solid is available to add")
+
     # To check face direction.
     coeff = normal.dot(reliefFace.Faces[0].normalAt(0, 0))
     if coeff < 0:
         reliefFace.reverse()
+        if "Weld" in reliefsketch:
+            if weldFaces[0]:
+                weldFaces[0].reverse()
+            if weldFaces[1]:
+                weldFaces[1].reverse()
     # To get top face cut.
     First_face = LargeFace.common(reliefFace)
     # Part.show(First_face,"First_face")
@@ -230,14 +513,14 @@ def smCornerR(reliefsketch="Circle", size=3.0, ratio=1.0, xoffset=0.0, yoffset=0
     SplitFaces = BOPTools.SplitAPI.slice(Balance_Face.Faces[0], SplitLine.Edges, "Standard", 0.0)
     # Part.show(SplitFaces, "SplitFaces")
 
-    # To get top face normal, `Flatsolid`.
-    solidlist = []
     if First_face.Faces:
         Flatsolid = First_face.extrude(normal * -thk)
         # Part.show(Flatsolid, "Flatsolid")
         solidlist.append(Flatsolid)
     if SplitFaces.Faces:
-        for BalanceFace in SplitFaces.Faces:
+        for index,BalanceFace in enumerate(SplitFaces.Faces):
+            if "Weld" in reliefsketch:
+                weldFace = weldFaces[index]
             # Part.show(BalanceFace, "BalanceFace")
             TopFace = LargeFace
             # Part.show(TopFace, "TopFace")
@@ -303,14 +586,34 @@ def smCornerR(reliefsketch="Circle", size=3.0, ratio=1.0, xoffset=0.0, yoffset=0
                     faceNormal *= -1
                     FaceArea = tool.extrude(faceNormal * -unfoldLength)
                 BendSolidFace = BalanceFace.common(FaceArea)
+                if "Weld" in reliefsketch:
+                    BendSolidFace = BalanceFace
                 # Part.show(FaceArea, "FaceArea")
                 # Part.show(BendSolidFace, "BendSolidFace")
                 # print([bendR, bendA, revAxisV, revAxisP, normal, flipped,
                 #        BendSolidFace.Faces[0].normalAt(0, 0)])
-                bendsolid = SheetMetalBendSolid.bend_solid(BendSolidFace.Faces[0], BendEdge, bendR,
-                                                           thk, neutralRadius, revAxisV, flipped)
+                face = BendSolidFace.Faces[0]
+                u, v = face.Surface.parameter(face.CenterOfMass)
+                epsilon = 0.1
+
+                moved_edge = BendEdge.copy()
+                moved_edge.translate(normal * epsilon)
+
+                moved_face = face.copy()
+                moved_face.translate(normal * epsilon)
+
+                bendsolid = SheetMetalBendSolid.bend_solid(moved_face, moved_edge, bendR,
+                                                           thk+epsilon, neutralRadius, revAxisV, flipped)
                 # Part.show(bendsolid, "bendsolid")
                 solidlist.append(bendsolid)
+
+                if "Weld" in reliefsketch and weldFace:
+                    bendsolid = SheetMetalBendSolid.bend_solid(weldFace, BendEdge, bendR,
+                                                               thk, neutralRadius, revAxisV, flipped)
+                    # Part.show(bendsolid, "weldsolid")
+                    weldlist.append(bendsolid)
+                    break
+
                 if flipped:
                     bendA = -bendA
                 if not SolidFace.Faces:
@@ -341,7 +644,6 @@ def smCornerR(reliefsketch="Circle", size=3.0, ratio=1.0, xoffset=0.0, yoffset=0
                     solidlist.append(Flatsolid)
                 else:
                     BalanceFace = sketch_face
-    # To get relief Solid fused.
     if len(solidlist) > 1:
         SMSolid = solidlist[0].multiFuse(solidlist[1:])
         # Part.show(SMSolid, "SMSolid")
@@ -350,6 +652,20 @@ def smCornerR(reliefsketch="Circle", size=3.0, ratio=1.0, xoffset=0.0, yoffset=0
         SMSolid = solidlist[0]
     # Part.show(SMSolid, "SMSolid")
     resultSolid = resultSolid.cut(SMSolid)
+    if weldlist:
+        for index,weld in enumerate(weldlist):
+            cutter = solidlist[index+1]
+            # Part.show(cutter,"CutterSolid")
+            weldlist[index] = weld.cut(cutter)
+            # Part.show(weld,"WeldSolid")
+        resultSolid = resultSolid.multiFuse(weldlist[0:])
+
+        # Part.show(resultSolid,"resultSolid")
+        try:
+            resultSolid = resultSolid.removeSplitter()
+        except:
+            FreeCAD.Console.PrintWarning("Warning: Face cleanup not possible\n")
+
     return resultSolid
 
 
@@ -364,6 +680,8 @@ class SMCornerRelief:
             "Circle-Scaled",
             "Square",
             "Square-Scaled",
+            "Weld",
+            "Weld-Scaled",
             "Sketch",
         ]
         _tip_ = FreeCAD.Qt.translate("App::Property", "Base object")
@@ -463,10 +781,12 @@ if SheetMetalTools.isGuiLoaded():
                 self.form.radioCircular.setChecked(True)
             elif reliefType in ["Square", "Square-Scaled"]:
                 self.form.radioSquare.setChecked(True)
+            elif reliefType in ["Weld", "Weld-Scaled"]:
+                self.form.radioWeld.setChecked(True)
             else:
                 self.form.radioSketch.setChecked(True)
 
-            if reliefType in ["Square-Scaled", "Circle-Scaled"]:
+            if reliefType in ["Square-Scaled", "Circle-Scaled", "Weld-Scaled"]:
                 self.form.radioRelative.setChecked(True)
             else:
                 self.form.radioAbsolute.setChecked(True)
@@ -480,6 +800,8 @@ if SheetMetalTools.isGuiLoaded():
                 self.obj.ReliefSketch = "Circle-Scaled" if relative else "Circle"
             elif button == self.form.radioSquare:
                 self.obj.ReliefSketch = "Square-Scaled" if relative else "Square"
+            elif button == self.form.radioWeld:
+                self.obj.ReliefSketch = "Weld-Scaled" if relative else "Weld"
             else:
                 self.obj.ReliefSketch = "Sketch"
             self.updateWidgetVisibility()
