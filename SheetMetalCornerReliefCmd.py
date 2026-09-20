@@ -41,7 +41,7 @@ def find_adjacent_point(p1, p2, plane_normal, opposite_length, side=1):
     hypotenuse = hypotenuse_vector.Length
 
     if opposite_length > hypotenuse:
-        raise ValueError("Opposite side cannot be longer than the hypotenuse")
+        raise ValueError("Radius is too big use Circular type instead")
 
     u = FreeCAD.Vector(hypotenuse_vector)
     u.normalize()
@@ -565,8 +565,10 @@ def smCornerR(reliefsketch="Circle", size=3.0, ratio=1.0, xoffset=0.0, yoffset=0
                 if offsetface.Area < cylface.Area:
                     bendR = cylface.Surface.Radius - thk
                     flipped = True
+                    bendShape = cylface.makeOffsetShape(-thk, 0.0, fill=True)
                 else:
                     bendR = cylface.Surface.Radius
+                    bendShape = cylface.makeOffsetShape(thk, 0.0, fill=True)
                     flipped = False
                 # To arrive `unfoldLength`, `neutralRadius`.
                 unfoldLength = (bendR + kfactor*thk) * abs(bendA) * math.pi / 180.0
@@ -609,14 +611,19 @@ def smCornerR(reliefsketch="Circle", size=3.0, ratio=1.0, xoffset=0.0, yoffset=0
                 bendsolid = SheetMetalBendSolid.bend_solid(moved_face, moved_edge, bendR,
                                                            thk+epsilon, neutralRadius, revAxisV, flipped)
                 # Part.show(bendsolid, "bendsolid")
-                solidlist.append(bendsolid)
 
                 if "Weld" in reliefsketch and weldFace:
-                    bendsolid = SheetMetalBendSolid.bend_solid(weldFace, BendEdge, bendR,
+                    solidlist.append(bendShape)
+
+                    weldsolid = SheetMetalBendSolid.bend_solid(weldFace, BendEdge, bendR,
                                                                thk, neutralRadius, revAxisV, flipped)
+                    weldsolid = weldsolid.fuse(bendShape)
+                    weldsolid = weldsolid.cut(bendsolid)
                     # Part.show(bendsolid, "weldsolid")
-                    weldlist.append(bendsolid)
+                    weldlist.append(weldsolid)
                     break
+
+                solidlist.append(bendsolid)
 
                 if flipped:
                     bendA = -bendA
@@ -656,15 +663,9 @@ def smCornerR(reliefsketch="Circle", size=3.0, ratio=1.0, xoffset=0.0, yoffset=0
         SMSolid = solidlist[0]
     # Part.show(SMSolid, "SMSolid")
     resultSolid = resultSolid.cut(SMSolid)
-    if weldlist:
-        for index,weld in enumerate(weldlist):
-            cutter = solidlist[index+1]
-            # Part.show(cutter,"CutterSolid")
-            weldlist[index] = weld.cut(cutter)
-            # Part.show(weld,"WeldSolid")
-        resultSolid = resultSolid.multiFuse(weldlist[0:])
 
-        # Part.show(resultSolid,"resultSolid")
+    if weldlist:
+        resultSolid = resultSolid.multiFuse(weldlist[0:])
         try:
             resultSolid = resultSolid.removeSplitter()
         except:
