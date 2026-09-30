@@ -96,6 +96,9 @@ SheetMetal WB can be installed via the [Addon Manager](https://github.com/FreeCA
 * FreeCAD Forum announcement/discussion [thread](https://forum.freecad.org/viewtopic.php?f=3&t=60818) 
 
 #### Release notes:
+* V0.8.24 30 Sep 2026:  Unfolder speedup by [@alexneufeld][alexneufeld].  
+                      - Corner relief fixes by [@Blendware][Blendware].  
+                      - Update trandlations.  
 * V0.8.23 13 Sep 2026:  Added weld type corner relief by [@Blendware][Blendware].  
                       - Update translations.  
 * V0.8.22 22 Aug 2026:  Support for folding marks by [@hydroid7][hydroid7].  
