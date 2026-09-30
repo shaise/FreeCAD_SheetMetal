@@ -1096,6 +1096,8 @@ def build_graph_of_tangent_faces(shp: Part.Shape, root: int) -> nx.Graph:
     candidates = [
         (i, shp.ancestorsOfType(e, Part.Face)) for i, e in enumerate(shp.Edges)
     ]
+    # shallow-copying the edge list seems to greatly speedup calls to __getitem__?
+    this_shape_edges = list(shp.Edges)
     # Filter to remove seams on cylinders or other faces that wrap back
     # onto themselves other than self-adjacent faces, edges should
     # always have 2 face ancestors this assumption is probably only
@@ -1103,7 +1105,7 @@ def build_graph_of_tangent_faces(shp: Part.Shape, root: int) -> nx.Graph:
     saw_warning = False
     for edge_index, faces in filter(lambda c: len(c[1]) == 2, candidates):
         face_a, face_b = faces
-        shared_edge = shp.Edges[edge_index]
+        shared_edge = this_shape_edges[edge_index]
         tangent_result, possible_geom_warning = TangentFaces.compare(
             face_a, face_b, shared_edge
         )
@@ -1357,8 +1359,9 @@ def unfold(
     # Also build a list of all seam edges, to be filtered out from the
     # unfolded shape.
     seam_edges_list = []
+    this_shape_edges = list(shape.Edges)
     for _, _, edata in graph_of_sheet_faces.edges(data=True):
-        seam_edges_list.append(shape.Edges[edata["label"]].hashCode())
+        seam_edges_list.append(this_shape_edges[edata["label"]].hashCode())
     seam_edges = set(seam_edges_list)
     # We could also get a random spanning tree here. Would that be
     # faster? Or is it better to take the opportunity to get a spanning
@@ -1381,18 +1384,19 @@ def unfold(
     # The digraph should now have everything we need to unfold the shape,
     # For every edge f1--e1-->f2 where f2 is a cylindrical face, feed f1
     # through our unbending functions with e1 as the stationary edge.
+    this_shape_faces = list(shape.Faces)
     for e in [
-        e for e in dg.edges if shape.Faces[e[1]].Surface.TypeId == "Part::GeomCylinder"
+        e for e in dg.edges if this_shape_faces[e[1]].Surface.TypeId == "Part::GeomCylinder"
     ]:
         # The bend face is the end-node of the directed edge.
-        bend_part = shape.Faces[e[1]]
+        bend_part = this_shape_faces[e[1]]
         # We stored the edge indices as the labels of the graph edges.
         edge_before_bend_index = dg.get_edge_data(e[0], e[1])["label"]
         # Check that we aren't trying to unfold across a non-linear
         # reference edge. This condition is reached if the user supplies
         # a part with complex formed features that have
         # unfoldable-but-tangent faces, for example.
-        edge_before_bend = shape.Edges[edge_before_bend_index]
+        edge_before_bend = this_shape_edges[edge_before_bend_index]
         if edge_before_bend.Curve.TypeId != "Part::GeomLine":
             errmsg = (
                 "This shape appears to have bends across non-straight edges. "
@@ -1456,7 +1460,7 @@ def unfold(
             list_of_sketch_lines.extend(
                 [
                     e.transformed(final_mat)
-                    for e in shape.Faces[face_id].Edges
+                    for e in this_shape_faces[face_id].Edges
                     if e.hashCode() not in seam_edges
                 ]
             )
