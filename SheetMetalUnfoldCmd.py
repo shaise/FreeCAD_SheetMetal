@@ -79,6 +79,8 @@ smUnfoldDefaultVars = [
     "BendCutMaxCut",
     "BendCutEdgeOffset",
     "BendCutShapeMode",
+    "BendCutWaveGap",
+    "BendCutWaveDepth",
 ]
 smUnfoldNonSavedDefaultVars = [
     "UnfoldTransparency",
@@ -103,6 +105,13 @@ KFACTOR = 0.40
 ###################################################################################################
 
 def smUnfoldExportSketches(obj, useDialog=True):
+    if getattr(obj, "GenerateBendCuts", False) and obj.BendCutShapeMode == "wave":
+        # Updating child sketches can leave a Body's Unfold touched after
+        # obj.recompute(); finish the document recompute before checking it.
+        obj.Document.recompute()
+        if any(state in obj.State for state in ("Touched", "Invalid")):
+            SMLogger.error("Recompute the Wave unfold successfully before exporting.\n")
+            return
     if len(obj.UnfoldSketches) == 0:
         return
     sketches = []
@@ -139,6 +148,8 @@ class SMUnfold:
         )
         self.addVerifyProperties(obj)
         SheetMetalTools.taskRestoreDefaults(obj, smUnfoldDefaultVars)
+        if obj.BendCutShapeMode == "wave":
+            self.applyWaveDefaults(obj)
         # Setup transient properties.
         self.SketchColor = GENSKETCHCOLOR
         self.InternalColor = OUTLINESKETCHCOLOR
@@ -151,6 +162,27 @@ class SMUnfold:
         SheetMetalTools.taskRestoreDefaults(self, smUnfoldNonSavedDefaultVars)
         obj.Proxy = self
         self.UnfoldSketches = []
+
+    def applyWaveDefaults(self, obj):
+        """Scale untouched factory values to thickness when entering Wave."""
+        defaults = [("BendCutMaxCut", 3.0, 6.0),
+                    ("BendCutMaxMaterial", 8.0, 1.0),
+                    ("BendCutEdgeOffset", 5.0, 1.0),
+                    ("BendCutWaveGap", 0.6, 0.6),
+                    ("BendCutWaveDepth", 1.0, 1.0)]
+        expressions = dict(obj.ExpressionEngine)
+        unchanged = [(name, factor) for name, initial, factor in defaults
+                     if abs(getattr(obj, name).Value - initial) < SheetMetalBendCuts.eps
+                     and name not in expressions]
+        if not unchanged or not NewUnfolderAvailable:
+            return
+        base, face_name = SheetMetalTools.smGetSubElementName(obj.baseObject[1][0])
+        shape = (base if base is not None else obj.baseObject[0]).Shape
+        face = shape.getElement(face_name)
+        index = next(i for i, f in enumerate(shape.Faces) if f.isSame(face))
+        thickness = SheetMetalNewUnfolder.EstimateThickness.using_best_method(shape, index)
+        for name, factor in unchanged:
+            setattr(obj, name, factor * thickness)
 
     def addVerifyProperties(self, obj):
         SheetMetalTools.smAddProperty(obj,
@@ -231,9 +263,17 @@ class SMUnfold:
         SheetMetalTools.smAddEnumProperty(obj,
             "BendCutShapeMode",
             translate("SheetMetal", "Relief cut profile source"),
-            ["straight", "sketch"],
+            ["straight", "sketch", "wave"],
             "straight",
         )
+        if "wave" not in obj.getEnumerationsOfProperty("BendCutShapeMode"):
+            mode = obj.BendCutShapeMode
+            obj.BendCutShapeMode = ["straight", "sketch", "wave"]
+            obj.BendCutShapeMode = mode
+        SheetMetalTools.smAddLengthProperty(obj, "BendCutWaveGap",
+            translate("SheetMetal", "Wave slot width"), 0.6)
+        SheetMetalTools.smAddLengthProperty(obj, "BendCutWaveDepth",
+            translate("SheetMetal", "Wave end centerline offset from the bend line"), 1.0)
         SheetMetalTools.smAddProperty(obj,
             "App::PropertyLink",
             "BendCutProfileSketch",
@@ -314,7 +354,8 @@ class SMUnfold:
 
         sketches = []
         if obj.GenerateSketch and unfolded_shape is not None:
-            label_infodata = bend_infodata if obj.ShowBendAngles else []
+            wave = obj.GenerateBendCuts and obj.BendCutShapeMode == "wave"
+            label_infodata = bend_infodata if obj.ShowBendAngles and not wave else []
 
             # Bend-relief cuts are a pure post-process of `bend_infodata`,
             # computed *before* it gets filtered above for label display
@@ -356,7 +397,19 @@ class SMUnfold:
                     obj.BendCutMaxMaterial.Value,
                     obj.BendCutEdgeOffset.Value,
                     profile,
+                    wave_gap=obj.BendCutWaveGap.Value if wave else None,
+                    wave_depth=obj.BendCutWaveDepth.Value,
                 )
+                if wave and cut_compound.Wires:
+                    outline, inner, holes = SheetMetalNewUnfolder.SketchExtraction.extract_manually(
+                        unfolded_shape, root_normal)
+                    alignment = SheetMetalNewUnfolder.SketchExtraction.move_to_origin(outline, sel_face)
+                    material = Part.makeFace([outline, *inner, *holes], "Part::FaceMakerBullseye"
+                                             ).transformed(alignment)
+                    slots = Part.makeCompound([Part.Face(w) for w in cut_compound.Wires])
+                    if slots.cut(material).Area > SheetMetalBendCuts.eps:
+                        raise ValueError("Wave slots cross the sheet boundary or a hole. "
+                                         "Reduce the end offset or increase the edge offset.")
                 if fallback_edges:
                     # Bends too short for the requested pattern keep their
                     # plain solid bend line instead of being dropped.
@@ -370,7 +423,9 @@ class SMUnfold:
                         f"[BendCuts] cut_compound (frame A, pre-fix) BoundBox={cut_compound.BoundBox}\n")
 
                 if obj.SeparateSketchLayers:
-                    # Keep the existing dashed "_Sketch_Bends" layer as-is
+                    if wave:
+                        bend_lines_for_sketch = Part.makeCompound([])
+                    # Keep the dashed "_Sketch_Bends" layer except in Wave mode
                     # and add the cut pattern as its own extra layer, built
                     # directly (bypassing getUnfoldSketches' internal
                     # merge/transform), exactly like the existing
@@ -633,6 +688,8 @@ if SheetMetalTools.isGuiLoaded():
             SheetMetalTools.taskConnectSpin(obj, self.form.maxMaterialDist, "BendCutMaxMaterial")
             SheetMetalTools.taskConnectSpin(obj, self.form.maxCutDist, "BendCutMaxCut")
             SheetMetalTools.taskConnectSpin(obj, self.form.cutEdgeOffset, "BendCutEdgeOffset")
+            SheetMetalTools.taskConnectSpin(obj, self.form.waveGap, "BendCutWaveGap")
+            SheetMetalTools.taskConnectSpin(obj, self.form.waveDepth, "BendCutWaveDepth")
             SheetMetalTools.taskConnectSelectionSingle(self.form.pushCutSketch,
                                                        self.form.txtCutSketch, obj,
                                                        "BendCutProfileSketch",
@@ -650,12 +707,15 @@ if SheetMetalTools.isGuiLoaded():
             self.form.availableMds.currentIndexChanged.connect(self.availableMdsChacnge)
             self.form.dxfExport.toggled.connect(self.exportTypeChanged)
             self.form.kfactorAnsi.toggled.connect(self.kfactorStdChanged)
-            self.form.radioSketchCut.toggled.connect(self.cutShapeChanged)
-
             if obj.BendCutShapeMode == "sketch":
                 self.form.radioSketchCut.setChecked(True)
+            elif obj.BendCutShapeMode == "wave":
+                self.form.radioWaveCut.setChecked(True)
             else:
                 self.form.radioStraightCut.setChecked(True)
+            for button in (self.form.radioStraightCut, self.form.radioSketchCut,
+                           self.form.radioWaveCut):
+                button.toggled.connect(self.cutShapeChanged)
 
             if not self.bendCutsAvailable:
                 self.form.chkBendCuts.setChecked(False)
@@ -701,7 +761,7 @@ if SheetMetalTools.isGuiLoaded():
         def checkBendCutsValid(self):
             if not (self.form.chkBendCuts.isChecked() and self.form.chkBendCuts.isEnabled()):
                 return True
-            if self.form.radioStraightCut.isChecked():
+            if not self.form.radioSketchCut.isChecked():
                 return True
             sketch = self.obj.BendCutProfileSketch
             if sketch is None:
@@ -780,10 +840,26 @@ if SheetMetalTools.isGuiLoaded():
             self.form.groupBendCutsBody.setVisible(genCuts)
             useSketch = genCuts and self.form.radioSketchCut.isChecked()
             self.form.groupCutShape.setVisible(useSketch)
+            self.form.groupWaveCut.setVisible(genCuts and self.form.radioWaveCut.isChecked())
+            self.form.label_10.setText(translate("SheetMetal", "Bridge width" if
+                self.form.radioWaveCut.isChecked() else "Max material distance (bridge)"))
 
         def cutShapeChanged(self, _value=None):
-            self.obj.BendCutShapeMode = "sketch" if self.form.radioSketchCut.isChecked() else "straight"
-            self.chkBendCutsChange()
+            if not _value:
+                return
+            mode = ("wave" if self.form.radioWaveCut.isChecked() else
+                    "sketch" if self.form.radioSketchCut.isChecked() else "straight")
+            if mode == "wave" and self.obj.BendCutShapeMode != "wave":
+                self.obj.Proxy.applyWaveDefaults(self.obj)
+                for widget, name in ((self.form.maxCutDist, "BendCutMaxCut"),
+                                     (self.form.maxMaterialDist, "BendCutMaxMaterial"),
+                                     (self.form.cutEdgeOffset, "BendCutEdgeOffset"),
+                                     (self.form.waveGap, "BendCutWaveGap"),
+                                     (self.form.waveDepth, "BendCutWaveDepth")):
+                    blocked = widget.blockSignals(True)
+                    widget.setProperty("value", getattr(self.obj, name))
+                    widget.blockSignals(blocked)
+            SheetMetalTools._taskUpdateValue(mode, self.obj, "BendCutShapeMode", self.chkSketchChange)
 
         def exportTypeChanged(self):
             self.obj.Proxy.ExportType = "dxf" if self.form.dxfExport.isChecked() else "svg"
