@@ -23,7 +23,60 @@
 ########################################################################
 
 import collections
+import os
+import csv
+import FreeCAD
 
+def get_k_factor_from_csv(csv_name, thickness):
+    """
+    Liest den K-Faktor direkt aus der CSV-Datei im Einstellungsordner.
+    Reads K-Factor directly from the parameters-File
+    """
+    param_grp = FreeCAD.ParamGet("User parameter:BaseApp/Preferences/Mod/SheetMetal")
+    csv_folder = param_grp.GetString("CSVMaterialFolder", "")
+    
+    # Entfernt das 'csv_'-Prefix, um den echten Dateinamen zu bekommen
+    #Removes the 'csv_'-prefix for getting the real filename
+    clean_name = csv_name.replace("csv_", "") + ".csv"
+    file_path = os.path.join(csv_folder, clean_name)
+
+    if not os.path.exists(file_path):
+        return 0.5  # Fallback K-Faktor
+
+    thicknesses = []
+    k_factors = []
+
+    try:
+        with open(file_path, mode='r', encoding='utf-8') as f:
+            reader = csv.reader(f)
+            next(reader, None)  # Header-Zeile überspringen Jump over the header-line
+            for row in reader:
+                if len(row) >= 2 and row[0].strip() and row[1].strip():
+                    t_val = float(row[0].replace(',', '.'))
+                    k_val = float(row[1].replace(',', '.'))
+                    thicknesses.append(t_val)
+                    k_factors.append(k_val)
+
+        if thicknesses:
+            # Nachschlagen / Interpolieren direkt über die Blechdicke
+            # Lookup directly by the sheet thickness
+            return interpolate_csv(thickness, thicknesses, k_factors)
+
+    except Exception as e:
+        FreeCAD.Console.PrintError(f"Fehler beim Lesen der CSV {file_path}: {e}\n")
+
+    return 0.5
+
+def interpolate_csv(val, x_list, y_list):
+    if val <= x_list[0]:
+        return y_list[0]
+    if val >= x_list[-1]:
+        return y_list[-1]
+    for i in range(len(x_list) - 1):
+        if x_list[i] <= val <= x_list[i+1]:
+            t = (val - x_list[i]) / (x_list[i+1] - x_list[i])
+            return y_list[i] + t * (y_list[i+1] - y_list[i])
+    return y_list[0]
 
 def get_val_from_range(lookup, input, interpolate=False):
     """
