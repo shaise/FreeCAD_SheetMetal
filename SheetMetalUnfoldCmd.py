@@ -841,8 +841,9 @@ if SheetMetalTools.isGuiLoaded():
             useSketch = genCuts and self.form.radioSketchCut.isChecked()
             self.form.groupCutShape.setVisible(useSketch)
             self.form.groupWaveCut.setVisible(genCuts and self.form.radioWaveCut.isChecked())
-            self.form.label_10.setText(translate("SheetMetal", "Bridge width" if
-                self.form.radioWaveCut.isChecked() else "Max material distance (bridge)"))
+            self.form.label_10.setText(
+                translate("SheetMetal", "Bridge width") if self.form.radioWaveCut.isChecked()
+                else translate("SheetMetal", "Max material distance (bridge)"))
 
         def cutShapeChanged(self, _value=None):
             if not _value:
