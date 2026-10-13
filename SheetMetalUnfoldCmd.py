@@ -30,7 +30,7 @@ import FreeCAD
 import Part
 
 #NEU
-import lookup
+import SheetMetalLookup
 
 import SheetMetalBendCuts
 import SheetMetalKfactor
@@ -340,7 +340,7 @@ class SMUnfold:
             # Berechnet den K-Faktor direkt aus der CSV für die gemessene Blechdicke
             #thickness = SheetMetalUnfolder.getThickness(baseObject, baseFace)
             thickness = get_sheet_thickness(baseObject, baseFace)
-            k_val = lookup.get_k_factor_from_csv(obj.MaterialSheet, thickness)
+            k_val = SheetMetalLookup.get_k_factor_from_csv(obj.MaterialSheet, thickness)
             bac = BendAllowanceCalculator.from_single_value(k_val, obj.KFactorStandard)
 
 #BIS HIER
@@ -875,33 +875,32 @@ if SheetMetalTools.isGuiLoaded():
             self.form.groupManualFactor.setEnabled(self._isManualKSelected())
             self._updateSelectedMds()
             #self.form.kFactSpin.setEnabled(isManualK)"""
-#NEU
+
         def availableMdsChacnge(self):
-            # Aktiviert die manuelle Eingabe NUR, wenn "Manual K-Factor" gewählt ist
+            # Enables manual entry ONLY if "Manual K-Factor" is selected.
             self.form.groupManualFactor.setEnabled(self._isManualKSelected())
         
-            # Aktualisiert das ausgewählte Material-Sheet / CSV
+            # Updates the selected material sheet / CSV
             self._updateSelectedMds()
 
-            # Wenn eine CSV-Datei gewählt ist, den aus der CSV berechneten K-Faktor im Feld anzeigen
+            # If a CSV file is selected, display the K-factor calculated from the CSV in the field.
             if self.obj.MaterialSheet and self.obj.MaterialSheet.startswith("csv_"):
                 try:
                     baseObj, baseFace = SheetMetalTools.smGetSubElementName(self.obj.baseObject[1][0])
                     if baseObj is None:
                         baseObj = self.obj.baseObject[0]
                 
-                    # Blechdicke ermitteln
+                    # Determine sheet metal thickness
                     thickness = get_sheet_thickness(baseObj, baseFace)
-                    # K-Faktor aus der CSV nachschlagen
-                    k_val = lookup.get_k_factor_from_csv(self.obj.MaterialSheet, thickness)
+                    # Look up K-factor from the CSV
+                    k_val = SheetMetalLookup.get_k_factor_from_csv(self.obj.MaterialSheet, thickness)
                 
-                    # Den ausgelesenen K-Faktor im SpinBox-Feld anzeigen (bleibt durch groupManualFactor ausgegraut)
+                    # Display the read-out K-factor in the SpinBox field (remains grayed out due to groupManualFactor)
                     self.form.floatKFactor.setValue(k_val)
                     self.obj.KFactor = k_val
                 except Exception as e:
                         FreeCAD.Console.PrintWarning(f"Konnte CSV K-Faktor für Anzeige nicht laden: {e}\n")
 
-#BIS HIER
 
 
     ###############################################################################################

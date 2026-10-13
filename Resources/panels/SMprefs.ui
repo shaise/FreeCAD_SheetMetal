@@ -156,6 +156,33 @@
        </layout>
       </item>
       <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_4">
+      <item>
+      <widget class="QLabel" name="label_patternFile">
+      <property name="text">
+          <string>MDS files location</string>
+      </property>
+      </widget>
+      </item>
+      <item>
+      <widget class="Gui::PrefFileChooser" name="fileChooser_patternFile">
+      <property name="mode">
+          <enum>Gui::FileChooser::Directory</enum>
+      </property>
+      <property name="toolTip">
+          <string>An optional directory of Material Definition files in CSV format</string>
+      </property>
+      <property name="prefEntry" stdset="0">
+          <cstring>CSVMaterialFolder</cstring>
+      </property>
+      <property name="prefPath" stdset="0">
+          <cstring>Mod/SheetMetal</cstring>
+      </property>
+      </widget>
+      </item>
+      </layout>
+      </item>
+      <item>
        <spacer name="verticalSpacer">
         <property name="orientation">
          <enum>Qt::Vertical</enum>

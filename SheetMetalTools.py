@@ -1046,6 +1046,37 @@ def is_autolink_enabled():
 def use_old_unfolder():
     return params.GetBool("UseOldUnfolder", False)
 
+def is_absolute_path(path: str) -> bool:
+    # 1. Linux root ('/'), Windows drive root ('\\'), or UNC paths ('\\\\' / '//')
+    if path.startswith(('/', '\\')):
+        return True
+
+    # 2. Windows drive letter followed by ':' and a separator (e.g., 'C:\' or 'd:/')
+    if len(path) >= 3 and path[0].isalpha() and path[1] == ':' and path[2] in ('/', '\\'):
+        return True
+
+    # 3. Linux home dir
+    if path.startswith('~/'):
+        return True
+
+    return False
+
+def get_mds_directory() -> str:
+    mds_folder = params.GetString("CSVMaterialFolder", "!None!")
+    if mds_folder == "!None!":
+        mds_folder = "MDS"
+        params.SetString("CSVMaterialFolder", mds_folder)
+
+    if not is_absolute_path(mds_folder):
+        mds_folder = os.path.join(mod_path, mds_folder)
+
+    if not os.path.exists(mds_folder):
+        FreeCAD.Console.PrintWarning("Invalid MDS directory: " + mds_folder)
+        return None
+
+    #print("Using MDS folder: " + mds_folder)
+    return mds_folder
+    
 
 def GetViewConfig(obj):
     if smIsSketchObject(obj):

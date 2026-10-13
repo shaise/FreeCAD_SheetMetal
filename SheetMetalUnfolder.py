@@ -111,7 +111,7 @@ import Part
 from TechDraw import projectEx
 
 import SheetMetalTools
-from lookup import get_val_from_range
+from SheetMetalLookup import get_val_from_range
 
 Base = FreeCAD.Base
 SMLogger = SheetMetalTools.SMLogger

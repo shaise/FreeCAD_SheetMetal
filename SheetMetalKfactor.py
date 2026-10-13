@@ -28,6 +28,7 @@ import re
 import FreeCAD
 import os
 import csv
+import SheetMetalTools
 
 def findObjectsByTypeRecursive(doc, tp):
     return _find_objects(doc.Objects, lambda obj: obj and obj.isDerivedFrom(tp))
@@ -63,30 +64,6 @@ def _find_objects(objs, _filter):
     return res
 
 
-"""def getSpreadSheetNames():
-    material_sheet_regex_str = r"material_([a-zA-Z0-9_\-\[\]\.]+)"
-    material_sheet_regex = re.compile(material_sheet_regex_str)
-
-    spreadsheets = findObjectsByTypeRecursive(FreeCAD.ActiveDocument, "Spreadsheet::Sheet")
-    candidateSpreadSheets = [o for o in spreadsheets if material_sheet_regex.match(o.Label)]
-
-    availableMdsObjects = []
-    for candidate in candidateSpreadSheets:
-        try:
-            KFactorLookupTable(candidate.Label)
-            availableMdsObjects.append(candidate)
-        except ValueError as e:
-            FreeCAD.Console.PrintWarning(
-                f"Spreadsheet with name {candidate.Label} is not a valid material definition "
-                "table.\n")
-            FreeCAD.Console.PrintWarning(f"Error: {e}\n")
-
-    return availableMdsObjects"""
-
-
-
-
-# Hilfsklasse, damit CSV-Einträge sich für das UI wie ein Objekt mit .Label verhalten
 #Helper-Class, CSV-Entries behave like Objects with .Label for the UI
 class CSVMaterialItem:
     def __init__(self, name, full_path):
@@ -96,13 +73,12 @@ class CSVMaterialItem:
 
 def getSpreadSheetNames():
     """
-    Sucht sowohl nach Material-Spreadsheets im Dokument 
-    als auch nach .csv-Dateien im Einstellungs-Ordner.
+    Gather material definition data either from in-document spreadsheets or csv files
     """
     material_sheet_regex_str = r"material_([a-zA-Z0-9_\-\[\]\.]+)"
     material_sheet_regex = re.compile(material_sheet_regex_str)
     
-    # 1. Spreadsheets im aktuellen Dokument suchen
+
     # 1. Look for Spreadsheets in the active document
     spreadsheets = findObjectsByTypeRecursive(FreeCAD.ActiveDocument, "Spreadsheet::Sheet")
     candidateSpreadSheets = [o for o in spreadsheets if material_sheet_regex.match(o.Label)]
@@ -117,25 +93,19 @@ def getSpreadSheetNames():
                 f"Spreadsheet with name {candidate.Label} is not a valid material definition table.\n"
             )
 
-    # 2. CSV-Dateien aus dem Einstellungsordner laden und als 'virtuelle' Objekte anhängen
     # 2. Load CSV-Files from the folder and attach as a 'virtual' object
     param_grp = FreeCAD.ParamGet("User parameter:BaseApp/Preferences/Mod/SheetMetal")
-    csv_folder = param_grp.GetString("CSVMaterialFolder", "")
+    csv_folder = SheetMetalTools.get_mds_directory()
 
-    if csv_folder and os.path.exists(csv_folder):
+    if csv_folder:
         csv_files = [f for f in os.listdir(csv_folder) if f.endswith('.csv')]
         for csv_file in csv_files:
             mat_name = os.path.splitext(csv_file)[0]
             full_path = os.path.join(csv_folder, csv_file)
-            # Nutzt das Wrapper-Objekt mit .Label Attribut!
             # Uses the Wrapper-Object with attribute .Label
             availableMdsObjects.append(CSVMaterialItem(mat_name, full_path))
 
     return availableMdsObjects
-
-#ENDE NEU
-
-
 
 
 class KFactorLookupTable:

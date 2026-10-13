@@ -65,10 +65,14 @@ You can use a Spreadsheet object to declare K-factor values inside the project f
     
     1. The cell names are case/space sensitive.
     2. Possible values for `K-factor` is `K-factor (ANSI)` or `K-factor (DIN)`. 
-    3. `Radius / Thickness` means `Radius over Thickness`. Eg. if inner radius is `1.64mm` and material thickness is `2mm` then `Radius / Thickness == 1.64/2 = 0.82` so `0.38` will be used as the K-factor. See [lookup.py](https://github.com/ceremcem/FreeCAD_SheetMetal/blob/k-factor-from-lookup/lookup.py#L46-L68) for more examples.
+    3. `Radius / Thickness` means `Radius over Thickness`. Eg. if inner radius is `1.64mm` and material thickness is `2mm` then `Radius / Thickness == 1.64/2 = 0.82` so `0.38` will be used as the K-factor. See [SheetMetalLookup.py](https://github.com/ceremcem/FreeCAD_SheetMetal/blob/k-factor-from-lookup/lookup.py#L46-L68) for more examples.
 
 2. Use "Unfold Task Panel" to assign the material sheet.
 3. Unfold as usual.
+
+### Using external Material Definition Sheets
+Instead of in-document spreadsheets, external MDS files can be used. Using the preferences of SheetMetal WB it is possible to set a directory containing a library of MDS files in CSV format. Once this library is set up, all MDS file names will be listed in the Material Definition Sheet combo box in the unfolder and can be used for unfolding.  
+An example mild_steel.csv can be founf under MDS directory of the SheetMetal WB.   
 
 ### Screencast
 ![Screencast](https://user-images.githubusercontent.com/6639874/56642679-a749f600-6680-11e9-944a-82e447d9dc4e.gif) 
@@ -96,6 +100,7 @@ SheetMetal WB can be installed via the [Addon Manager](https://github.com/FreeCA
 * FreeCAD Forum announcement/discussion [thread](https://forum.freecad.org/viewtopic.php?f=3&t=60818) 
 
 #### Release notes:
+* V0.8.25 13 Oct 2026:  Support external Material Definition Sheets by [@romanbme81][romanbme81].  
 * V0.8.24 30 Sep 2026:  Unfolder speedup by [@alexneufeld][alexneufeld].  
                       - Corner relief fixes by [@Blendware][Blendware].  
                       - Update trandlations.  
@@ -373,6 +378,7 @@ SheetMetal WB can be installed via the [Addon Manager](https://github.com/FreeCA
 [rtm7777]: https://github.com/rtm7777
 [hydroid7]: https://github.com/hydroid7
 [Blendware]: https://github.com/Blendware
+[romanbme81]: https://github.com/romanbme81
 [topic82482]: https://forum.freecad.org/viewtopic.php?t=82482
 [30]: https://github.com/shaise/FreeCAD_SheetMetal/issues/30
 [33]: https://github.com/shaise/FreeCAD_SheetMetal/issues/33

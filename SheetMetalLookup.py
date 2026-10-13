@@ -26,21 +26,29 @@ import collections
 import os
 import csv
 import FreeCAD
+import SheetMetalTools
+
+translate = FreeCAD.Qt.translate
+
 
 def get_k_factor_from_csv(csv_name, thickness):
     """
-    Liest den K-Faktor direkt aus der CSV-Datei im Einstellungsordner.
     Reads K-Factor directly from the parameters-File
     """
-    param_grp = FreeCAD.ParamGet("User parameter:BaseApp/Preferences/Mod/SheetMetal")
-    csv_folder = param_grp.GetString("CSVMaterialFolder", "")
-    
-    # Entfernt das 'csv_'-Prefix, um den echten Dateinamen zu bekommen
+
     #Removes the 'csv_'-prefix for getting the real filename
     clean_name = csv_name.replace("csv_", "") + ".csv"
-    file_path = os.path.join(csv_folder, clean_name)
+    csv_folder = SheetMetalTools.get_mds_directory()
+    file_path = ""
+    if csv_folder:
+        file_path = os.path.join(csv_folder, clean_name)
 
     if not os.path.exists(file_path):
+        SheetMetalTools.smWarnDialog(
+            translate("SheetMetalLookup", "Can not locate CSV file: ") +
+            clean_name +
+            translate("SheetMetalLookup", ". Using default K-Factor of 0.5.")
+        )
         return 0.5  # Fallback K-Faktor
 
     thicknesses = []
