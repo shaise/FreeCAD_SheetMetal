@@ -29,6 +29,9 @@ import sys
 import FreeCAD
 import Part
 
+#NEU
+import lookup
+
 import SheetMetalBendCuts
 import SheetMetalKfactor
 import SheetMetalTools
@@ -119,6 +122,34 @@ def smUnfoldExportSketches(obj, useDialog=True):
     expname = obj.Label.removesuffix("_Unfold")
     filename = f"{FreeCAD.ActiveDocument.Name}-{expname}.{exptype}"
     SheetMetalTools.smGuiExportSketch(sketches, exptype, filename, useDialog)
+    
+#NEU
+def get_sheet_thickness(baseObject, baseFace):
+    """
+    Helper function to get the sheet thickness by the selected face
+    """
+    try:
+        # Versucht die Fläche aus dem Objekt zu holen
+        #Try to get the face out of the model
+        shape = baseObject.Shape
+        f_number = int(baseFace.lstrip("Face")) - 1
+        face = shape.Faces[f_number]
+        
+        # Misst den Abstand zwischen der gewählten Fläche und ihrer Gegenfläche
+        # (Standard-Dickenmessung über den BoundingBox-/Volumen-Ansatz oder distToShape)
+        # Measuring the distance between the selected face and his opposite face
+        #(standard thickness-measuring via BoundingBox or volume, or distToShape)
+        for f in shape.Faces:
+            if not f.isSame(face):
+                dist = face.distToShape(f)[0]
+                if 0.1 <= dist <= 30.0:  # Typischer Blechdickenbereich in mm Typical sheet thicknesses
+                    return dist
+    except Exception as e:
+        FreeCAD.Console.PrintWarning(f"Konnte Blechdicke nicht automatisch ermitteln: {e}\n")
+    
+    return 1.0  # Fallback 1.0 mm, falls die Messung fehlschlägt
+
+#BIS HIER
 
 
 ###################################################################################################
@@ -302,6 +333,17 @@ class SMUnfold:
         FreeCAD.Console.PrintMessage("Using V2 unfolding system\n")
         if obj.MaterialSheet in ["_manual", "_none"]:
             bac = BendAllowanceCalculator.from_single_value(obj.KFactor, obj.KFactorStandard)
+#NEU
+        elif obj.MaterialSheet.startswith("csv_"):
+            # Wenn eine externe CSV-Datei gewählt wurde:
+            print("Using CSV MDS:", obj.MaterialSheet)
+            # Berechnet den K-Faktor direkt aus der CSV für die gemessene Blechdicke
+            #thickness = SheetMetalUnfolder.getThickness(baseObject, baseFace)
+            thickness = get_sheet_thickness(baseObject, baseFace)
+            k_val = lookup.get_k_factor_from_csv(obj.MaterialSheet, thickness)
+            bac = BendAllowanceCalculator.from_single_value(k_val, obj.KFactorStandard)
+
+#BIS HIER
         else:
             print("Using MDS:", obj.MaterialSheet)
             sheet = FreeCAD.ActiveDocument.getObject(obj.MaterialSheet)
@@ -738,7 +780,7 @@ if SheetMetalTools.isGuiLoaded():
         def doExport(self):
             smUnfoldExportSketches(self.obj)
 
-        def populateMdsList(self):
+        """def populateMdsList(self):
             sheetnames = SheetMetalKfactor.getSpreadSheetNames()
             self.form.availableMds.clear()
 
@@ -746,6 +788,33 @@ if SheetMetalTools.isGuiLoaded():
             for mds in sheetnames:
                 if mds.Label.startswith("material_"):
                     self.form.availableMds.addItem(mds.Label)
+            self.form.availableMds.addItem(translate("SheetMetal", "Manual K-Factor"))
+            
+            
+
+            selMdsIndex = self._getLastSelectedMdsIndex()
+            if selMdsIndex > 0:
+                self.form.availableMds.setCurrentIndex(selMdsIndex)
+            elif len(sheetnames) == 1:
+                self.form.availableMds.setCurrentIndex(1)
+            elif engineering_mode_enabled() or len(sheetnames) > 1:
+                self.form.availableMds.setCurrentIndex(0)
+            else:
+                self.form.availableMds.setCurrentIndex(1)"""
+#NEW                
+        def populateMdsList(self):
+            sheetnames = SheetMetalKfactor.getSpreadSheetNames()
+            self.form.availableMds.clear()
+
+            self.form.availableMds.addItem(translate("SheetMetal", "Please select"))
+            for mds in sheetnames:
+                # Sichere Ermittlung des Namens/Labels, egal ob mds ein Spreadsheet-Objekt oder ein String ist
+                label_name = mds.Label if hasattr(mds, "Label") else str(mds)
+
+                # Fügt sowohl 'material_' Spreadsheets als auch 'csv_' Tabellen hinzu
+                if label_name.startswith("material_") or label_name.startswith("csv_"):
+                    self.form.availableMds.addItem(label_name)
+
             self.form.availableMds.addItem(translate("SheetMetal", "Manual K-Factor"))
 
             selMdsIndex = self._getLastSelectedMdsIndex()
@@ -757,6 +826,8 @@ if SheetMetalTools.isGuiLoaded():
                 self.form.availableMds.setCurrentIndex(0)
             else:
                 self.form.availableMds.setCurrentIndex(1)
+
+#UP TO HERE
 
         def chkSketchChange(self, _value=None):
             genSketch = self.form.chkSketch.isChecked()
@@ -800,10 +871,37 @@ if SheetMetalTools.isGuiLoaded():
             self.chkSketchChange()
             return None
 
-        def availableMdsChacnge(self):
+        """def availableMdsChacnge(self):
             self.form.groupManualFactor.setEnabled(self._isManualKSelected())
             self._updateSelectedMds()
-            #self.form.kFactSpin.setEnabled(isManualK)
+            #self.form.kFactSpin.setEnabled(isManualK)"""
+#NEU
+        def availableMdsChacnge(self):
+            # Aktiviert die manuelle Eingabe NUR, wenn "Manual K-Factor" gewählt ist
+            self.form.groupManualFactor.setEnabled(self._isManualKSelected())
+        
+            # Aktualisiert das ausgewählte Material-Sheet / CSV
+            self._updateSelectedMds()
+
+            # Wenn eine CSV-Datei gewählt ist, den aus der CSV berechneten K-Faktor im Feld anzeigen
+            if self.obj.MaterialSheet and self.obj.MaterialSheet.startswith("csv_"):
+                try:
+                    baseObj, baseFace = SheetMetalTools.smGetSubElementName(self.obj.baseObject[1][0])
+                    if baseObj is None:
+                        baseObj = self.obj.baseObject[0]
+                
+                    # Blechdicke ermitteln
+                    thickness = get_sheet_thickness(baseObj, baseFace)
+                    # K-Faktor aus der CSV nachschlagen
+                    k_val = lookup.get_k_factor_from_csv(self.obj.MaterialSheet, thickness)
+                
+                    # Den ausgelesenen K-Faktor im SpinBox-Feld anzeigen (bleibt durch groupManualFactor ausgegraut)
+                    self.form.floatKFactor.setValue(k_val)
+                    self.obj.KFactor = k_val
+                except Exception as e:
+                        FreeCAD.Console.PrintWarning(f"Konnte CSV K-Faktor für Anzeige nicht laden: {e}\n")
+
+#BIS HIER
 
 
     ###############################################################################################
