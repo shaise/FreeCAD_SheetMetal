@@ -363,6 +363,19 @@
                </widget>
               </item>
               <item>
+               <widget class="QRadioButton" name="radioWaveCut">
+                <property name="text">
+                 <string>Wave</string>
+                </property>
+                <property name="toolTip">
+                 <string>Closed slots for laser cutting. Bridge width stays fixed; cut length is a maximum. Bend lines and angle labels are omitted.</string>
+                </property>
+                <attribute name="buttonGroup">
+                 <string notr="true">cutShapeGroup</string>
+                </attribute>
+               </widget>
+              </item>
+              <item>
                <widget class="QRadioButton" name="radioSketchCut">
                 <property name="text">
                  <string>From sketch</string>
@@ -436,6 +449,46 @@
                </widget>
               </item>
              </layout>
+            </item>
+            <item>
+             <widget class="QWidget" name="groupWaveCut" native="true">
+              <layout class="QFormLayout" name="waveCutLayout">
+               <item row="0" column="0">
+                <widget class="QLabel" name="waveGapLabel">
+                 <property name="text">
+                  <string>Slot width</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1">
+                <widget class="Gui::QuantitySpinBox" name="waveGap">
+                 <property name="minimum">
+                  <double>0.010000000000000</double>
+                 </property>
+                 <property name="unit" stdset="0">
+                  <string notr="true">mm</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="0">
+                <widget class="QLabel" name="waveDepthLabel">
+                 <property name="text">
+                  <string>End offset</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="1">
+                <widget class="Gui::QuantitySpinBox" name="waveDepth">
+                 <property name="minimum">
+                  <double>0.010000000000000</double>
+                 </property>
+                 <property name="unit" stdset="0">
+                  <string notr="true">mm</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
             </item>
             <item>
              <widget class="QWidget" name="groupCutShape" native="true">

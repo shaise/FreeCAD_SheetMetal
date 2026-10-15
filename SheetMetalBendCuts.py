@@ -37,6 +37,8 @@ the sheet metal feature tree - it only ever reads a straight edge and
 returns new, unrelated cut edges.
 """
 
+import math
+
 import FreeCAD
 import Part
 
@@ -167,8 +169,51 @@ def build_relief_cuts_for_bend(bend_info, max_cut, max_material, edge_offset,
     return Part.makeCompound(cut_shapes)
 
 
+def build_wave_cuts(edge, max_cut, bridge, edge_offset, gap, depth):
+    """Closed rounded slots, with 45-degree ends alternating across the bend.
+
+    Lengths include the rounded caps. Bridge is the shortest distance between
+    adjacent slot contours, including their alternating 45-degree ends.
+    """
+    if (not all(math.isfinite(v) for v in (max_cut, bridge, edge_offset, gap, depth))
+            or min(bridge, gap, depth) <= eps or edge_offset < 0
+            or max_cut <= 2 * depth + gap + eps):
+        raise ValueError("Wave: use positive gap, depth and bridge, non-negative edge "
+                         "offset, and a cut length greater than 2 * depth + gap.")
+    usable = edge.Length - 2 * edge_offset
+    if usable <= 2 * depth + gap + eps:
+        FreeCAD.Console.PrintWarning("Wave: bend too short for a slot; left uncut.\n")
+        return None
+    # Neighboring end segments are parallel diagonals. For large bridges the
+    # nearest points are their rounded tips instead of the diagonal sides.
+    distance = bridge + gap
+    tip_spacing = (math.sqrt(2) * distance - 2 * depth
+                   if distance <= 2 * math.sqrt(2) * depth
+                   else math.sqrt(distance * distance - 4 * depth * depth))
+    spacing = tip_spacing - gap  # Can be negative: the ends overlap along X.
+    count = max(1, math.floor((usable + spacing) / (max_cut + spacing)))
+    length = min(max_cut, usable)
+    start = (edge.Length - count * length - (count - 1) * spacing) / 2
+    origin = edge.Vertexes[0].Point
+    direction = (edge.Vertexes[-1].Point - origin).normalize()
+    perpendicular = FreeCAD.Vector(-direction.y, direction.x, 0)
+    slots = []
+    for i in range(count):
+        a = start + i * (length + spacing) + gap / 2
+        b = a + length - gap
+        offset = depth if i % 2 == 0 else -depth
+        points = [origin + direction * x + perpendicular * y
+                  for x, y in ((a, offset), (a + depth, 0),
+                               (b - depth, 0), (b, offset))]
+        wire = Part.makePolygon(points).makeOffset2D(gap / 2)
+        slots.append(wire)
+    if count > 2 and slots[0].distToShape(slots[2])[0] < bridge - eps:
+        raise ValueError("Wave: increase cut length or bridge width to separate non-adjacent slots.")
+    return Part.makeCompound(slots)
+
+
 def build_relief_cuts(bend_infodata, max_cut, max_material, edge_offset,
-                       profile_points=None):
+                       profile_points=None, wave_gap=None, wave_depth=1.0):
     """Build relief-cut geometry for a whole list of bends at once.
 
     Returns a tuple (cut_compound, fallback_edges):
@@ -183,6 +228,12 @@ def build_relief_cuts(bend_infodata, max_cut, max_material, edge_offset,
     cut_shapes = []
     fallback_edges = []
     for bend_info in bend_infodata:
+        if wave_gap is not None:
+            shape = build_wave_cuts(bend_info.line, max_cut, max_material,
+                                    edge_offset, wave_gap, wave_depth)
+            if shape is not None:
+                cut_shapes.append(shape)
+            continue  # A short wave bend must never become a full-length laser cut.
         shape = build_relief_cuts_for_bend(
             bend_info, max_cut, max_material, edge_offset, profile_points)
         if shape is None:
