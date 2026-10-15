@@ -47,8 +47,9 @@
     </message>
     <message>
         <location filename="../../SheetMetalBend.py" line="112"/>
-        <location filename="../../SheetMetalCornerReliefCmd.py" line="687"/>
+        <location filename="../../SheetMetalCornerReliefCmd.py" line="691"/>
         <location filename="../../SheetMetalExtendCmd.py" line="236"/>
+        <location filename="../../SheetMetalFromSolidNoAi.py" line="40"/>
         <source>Base object</source>
         <translation type="unfinished"></translation>
     </message>
@@ -59,8 +60,9 @@
         <location filename="../../SheetMetalHem.py" line="163"/>
         <location filename="../../SheetMetalJunction.py" line="74"/>
         <location filename="../../SheetMetalRelief.py" line="122"/>
-        <location filename="../../SheetMetalUnfoldCmd.py" line="137"/>
+        <location filename="../../SheetMetalUnfoldCmd.py" line="177"/>
         <location filename="../../SketchOnSheetMetalCmd.py" line="165"/>
+        <location filename="../../SketchOnSheetMetal_multi.py" line="310"/>
         <source>Base Object</source>
         <translation type="unfinished"></translation>
     </message>
@@ -74,6 +76,7 @@
         <location filename="../../SheetMetalCmd.py" line="1678"/>
         <location filename="../../SheetMetalHem.py" line="200"/>
         <location filename="../../SketchOnSheetMetalCmd.py" line="170"/>
+        <location filename="../../SketchOnSheetMetal_multi.py" line="315"/>
         <source>Gap from Left Side</source>
         <translation type="unfinished"></translation>
     </message>
@@ -251,38 +254,39 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../SheetMetalCornerReliefCmd.py" line="676"/>
+        <location filename="../../SheetMetalCornerReliefCmd.py" line="680"/>
+        <location filename="../../SheetMetalCornerReliefCmd.py" line="736"/>
         <source>Corner Relief Type</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../SheetMetalCornerReliefCmd.py" line="690"/>
+        <location filename="../../SheetMetalCornerReliefCmd.py" line="694"/>
         <source>Size of Shape</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../SheetMetalCornerReliefCmd.py" line="692"/>
+        <location filename="../../SheetMetalCornerReliefCmd.py" line="696"/>
         <source>Size Ratio of Shape</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../SheetMetalCornerReliefCmd.py" line="694"/>
+        <location filename="../../SheetMetalCornerReliefCmd.py" line="698"/>
         <location filename="../../SheetMetalFoldCmd.py" line="240"/>
         <source>Neutral Axis Position</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../SheetMetalCornerReliefCmd.py" line="697"/>
+        <location filename="../../SheetMetalCornerReliefCmd.py" line="701"/>
         <source>Corner Relief Sketch</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../SheetMetalCornerReliefCmd.py" line="699"/>
+        <location filename="../../SheetMetalCornerReliefCmd.py" line="703"/>
         <source>Gap from side one</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../SheetMetalCornerReliefCmd.py" line="701"/>
+        <location filename="../../SheetMetalCornerReliefCmd.py" line="705"/>
         <source>Gap from side two</source>
         <translation type="unfinished"></translation>
     </message>
@@ -389,6 +393,7 @@
     </message>
     <message>
         <location filename="../../SketchOnSheetMetalCmd.py" line="168"/>
+        <location filename="../../SketchOnSheetMetal_multi.py" line="313"/>
         <source>Sketch on Sheetmetal</source>
         <translation type="unfinished"></translation>
     </message>
@@ -428,7 +433,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../SheetMetalUnfoldCmd.py" line="208"/>
+        <location filename="../../SheetMetalUnfoldCmd.py" line="271"/>
         <source>Font size for bend angle labels</source>
         <translation type="unfinished"></translation>
     </message>
@@ -473,7 +478,17 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../panels/SMprefs.ui" line="194"/>
+        <location filename="../panels/SMprefs.ui" line="163"/>
+        <source>MDS files location</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../panels/SMprefs.ui" line="173"/>
+        <source>An optional directory of Material Definition files in CSV format</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../panels/SMprefs.ui" line="221"/>
         <source>Preferences for the SheetMetal Workbench</source>
         <translation type="unfinished"></translation>
     </message>
@@ -506,12 +521,13 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../SheetMetalUnfoldCmd.py" line="587"/>
+        <location filename="../../SheetMetalUnfoldCmd.py" line="684"/>
         <source>Unfold operation needs to know K-factor value(s) to be used.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../SheetMetalTools.py" line="1193"/>
+        <location filename="../../SheetMetalTools - Copy.py" line="859"/>
+        <location filename="../../SheetMetalTools.py" line="1224"/>
         <source>Shape is not a real 3D-object or too small for a metal-sheet!</source>
         <translation type="unfinished"></translation>
     </message>
@@ -519,11 +535,13 @@
 <context>
     <name>QMessageBox</name>
     <message>
+        <location filename="../../SheetMetalTools - Copy.py" line="65"/>
         <location filename="../../SheetMetalTools.py" line="109"/>
         <source>Error in macro MessageBox</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../../SheetMetalTools - Copy.py" line="717"/>
         <location filename="../../SheetMetalTools.py" line="1031"/>
         <source>The selected geometry does not belong to the active Body.
 Please make the container of this item active by
@@ -531,7 +549,7 @@ double clicking on it.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../SheetMetalUnfoldCmd.py" line="590"/>
+        <location filename="../../SheetMetalUnfoldCmd.py" line="687"/>
         <source>&lt;ol&gt;
 &lt;li&gt;Either select &apos;Manual K-factor&apos;&lt;/li&gt;
 &lt;li&gt;Or use a &lt;a href=&apos;{}&apos;&gt;Material Definition Sheet&lt;/a&gt;&lt;/li&gt;
@@ -542,6 +560,7 @@ double clicking on it.</source>
 <context>
     <name>QObject</name>
     <message>
+        <location filename="../../SheetMetalTools - Copy.py" line="602"/>
         <location filename="../../SheetMetalTools.py" line="900"/>
         <source>Edit %1</source>
         <translation type="unfinished"></translation>
@@ -1861,12 +1880,12 @@ double clicking on it.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../panels/UnfoldOptions.ui" line="476"/>
+        <location filename="../panels/UnfoldOptions.ui" line="529"/>
         <source>DXF</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../panels/UnfoldOptions.ui" line="495"/>
+        <location filename="../panels/UnfoldOptions.ui" line="548"/>
         <source>SVG</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1937,51 +1956,71 @@ double clicking on it.</source>
     </message>
     <message>
         <location filename="../panels/UnfoldOptions.ui" line="368"/>
+        <source>Wave</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../panels/UnfoldOptions.ui" line="371"/>
+        <source>Closed slots for laser cutting. Bridge width stays fixed; cut length is a maximum. Bend lines and angle labels are omitted.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../panels/UnfoldOptions.ui" line="381"/>
         <source>From sketch</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../panels/UnfoldOptions.ui" line="382"/>
+        <location filename="../panels/UnfoldOptions.ui" line="395"/>
         <source>Max material distance (bridge)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../panels/UnfoldOptions.ui" line="403"/>
+        <location filename="../panels/UnfoldOptions.ui" line="416"/>
         <source>Max cut distance</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../panels/UnfoldOptions.ui" line="424"/>
+        <location filename="../panels/UnfoldOptions.ui" line="437"/>
         <source>Edge offset</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../panels/UnfoldOptions.ui" line="449"/>
+        <location filename="../panels/UnfoldOptions.ui" line="459"/>
+        <source>Slot width</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../panels/UnfoldOptions.ui" line="476"/>
+        <source>End offset</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../panels/UnfoldOptions.ui" line="502"/>
         <source>Pick sketch</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../panels/UnfoldOptions.ui" line="518"/>
+        <location filename="../panels/UnfoldOptions.ui" line="571"/>
         <source>Export</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../panels/UnfoldOptions.ui" line="558"/>
+        <location filename="../panels/UnfoldOptions.ui" line="611"/>
         <source>Unfold Transparency</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../panels/UnfoldOptions.ui" line="600"/>
+        <location filename="../panels/UnfoldOptions.ui" line="653"/>
         <source>Manual update</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../panels/UnfoldOptions.ui" line="620"/>
+        <location filename="../panels/UnfoldOptions.ui" line="673"/>
         <source>Update</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../panels/UnfoldOptions.ui" line="577"/>
+        <location filename="../panels/UnfoldOptions.ui" line="630"/>
         <source>%</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2153,12 +2192,12 @@ double clicking on it.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../SheetMetalCornerReliefCmd.py" line="843"/>
+        <location filename="../../SheetMetalCornerReliefCmd.py" line="864"/>
         <source>Add Corner Relief</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../SheetMetalCornerReliefCmd.py" line="845"/>
+        <location filename="../../SheetMetalCornerReliefCmd.py" line="866"/>
         <source>Corner Relief to metal sheet corner.
 1. Select 2 Edges (on flat face that shared with bend faces) tocreate Relief on sheetmetal.
 2. Use Property editor to modify default parameters</source>
@@ -2251,166 +2290,192 @@ double clicking on it.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../SheetMetalUnfoldCmd.py" line="893"/>
+        <location filename="../../SheetMetalUnfoldCmd.py" line="1067"/>
         <source>Unattended Unfold</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../SheetMetalUnfoldCmd.py" line="44"/>
+        <location filename="../../SheetMetalUnfoldCmd.py" line="47"/>
         <source>Python version is too old for the new unfolder
 Reverting to the old one
 </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../SheetMetalUnfoldCmd.py" line="62"/>
+        <location filename="../../SheetMetalUnfoldCmd.py" line="65"/>
         <source>Networkx dependency is missing and required for the new Unfolder
 Try uninstalling SheetMetal, refresh Addon Manager&apos;s cache, and reinstall
 </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../SheetMetalUnfoldCmd.py" line="159"/>
+        <location filename="../../SheetMetalUnfoldCmd.py" line="222"/>
         <source>Manual K-Factor value</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../SheetMetalUnfoldCmd.py" line="164"/>
+        <location filename="../../SheetMetalUnfoldCmd.py" line="227"/>
         <source>K-Factor standard</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../SheetMetalUnfoldCmd.py" line="171"/>
+        <location filename="../../SheetMetalUnfoldCmd.py" line="234"/>
         <source>Material definition sheet</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../SheetMetalUnfoldCmd.py" line="177"/>
+        <location filename="../../SheetMetalUnfoldCmd.py" line="240"/>
         <source>If set, object recomputation will be done on demand only</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../SheetMetalUnfoldCmd.py" line="182"/>
+        <location filename="../../SheetMetalUnfoldCmd.py" line="245"/>
         <source>Generate unfold sketch</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../SheetMetalUnfoldCmd.py" line="187"/>
+        <location filename="../../SheetMetalUnfoldCmd.py" line="250"/>
         <source>Generate separated unfold sketches for outline, inner lines and bend lines</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../SheetMetalUnfoldCmd.py" line="196"/>
+        <location filename="../../SheetMetalUnfoldCmd.py" line="259"/>
         <source>Generated sketches</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../SheetMetalUnfoldCmd.py" line="203"/>
+        <location filename="../../SheetMetalUnfoldCmd.py" line="266"/>
         <source>Show bend angles on the unfold sketch</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../SheetMetalUnfoldCmd.py" line="212"/>
+        <location filename="../../SheetMetalUnfoldCmd.py" line="275"/>
         <source>Generate laser bend-relief (hinge) cuts along the bend lines</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../SheetMetalUnfoldCmd.py" line="218"/>
+        <location filename="../../SheetMetalUnfoldCmd.py" line="281"/>
         <source>Maximum length of an uncut material bridge in the relief pattern</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../SheetMetalUnfoldCmd.py" line="223"/>
+        <location filename="../../SheetMetalUnfoldCmd.py" line="286"/>
         <source>Maximum length of a single cut segment in the relief pattern</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../SheetMetalUnfoldCmd.py" line="228"/>
+        <location filename="../../SheetMetalUnfoldCmd.py" line="291"/>
         <source>Margin left uncut at each end of the bend line</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../SheetMetalUnfoldCmd.py" line="233"/>
+        <location filename="../../SheetMetalUnfoldCmd.py" line="296"/>
         <source>Relief cut profile source</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../SheetMetalUnfoldCmd.py" line="240"/>
+        <location filename="../../SheetMetalUnfoldCmd.py" line="305"/>
+        <source>Wave slot width</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../SheetMetalUnfoldCmd.py" line="307"/>
+        <source>Wave end centerline offset from the bend line</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../SheetMetalUnfoldCmd.py" line="311"/>
         <source>Sketch defining a custom relief cut profile (e.g. dogbone, wave, chevron), tiled along each cut segment. Only used when &apos;BendCutShapeMode&apos; is &apos;sketch&apos;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../SheetMetalUnfoldCmd.py" line="288"/>
+        <location filename="../../SheetMetalUnfoldCmd.py" line="359"/>
         <source>Bend relief shape is set to &apos;From sketch&apos; but no profile sketch is selected; using straight cuts instead.
 </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../SheetMetalUnfoldCmd.py" line="294"/>
+        <location filename="../../SheetMetalUnfoldCmd.py" line="365"/>
         <source>Bend relief profile sketch is not usable ({}); using straight cuts instead.
 </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../SheetMetalUnfoldCmd.py" line="662"/>
+        <location filename="../../SheetMetalUnfoldCmd.py" line="764"/>
         <source>Bend relief cuts require the new unfolder (networkx), which is not currently active.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../SheetMetalUnfoldCmd.py" line="708"/>
+        <location filename="../../SheetMetalUnfoldCmd.py" line="810"/>
         <source>Bend relief shape is set to &apos;From sketch&apos;.
 Please select a profile sketch, or switch back to &apos;Straight&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../SheetMetalUnfoldCmd.py" line="714"/>
+        <location filename="../../SheetMetalUnfoldCmd.py" line="816"/>
         <source>The selected bend relief profile sketch is not usable:
 {}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../SheetMetalUnfoldCmd.py" line="745"/>
+        <location filename="../../SheetMetalUnfoldCmd.py" line="869"/>
         <source>Please select</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../SheetMetalUnfoldCmd.py" line="749"/>
+        <location filename="../../SheetMetalUnfoldCmd.py" line="878"/>
         <source>Manual K-Factor</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../SheetMetalUnfoldCmd.py" line="822"/>
+        <location filename="../../SheetMetalUnfoldCmd.py" line="916"/>
+        <source>Bridge width</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../SheetMetalUnfoldCmd.py" line="917"/>
+        <source>Max material distance (bridge)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../SheetMetalUnfoldCmd.py" line="996"/>
         <source>Unfold</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../SheetMetalUnfoldCmd.py" line="824"/>
+        <location filename="../../SheetMetalUnfoldCmd.py" line="998"/>
         <source>Flatten folded sheet metal object.
 1. Select flat face on sheetmetal shape.
 2. Change parameters from task Panel to create unfold Shape &amp; Flatten drawing.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../SheetMetalUnfoldCmd.py" line="865"/>
+        <location filename="../../SheetMetalUnfoldCmd.py" line="1039"/>
         <source>Unfold Update</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../SheetMetalUnfoldCmd.py" line="867"/>
+        <location filename="../../SheetMetalUnfoldCmd.py" line="1041"/>
         <source>Update all unfold objects.
 </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../SheetMetalUnfoldCmd.py" line="895"/>
+        <location filename="../../SheetMetalUnfoldCmd.py" line="1069"/>
         <source>Flatten folded sheet metal object with default options
 1. Select flat face on sheetmetal shape.
 2. Click this command to unfold the object with last used parameters.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../../SheetMetalFromSolid - b4 cleanup.py" line="1072"/>
         <location filename="../../SheetMetalFromSolid.py" line="766"/>
         <source>Convert to Sheet Metal</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../SheetMetalFromSolid - b4 cleanup.py" line="1074"/>
+        <source>Convert a solid to a sheet metal object</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -2444,39 +2509,88 @@ Please select a profile sketch, or switch back to &apos;Straight&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../../SheetMetalTools - Copy.py" line="542"/>
         <location filename="../../SheetMetalTools.py" line="833"/>
         <source>Export unfold sketch</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../SketchOnSheetMetalCmd.py" line="265"/>
+        <location filename="../../SketchOnSheetMetal_multi.py" line="405"/>
         <source>Wrap Cutout</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../SketchOnSheetMetalCmd.py" line="267"/>
+        <location filename="../../SketchOnSheetMetal_multi.py" line="407"/>
         <source>Wrap cutout from a Sketch On Sheet metal faces
 1. Select a flat face on sheet metal and
 2. Select a sketch on same face to create sheetmetal wrapped cut.
 3. Use Property editor to modify other parameters</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <location filename="../../SheetMetalFromSolidNoAi.py" line="410"/>
+        <source>Create from Solid</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../SheetMetalFromSolidNoAi.py" line="411"/>
+        <source>Create a sheet metal object from a solid.
+1. Select a solid object.
+2. The command will create a new sheet metal feature.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>SheetMetalLookup</name>
+    <message>
+        <location filename="../../SheetMetalLookup.py" line="48"/>
+        <source>Can not locate CSV file: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../SheetMetalLookup.py" line="50"/>
+        <source>. Using default K-Factor of 0.5.</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>SheetMetalTools</name>
     <message>
+        <location filename="../../SheetMetalTools - Copy.py" line="45"/>
         <location filename="../../SheetMetalTools.py" line="45"/>
         <source>Preview</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../../SheetMetalTools - Copy.py" line="46"/>
         <location filename="../../SheetMetalTools.py" line="46"/>
         <source>Cancel...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../../SheetMetalTools - Copy.py" line="47"/>
         <location filename="../../SheetMetalTools.py" line="47"/>
         <source>Clear...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../SheetMetalTools - Copy.py" line="169"/>
+        <source>Wrong object type selected
+Please select only {}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../SheetMetalTools - Copy.py" line="187"/>
+        <source>Non valid elements selected
+Please select only {} elements</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../SheetMetalTools - Copy.py" line="194"/>
+        <source>No element selected
+Please select at least one {}.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -2490,6 +2604,7 @@ Please select a profile sketch, or switch back to &apos;Straight&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../../SheetMetalTools - Copy.py" line="176"/>
         <location filename="../../SheetMetalTools.py" line="359"/>
         <source>Features are selected from a wrong object
 Please select features from &apos;{}&apos; object</source>
