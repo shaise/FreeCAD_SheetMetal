@@ -1312,10 +1312,10 @@ def smBend(
         extLen -= (bendR + thk) / math.tan(math.radians(90.0 - bendA / 2))
 
     nogaptrimedgelist = []
+    mainlist, trimedgelist, nogaptrimedgelist = getBendetail(
+        selFaceNames, MainObject, bendR, bendA, flipped, offset, gap1, gap2
+    )
     if not (sketches):
-        mainlist, trimedgelist, nogaptrimedgelist = getBendetail(
-            selFaceNames, MainObject, bendR, bendA, flipped, offset, gap1, gap2
-        )
         (
             miterA1List,
             miterA2List,
@@ -1899,8 +1899,8 @@ class SMBendWall:
                 LengthList, bendAList = getSketchDetails(fp.Sketch, fp.sketchflip, fp.sketchinvert,
                                                          fp.radius.Value, thk)
             else:
-                if fp.Sketch.Support:
-                    fp.baseObject = (fp.Sketch.Support[0][0], fp.Sketch.Support[0][1])
+                if fp.Sketch.AttachmentSupport:
+                    fp.baseObject = (fp.Sketch.AttachmentSupport[0][0], fp.Sketch.AttachmentSupport[0][1])
                 LengthList = [10.0]
         fp.LengthList = LengthList
         fp.bendAList = bendAList
