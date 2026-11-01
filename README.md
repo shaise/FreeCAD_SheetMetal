@@ -65,14 +65,14 @@ You can use a Spreadsheet object to declare K-factor values inside the project f
     
     1. The cell names are case/space sensitive.
     2. Possible values for `K-factor` is `K-factor (ANSI)` or `K-factor (DIN)`. 
-    3. `Radius / Thickness` means `Radius over Thickness`. Eg. if inner radius is `1.64mm` and material thickness is `2mm` then `Radius / Thickness == 1.64/2 = 0.82` so `0.38` will be used as the K-factor. See [SheetMetalLookup.py](https://github.com/ceremcem/FreeCAD_SheetMetal/blob/k-factor-from-lookup/lookup.py#L46-L68) for more examples.
+    3. `Radius / Thickness` means `Radius over Thickness`. Eg. if inner radius is `1.64mm` and material thickness is `2mm` then `Radius / Thickness == 1.64/2 = 0.82` so `0.38` will be used as the K-factor. See [SheetMetalLookup.py](SheetMetalLookup.py) for more examples.
 
 2. Use "Unfold Task Panel" to assign the material sheet.
 3. Unfold as usual.
 
 ### Using external Material Definition Sheets
 Instead of in-document spreadsheets, external MDS files can be used. Using the preferences of SheetMetal WB it is possible to set a directory containing a library of MDS files in CSV format. Once this library is set up, all MDS file names will be listed in the Material Definition Sheet combo box in the unfolder and can be used for unfolding.  
-An example mild_steel.csv can be founf under MDS directory of the SheetMetal WB.   
+An example mild_steel.csv can be found under MDS directory of the SheetMetal WB.   
 
 ### Screencast
 ![Screencast](https://user-images.githubusercontent.com/6639874/56642679-a749f600-6680-11e9-944a-82e447d9dc4e.gif) 
@@ -96,7 +96,7 @@ SheetMetal WB can be installed via the [Addon Manager](https://github.com/FreeCA
 
 #### References
 * Development repo: https://github.com/shaise/FreeCAD_SheetMetal  
-* FreeCAD wiki page: https://www.freecadweb.org/wiki/SheetMetal_Workbench  
+* FreeCAD wiki page: https://wiki.freecad.org/SheetMetal_Workbench 
 * FreeCAD Forum announcement/discussion [thread](https://forum.freecad.org/viewtopic.php?f=3&t=60818) 
 
 #### Release notes:
@@ -104,7 +104,7 @@ SheetMetal WB can be installed via the [Addon Manager](https://github.com/FreeCA
 * V0.8.25 13 Oct 2026:  Support external Material Definition Sheets by [@romanbme81][romanbme81].  
 * V0.8.24 30 Sep 2026:  Unfolder speedup by [@alexneufeld][alexneufeld].  
                       - Corner relief fixes by [@Blendware][Blendware].  
-                      - Update trandlations.  
+                      - Update translations.  
 * V0.8.23 13 Sep 2026:  Added weld type corner relief by [@Blendware][Blendware].  
                       - Update translations.  
 * V0.8.22 22 Aug 2026:  Support for folding marks by [@hydroid7][hydroid7].  
@@ -116,7 +116,7 @@ SheetMetal WB can be installed via the [Addon Manager](https://github.com/FreeCA
                       - Allow zero length initial perforation by [@rtm7777][rtm7777]  
 * V0.8.12 03 Jun 2026:  Fix missing edge selections on task panel list.  
                       - Show broken items (i.e. ?Edge1) in list so they can be dealt with.   
-                      - Remember last expot directory.  
+                      - Remember last export directory.  
                       - Fix wrong color assignments in unfold sketches.  
 * V0.8.11 19 Apr 2026:  Allow use of Draft Clone of Sketch by [@Syres916][Syres916].  
                       - Add missing element map version.  
@@ -144,7 +144,7 @@ SheetMetal WB can be installed via the [Addon Manager](https://github.com/FreeCA
 * V0.7.57 23 Oct 2025:  Allow formulas in material sheets by  [@UR-0][UR-0].  
                       - Reinstate extend by sketch functionality.  
 * V0.7.56 19 Oct 2025:  Sync selections with task panel lists by [@zokhasan][zokhasan].  
-                      - Fix compatability with linkstage branch.  
+                      - Fix compatibility with linkstage branch.  
 * V0.7.55 20 Sep 2025:  Remove some debug code from unfolder.  
                       - Remove redundant translation commands by [@zokhasan][zokhasan].  
 * V0.7.54 17 Sep 2025:  Fix round relief bug.  
@@ -260,7 +260,7 @@ SheetMetal WB can be installed via the [Addon Manager](https://github.com/FreeCA
 * V0.3.13 10 Dec 2023:  update polish translations by [@kaktusus][kaktusus].  
 * V0.3.12 11 Nov 2023:  Fix duplicate lines in unfold sketches issue [#284][284].  
 * V0.3.11 11 Nov 2023:  Fix broken engineering mode. Some unfold gui cleanup.  
-* V0.3.10 09 Nov 2023:  Add base Sheetmetal shape tool, proposed by [@blindmessenger][opic82482].  
+* V0.3.10 09 Nov 2023:  Add base Sheetmetal shape tool, proposed by [@blindmessenger][topic82482].  
 * V0.3.02 10 Oct 2023:  Add Polish translation by [@kaktusus][kaktusus].  
 * V0.3.01 09 Oct 2023:  Add Spanish translation by [@hasecilu][hasecilu].  
 * V0.3.00 02 Sep 2023:  Refactoring Unfolder by [@sliptonic][sliptonic].  
@@ -348,7 +348,7 @@ SheetMetal WB can be installed via the [Addon Manager](https://github.com/FreeCA
 [jaisejames]: https://github.com/jaisekjames
 [easyw]: https://github.com/easyw
 [s-light]: https://github.com/s-light
-[rmu75]: https://github.com/s-light
+[rmu75]: https://github.com/rmu75
 [Roy-043]: https://github.com/Roy-043
 [mangelozzi]: https://github.com/mangelozzi
 [akshimassar]: https://github.com/akshimassar
@@ -393,6 +393,6 @@ SheetMetal WB can be installed via the [Addon Manager](https://github.com/FreeCA
 [284]: https://github.com/shaise/FreeCAD_SheetMetal/issues/284
 
 ## License
-GPLv3 (see [LICENSE](LICENSE))
+LGPL-2.1 (see [LICENSE](LICENSE))
 
 
