@@ -108,6 +108,27 @@ KFACTOR = 0.4
 # Helper functions
 ###################################################################################################
 
+def smRestoreKFactor(obj):
+    """Start a new Unfold at the K-factor the other commands remember.
+
+    Make Wall, Fold a Wall, Hem and Corner Relief share one remembered
+    K-factor (ANSI); Unfold shows it in its own K-factor standard.
+    """
+    kfactor = SheetMetalTools.params.GetFloat("defaultKFactor", KFACTOR)
+    obj.KFactor = kfactor * 2.0 if obj.KFactorStandard == "din" else kfactor
+
+
+def smSaveKFactor(obj):
+    """Remember the Unfold's K-factor for the next feature, as ANSI.
+
+    Not when the K-factor comes from a material sheet.
+    """
+    if obj.MaterialSheet not in ("_manual", "_none"):
+        return
+    kfactor = obj.KFactor / 2.0 if obj.KFactorStandard == "din" else obj.KFactor
+    SheetMetalTools.params.SetFloat("defaultKFactor", kfactor)
+
+
 def smUnfoldExportSketches(obj, useDialog=True):
     if getattr(obj, "GenerateBendCuts", False) and obj.BendCutShapeMode == "wave":
         # Updating child sketches can leave a Body's Unfold touched after
@@ -180,6 +201,7 @@ class SMUnfold:
         )
         self.addVerifyProperties(obj)
         SheetMetalTools.taskRestoreDefaults(obj, smUnfoldDefaultVars)
+        smRestoreKFactor(obj)
         if obj.BendCutShapeMode == "wave":
             self.applyWaveDefaults(obj)
         # Setup transient properties.
@@ -829,6 +851,7 @@ if SheetMetalTools.isGuiLoaded():
             self.obj.ViewObject.Transparency = self.obj.Proxy.UnfoldTransparency
             SheetMetalTools.taskSaveDefaults(self.obj, smUnfoldDefaultVars)
             SheetMetalTools.taskSaveDefaults(self.obj.Proxy, smUnfoldNonSavedDefaultVars)
+            smSaveKFactor(self.obj)
             # self._updateSelectedMds()
             # kFactorTable = self.getKFactorTable()
             return None

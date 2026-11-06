@@ -34,7 +34,9 @@ import SheetMetalTools
 smEpsilon = SheetMetalTools.smEpsilon
 
 # List of properties to be saved as defaults.
-BendOnLineDefaultVars = [("radius", "defaultRadius"), ("angle", "defaultFoldAngle")]
+# The K-factor is remembered with Make Wall's, Hem's, Corner Relief's and Unfold's.
+BendOnLineDefaultVars = [("radius", "defaultRadius"), ("angle", "defaultFoldAngle"),
+                         ("kfactor", "defaultKFactor")]
 
 
 def smFold(bendR=0.8, bendA=90.0, kfactor=1, invertbend=False, flipped=False, unfold=False,
