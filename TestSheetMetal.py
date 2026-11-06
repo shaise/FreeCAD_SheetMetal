@@ -25,6 +25,7 @@ import TestApp
 from SMTests.testFolder import TestFolder
 from SMTests.testKfactor import TestKFactor
 from SMTests.testBendCuts import TestBendCuts
+from SMTests.testWallOutline import TestWallOutline
 from SMTests.testFeatures import (
     TestBaseShape,
     TestBaseWall,
