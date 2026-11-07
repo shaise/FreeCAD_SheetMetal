@@ -697,7 +697,7 @@ class SMCornerRelief:
         obj.addProperty("App::PropertyFloat", "SizeRatio", "Parameters", _tip_).SizeRatio = 1.5
         _tip_ = FreeCAD.Qt.translate("App::Property", "Neutral Axis Position")
         obj.addProperty("App::PropertyFloatConstraint", "kfactor", "Parameters", _tip_
-        ).kfactor = (0.5, 0.0, 1.0, 0.01)
+        ).kfactor = (0.4, 0.0, 1.0, 0.01)
         _tip_ = FreeCAD.Qt.translate("App::Property", "Corner Relief Sketch")
         obj.addProperty("App::PropertyLink", "Sketch", "Parameters1", _tip_)
         _tip_ = FreeCAD.Qt.translate("App::Property", "Gap from side one")

@@ -34,7 +34,9 @@ import SheetMetalTools
 smEpsilon = SheetMetalTools.smEpsilon
 
 # List of properties to be saved as defaults.
-BendOnLineDefaultVars = [("radius", "defaultRadius"), ("angle", "defaultFoldAngle")]
+# The K-factor is remembered with Make Wall's, Hem's, Corner Relief's and Unfold's.
+BendOnLineDefaultVars = [("radius", "defaultRadius"), ("angle", "defaultFoldAngle"),
+                         ("kfactor", "defaultKFactor")]
 
 
 def smFold(bendR=0.8, bendA=90.0, kfactor=1, invertbend=False, flipped=False, unfold=False,
@@ -239,7 +241,7 @@ class SMFoldWall:
         obj.addProperty("App::PropertyBool", "invertbend", "Parameters", _tip_).invertbend = False
         _tip_ = FreeCAD.Qt.translate("App::Property", "Neutral Axis Position")
         obj.addProperty("App::PropertyFloatConstraint", "kfactor", "Parameters", _tip_).kfactor = (
-            0.5, 0.0, 1.0, 0.01)
+            0.4, 0.0, 1.0, 0.01)
         _tip_ = FreeCAD.Qt.translate("App::Property", "Invert Bend Direction")
         obj.addProperty("App::PropertyBool", "invert", "Parameters", _tip_).invert = False
         _tip_ = FreeCAD.Qt.translate("App::Property", "Unfold Bend")
