@@ -1776,7 +1776,7 @@ class SMBendWall:
                 "kfactor",
                 translate("App::Property",
                           "Location of Neutral Line. Caution: Using ANSI standards, not DIN."),
-                (0.5, 0.0, 1.0, 0.01),
+                (0.4, 0.0, 1.0, 0.01),
                 "ParametersEx")
         SheetMetalTools.smAddBoolProperty(obj,
                 "sketchflip",

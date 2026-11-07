@@ -100,7 +100,8 @@ OUTLINESKETCHCOLOR = "#c00000"
 BENDLINESKETCHCOLOR = "#ff5733"
 BENDLABELCOLOR = "#33ff33"
 BENDCUTSKETCHCOLOR = "#00c0ff"
-KFACTOR = 0.40
+# Starting K-factor (ANSI) for every SheetMetal command.
+KFACTOR = 0.4
 
 
 ###################################################################################################
@@ -220,7 +221,7 @@ class SMUnfold:
             "App::PropertyFloatConstraint",
             "KFactor",
             translate("SheetMetal", "Manual K-Factor value"),
-            (0.4, 0.0, 2.0, 0.01),
+            (KFACTOR, 0.0, 2.0, 0.01),
         )
         SheetMetalTools.smAddEnumProperty(obj,
             "KFactorStandard",

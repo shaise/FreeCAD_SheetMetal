@@ -239,7 +239,7 @@ class SMFoldWall:
         obj.addProperty("App::PropertyBool", "invertbend", "Parameters", _tip_).invertbend = False
         _tip_ = FreeCAD.Qt.translate("App::Property", "Neutral Axis Position")
         obj.addProperty("App::PropertyFloatConstraint", "kfactor", "Parameters", _tip_).kfactor = (
-            0.5, 0.0, 1.0, 0.01)
+            0.4, 0.0, 1.0, 0.01)
         _tip_ = FreeCAD.Qt.translate("App::Property", "Invert Bend Direction")
         obj.addProperty("App::PropertyBool", "invert", "Parameters", _tip_).invert = False
         _tip_ = FreeCAD.Qt.translate("App::Property", "Unfold Bend")

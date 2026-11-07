@@ -169,7 +169,7 @@ class SMSketchOnSheet:
         obj.addProperty("App::PropertyLink", "Sketch", "Parameters", _tip_).Sketch = selsketch
         _tip_ = FreeCAD.Qt.translate("App::Property", "Gap from Left Side")
         obj.addProperty("App::PropertyFloatConstraint", "kfactor", "Parameters", _tip_).kfactor = (
-                0.5, 0.0, 1.0, 0.01)
+                0.4, 0.0, 1.0, 0.01)
         self.addVerifyProperties(obj)
         obj.Proxy = self
 
