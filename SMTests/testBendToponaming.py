@@ -1,5 +1,8 @@
 """Run with FreeCAD's Test framework, or unittest in the FreeCAD console."""
+import os
+import tempfile
 import unittest
+from unittest.mock import patch
 
 import FreeCAD
 import Part
@@ -60,7 +63,8 @@ class TestBendToponaming(unittest.TestCase):
         self._recompute()
 
     def tearDown(self):
-        FreeCAD.closeDocument(self.doc.Name)
+        if self.doc is not None:
+            FreeCAD.closeDocument(self.doc.Name)
 
     def _topEdgeAtX(self, obj, x):
         for i, e in enumerate(obj.Shape.Edges):
@@ -100,3 +104,52 @@ class TestBendToponaming(unittest.TestCase):
         for obj in (self.bend1, self.bend2):
             self.assertTrue(obj.isValid(), obj.getStatusString())
             self.assertEqual(before[obj.Name], set(self._names(obj).values()), obj.Name)
+
+    def test_names_survive_save_and_reopen(self):
+        before = {obj.Name: self._names(obj) for obj in (self.bend1, self.bend2)}
+        with tempfile.TemporaryDirectory() as tmp:
+            path = os.path.join(tmp, "BendToponaming.FCStd")
+            self.doc.saveAs(path)
+            FreeCAD.closeDocument(self.doc.Name)
+            self.doc = None
+            self.doc = FreeCAD.openDocument(path)
+            self.bend1 = self.doc.getObject("Bend1")
+            self.bend2 = self.doc.getObject("Bend2")
+            for obj in (self.bend1, self.bend2):
+                self.assertEqual(before[obj.Name], self._names(obj), obj.Name + " (loaded)")
+            self._recompute()
+            for obj in (self.bend1, self.bend2):
+                self.assertEqual(before[obj.Name], self._names(obj), obj.Name + " (recomputed)")
+
+
+class TestToolShapeTag(unittest.TestCase):
+    """The packed tags must be unique and must never overflow a C long."""
+
+    def test_unique(self):
+        from SheetMetalCmd import smToolShapeTag
+
+        tags = set()
+        for featureId in (1, 2, 3, 1000, 32767):
+            for segment in (0, 1, 31):
+                for bend in (0, 1, 63):
+                    for role in (0, 1, 31):
+                        tag = smToolShapeTag(featureId, segment, bend, role)
+                        self.assertLess(tag, 0)
+                        tags.add(tag)
+        self.assertEqual(len(tags), 5 * 3 * 3 * 3)
+
+    def test_out_of_range_is_untagged(self):
+        from SheetMetalCmd import smToolShapeTag
+
+        self.assertEqual(smToolShapeTag(0, 0, 0, 1), 0)
+        self.assertEqual(smToolShapeTag(5, 32, 0, 1), 0)
+        self.assertEqual(smToolShapeTag(5, 0, 64, 1), 0)
+        self.assertEqual(smToolShapeTag(5, 0, 0, 32), 0)
+
+    def test_fits_32_bit_long(self):
+        import SheetMetalCmd
+
+        with patch.object(SheetMetalCmd, "_smTagMax", 2**31 - 1):
+            self.assertLess(SheetMetalCmd.smToolShapeTag(32767, 31, 63, 31), 0)
+            self.assertGreaterEqual(SheetMetalCmd.smToolShapeTag(32767, 31, 63, 31), -(2**31))
+            self.assertEqual(SheetMetalCmd.smToolShapeTag(32768, 0, 0, 0), 0)
