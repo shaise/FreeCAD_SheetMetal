@@ -100,6 +100,10 @@ SheetMetal WB can be installed via the [Addon Manager](https://github.com/FreeCA
 * FreeCAD Forum announcement/discussion [thread](https://forum.freecad.org/viewtopic.php?f=3&t=60818) 
 
 #### Release notes:
+* V0.8.27 07 Nov 2026:  Fix README typos and links by [@RRhino8687][RRhino8687].  
+                      - Fix K-Factor defaults inconsistency by [@RRhino8687][RRhino8687].  
+                      - Make complex wrapped cutout shapes work.  
+                      - Fix bend-by-sketch crash.  
 * V0.8.26 15 Oct 2026:  Add wave-cut option to the unfolder by [@kanocz][kanocz].  
 * V0.8.25 13 Oct 2026:  Support external Material Definition Sheets by [@romanbme81][romanbme81].  
 * V0.8.24 30 Sep 2026:  Unfolder speedup by [@alexneufeld][alexneufeld].  
@@ -381,6 +385,7 @@ SheetMetal WB can be installed via the [Addon Manager](https://github.com/FreeCA
 [Blendware]: https://github.com/Blendware
 [romanbme81]: https://github.com/romanbme81
 [kanocz]: https://github.com/kanocz
+[RRhino8687]: https://github.com/RRhino8687
 [topic82482]: https://forum.freecad.org/viewtopic.php?t=82482
 [30]: https://github.com/shaise/FreeCAD_SheetMetal/issues/30
 [33]: https://github.com/shaise/FreeCAD_SheetMetal/issues/33

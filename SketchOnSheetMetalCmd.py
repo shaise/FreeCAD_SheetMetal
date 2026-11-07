@@ -60,107 +60,107 @@ def smSketchOnSheetMetal(kfactor=0.5, sketch="", flipped=False, selFaceNames="",
         balanceFaceList.append((face, LargeFace, None))
     faceno = 0
     while balanceFaceList:
-                # print(f"Total face count: {len(balanceFaceList)}")
-                BalanceFace, TopFace, BendEdge = balanceFaceList.pop(0)
-                faceno += 1
-                # print(f"processing face {faceno}")
-                # BendEdge = SheetMetalTools.smGetIntersectingEdge(BalanceFace, TopFace)
-                if not BendEdge:
-                    BendEdges = SheetMetalTools.smGetAllIntersectingEdges(BalanceFace, TopFace)
-                    if not BendEdges:
-                        continue
-                    # print(f"Num intersecting edges: {len(BendEdges)}")
-                    BendEdge = BendEdges.pop(0)
-                    # if we have more than one edge, we push it to the facelist queue for derered processing
-                    for edge in BendEdges:
-                        balanceFaceList.append((BalanceFace.copy(), TopFace, edge))
+        # print(f"Total face count: {len(balanceFaceList)}")
+        BalanceFace, TopFace, BendEdge = balanceFaceList.pop(0)
+        faceno += 1
+        # print(f"processing face {faceno}")
+        # BendEdge = SheetMetalTools.smGetIntersectingEdge(BalanceFace, TopFace)
+        if not BendEdge:
+            BendEdges = SheetMetalTools.smGetAllIntersectingEdges(BalanceFace, TopFace)
+            if not BendEdges:
+                continue
+            # print(f"Num intersecting edges: {len(BendEdges)}")
+            BendEdge = BendEdges.pop(0)
+            # if we have more than one edge, we push it to the facelist queue for derered processing
+            for edge in BendEdges:
+                balanceFaceList.append((BalanceFace.copy(), TopFace, edge))
 
-                # Part.show(BendEdge, "BendEdge")
-                facelist = resultSolid.ancestorsOfType(BendEdge, Part.Face)
+        # Part.show(BendEdge, "BendEdge")
+        facelist = resultSolid.ancestorsOfType(BendEdge, Part.Face)
 
-                # To get bend radius, bend angle.
-                for cylface in facelist:
-                    if issubclass(type(cylface.Surface), Part.Cylinder):
-                        break
-                if not (issubclass(type(cylface.Surface), Part.Cylinder)):
-                    continue
-                # Part.show(cylface,"cylface")
-                for planeface in facelist:
-                    if issubclass(type(planeface.Surface), Part.Plane):
-                        break
-                # Part.show(planeface,"planeface")
-                normal = planeface.normalAt(0, 0)
-                revAxisV = cylface.Surface.Axis
-                revAxisP = cylface.Surface.Center
-                bendA = bendAngle(cylface, revAxisP)
-                # print([bendA, revAxisV, revAxisP, cylface.Orientation])
+        # To get bend radius, bend angle.
+        for cylface in facelist:
+            if issubclass(type(cylface.Surface), Part.Cylinder):
+                break
+        if not (issubclass(type(cylface.Surface), Part.Cylinder)):
+            continue
+        # Part.show(cylface,"cylface")
+        for planeface in facelist:
+            if issubclass(type(planeface.Surface), Part.Plane):
+                break
+        # Part.show(planeface,"planeface")
+        normal = planeface.normalAt(0, 0)
+        revAxisV = cylface.Surface.Axis
+        revAxisP = cylface.Surface.Center
+        bendA = bendAngle(cylface, revAxisP)
+        # print([bendA, revAxisV, revAxisP, cylface.Orientation])
 
-                # To check bend direction.
-                offsetface = cylface.makeOffsetShape(-thk, 0.0, fill=False)
-                # Part.show(offsetface, "offsetface")
-                if offsetface.Area < cylface.Area:
-                    bendR = cylface.Surface.Radius - thk
-                    flipped = True
-                else:
-                    bendR = cylface.Surface.Radius
-                    flipped = False
-                # To arrive unfold Length, neutralRadius.
-                unfoldLength = (bendR + kfactor*thk) * abs(bendA) * math.pi / 180.0
-                neutralRadius = bendR + kfactor*thk
-                # print([unfoldLength, neutralRadius])
+        # To check bend direction.
+        offsetface = cylface.makeOffsetShape(-thk, 0.0, fill=False)
+        # Part.show(offsetface, "offsetface")
+        if offsetface.Area < cylface.Area:
+            bendR = cylface.Surface.Radius - thk
+            flipped = True
+        else:
+            bendR = cylface.Surface.Radius
+            flipped = False
+        # To arrive unfold Length, neutralRadius.
+        unfoldLength = (bendR + kfactor*thk) * abs(bendA) * math.pi / 180.0
+        neutralRadius = bendR + kfactor*thk
+        # print([unfoldLength, neutralRadius])
 
-                # To get faceNormal, bend face.
-                faceNormal = normal.cross(revAxisV).normalize()
-                # print(faceNormal)
-                if bendR < cylface.Surface.Radius:
-                    offsetSolid = cylface.makeOffsetShape(bendR / 2.0, 0.0, fill=True)
-                else:
-                    offsetSolid = cylface.makeOffsetShape(-bendR / 2.0, 0.0, fill=True)
-                # Part.show(offsetSolid,"offsetSolid")
-                tool = BendEdge.copy()
-                FaceArea = tool.extrude(faceNormal * -unfoldLength)
-                # Part.show(FaceArea,"FaceArea")
-                # Part.show(BalanceFace,"BalanceFace")
-                SolidFace = offsetSolid.common(FaceArea)
-                # Part.show(SolidFace,"SolidFace")
-                if not SolidFace.Faces:
-                    faceNormal *= -1
-                    FaceArea = tool.extrude(faceNormal * -unfoldLength)
-                BendSolidFace = BalanceFace.common(FaceArea)
-                # Part.show(FaceArea,"FaceArea")
-                # Part.show(BendSolidFace,"BendSolidFace")
-                # print([bendR, bendA, revAxisV, revAxisP, normal, flipped,
-                #        BendSolidFace.Faces[0].normalAt(0, 0)])
+        # To get faceNormal, bend face.
+        faceNormal = normal.cross(revAxisV).normalize()
+        # print(faceNormal)
+        if bendR < cylface.Surface.Radius:
+            offsetSolid = cylface.makeOffsetShape(bendR / 2.0, 0.0, fill=True)
+        else:
+            offsetSolid = cylface.makeOffsetShape(-bendR / 2.0, 0.0, fill=True)
+        # Part.show(offsetSolid,"offsetSolid")
+        tool = BendEdge.copy()
+        FaceArea = tool.extrude(faceNormal * -unfoldLength)
+        # Part.show(FaceArea,"FaceArea")
+        # Part.show(BalanceFace,"BalanceFace")
+        SolidFace = offsetSolid.common(FaceArea)
+        # Part.show(SolidFace,"SolidFace")
+        if not SolidFace.Faces:
+            faceNormal *= -1
+            FaceArea = tool.extrude(faceNormal * -unfoldLength)
+        BendSolidFace = BalanceFace.common(FaceArea)
+        # Part.show(FaceArea,"FaceArea")
+        # Part.show(BendSolidFace,"BendSolidFace")
+        # print([bendR, bendA, revAxisV, revAxisP, normal, flipped,
+        #        BendSolidFace.Faces[0].normalAt(0, 0)])
 
-                bendsolid = SheetMetalBendSolid.bend_solid(BendSolidFace.Faces[0], BendEdge, bendR,
-                                                           thk, neutralRadius, revAxisV, flipped)
-                # Part.show(bendsolid,"bendsolid")
-                solidlist.append(bendsolid)
+        bendsolid = SheetMetalBendSolid.bend_solid(BendSolidFace.Faces[0], BendEdge, bendR,
+                                                    thk, neutralRadius, revAxisV, flipped)
+        # Part.show(bendsolid,"bendsolid")
+        solidlist.append(bendsolid)
 
-                if flipped:
-                    bendA = -bendA
-                if not SolidFace.Faces:
-                    revAxisV *= -1
-                sketch_face = BalanceFace.cut(BendSolidFace)
-                sketch_face.translate(faceNormal * unfoldLength)
-                # Part.show(sketch_face,"sketch_face")
-                sketch_face.rotate(revAxisP, -revAxisV, bendA)
-                # Part.show(sketch_face,"Rsketch_face")
-                TopFace = SheetMetalTools.smGetIntersectingFace(sketch_face, resultSolid)
-                # Part.show(TopFace,"TopFace")
+        if flipped:
+            bendA = -bendA
+        if not SolidFace.Faces:
+            revAxisV *= -1
+        sketch_face = BalanceFace.cut(BendSolidFace)
+        sketch_face.translate(faceNormal * unfoldLength)
+        # Part.show(sketch_face,"sketch_face")
+        sketch_face.rotate(revAxisP, -revAxisV, bendA)
+        # Part.show(sketch_face,"Rsketch_face")
+        TopFace = SheetMetalTools.smGetIntersectingFace(sketch_face, resultSolid)
+        # Part.show(TopFace,"TopFace")
 
-                # To get top face normal, flatsolid.
-                normal = TopFace.normalAt(0, 0)
-                Flatface = sketch_face.common(TopFace)
-                BalanceFace = sketch_face.cut(Flatface)
-                # Part.show(BalanceFace,"BalanceFace")
-                Flatsolid = Flatface.extrude(normal * -thk)
-                # Part.show(Flatsolid,"Flatsolid")
-                solidlist.append(Flatsolid)
-                # if balance face faces left, append to list
-                for face in BalanceFace.Faces:
-                    balanceFaceList.append((face, TopFace, None))
-                    # Part.show(face, f"fc{faceno}xx")
+        # To get top face normal, flatsolid.
+        normal = TopFace.normalAt(0, 0)
+        Flatface = sketch_face.common(TopFace)
+        BalanceFace = sketch_face.cut(Flatface)
+        # Part.show(BalanceFace,"BalanceFace")
+        Flatsolid = Flatface.extrude(normal * -thk)
+        # Part.show(Flatsolid,"Flatsolid")
+        solidlist.append(Flatsolid)
+        # if balance face faces left, append to list
+        for face in BalanceFace.Faces:
+            balanceFaceList.append((face, TopFace, None))
+            # Part.show(face, f"fc{faceno}xx")
     # To get relief Solid fused.
     if len(solidlist) > 1:
         SMSolid = solidlist[0].multiFuse(solidlist[1:])
