@@ -52,18 +52,29 @@ def smSketchOnSheetMetal(kfactor=0.5, sketch="", flipped=False, selFaceNames="",
         sketch_face.reverse()
     Flatface = sketch_face.common(LargeFace)
     BalanceFaces = sketch_face.cut(Flatface)
-    # Part.show(BalanceFace,"BalanceFace")
     Flatsolid = Flatface.extrude(normal * -thk)
     # Part.show(Flatsolid,"Flatsolid")
     solidlist.append(Flatsolid)
-    if BalanceFaces.Faces:
-        for BalanceFace in BalanceFaces.Faces:
-            # Part.show(BalanceFace, "BalanceFace")
-            TopFace = LargeFace
-            # Part.show(TopFace, "TopFace")
-            # flipped = False
-            while BalanceFace.Faces:
-                BendEdge = SheetMetalTools.smGetIntersectingEdge(BalanceFace, TopFace)
+    balanceFaceList = []
+    for face in BalanceFaces.Faces:
+        balanceFaceList.append((face, LargeFace, None))
+    faceno = 0
+    while balanceFaceList:
+                # print(f"Total face count: {len(balanceFaceList)}")
+                BalanceFace, TopFace, BendEdge = balanceFaceList.pop(0)
+                faceno += 1
+                # print(f"processing face {faceno}")
+                # BendEdge = SheetMetalTools.smGetIntersectingEdge(BalanceFace, TopFace)
+                if not BendEdge:
+                    BendEdges = SheetMetalTools.smGetAllIntersectingEdges(BalanceFace, TopFace)
+                    if not BendEdges:
+                        continue
+                    # print(f"Num intersecting edges: {len(BendEdges)}")
+                    BendEdge = BendEdges.pop(0)
+                    # if we have more than one edge, we push it to the facelist queue for derered processing
+                    for edge in BendEdges:
+                        balanceFaceList.append((BalanceFace.copy(), TopFace, edge))
+
                 # Part.show(BendEdge, "BendEdge")
                 facelist = resultSolid.ancestorsOfType(BendEdge, Part.Face)
 
@@ -72,7 +83,7 @@ def smSketchOnSheetMetal(kfactor=0.5, sketch="", flipped=False, selFaceNames="",
                     if issubclass(type(cylface.Surface), Part.Cylinder):
                         break
                 if not (issubclass(type(cylface.Surface), Part.Cylinder)):
-                    break
+                    continue
                 # Part.show(cylface,"cylface")
                 for planeface in facelist:
                     if issubclass(type(planeface.Surface), Part.Plane):
@@ -111,7 +122,7 @@ def smSketchOnSheetMetal(kfactor=0.5, sketch="", flipped=False, selFaceNames="",
                 # Part.show(FaceArea,"FaceArea")
                 # Part.show(BalanceFace,"BalanceFace")
                 SolidFace = offsetSolid.common(FaceArea)
-                # Part.show(BendSolidFace,"BendSolidFace")
+                # Part.show(SolidFace,"SolidFace")
                 if not SolidFace.Faces:
                     faceNormal *= -1
                     FaceArea = tool.extrude(faceNormal * -unfoldLength)
@@ -146,6 +157,10 @@ def smSketchOnSheetMetal(kfactor=0.5, sketch="", flipped=False, selFaceNames="",
                 Flatsolid = Flatface.extrude(normal * -thk)
                 # Part.show(Flatsolid,"Flatsolid")
                 solidlist.append(Flatsolid)
+                # if balance face faces left, append to list
+                for face in BalanceFace.Faces:
+                    balanceFaceList.append((face, TopFace, None))
+                    # Part.show(face, f"fc{faceno}xx")
     # To get relief Solid fused.
     if len(solidlist) > 1:
         SMSolid = solidlist[0].multiFuse(solidlist[1:])
