@@ -1273,7 +1273,14 @@ def smBend(
     PerforationInitialLength=5.0,
     PerforationMaxLength=5.0,
     NonperforationMaxLength=5.0,
+    toponamingId=None,
 ):
+    # Toponaming: give every intermediate tool shape a deterministic tag
+    # (see SheetMetalTools.smTagShape).
+    # `toponamingId` is (feature ID, sketch segment index); None disables it.
+    def smTag(shape, i, role):
+        return SheetMetalTools.smTagShape(shape, toponamingId, i, role)
+
     # if sketch is as wall.
     sketches = False
     if sketch:
@@ -1422,25 +1429,29 @@ def smBend(
             if agap1 > minReliefgap: # and cutgap1 > 0.0:
                 reliefFace1 = smMakeReliefFace(lenEdge, FaceDir * -1, gap1 - reliefW, reliefW,
                                                reliefD, reliefType, op="SMF")
-                reliefSolid1 = reliefFace1.extrude(thkDir * thk)
+                smTag(reliefFace1, i, 1)
+                reliefSolid1 = smTag(reliefFace1.extrude(thkDir * thk), i, 2)
                 # Part.show(reliefSolid1, "reliefSolid1a")
                 CutSolids.append(reliefSolid1)
                 if inside:
                     reliefFace1 = smMakeReliefFace(lenEdge, FaceDir * -1, gap1 - reliefW, reliefW,
                                                    offset, "Rectangle", op="SMF")
-                    reliefSolid1 = reliefFace1.extrude(thkDir * thk)
+                    smTag(reliefFace1, i, 3)
+                    reliefSolid1 = smTag(reliefFace1.extrude(thkDir * thk), i, 4)
                     # Part.show(reliefSolid1, "reliefSolid1b")
                     CutSolids.append(reliefSolid1)
             if agap2 > minReliefgap: # and cutgap2 > 0.0:
                 reliefFace2 = smMakeReliefFace(lenEdge, FaceDir * -1, lenEdge.Length - gap2,
                                                reliefW, reliefD, reliefType, op="SMFF")
-                reliefSolid2 = reliefFace2.extrude(thkDir * thk)
+                smTag(reliefFace2, i, 5)
+                reliefSolid2 = smTag(reliefFace2.extrude(thkDir * thk), i, 6)
                 # Part.show(reliefSolid2, "reliefSolid2")
                 CutSolids.append(reliefSolid2)
                 if inside:
                     reliefFace2 = smMakeReliefFace(lenEdge, FaceDir * -1, lenEdge.Length - gap2,
                                                    reliefW, offset, "Rectangle", op="SMFF")
-                    reliefSolid2 = reliefFace2.extrude(thkDir * thk)
+                    smTag(reliefFace2, i, 7)
+                    reliefSolid2 = smTag(reliefFace2.extrude(thkDir * thk), i, 8)
                     # Part.show(reliefSolid2, "reliefSolid2")
                     CutSolids.append(reliefSolid2)
 
@@ -1493,7 +1504,7 @@ def smBend(
                                     # print(type(edge.Curve))
                                     if issubclass(type(edge.Curve),
                                                   (Part.Circle or Part.BSplineSurface)):
-                                        RfaceE = Rface.makeOffsetShape(-Noffset1, 0.0, fill=True)
+                                        RfaceE = smTag(Rface.makeOffsetShape(-Noffset1, 0.0, fill=True), i, 9)
                                         # Part.show(RfaceE, "RfaceSolid1")
                                         CutSolids.append(RfaceE)
                                         break
@@ -1509,7 +1520,7 @@ def smBend(
                                     # print(type(edge.Curve))
                                     if issubclass(type(edge.Curve),
                                                   (Part.Circle or Part.BSplineSurface)):
-                                        RfaceE = Rface.makeOffsetShape(-Noffset2, 0.0, fill=True)
+                                        RfaceE = smTag(Rface.makeOffsetShape(-Noffset2, 0.0, fill=True), i, 10)
                                         # Part.show(RfaceE, "RfaceSolid2")
                                         CutSolids.append(RfaceE)
                                         break
@@ -1520,13 +1531,13 @@ def smBend(
                                     agap1, extend1, reliefW, reliefD)
             cutgap2 = smCalcCutGap(lenEdge, Ref_lenEdge, Ref_lenEdge.LastParameter, 
                                     agap2, extend2, reliefW, reliefD)
-            CutFace = smMakeFace(lenEdge, thkDir, thk, cutgap1, cutgap2, op="SMC")
+            CutFace = smTag(smMakeFace(lenEdge, thkDir, thk, cutgap1, cutgap2, op="SMC"), i, 11)
             # Part.show(CutFace, "CutFace")
-            CutSolid = CutFace.extrude(FaceDir * -offset)
+            CutSolid = smTag(CutFace.extrude(FaceDir * -offset), i, 12)
             # Part.show(CutSolid, "CutSolid")
-            CfaceSolid = Cface.extrude(thkDir * thk)
+            CfaceSolid = smTag(Cface.extrude(thkDir * thk), i, 13)
             # Part.show(CfaceSolid, "CfaceSolid")
-            CutSolid = CutSolid.common(CfaceSolid)
+            CutSolid = smTag(CutSolid.common(CfaceSolid), i, 14)
             # Part.show(CutSolid, "CutSolid")
             CutSolids.append(CutSolid)
 
@@ -1535,15 +1546,15 @@ def smBend(
             if len(CutSolids) == 1:
                 resultSolid = resultSolid.cut(CutSolids[0])
             else:
-                Solid = CutSolids[0].multiFuse(CutSolids[1:])
+                Solid = smTag(CutSolids[0].multiFuse(CutSolids[1:]), i, 15)
                 Solid.removeSplitter()
                 # Part.show(Solid)
                 resultSolid = resultSolid.cut(Solid)
         # Produce Offset Solid.
         if offset > 0.0:
             # Create wall.
-            offset_face = smMakeFace(lenEdge, FaceDir, -offset, op="SMO")
-            OffsetSolid = offset_face.extrude(thkDir * thk)
+            offset_face = smTag(smMakeFace(lenEdge, FaceDir, -offset, op="SMO"), i, 16)
+            OffsetSolid = smTag(offset_face.extrude(thkDir * thk), i, 17)
             resultSolid = resultSolid.fuse(OffsetSolid)
 
         # Adjust revolving center to new point.
@@ -1554,22 +1565,23 @@ def smBend(
 
         wallSolid = None
         if sketches:
-            Wall_face = Part.makeFace(sketch.Shape.Wires, "Part::FaceMakerBullseye")
+            Wall_face = smTag(Part.makeFace(sketch.Shape.Wires, "Part::FaceMakerBullseye"), i, 18)
             if inside:
                 Wall_face.translate(FaceDir * offset)
             FaceAxisP = sketch_Edge.valueAt(sketch_Edge.FirstParameter) + thkDir * thk
             FaceAxisV = (sketch_Edge.valueAt(sketch_Edge.FirstParameter)
                          - sketch_Edge.valueAt(sketch_Edge.LastParameter))
             Wall_face.rotate(FaceAxisP, FaceAxisV, -90.0)
-            wallSolid = Wall_face.extrude(thkDir * -thk)
+            wallSolid = smTag(Wall_face.extrude(thkDir * -thk), i, 19)
             # Part.show(wallSolid)
             wallSolid.rotate(revAxisP, revAxisV, bendA)
         elif extLen > 0.0:
             # Create wall.
             Wall_face = smMakeFace(lenEdge, FaceDir, extLen, gap1 - extend1, gap2 - extend2,
                                    miterA1List[i], miterA2List[i], op="SMW")
+            smTag(Wall_face, i, 20)
             # Part.show(Wall_face, "Wall_face")
-            wallSolid = Wall_face.extrude(thkDir * thk)
+            wallSolid = smTag(Wall_face.extrude(thkDir * thk), i, 21)
             # Part.show(wallSolid, "wallSolid")
             wallSolid.rotate(revAxisP, revAxisV, bendA)
             # Part.show(wallSolid, "wallSolid-rotated")
@@ -1580,10 +1592,10 @@ def smBend(
             if bendA > 0.0:
                 # Create bend.
                 # Narrow the wall if we have gaps.
-                revFace = smMakeFace(lenEdge, thkDir, thk, gap1, gap2, op="SMR")
+                revFace = smTag(smMakeFace(lenEdge, thkDir, thk, gap1, gap2, op="SMR"), i, 22)
                 if revFace.normalAt(0, 0) != FaceDir:
                     revFace.reverse()
-                bendSolid = revFace.revolve(revAxisP, revAxisV, bendA)
+                bendSolid = smTag(revFace.revolve(revAxisP, revAxisV, bendA), i, 23)
                 # Part.show(bendSolid)
                 resultSolid = resultSolid.fuse(bendSolid)
             if wallSolid:
@@ -1605,9 +1617,9 @@ def smBend(
                 #     perfFace.reverse()
                 if PerforationAngle > 0.0:
                     perfFace = perfFace.rotate(revAxisP, revAxisV, (bendA/2)-(PerforationAngle/2))
-                    perfSolid = perfFace.revolve(revAxisP, revAxisV, PerforationAngle)
+                    perfSolid = smTag(perfFace.revolve(revAxisP, revAxisV, PerforationAngle), i, 26)
                 else:
-                    perfSolid = perfFace.revolve(revAxisP, revAxisV, bendA)
+                    perfSolid = smTag(perfFace.revolve(revAxisP, revAxisV, bendA), i, 27)
                 # Part.show(perfSolid)
                 resultSolid = resultSolid.cut(perfSolid)
         else:
@@ -1616,10 +1628,10 @@ def smBend(
                 # Create bend.
                 unfoldLength = (bendR + kfactor * thk) * bendA * math.pi / 180.0
                 # Narrow the wall if we have gaps.
-                unfoldFace = smMakeFace(lenEdge, thkDir, thk, gap1, gap2, op="SMR")
+                unfoldFace = smTag(smMakeFace(lenEdge, thkDir, thk, gap1, gap2, op="SMR"), i, 24)
                 if unfoldFace.normalAt(0, 0) != FaceDir:
                     unfoldFace.reverse()
-                unfoldSolid = unfoldFace.extrude(FaceDir * unfoldLength)
+                unfoldSolid = smTag(unfoldFace.extrude(FaceDir * unfoldLength), i, 25)
                 # Part.show(unfoldSolid)
                 resultSolid = resultSolid.fuse(unfoldSolid)
             if extLen > 0.0:
@@ -1643,9 +1655,9 @@ def smBend(
                 if PerforationAngle > 0.0:
                     perfUnfoldLength = (bendR + kfactor * thk) * PerforationAngle * math.pi / 180.0
                     perfFace = perfFace.translate(FaceDir * (unfoldLength/2 - perfUnfoldLength/2))
-                    perfSolid = perfFace.extrude(FaceDir * perfUnfoldLength)
+                    perfSolid = smTag(perfFace.extrude(FaceDir * perfUnfoldLength), i, 28)
                 else:
-                    perfSolid = perfFace.extrude(FaceDir * unfoldLength)
+                    perfSolid = smTag(perfFace.extrude(FaceDir * unfoldLength), i, 29)
                 # Part.show(perfSolid)
                 resultSolid = resultSolid.cut(perfSolid)
 
@@ -2054,7 +2066,8 @@ class SMBendWall:
                 PerforationAngle=fp.PerforationAngle.Value,
                 PerforationInitialLength=fp.PerforationInitialLength.Value,
                 PerforationMaxLength=fp.PerforationMaxLength.Value,
-                NonperforationMaxLength=fp.NonperforationMaxLength.Value)
+                NonperforationMaxLength=fp.NonperforationMaxLength.Value,
+                toponamingId=(fp.ID, i))
             faces = smGetFace(f, s)
             face = faces
             Main_Object = s

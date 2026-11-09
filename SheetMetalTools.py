@@ -22,6 +22,7 @@
 #
 ########################################################################
 
+import ctypes
 import importlib
 import math
 import os
@@ -47,6 +48,46 @@ cancelText = translate("SheetMetalTools", "Cancel...")
 clearText = translate("SheetMetalTools", "Clear...")
 selClearSelText = translate("SheetMetalTools", "Clear Selected")
 selClearAllText = translate("SheetMetalTools", "Clear All")
+
+
+# --- Toponaming helpers ---
+# Features build intermediate tool shapes (faces, extrusions, ...) from
+# scratch. Such shapes have Tag == 0, so the elements they contribute to a
+# boolean get no name, or a name made unique with counters that change on
+# every recompute, and downstream references (sketches, assembly joints, ...)
+# break. A fixed negative tag per tool shape makes the generated element
+# names reproducible; PartDesign uses -ID for its tool shapes the same way.
+
+# Shape tags are stored as a C `long` (64 bit on Linux/macOS, 32 bit on Windows).
+_smTagMax = 2 ** (8 * ctypes.sizeof(ctypes.c_long) - 1) - 1
+
+
+def smToolShapeTag(featureId, segment, index, role):
+    """Deterministic negative tag for an intermediate tool shape of a feature.
+
+    The fields are packed into separate bit ranges so that different
+    features, sketch segments, indices (e.g. bend edges) and roles never
+    share a tag: role 5 bits, index 6 bits, segment 5 bits, feature ID the
+    rest. Returns 0 (no tag, i.e. the previous behaviour) when a field is out
+    of range or the result would not fit into a C long.
+    """
+    if featureId <= 0 or not (0 <= segment < 32 and 0 <= index < 64 and 0 <= role < 32):
+        return 0
+    tag = (((featureId << 5 | segment) << 6 | index) << 5) | role
+    return -tag if tag <= _smTagMax else 0
+
+
+def smTagShape(shape, toponamingId, index, role):
+    """Give `shape` the tag from smToolShapeTag and return it.
+
+    `toponamingId` is (feature ID, sketch segment index); None leaves the
+    shape untouched. Null shapes and objects without a Tag are left as is.
+    """
+    if toponamingId and shape is not None and hasattr(shape, "Tag"):
+        tag = smToolShapeTag(toponamingId[0], toponamingId[1], index, role)
+        if tag and not shape.isNull():
+            shape.Tag = tag
+    return shape
 
 
 def taskSaveDefaults(obj, varList):
