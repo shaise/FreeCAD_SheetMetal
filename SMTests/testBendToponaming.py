@@ -126,7 +126,7 @@ class TestToolShapeTag(unittest.TestCase):
     """The packed tags must be unique and must never overflow a C long."""
 
     def test_unique(self):
-        from SheetMetalCmd import smToolShapeTag
+        from SheetMetalTools import smToolShapeTag
 
         tags = set()
         for featureId in (1, 2, 3, 1000, 32767):
@@ -139,7 +139,7 @@ class TestToolShapeTag(unittest.TestCase):
         self.assertEqual(len(tags), 5 * 3 * 3 * 3)
 
     def test_out_of_range_is_untagged(self):
-        from SheetMetalCmd import smToolShapeTag
+        from SheetMetalTools import smToolShapeTag
 
         self.assertEqual(smToolShapeTag(0, 0, 0, 1), 0)
         self.assertEqual(smToolShapeTag(5, 32, 0, 1), 0)
@@ -147,9 +147,9 @@ class TestToolShapeTag(unittest.TestCase):
         self.assertEqual(smToolShapeTag(5, 0, 0, 32), 0)
 
     def test_fits_32_bit_long(self):
-        import SheetMetalCmd
+        import SheetMetalTools
 
-        with patch.object(SheetMetalCmd, "_smTagMax", 2**31 - 1):
-            self.assertLess(SheetMetalCmd.smToolShapeTag(32767, 31, 63, 31), 0)
-            self.assertGreaterEqual(SheetMetalCmd.smToolShapeTag(32767, 31, 63, 31), -(2**31))
-            self.assertEqual(SheetMetalCmd.smToolShapeTag(32768, 0, 0, 0), 0)
+        with patch.object(SheetMetalTools, "_smTagMax", 2**31 - 1):
+            self.assertLess(SheetMetalTools.smToolShapeTag(32767, 31, 63, 31), 0)
+            self.assertGreaterEqual(SheetMetalTools.smToolShapeTag(32767, 31, 63, 31), -(2**31))
+            self.assertEqual(SheetMetalTools.smToolShapeTag(32768, 0, 0, 0), 0)

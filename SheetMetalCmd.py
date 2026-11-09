@@ -22,7 +22,6 @@
 #
 # ######################################################################
 
-import ctypes
 import math
 
 from PySide import QtCore, QtGui
@@ -35,24 +34,6 @@ import SheetMetalTools
 # IMPORTANT: please remember to change the element map version in case
 # of any changes in modeling logic.
 smElementMapVersion = "sm1."
-
-# Shape tags are stored as a C `long` (64 bit on Linux/macOS, 32 bit on Windows).
-_smTagMax = 2 ** (8 * ctypes.sizeof(ctypes.c_long) - 1) - 1
-
-
-def smToolShapeTag(featureId, segment, bend, role):
-    """Deterministic negative tag for an intermediate tool shape of a Bend.
-
-    The fields are packed into separate bit ranges so that different
-    features, sketch segments, bend edges and roles never share a tag:
-    role 5 bits, bend 6 bits, segment 5 bits, feature ID the rest. Returns 0
-    (no tag, i.e. the previous behaviour) when a field is out of range or
-    the result would not fit into a C long.
-    """
-    if featureId <= 0 or not (0 <= segment < 32 and 0 <= bend < 64 and 0 <= role < 32):
-        return 0
-    tag = (((featureId << 5 | segment) << 6 | bend) << 5) | role
-    return -tag if tag <= _smTagMax else 0
 
 smEpsilon = SheetMetalTools.smEpsilon
 
@@ -1294,19 +1275,11 @@ def smBend(
     NonperforationMaxLength=5.0,
     toponamingId=None,
 ):
-    # Toponaming: give every intermediate tool shape a deterministic tag.
-    # Untagged (Tag == 0) shapes contribute elements without names, which
-    # FreeCAD then disambiguates with counters that change on every
-    # recompute, so downstream references (sketches, assembly joints, ...)
-    # break. A fixed negative tag per feature/bend/role makes the generated
-    # element names reproducible.
+    # Toponaming: give every intermediate tool shape a deterministic tag
+    # (see SheetMetalTools.smTagShape).
     # `toponamingId` is (feature ID, sketch segment index); None disables it.
     def smTag(shape, i, role):
-        if toponamingId and shape is not None and hasattr(shape, "Tag"):
-            tag = smToolShapeTag(toponamingId[0], toponamingId[1], i, role)
-            if tag and not shape.isNull():
-                shape.Tag = tag
-        return shape
+        return SheetMetalTools.smTagShape(shape, toponamingId, i, role)
 
     # if sketch is as wall.
     sketches = False
