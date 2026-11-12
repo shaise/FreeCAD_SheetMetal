@@ -29,10 +29,6 @@ import Part
 
 import SheetMetalTools
 
-# IMPORTANT: please remember to change the element map version in case
-# of any changes in modeling logic.
-smElementMapVersion = "sm1."
-
 # List of properties to be saved as defaults.
 smJunctionDefaultVars = [("gap", "defaultJunctionGap")]
 
@@ -79,11 +75,6 @@ class SMJunction:
 
     def addVerifyProperties(self, obj):
         pass
-
-    def getElementMapVersion(self, _fp, ver, _prop, restored):
-        if not restored:
-            return smElementMapVersion + ver
-        return None
 
     def execute(self, fp):
         """Print a short message when doing a recomputation.

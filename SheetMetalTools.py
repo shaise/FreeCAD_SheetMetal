@@ -26,6 +26,7 @@ import importlib
 import math
 import os
 import re
+import zlib
 
 import FreeCAD
 import importDXF
@@ -1118,7 +1119,44 @@ def getElementFromTNP(tnpName):
     names = tnpName.split(".")
     if len(names) > 1:
         FreeCAD.Console.PrintWarning("Warning: Tnp Name still visible: " + tnpName + "\n")
-    return names[len(names) - 1].lstrip("?")
+    name = names[len(names) - 1]
+    if name.startswith("?"):
+        # FreeCAD marks references whose element could not be found again
+        # after a recompute with a leading '?'. See docs/TNP.md.
+        FreeCAD.Console.PrintWarning(
+            translate("SheetMetalTools", "Lost reference to {}, using its old index\n").format(
+                name.lstrip("?")))
+    return name.lstrip("?")
+
+
+def smElementKey(shape, elementName):
+    """Return a stable identity string for a sub-element of a shape.
+
+    This is the element's mapped (topological) name when the shape has
+    one, otherwise the plain index name. See docs/TNP.md.
+    """
+    elementName = getElementFromTNP(elementName)
+    try:
+        mapped = shape.getElementMappedName(elementName)
+    except (ValueError, RuntimeError):
+        mapped = ""
+    return mapped or elementName
+
+
+def smTagTool(tool, *key):
+    """Give a freshly built tool shape a stable, non-zero Tag derived from key.
+
+    Geometry built from scratch (Part.Face, makeLine, makeBox...) has
+    Tag 0, so booleans with it leave its faces and edges unnamed and
+    references to them fall back to fragile index names. A tagged tool
+    gets names like 'Face3;:H-1a2b,F' instead. The key must identify the
+    tool independently of element indices, e.g. the mapped name of the
+    selected edge it is built on plus the tool's role. Tags are negative
+    so they never collide with document object IDs. See docs/TNP.md.
+    """
+    keyStr = "/".join(str(k) for k in key)
+    tool.Tag = -(zlib.crc32(keyStr.encode("utf-8")) & 0x3FFFFFFF) - 2
+    return tool
 
 
 def smIsParallel(v1, v2):

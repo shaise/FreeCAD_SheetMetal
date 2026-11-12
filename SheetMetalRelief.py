@@ -29,10 +29,6 @@ import Part
 
 import SheetMetalTools
 
-# IMPORTANT: please remember to change the element map version in case
-# of any changes in modeling logic.
-smElementMapVersion = "sm1."
-
 smEpsilon = SheetMetalTools.smEpsilon
 smSolidCornerReliefDefaultVars = [("relief", "defaultCornerRelief")]
 
@@ -109,6 +105,9 @@ def smRelief(relief=2.0, selVertexNames=" ", MainObject=None):
         cutsolid = extsolidlist[0].multiFuse(extsolidlist[1:])
         # Part.show(cutsolid, "cutsolid")
         cutsolid = cutsolid.removeSplitter()
+        # Tag the tool so the pocket faces get topological names (see docs/TNP.md).
+        SheetMetalTools.smTagTool(cutsolid, SheetMetalTools.smElementKey(MainObject, selVertexName),
+                                  "SMRelief")
         resultSolid = resultSolid.cut(cutsolid)
         # Part.show(resultsolid, "resultsolid")
     return resultSolid
@@ -127,11 +126,6 @@ class SMRelief:
 
     def addVerifyProperties(self, obj):
         pass
-
-    def getElementMapVersion(self, _fp, ver, _prop, restored):
-        if not restored:
-            return smElementMapVersion + ver
-        return None
 
     def execute(self, fp):
         """Print a short message when doing a recomputation.

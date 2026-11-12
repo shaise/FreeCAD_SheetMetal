@@ -39,10 +39,6 @@ base_shape_types = ["Flat", "L-Shape", "U-Shape", "Tub", "Hat", "Box"]
 origin_location_types = ["-X,-Y", "-X,0", "-X,+Y", "0,-Y", "0,0", "0,+Y", "+X,-Y", "+X,0", "+X,+Y"]
 origin_location_buttons = ["BL", "CL", "TL", "BC", "CC", "TC", "BR", "CR", "TR"]
 
-# IMPORTANT: please remember to change the element map version in case
-# of any changes in modeling logic.
-smElementMapVersion = "sm1."
-
 
 ###################################################################################################
 # Object class and creation function
@@ -167,11 +163,6 @@ class SMBaseShape:
             FreeCAD.Qt.translate("SMBaseShape", "Extend sides and flange to close all gaps",
                                  "Property"),
             True)
-
-    def getElementMapVersion(self, _fp, ver, _prop, restored):
-        if not restored:
-            return smElementMapVersion + ver
-        return None
 
     def onChanged(self, fp, prop):
         if prop == "shapeType":

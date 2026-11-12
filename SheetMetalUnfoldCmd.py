@@ -68,10 +68,6 @@ else:
             )
         )
 
-# IMPORTANT: please remember to change the element map version in case
-# of any changes in modeling logic.
-smElementMapVersion = "sm1."
-
 # List of properties to be saved as defaults.
 smUnfoldDefaultVars = [
     "KFactorStandard",
@@ -346,11 +342,6 @@ class SMUnfold:
         #     False
         # )
 
-    def getElementMapVersion(self, _fp, ver, _prop, restored):
-        if not restored:
-            return smElementMapVersion + ver
-        return None
-
     def onChanged(self, obj, prop):
         if prop == "Visibility":
             isVisible = obj.Visibility
@@ -589,6 +580,7 @@ class SMUnfold:
         """
         self.addVerifyProperties(fp)
         baseObj, baseFace = SheetMetalTools.smGetSubElementName(fp.baseObject[1][0])
+        baseFace = SheetMetalTools.getElementFromTNP(baseFace)
         if baseObj is None:
             baseObj = fp.baseObject[0]
         if not NewUnfolderAvailable or SheetMetalTools.use_old_unfolder():

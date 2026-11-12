@@ -31,10 +31,6 @@ import Part
 
 import SheetMetalTools
 
-# IMPORTANT: please remember to change the element map version in case
-# of any changes in modeling logic.
-smElementMapVersion = "sm1."
-
 smEpsilon = SheetMetalTools.smEpsilon
 
 # List of properties to be saved as defaults.
@@ -1311,6 +1307,10 @@ def smBend(
     elif LengthSpec == "Outer Sharp":
         extLen -= (bendR + thk) / math.tan(math.radians(90.0 - bendA / 2))
 
+    # Stable keys for tagging the tool solids built for each selected item,
+    # so the faces they add get topological names (see docs/TNP.md).
+    toolKeys = [SheetMetalTools.smElementKey(MainObject, name) for name in selFaceNames]
+
     nogaptrimedgelist = []
     mainlist, trimedgelist, nogaptrimedgelist = getBendetail(
         selFaceNames, MainObject, bendR, bendA, flipped, offset, gap1, gap2
@@ -1531,6 +1531,9 @@ def smBend(
             CutSolids.append(CutSolid)
 
         # Produce Main Solid for Inside Bends.
+        toolKey = toolKeys[i]
+        for j, cutSolid in enumerate(CutSolids):
+            SheetMetalTools.smTagTool(cutSolid, toolKey, "SMBendCut", j)
         if CutSolids:
             if len(CutSolids) == 1:
                 resultSolid = resultSolid.cut(CutSolids[0])
@@ -1544,6 +1547,7 @@ def smBend(
             # Create wall.
             offset_face = smMakeFace(lenEdge, FaceDir, -offset, op="SMO")
             OffsetSolid = offset_face.extrude(thkDir * thk)
+            SheetMetalTools.smTagTool(OffsetSolid, toolKey, "SMBendOffset")
             resultSolid = resultSolid.fuse(OffsetSolid)
 
         # Adjust revolving center to new point.
@@ -1585,8 +1589,10 @@ def smBend(
                     revFace.reverse()
                 bendSolid = revFace.revolve(revAxisP, revAxisV, bendA)
                 # Part.show(bendSolid)
+                SheetMetalTools.smTagTool(bendSolid, toolKey, "SMBend")
                 resultSolid = resultSolid.fuse(bendSolid)
             if wallSolid:
+                SheetMetalTools.smTagTool(wallSolid, toolKey, "SMBendWall")
                 resultSolid = resultSolid.fuse(wallSolid)
                 # Part.show(resultSolid, "resultSolid")
             # Remove perforation
@@ -1609,6 +1615,7 @@ def smBend(
                 else:
                     perfSolid = perfFace.revolve(revAxisP, revAxisV, bendA)
                 # Part.show(perfSolid)
+                SheetMetalTools.smTagTool(perfSolid, toolKey, "SMBendPerforation")
                 resultSolid = resultSolid.cut(perfSolid)
         else:
             # Produce unfold Solid.
@@ -1621,12 +1628,14 @@ def smBend(
                     unfoldFace.reverse()
                 unfoldSolid = unfoldFace.extrude(FaceDir * unfoldLength)
                 # Part.show(unfoldSolid)
+                SheetMetalTools.smTagTool(unfoldSolid, toolKey, "SMBend")
                 resultSolid = resultSolid.fuse(unfoldSolid)
             if extLen > 0.0:
                 # Flatten the wall back out.
                 wallSolid.rotate(revAxisP, revAxisV, -bendA)
                 # Part.show(wallSolid, "wallSolid")
                 wallSolid.translate(FaceDir * unfoldLength)
+                SheetMetalTools.smTagTool(wallSolid, toolKey, "SMBendWall")
                 resultSolid = resultSolid.fuse(wallSolid)
             # Remove perforation.
             if Perforate:
@@ -1647,6 +1656,7 @@ def smBend(
                 else:
                     perfSolid = perfFace.extrude(FaceDir * unfoldLength)
                 # Part.show(perfSolid)
+                SheetMetalTools.smTagTool(perfSolid, toolKey, "SMBendPerforation")
                 resultSolid = resultSolid.cut(perfSolid)
 
     # Part.show(resultSolid, "resultSolid")
@@ -1865,11 +1875,6 @@ class SMBendWall:
                 "Supplementary angle reference",
                 False,
                 "ParametersEx")
-
-    def getElementMapVersion(self, _fp, ver, _prop, restored):
-        if not restored:
-            return smElementMapVersion + ver
-        return None
 
     def execute(self, fp):
         """Print a short message when doing a recomputation.

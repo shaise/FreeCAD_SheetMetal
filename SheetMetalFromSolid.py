@@ -596,7 +596,8 @@ class smfsShapeInfo:
 
     def generateBends(self):
         self.bendFaces = []
-        for edgeInfo in self.edgeInfoDict.values():
+        # edgeInfoDict is filled in shape.Edges order, so i is the edge index.
+        for i, edgeInfo in enumerate(self.edgeInfoDict.values()):
             if edgeInfo.type != "bend":
                 continue
             startPoint = edgeInfo.bendEdge.Vertexes[0].Point
@@ -607,13 +608,19 @@ class smfsShapeInfo:
             bendFace = arc.extrude(endPoint - startPoint)
             #Part.show(edgeInfo.bendEdge, "bendEdge")
             #Part.show(bendFace, "bendFace")
-            self.bendFaces.append(bendFace)
+            # Tag the face with the edge it replaces, so it gets a topological
+            # name (see docs/TNP.md).
+            key = SheetMetalTools.smElementKey(self.shape, f"Edge{i + 1}")
+            self.bendFaces.append(SheetMetalTools.smTagTool(bendFace, key, "SMFromSolidBend"))
 
     def makeShell(self):
         shellFaces = []
-        for faceInfo in self.faceInfoDict.values():
+        # faceInfoDict is filled in shape.Faces order, so i is the face index.
+        for i, faceInfo in enumerate(self.faceInfoDict.values()):
             if not faceInfo.isRemoved:
-                shellFaces.append(faceInfo.modifiedFace)
+                key = SheetMetalTools.smElementKey(self.shape, f"Face{i + 1}")
+                shellFaces.append(SheetMetalTools.smTagTool(faceInfo.modifiedFace, key,
+                                                            "SMFromSolidFace"))
         shellFaces.extend(self.bendFaces)
         return Part.makeShell(shellFaces)
     

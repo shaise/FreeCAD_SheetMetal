@@ -1164,10 +1164,11 @@ def unroll_cylinder(
     bac: BendAllowanceCalculator,
     thickness: float,
     seam_edges: set,
-) -> tuple[list[Part.Edge], BendInfo]:
+) -> tuple[list[Part.Edge], BendInfo, list[Part.Edge]]:
     """Given a cylindrical face and a reference corner,
     computes flattened versions of the face's non-seam edges,
     oriented with respect to the +x,+y quadrant of the 2D plane.
+    Also returns the source edge of each flattened edge.
     """
     umin, umax, vmin, vmax = cylindrical_face.ParameterRange
     bend_angle = umax - umin
@@ -1179,9 +1180,10 @@ def unroll_cylinder(
     overall_height = abs(vmax - vmin)
     y_scale_factor = bend_allowance / bend_angle
     flattened_edges = []
-    for e in [
+    source_edges = [
         edge for edge in cylindrical_face.Edges if edge.hashCode() not in seam_edges
-    ]:
+    ]
+    for e in source_edges:
         edge_on_surface, e_param_min, e_param_max = cylindrical_face.curveOnSurface(e)
         if isinstance(edge_on_surface, (Part.Geom2d.Line2d, Part.Geom2d.Line2dSegment)):
             v1 = edge_on_surface.value(e_param_min)
@@ -1234,7 +1236,7 @@ def unroll_cylinder(
     bend_line = Part.makeLine(mirror_base_pos + half_bend_width, mirror_base_pos - half_bend_width)
     dir = 1 if bend_direction == BendDirection.UP else -1
     bend_info = BendInfo(bend_line, (180.0 - degrees(bend_angle)) * dir, radius)
-    return flattened_edges, bend_info
+    return flattened_edges, bend_info, source_edges
 
 
 def compute_unbend_transform(
@@ -1363,6 +1365,11 @@ def unfold(
     for _, _, edata in graph_of_sheet_faces.edges(data=True):
         seam_edges_list.append(this_shape_edges[edata["label"]].hashCode())
     seam_edges = set(seam_edges_list)
+    # Stable keys of the source edges of the flat pattern (see docs/TNP.md).
+    edge_keys = {
+        e.hashCode(): SheetMetalTools.smElementKey(shape, f"Edge{i + 1}")
+        for i, e in enumerate(this_shape_edges)
+    }
     # We could also get a random spanning tree here. Would that be
     # faster? Or is it better to take the opportunity to get a spanning
     # tree that meets some criteria for minimization?
@@ -1412,7 +1419,7 @@ def unfold(
         # Also get a bend line across the middle of the flattened face.
         dg.nodes[e[1]]["unbend_transform"] = overall_transform
         try:
-            flattened_edges, bend_info = unroll_cylinder(
+            flattened_edges, bend_info, source_edges = unroll_cylinder(
                 bend_part, uvref, bac, thickness, seam_edges
             )
             # Add the transformation and unbend shape to the end node
@@ -1422,6 +1429,7 @@ def unfold(
             dg.nodes[e[1]]["sketch_lines"] = [
                 e.transformed(alignment_transform) for e in flattened_edges
             ]
+            dg.nodes[e[1]]["sketch_keys"] = [edge_keys[e.hashCode()] for e in source_edges]
         except Exception as E:
             msg = (
                 f"failed to unroll a cylindrical face (Face{e[1] + 1})\n"
@@ -1433,6 +1441,7 @@ def unfold(
     # Apply the unbent transformation to all the flattened geometry to
     # bring it in-plane with the root face.
     list_of_sketch_lines = []
+    list_of_sketch_keys = []
     list_of_bend_lines_info = []
     for face_id, path in nx.shortest_path(dg, source=root_face_index).items():
         # The path includes the root face itself, which we don't need.
@@ -1454,16 +1463,15 @@ def unfold(
             list_of_sketch_lines.extend(
                 [e.transformed(final_mat) for e in node_data[face_id]["sketch_lines"]]
             )
+            list_of_sketch_keys.extend(node_data[face_id]["sketch_keys"])
         # Planar faces of the input shape are returned aligned to the
         # root face, but otherwise unmodified.
         else:
-            list_of_sketch_lines.extend(
-                [
-                    e.transformed(final_mat)
-                    for e in this_shape_faces[face_id].Edges
-                    if e.hashCode() not in seam_edges
-                ]
-            )
+            face_edges = [
+                e for e in this_shape_faces[face_id].Edges if e.hashCode() not in seam_edges
+            ]
+            list_of_sketch_lines.extend([e.transformed(final_mat) for e in face_edges])
+            list_of_sketch_keys.extend([edge_keys[e.hashCode()] for e in face_edges])
         # Also combine all the bend lines into a list after positioning
         # them correctly.
         if "bend_info" in node_data[face_id]:
@@ -1471,7 +1479,46 @@ def unfold(
             bend_info.line = bend_info.line.transformed(final_mat)
             list_of_bend_lines_info.append(bend_info)
     # Extrude the 2d profile back into a flattened solid body.
-    return list_of_sketch_lines, list_of_bend_lines_info
+    return list_of_sketch_lines, list_of_bend_lines_info, list_of_sketch_keys
+
+
+def name_flat_pattern_wires(
+    wires: list[Part.Wire], sketch_lines: list[Part.Edge], sketch_keys: list[str]
+) -> list[Part.Wire]:
+    """Give the edges of the cleaned up flat pattern topological names.
+
+    The cleanup passes rebuild every edge, so each wire edge is matched
+    back to the sketch line it was made from (nearest midpoint) and
+    tagged with the key of that line's source edge in the folded shape.
+    Faces extruded from the wires then get names that survive changes to
+    the folded shape. See docs/TNP.md.
+    """
+    if not hasattr(Part.Shape, "mapSubElement"):
+        return wires
+
+    def midpoint(edge):
+        pmin, pmax = edge.ParameterRange
+        return edge.valueAt((pmin + pmax) / 2)
+
+    line_midpoints = [midpoint(e) for e in sketch_lines]
+    used = {}
+    for wire in wires:
+        for edge in wire.Edges:
+            mid = midpoint(edge)
+            index = min(
+                range(len(line_midpoints)),
+                key=lambda i: line_midpoints[i].distanceToPoint(mid),
+            )
+            key = sketch_keys[index]
+            # Edges split by the cleanup share a source; keep them apart.
+            count = used.get(key, 0)
+            used[key] = count + 1
+            # The edge is a sub-shape of the wire, so the wire can take its name.
+            # Wrap it in a single-edge wire so the name does not depend on
+            # the edge's position in the wire.
+            holder = SheetMetalTools.smTagTool(Part.Wire(edge), key, "SMUnfold", count)
+            wire.mapSubElement(holder)
+    return wires
 
     
 def getBendLabels(bend_infodata: list[BendInfo], bend_label_size: float = 2.0) -> Part.Compound:
@@ -1501,7 +1548,7 @@ def getUnfold(
         except ValueError:
             errmsg = f"Invalid shape name: {facename}"
             raise RuntimeError(errmsg)
-    sketch_lines, bend_lines_info = unfold(shp, root_face_index, bac)
+    sketch_lines, bend_lines_info, sketch_keys = unfold(shp, root_face_index, bac)
     sketch_align_transform = SketchExtraction.move_to_origin(
         Part.makeCompound(sketch_lines), shp.Faces[root_face_index]
     )
@@ -1512,6 +1559,7 @@ def getUnfold(
     bend_lines = [bi.line for bi in bend_lines_info]
     #bend_infodata = [BendInfo(e, e.Tag / 100.0, 0) for e in bend_lines]
     sketch_wirelist = Edge2DCleanup.clean_and_structure_geometry(sketch_lines)
+    sketch_wirelist = name_flat_pattern_wires(sketch_wirelist, sketch_lines, sketch_keys)
     root_normal = shp.Faces[root_face_index].normalAt(0, 0)
     face = Part.makeFace(sketch_wirelist, "Part::FaceMakerBullseye")
     unbent_solid = face.extrude(Vector(0.0, 0.0, -1 * thickness))

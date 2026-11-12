@@ -33,9 +33,6 @@ SMException = SheetMetalTools.SMException
 
 Base = FreeCAD.Base
 
-# IMPORTANT: please remember to change the element map version in case
-# of any changes in modeling logic.
-smElementMapVersion = "sm1."
 smEpsilon = SheetMetalTools.smEpsilon
 translate = FreeCAD.Qt.translate
 
@@ -239,11 +236,6 @@ class SMExtrudeWall:
         self.addVerifyProperties(obj, selSketch)
         obj.Proxy = self
         SheetMetalTools.taskRestoreDefaults(obj, smExtrudeDefaultVars)
-
-    def getElementMapVersion(self, _fp, ver, _prop, restored):
-        if not restored:
-            return smElementMapVersion + ver
-        return None
 
     def addVerifyProperties(self, obj, selSketch=None):
         SheetMetalTools.smAddBoolProperty(obj, "reversed",
