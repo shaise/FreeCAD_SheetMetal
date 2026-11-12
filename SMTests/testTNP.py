@@ -31,63 +31,19 @@ import FreeCAD
 import Part
 from FreeCAD import Vector
 
-import SheetMetalBaseCmd
-import SheetMetalCmd
-
-TOL = 1e-4
-THK = 2.0
-
-
-def makeSketch(doc, points, name="Sketch"):
-    sketch = doc.getObject(name) or doc.addObject("Sketcher::SketchObject", name)
-    setSketchPolygon(sketch, points)
-    return sketch
-
-
-def setSketchPolygon(sketch, points):
-    sketch.deleteAllGeometry()
-    for p1, p2 in zip(points, points[1:] + points[:1]):
-        sketch.addGeometry(Part.LineSegment(Vector(*p1), Vector(*p2)))
-
-
-def makeBase(doc, sketch):
-    obj = doc.addObject("Part::FeaturePython", "BaseBend")
-    SheetMetalBaseCmd.SMBaseBend(obj, sketch)
-    obj.Thickness = THK
-    obj.Radius = 1.0
-    obj.BendSide = "Outside"
-    obj.MidPlane = False
-    obj.Reverse = False
-    return obj
-
-
-def makeWall(doc, base, subNames, name="Bend"):
-    obj = doc.addObject("Part::FeaturePython", name)
-    SheetMetalCmd.SMBendWall(obj, base, subNames)
-    obj.radius = 1.0
-    obj.length = 20.0
-    obj.angle = 90.0
-    obj.gap1 = 0.0
-    obj.gap2 = 0.0
-    obj.invert = False
-    obj.BendType = "Material Outside"
-    obj.LengthSpec = "Leg"
-    return obj
-
-
-def findElement(shape, kind, predicate):
-    """Return the name of the single element of the given kind that
-    satisfies the predicate."""
-    elements = shape.Edges if kind == "Edge" else shape.Faces
-    names = [f"{kind}{i + 1}" for i, e in enumerate(elements) if predicate(e)]
-    if len(names) != 1:
-        raise AssertionError(f"expected one matching {kind}, found {names}")
-    return names[0]
-
-
-def isLine(edge):
-    return edge.Curve.TypeId == "Part::GeomLine"
-
+from SMTests.helpers import (
+    PLATE,
+    THK,
+    TOL,
+    cornerBendEdges,
+    findElement,
+    findVertex,
+    isLine,
+    makeBase,
+    makeCornerWall,
+    makeSketch,
+    makeWall,
+)
 
 def edgeSignature(edge):
     """Infinite-line signature of a straight edge: (direction, point)."""
@@ -116,7 +72,7 @@ def resolve(obj):
 class TestTNPWalls(unittest.TestCase):
     """Wall on a base plate, and a second wall on the first wall."""
 
-    PLATE = [(0, 0, 0), (100, 0, 0), (100, 50, 0), (0, 50, 0)]
+    PLATE = PLATE
 
     def setUp(self):
         self.doc = FreeCAD.newDocument("TestTNP")
@@ -413,40 +369,6 @@ class TestTNPCoverage(unittest.TestCase):
                            and abs(f.BoundBox.ZMax - THK) < TOL)
         self.assertFullyNamed(self.addFeature("Unfold", SheetMetalUnfoldCmd.SMUnfold,
                                               wall, [face]))
-
-
-def findVertex(shape, point):
-    names = [f"Vertex{i + 1}" for i, v in enumerate(shape.Vertexes)
-             if (v.Point - point).Length < TOL]
-    if len(names) != 1:
-        raise AssertionError(f"expected one vertex at {point}, found {names}")
-    return names[0]
-
-
-def makeCornerWall(doc, base):
-    """One wall on the y=50 and x=100 top edges of the plate, with gaps so
-    the two bends leave room for a corner relief."""
-    edges = [findElement(base.Shape, "Edge", lambda e, p=p: isLine(e) and p(e.BoundBox)
-                         and abs(e.BoundBox.ZMin - THK) < TOL)
-             for p in (lambda b: abs(b.YMin - 50) < TOL and abs(b.YMax - 50) < TOL,
-                       lambda b: abs(b.XMin - 100) < TOL and abs(b.XMax - 100) < TOL)]
-    wall = makeWall(doc, base, edges, "CornerWall")
-    wall.gap1 = wall.gap2 = 1.0
-    doc.recompute()
-    return wall
-
-
-def cornerBendEdges(shape):
-    """The two edges where the bends start on the plate's top face."""
-    names = []
-    for i, e in enumerate(shape.Edges):
-        surfaces = {type(f.Surface).__name__ for f in shape.ancestorsOfType(e, Part.Face)}
-        if (isLine(e) and surfaces == {"Plane", "Cylinder"}
-                and abs(e.BoundBox.ZMin - THK) < TOL and abs(e.BoundBox.ZMax - THK) < TOL):
-            names.append(f"Edge{i + 1}")
-    if len(names) != 2:
-        raise AssertionError(f"expected two bend edges, found {names}")
-    return names
 
 
 class TestTNPReferences(unittest.TestCase):

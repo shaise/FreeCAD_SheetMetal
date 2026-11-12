@@ -735,8 +735,9 @@ class BendAllowanceCalculator:
         # If we are within the range of specified radius: thickness
         # values, perform piecewise linear interpolation.
         else:
+            # Find the segment [i, i + 1] that contains r_over_t.
             i = 0
-            while r_over_t <= self.radius_thickness_values[i]:
+            while r_over_t > self.radius_thickness_values[i + 1]:
                 i += 1
             kf1 = self.k_factor_values[i]
             kf2 = self.k_factor_values[i + 1]
