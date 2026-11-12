@@ -100,6 +100,7 @@ OUTLINESKETCHCOLOR = "#c00000"
 BENDLINESKETCHCOLOR = "#ff5733"
 BENDLABELCOLOR = "#33ff33"
 BENDCUTSKETCHCOLOR = "#00c0ff"
+MARKSKETCHCOLOR = "#ff00ff"
 # Starting K-factor (ANSI) for every SheetMetal command.
 KFACTOR = 0.4
 
@@ -127,6 +128,26 @@ def smSaveKFactor(obj):
         return
     kfactor = obj.KFactor / 2.0 if obj.KFactorStandard == "din" else obj.KFactor
     SheetMetalTools.params.SetFloat("defaultKFactor", kfactor)
+
+
+def getMarkingShapes(obj, solid):
+    """Shapes of the unfold's marking sketches, expressed in the coordinate
+    system that `solid.Shape` uses (its parent's), wherever they live."""
+    solid_parent = solid.getGlobalPlacement() * solid.Placement.inverse()
+    shapes = []
+    for sketch in getattr(obj, "MarkingSketches", []):
+        shape = getattr(sketch, "Shape", None)
+        if shape is None or shape.isNull() or not shape.Edges:
+            continue
+        if shape.Faces:
+            SMLogger.warning(
+                translate("SheetMetal",
+                    "{}: marking object '{}' is not a sketch (it has faces), ignored\n"
+                ).format(obj.Label, sketch.Label))
+            continue
+        sketch_parent = sketch.getGlobalPlacement() * sketch.Placement.inverse()
+        shapes.append(shape.transformed((solid_parent.inverse() * sketch_parent).toMatrix()))
+    return shapes
 
 
 def smUnfoldExportSketches(obj, useDialog=True):
@@ -328,6 +349,24 @@ class SMUnfold:
             translate("SheetMetal", "Wave slot width"), 0.6)
         SheetMetalTools.smAddLengthProperty(obj, "BendCutWaveDepth",
             translate("SheetMetal", "Wave end centerline offset from the bend line"), 1.0)
+        # Global scope: the marking sketches usually live inside the Body of
+        # the folded part, while the unfold may sit outside of it.
+        marks = None
+        if (hasattr(obj, "MarkingSketches")
+                and obj.getTypeIdOfProperty("MarkingSketches") != "App::PropertyLinkListGlobal"):
+            marks = obj.MarkingSketches
+            obj.removeProperty("MarkingSketches")
+        SheetMetalTools.smAddProperty(obj,
+            "App::PropertyLinkListGlobal",
+            "MarkingSketches",
+            translate("SheetMetal",
+                "Sketches placed on flat faces of the folded part (either side). "
+                "Their geometry is carried into the unfold sketch on separate "
+                "'Marks' / 'BackMarks' layers, e.g. for stud welding positions"),
+            None,
+        )
+        if marks:
+            obj.MarkingSketches = marks
         SheetMetalTools.smAddProperty(obj,
             "App::PropertyLink",
             "BendCutProfileSketch",
@@ -413,9 +452,15 @@ class SMUnfold:
             if sheet is None:
                 sheet = FreeCAD.ActiveDocument.getObjectsByLabel(obj.MaterialSheet)[0]
             bac = BendAllowanceCalculator.from_spreadsheet(sheet)
-        sel_face, unfolded_shape, bend_lines, root_normal, bend_infodata = SheetMetalNewUnfolder.getUnfold(
-            bac, baseObject, baseFace
+        (sel_face, unfolded_shape, bend_lines, root_normal, bend_infodata,
+         (marks_front, marks_back, marks_unplaced)) = SheetMetalNewUnfolder.getUnfoldWithMarks(
+            bac, baseObject, baseFace, getMarkingShapes(obj, baseObject)
         )
+        if marks_unplaced:
+            SMLogger.warning(
+                translate("SheetMetal",
+                    "{}: {} marking edge(s) do not lie on a flat face of the sheet "
+                    "and were skipped\n").format(obj.Label, marks_unplaced))
 
         sketches = []
         if obj.GenerateSketch and unfolded_shape is not None:
@@ -537,6 +582,9 @@ class SMUnfold:
                 bend_infodata=label_infodata,
                 bend_label_color=obj.Proxy.BendLabelColor,
                 bend_label_size=obj.FontSize,
+                marking_lines=marks_front,
+                marking_back_lines=marks_back,
+                marking_color=getattr(obj.Proxy, "MarkSketchColor", MARKSKETCHCOLOR),
             )
             if extra_cut_layer_edges is not None and extra_cut_layer_edges.Edges:
                 cut_sketch = SheetMetalNewUnfolder.SketchExtraction.edges_to_sketch_object(
@@ -557,6 +605,10 @@ class SMUnfold:
         controls when the old unfolder is active.
         """
         FreeCAD.Console.PrintMessage("Using V1 unfolding system\n")
+        if obj.MarkingSketches:
+            SMLogger.warning(
+                translate("SheetMetal",
+                    "Marking sketches are only supported by the V2 unfolder\n"))
         kFactorTable = {1: obj.KFactor}
         if obj.MaterialSheet != "_manual" and obj.MaterialSheet != "_none":
             lookupTable = SheetMetalKfactor.KFactorLookupTable(obj.MaterialSheet)
@@ -790,7 +842,75 @@ if SheetMetalTools.isGuiLoaded():
 
             self.availableMdsChacnge()
             self.chkSketchChange()
+            self.setupMarkingUi()
             # self.form.update()
+
+        def setupMarkingUi(self):
+            """List of marking sketches with Add / Remove buttons. Built in
+            code and inserted above the export group."""
+            box = QtGui.QGroupBox(translate("SheetMetal", "Marking sketches (engraved, not cut)"))
+            box.setToolTip(translate("SheetMetal",
+                "Sketches placed on flat faces of the folded part. Their geometry is "
+                "added to the unfold sketch on the 'Marks' / 'BackMarks' layers."))
+            layout = QtGui.QVBoxLayout(box)
+            self.markList = QtGui.QListWidget()
+            self.markList.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
+            self.markList.setMaximumHeight(90)
+            layout.addWidget(self.markList)
+            buttons = QtGui.QHBoxLayout()
+            addButton = QtGui.QPushButton(translate("SheetMetal", "Add selected"))
+            addButton.setToolTip(translate("SheetMetal",
+                "Select one or more sketches in the tree or 3D view, then press here"))
+            removeButton = QtGui.QPushButton(translate("SheetMetal", "Remove"))
+            buttons.addWidget(addButton)
+            buttons.addWidget(removeButton)
+            layout.addLayout(buttons)
+            addButton.clicked.connect(self.addMarkingSketches)
+            removeButton.clicked.connect(self.removeMarkingSketches)
+            anchor = getattr(self.form, "groupExport", None)
+            parentLayout = anchor.parentWidget().layout() if anchor is not None else None
+            if parentLayout is not None and parentLayout.indexOf(anchor) >= 0:
+                parentLayout.insertWidget(parentLayout.indexOf(anchor), box)
+            else:
+                self.form.layout().addWidget(box)
+            self.refreshMarkingList()
+
+        def refreshMarkingList(self):
+            self.markList.clear()
+            for sketch in self.obj.MarkingSketches:
+                item = QtGui.QListWidgetItem(f"{sketch.Label} ({sketch.Name})")
+                item.setData(QtCore.Qt.UserRole, sketch.Name)
+                self.markList.addItem(item)
+
+        def _setMarkingSketches(self, sketches):
+            self.obj.MarkingSketches = sketches
+            if not self.obj.ManualRecompute:
+                self.obj.Document.recompute()
+            self.refreshMarkingList()
+
+        def addMarkingSketches(self):
+            current = list(self.obj.MarkingSketches)
+            rejected = []
+            # resolve=1: the selected leaf object, e.g. a sketch inside a Body.
+            for sel in Gui.Selection.getSelection("", 1):
+                shape = getattr(sel, "Shape", None)
+                if (shape is None or shape.isNull() or not shape.Edges or shape.Faces
+                        or self.obj in sel.OutListRecursive or sel is self.obj):
+                    rejected.append(sel.Label)
+                elif sel not in current:
+                    current.append(sel)
+            if rejected:
+                SMLogger.warning(
+                    translate("SheetMetal",
+                        "Not usable as marking sketch (needs 2D edges, no faces, "
+                        "and must not depend on the unfold): {}\n").format(", ".join(rejected)))
+            Gui.Selection.clearSelection()
+            self._setMarkingSketches(current)
+
+        def removeMarkingSketches(self):
+            names = {i.data(QtCore.Qt.UserRole) for i in self.markList.selectedItems()}
+            self._setMarkingSketches([s for s in self.obj.MarkingSketches
+                                      if s.Name not in names])
 
         def updateKFactor(self, updateCheck):
             if self.obj.KFactorStandard == "ansi":
