@@ -203,11 +203,16 @@ segment=0, piece=0, fallbackKey="")` sets
 
 * `featureId`: the feature's `fp.ID`, unique in the document and saved
   with it. Tools of different features never share a tag.
-* `slot`: position of the selected element in the feature's selection.
+* `slot`: position of the selected element in the feature's link
+  property (not in the resolved list), so an earlier selected edge that
+  is split upstream and recovered as two pieces does not shift it.
+  `smResolveSubElementSlots` returns it with each element.
 * `segment`: the sketch segment, for features that call `smBend` once per
   segment of a wall profile (Wall, Hem), or once per stage (Base shape).
-* `piece`: reserved for a selected element that was split upstream and is
-  built as several pieces; 0 today.
+* `piece`: index of the piece when a lost reference was recovered as
+  several elements (a split edge, largest first; see
+  [simple-resolver.md](simple-resolver.md)); 0 otherwise. Wall, Hem and
+  Relief pass it through `toolSlots`.
 * `role`: what the tool is, a fixed constant per kind of tool
   (`smRoleWall`, `smRoleBend`, `smRoleRelief1`... in `SheetMetalCmd.py`).
   Fixed, not counted, so a relief appearing when a gap grows does not
@@ -321,28 +326,38 @@ vals = set(shape.ElementMap.values())
 
 *Coverage* = every face/edge/vertex of the output has a mapped name
 (`TestTNPCoverage`); *refs* = references into the output survive upstream
-changes (`TestTNPWalls`, `TestTNPReferences`, or a manual probe). All
-tests are in `SMTests/testTNP.py`.
+changes (`TestTNPWalls`, `TestTNPReferences`, or a manual probe); *stable*
+= names are equal after recompute and after save and reopen, and the same
+set of names exists after an upstream dimension change
+(`SMTests/testBendToponaming.py` for Wall, `SMTests/testStableNames.py`
+for the others). Coverage and refs tests are in `SMTests/testTNP.py`.
+
+Lost references into any feature's input go through
+`SheetMetalTools.smResolveSubElements`: recovered when name history and
+recorded geometry agree, otherwise the feature stops asking to re-select
+the element; the preference `Mod/SheetMetal/RefRecoveryFallback` restores
+the old-index behaviour (see [simple-resolver.md](simple-resolver.md);
+tests `TestTNPRecovery`, `TestTNPResolverRules`, `TestTNPHoleSplitsEdge`).
 
 | feature (file)                                     | status |
 |----------------------------------------------------|--------|
 | Base (`SheetMetalBaseCmd.py`)                      | coverage, refs (names come from the sketch) |
-| Wall (`SheetMetalCmd.py`, `smBend`)                | tagged tools; coverage, refs (was 9/14 faces named) |
-| Hem (`SheetMetalHem.py`, uses `smBend`)            | coverage (was 8/12) |
-| Base shape (`SheetMetalBaseShapeCmd.py`, uses `smBend`) | coverage (was 5/14) |
+| Wall (`SheetMetalCmd.py`, `smBend`)                | tagged tools; coverage, refs, stable (was 9/14 faces named) |
+| Hem (`SheetMetalHem.py`, uses `smBend`)            | tagged tools; coverage, stable (was 8/12) |
+| Base shape (`SheetMetalBaseShapeCmd.py`, uses `smBend`) | tagged tools; coverage, stable (Hat, Box; was 5/14) |
 | Fold (`SheetMetalFoldCmd.py`)                      | coverage (already) |
 | Extend (`SheetMetalExtendCmd.py`)                  | coverage (already) |
 | Extruded cutout (`ExtrudedCutout.py`)              | coverage (already) |
-| Junction (`SheetMetalJunction.py`)                 | coverage (already) |
-| Solid bend (`SheetMetalBend.py`)                   | coverage (already) |
-| Unfold, V2 unfolder (`SheetMetalNewUnfolder.py`)   | flat pattern edges tagged with their folded source edge (3.4); coverage, refs (was 0 % named). Its own reference into the folded part falls back to the old index when lost |
+| Junction (`SheetMetalJunction.py`)                 | coverage (already), stable without tagging |
+| Solid bend (`SheetMetalBend.py`)                   | coverage (already), stable without tagging |
+| Unfold, V2 unfolder (`SheetMetalNewUnfolder.py`)   | flat pattern edges tagged with their folded source edge (3.4); coverage, refs, stable (was 0 % named). Its own reference into the folded part goes through the resolver (the largest piece of a split face) |
 | Unfold, V1 unfolder (`SheetMetalUnfolder.py`)      | not named; only used when NetworkX is missing or the old unfolder is selected |
-| Relief (`SheetMetalRelief.py`)                     | tagged tool; coverage, refs (names were neighbour-based and broke on a size change) |
-| From solid (`SheetMetalFromSolid.py`)              | shell faces tagged with their source face / edge; coverage, refs (names had `;D` duplicates and broke on a box size change) |
+| Relief (`SheetMetalRelief.py`)                     | tagged tool; coverage, refs, stable (names were neighbour-based and broke on a size change) |
+| From solid (`SheetMetalFromSolid.py`)              | shell faces tagged with their source face / edge; coverage, refs, stable. Bend faces are extruded from a fresh arc edge (the fillet arc's element map caused unstable `;D` duplicates), and the solid is rebuilt from its faces in a fixed geometric order because `makeOffsetShape` orders elements differently on every call (`smSortedSolid`) |
 | Corner relief (`SheetMetalCornerReliefCmd.py`)     | coverage, refs (manual probe, size change) |
 | Wrap cutout (`SketchOnSheetMetalCmd.py`)           | coverage, refs (manual probe, deleting another circle); names come from the sketch |
 | Forming (`SheetMetalFormingCmd.py`)                | coverage, refs (manual probe, deleting another placement point); names come from the tool object |
-| Any feature on a face whose modification history changes | lost, see 2.4 (FreeCAD limitation) |
+| Any feature on a face whose modification history changes | FreeCAD loses the name (2.4); SheetMetal recovers it when history and recorded geometry agree, else refuses ("re-select it") |
 
 ## 6. Transparent previews (FreeCAD > 1.1)
 

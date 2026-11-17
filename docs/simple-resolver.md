@@ -253,4 +253,4 @@ dimension change. Add one such test per tagged feature.
    `;D` duplicate markers), and `makeOffsetShape` returns elements in a
    different order on every call, so the solid is rebuilt from its faces
    in a fixed geometric order (`smSortedSolid`).
-6. Update TNP.md 3.2 (key) and 5 (status).
+6. Update TNP.md 3.2 (key) and 5 (status) (done).
