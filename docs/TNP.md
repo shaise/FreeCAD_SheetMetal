@@ -182,25 +182,50 @@ are kept, prefixed by the feature's tag.
 
 ### 3.2 Tagged tools
 
-`SheetMetalTools.smTagTool(tool, *key)` sets
-`tool.Tag = -(crc32("/".join(key)) & 0x3FFFFFFF) - 2`. Booleans then name
-every element of the tool as `<element of tool>;:H<tag>,...`, e.g.
-`Face3;:H-1a2b3c,F`.
+A tool shape with a non-zero `Tag` gets every element named
+`<element of tool>;:H<tag>,...`, e.g. `Face3;:H-40a1d249,F`. Two kinds of
+tags, both negative and with a magnitude below 2³¹, so they fit a C `long`
+on every platform (tags are recomputed, not saved; a tag that differed
+between platforms would rename elements when a document changes OS):
 
-Choosing the key:
+**Packed tags** (bit 30 set) for tools a feature builds per selected
+element. `SheetMetalTools.smTagFeatureTool(tool, featureId, slot, role,
+segment=0, piece=0, fallbackKey="")` sets
 
-* It must **not** depend on element indices of the result, otherwise the
-  names change whenever the indices do. Use
-  `SheetMetalTools.smElementKey(baseShape, selectedName)`: the mapped name
-  of the selected element (falls back to the index name if it has none).
-* Add a role string unique within the feature (`"SMBendWall"`,
-  `"SMBend"`, `"SMBendCut", j` ...). Two tools with the same key in one
-  shape would get colliding names.
-* Use the same role for the same geometry in different modes (e.g. folded
-  vs. unfolded wall) so references survive toggling the mode.
+```
+-(1 << 30 | featureId << 15 | segment << 11 | slot << 6 | piece << 4 | role)
+   featureId 15 bits, segment 4, slot 5, piece 2, role 4
+```
 
-Negative tags never collide with document object IDs, so
-`getElementHistory()` on these names simply finds no source object.
+* `featureId`: the feature's `fp.ID`, unique in the document and saved
+  with it. Tools of different features never share a tag.
+* `slot`: position of the selected element in the feature's selection.
+* `segment`: the sketch segment, for features that call `smBend` once per
+  segment of a wall profile (Wall, Hem), or once per stage (Base shape).
+* `piece`: reserved for a selected element that was split upstream and is
+  built as several pieces; 0 today.
+* `role`: what the tool is, a fixed constant per kind of tool
+  (`smRoleWall`, `smRoleBend`, `smRoleRelief1`... in `SheetMetalCmd.py`).
+  Fixed, not counted, so a relief appearing when a gap grows does not
+  rename the cut tools after it. Folded and unfolded variants of the same
+  geometry share a role, so references survive toggling unfold.
+
+None of these fields depend on upstream element names. That matters
+once lost references are recovered: if the tag were derived from the
+selected edge's mapped name (as it was before), recovering a split base
+edge would give the wall new tags and lose every reference *into* the
+wall. `SheetMetalTools.smDecodeToolTag(tag)` returns the fields, so a name
+tells which feature, selection and tool an element came from.
+
+**Hashed tags** (bit 29 set, crc32 in the low 29 bits) when no feature
+ID is at hand or a field is out of range: `smTagTool(tool, *key)`. The
+key must not depend on element indices of the result; for tools built
+from source elements (From solid, Unfold) it is the source element's
+mapped name (`smElementKey`) plus a role string.
+
+Both ranges are far from document object IDs and from the small negative
+IDs PartDesign gives its own tools, so `getElementHistory()` on these
+names finds no source object.
 
 The element order *inside* a tool must be deterministic, which it is for
 geometry built by the same code path (an extruded 4-edge face always has

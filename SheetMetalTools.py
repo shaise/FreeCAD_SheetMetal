@@ -1143,20 +1143,72 @@ def smElementKey(shape, elementName):
     return mapped or elementName
 
 
+# Tool shape tags (see docs/TNP.md section 3.2). Tags are negative, so they
+# never collide with document object IDs, and their magnitude stays below
+# 2**31, so they fit a C long on every platform: a tag that differed
+# between platforms would rename elements when a document changes OS.
+# Packed tags have bit 30 set, hashed tags bit 29; both ranges are far
+# from the small negative IDs PartDesign gives its own tool shapes.
+_smTagPacked = 1 << 30
+_smTagHashed = 1 << 29
+
+
 def smTagTool(tool, *key):
-    """Give a freshly built tool shape a stable, non-zero Tag derived from key.
+    """Give a freshly built tool shape a stable, non-zero Tag hashed from key.
 
     Geometry built from scratch (Part.Face, makeLine, makeBox...) has
     Tag 0, so booleans with it leave its faces and edges unnamed and
     references to them fall back to fragile index names. A tagged tool
-    gets names like 'Face3;:H-1a2b,F' instead. The key must identify the
-    tool independently of element indices, e.g. the mapped name of the
-    selected edge it is built on plus the tool's role. Tags are negative
-    so they never collide with document object IDs. See docs/TNP.md.
+    gets names like 'Face3;:H-2a1b2c3d,F' instead. The key must identify
+    the tool independently of element indices. Prefer
+    smTagFeatureTool for tools built per selected element of a feature.
     """
     keyStr = "/".join(str(k) for k in key)
-    tool.Tag = -(zlib.crc32(keyStr.encode("utf-8")) & 0x3FFFFFFF) - 2
+    tool.Tag = -(_smTagHashed | (zlib.crc32(keyStr.encode("utf-8")) & (_smTagHashed - 1)))
     return tool
+
+
+def smToolTag(featureId, slot, role, segment=0, piece=0):
+    """Packed tag of a feature's tool shape, or 0 if a field is out of range.
+
+    featureId (15 bits) is the feature's document object ID, slot (5 bits)
+    the position of the selected element in the feature's link property,
+    role (4 bits) what the tool is, fixed per tool kind, segment (4 bits)
+    the sketch segment for features built segment by segment, piece
+    (2 bits) the piece of a selected element that was split upstream. None
+    of these change when upstream elements are renamed, so neither do the
+    names of the elements the tool adds.
+    """
+    if not (0 < featureId < 1 << 15 and 0 <= segment < 1 << 4 and 0 <= slot < 1 << 5
+            and 0 <= piece < 1 << 2 and 0 <= role < 1 << 4):
+        return 0
+    return -(_smTagPacked | featureId << 15 | segment << 11 | slot << 6 | piece << 4 | role)
+
+
+def smDecodeToolTag(tag):
+    """Fields of a tag made by smToolTag, or None for any other tag."""
+    value = -tag
+    if not _smTagPacked <= value < _smTagPacked << 1:
+        return None
+    return {"featureId": value >> 15 & 0x7FFF, "segment": value >> 11 & 0xF,
+            "slot": value >> 6 & 0x1F, "piece": value >> 4 & 0x3, "role": value & 0xF}
+
+
+def smTagFeatureTool(tool, featureId, slot, role, segment=0, piece=0, fallbackKey=""):
+    """Tag a tool built for one selected element of a feature (see smToolTag).
+
+    Out of range fields fall back to a hashed tag of the same fields, so the
+    tool is still named the same way on every recompute. Without a feature
+    ID (a helper called outside a feature) the tag is hashed from
+    fallbackKey, which should be the selected element's mapped name.
+    """
+    tag = smToolTag(featureId, slot, role, segment, piece) if featureId else 0
+    if tag:
+        tool.Tag = tag
+        return tool
+    if featureId:
+        return smTagTool(tool, featureId, segment, slot, piece, role)
+    return smTagTool(tool, fallbackKey, role)
 
 
 def smIsParallel(v1, v2):

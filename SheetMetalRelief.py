@@ -85,9 +85,13 @@ def smMakeFace(vertex, face, edges, relief):
     return extface
 
 
-def smRelief(relief=2.0, selVertexNames=" ", MainObject=None):
+# Role of the relief cut in its tag (SheetMetalTools.smToolTag).
+smRoleRelief = 1
+
+
+def smRelief(relief=2.0, selVertexNames=" ", MainObject=None, featureId=None):
     resultSolid = MainObject
-    for selVertexName in selVertexNames:
+    for slot, selVertexName in enumerate(selVertexNames):
         vertex = MainObject.getElement(SheetMetalTools.getElementFromTNP(selVertexName))
         facelist = MainObject.ancestorsOfType(vertex, Part.Face)
 
@@ -106,8 +110,9 @@ def smRelief(relief=2.0, selVertexNames=" ", MainObject=None):
         # Part.show(cutsolid, "cutsolid")
         cutsolid = cutsolid.removeSplitter()
         # Tag the tool so the pocket faces get topological names (see docs/TNP.md).
-        SheetMetalTools.smTagTool(cutsolid, SheetMetalTools.smElementKey(MainObject, selVertexName),
-                                  "SMRelief")
+        SheetMetalTools.smTagFeatureTool(
+            cutsolid, featureId, slot, smRoleRelief,
+            fallbackKey=SheetMetalTools.smElementKey(MainObject, selVertexName))
         resultSolid = resultSolid.cut(cutsolid)
         # Part.show(resultsolid, "resultsolid")
     return resultSolid
@@ -137,7 +142,7 @@ class SMRelief:
         # Pass selected object shape.
         Main_Object = fp.baseObject[0].Shape.copy()
         fp.Shape = smRelief(relief=fp.relief.Value, selVertexNames=fp.baseObject[1],
-                            MainObject=Main_Object)
+                            MainObject=Main_Object, featureId=fp.ID)
         SheetMetalTools.smHideObjects(fp.baseObject[0])
 
 
