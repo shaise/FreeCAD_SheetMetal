@@ -579,7 +579,8 @@ class SMUnfold:
 
         """
         self.addVerifyProperties(fp)
-        baseObj, baseFace = SheetMetalTools.smGetSubElementName(fp.baseObject[1][0])
+        # The largest piece if the face was split (see smResolveSubElements).
+        baseObj, baseFace = SheetMetalTools.smGetSubElementName(SheetMetalTools.smResolveSubElements(fp)[0])
         baseFace = SheetMetalTools.getElementFromTNP(baseFace)
         if baseObj is None:
             baseObj = fp.baseObject[0]

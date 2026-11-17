@@ -1211,6 +1211,346 @@ def smTagFeatureTool(tool, featureId, slot, role, segment=0, piece=0, fallbackKe
     return smTagTool(tool, fallbackKey, role)
 
 
+# ---------------------------------------------------------------------------
+# Recovering lost references (see docs/simple-resolver.md).
+#
+# FreeCAD marks a reference lost ('?Edge98') when the mapped name it saved
+# no longer exists, typically because an upstream change now modifies or
+# splits the element (a hole cutting through the referenced edge). A lost
+# reference is recovered only when name history and recorded geometry
+# agree, or when one of them is unambiguous; otherwise the feature stops
+# and asks for a new selection instead of guessing.
+# ---------------------------------------------------------------------------
+
+smRefGeometryProp = "smRefGeometry"
+smRefTolerance = 1e-4
+
+
+def smGetShadowNames(obj, propName):
+    """Return the mapped name FreeCAD saved for each sub-element of a link
+    property ("" where there is none).
+
+    Python has no direct access to them, so they are read from the
+    property's XML: <Sub value="?Edge98" shadow=";#312:9;:H1013,E.Edge98"/>.
+    """
+    import io
+    import xml.etree.ElementTree as ElementTree
+    import zipfile
+
+    try:
+        data = obj.dumpPropertyContent(propName, Compression=0)
+        with zipfile.ZipFile(io.BytesIO(bytes(data))) as archive:
+            root = ElementTree.fromstring(archive.read("Persistence.xml"))
+    except Exception:
+        return []
+    names = []
+    for sub in root.iter("Sub"):
+        shadow = sub.get("shadow", "")
+        mapped = shadow[1:] if shadow.startswith(";") else ""
+        names.append(mapped.rsplit(".", 1)[0] if "." in mapped else mapped)
+    return names
+
+
+def smSplitMappedName(mapped):
+    """Split a mapped name into its operations at the ';' that are not
+    inside parentheses: 'Face3;:G(Edge2;K1);:M' gives
+    ['Face3', ':G(Edge2;K1)', ':M']."""
+    parts, depth, start = [], 0, 0
+    for i, c in enumerate(mapped):
+        if c == "(":
+            depth += 1
+        elif c == ")":
+            depth -= 1
+        elif c == ";" and depth == 0:
+            parts.append(mapped[start:i])
+            start = i + 1
+    parts.append(mapped[start:])
+    return parts
+
+
+def _isSpecificName(prefix):
+    """Whether a mapped name prefix identifies an element by its origin
+    (a tag, a hashed name or sketch geometry) rather than by an index."""
+    return ":H" in prefix or prefix.startswith("#") or re.match(r"g\d+;", prefix + ";")
+
+
+def _elementMap(shape, kind):
+    return [(name, index) for name, index in shape.ElementMap.items() if index.startswith(kind)]
+
+
+def smHistoryCandidates(shape, mapped, kind):
+    """Elements of the given kind ("Edge", "Face", "Vertex") whose mapped
+    name is a copy or modification of the element named `mapped`.
+
+    The latest operations are at the end of a mapped name, so the name is
+    shortened one operation at a time until some element of the shape
+    derives from what is left: '#312:9;:H1013,E' (edge copied by a Hole)
+    becomes '#312:9', which matches the pieces '#312:9;:M;CUT;...' and
+    '#312:9;:M2;CUT;...' after the hole has grown across the edge.
+    """
+    if not mapped:
+        return set()
+    elements = _elementMap(shape, kind)
+    parts = smSplitMappedName(mapped)
+    for n in range(len(parts) - 1, 0, -1):
+        prefix = ";".join(parts[:n])
+        if not _isSpecificName(prefix):
+            break
+        # Only copies (:H) and modifications (:M), not elements generated
+        # from it (:G) or named after its neighbours (:U, :L).
+        found = {index for name, index in elements
+                 if name == prefix or (name.startswith(prefix + ";")
+                                       and name[len(prefix) + 1:].startswith((":H", ":M")))}
+        if found:
+            return found
+    return set()
+
+
+def smLineageCandidates(shape, mapped, kind):
+    """Elements of the given kind that descend from the same tool element
+    of a SheetMetal feature as the element named `mapped`.
+
+    'Face3;:H-4000c0c1,F;:M;CUT' is tool face 3 of a tool tagged by
+    smToolTag; every element whose name starts with 'Face3;:H-4000c0c1,F'
+    comes from that tool face, whatever happened to it afterwards.
+    """
+    if not mapped:
+        return set()
+    parts = smSplitMappedName(mapped)
+    for n in range(1, len(parts)):
+        match = re.match(r":H(-?[0-9a-fA-F]+)", parts[n])
+        if match and smDecodeToolTag(int(match.group(1), 16)):
+            prefix = ";".join(parts[:n + 1])
+            return {index for name, index in _elementMap(shape, kind)
+                    if name == prefix or name.startswith(prefix + ";")}
+    return set()
+
+
+def smGeometrySignature(element):
+    """A JSON-friendly description of an element's geometry, used to find
+    it again when its name is lost."""
+    def vec(v):
+        return [v.x, v.y, v.z]
+
+    if isinstance(element, Part.Vertex):
+        return {"kind": "Vertex", "point": vec(element.Point)}
+    if isinstance(element, Part.Edge):
+        sig = {"kind": "Edge", "type": element.Curve.TypeId,
+               "start": vec(element.Vertexes[0].Point), "end": vec(element.Vertexes[-1].Point)}
+        if element.Curve.TypeId in ("Part::GeomCircle", "Part::GeomArcOfCircle"):
+            sig.update(center=vec(element.Curve.Center), axis=vec(element.Curve.Axis),
+                       radius=element.Curve.Radius)
+        return sig
+    if isinstance(element, Part.Face):
+        surface = element.Surface
+        bb = element.BoundBox
+        sig = {"kind": "Face", "type": surface.TypeId,
+               "boundBox": [bb.XMin, bb.YMin, bb.ZMin, bb.XMax, bb.YMax, bb.ZMax]}
+        if isinstance(surface, Part.Plane):
+            sig.update(point=vec(surface.Position), normal=vec(surface.Axis))
+        elif isinstance(surface, Part.Cylinder):
+            sig.update(point=vec(surface.Center), normal=vec(surface.Axis),
+                       radius=surface.Radius)
+        return sig
+    return None
+
+
+def _sameLineDistance(edge, start, end):
+    """Overlap check of a straight edge with the segment start-end: returns
+    None if it is not on the same line, else the distance between the
+    segments along the line (0 when they overlap)."""
+    direction = end - start
+    if direction.Length < smRefTolerance:
+        return None
+    direction.normalize()
+    points = [v.Point for v in edge.Vertexes]
+    if any(p.distanceToLine(start, direction) > smRefTolerance for p in points):
+        return None
+    params = sorted((p - start).dot(direction) for p in points)
+    length = (end - start).dot(direction)
+    return max(0.0, params[0] - length, -params[-1])
+
+
+def smGeometryMatches(element, sig, extent=True):
+    """Whether element lies where the element described by sig was: on the
+    same line or circle (edges), plane or cylinder (faces), at the same
+    point (vertices). With extent, lines must also overlap the old segment
+    and faces lie inside the old bound box."""
+    V = FreeCAD.Vector
+    tol = smRefTolerance
+    if sig is None or element is None:
+        return False
+    if sig["kind"] == "Vertex":
+        return isinstance(element, Part.Vertex) and (element.Point - V(*sig["point"])).Length < tol
+    if sig["kind"] == "Edge":
+        if not isinstance(element, Part.Edge) or element.Curve.TypeId != sig["type"]:
+            return False
+        if sig["type"] == "Part::GeomLine":
+            distance = _sameLineDistance(element, V(*sig["start"]), V(*sig["end"]))
+            return distance is not None and (not extent or distance < tol)
+        if "center" in sig:
+            curve = element.Curve
+            return ((curve.Center - V(*sig["center"])).Length < tol
+                    and abs(abs(curve.Axis.dot(V(*sig["axis"]))) - 1) < tol
+                    and abs(curve.Radius - sig["radius"]) < tol)
+        return False
+    if sig["kind"] == "Face":
+        if not isinstance(element, Part.Face) or element.Surface.TypeId != sig["type"]:
+            return False
+        if "normal" not in sig:
+            return False
+        surface = element.Surface
+        normal = V(*sig["normal"])
+        if isinstance(surface, Part.Plane):
+            onSurface = abs((surface.Position - V(*sig["point"])).dot(normal)) < tol
+        else:
+            onSurface = (abs(surface.Radius - sig["radius"]) < tol
+                         and surface.Center.distanceToLine(V(*sig["point"]), normal) < tol)
+        if not (onSurface and abs(abs(surface.Axis.dot(normal)) - 1) < tol):
+            return False
+        if not extent:
+            return True
+        old = FreeCAD.BoundBox(*sig["boundBox"])
+        old.enlarge(tol)
+        return old.isInside(element.BoundBox)
+    return False
+
+
+def smFindLostElement(shape, kind, mapped, sig):
+    """Index names of the elements a lost reference now refers to, largest
+    first, and the rule that decided (see docs/simple-resolver.md): either
+    (names, label) or ([], reason for refusing).
+
+    Name candidates N derive from the saved mapped name (smHistoryCandidates,
+    smLineageCandidates), geometry candidates G lie where the element was
+    (smGeometryMatches against the recorded signature sig).
+    R1 N and G agree: their intersection. R2 they contradict: refuse.
+    R3 only G: G. R4 no geometry recorded, N all on one line or surface
+    (a split edge or face): N. R5 otherwise: refuse.
+    """
+    def size(name):
+        element = shape.getElement(name)
+        return element.Length if kind == "Edge" else (element.Area if kind == "Face" else 0)
+
+    def largestFirst(names):
+        return sorted(names, key=lambda n: (-size(n), int(re.sub(r"\D", "", n))))
+
+    names = smHistoryCandidates(shape, mapped, kind) | smLineageCandidates(shape, mapped, kind)
+    if sig:
+        elements = getattr(shape, {"Edge": "Edges", "Face": "Faces", "Vertex": "Vertexes"}[kind])
+        geometry = {f"{kind}{i + 1}" for i, e in enumerate(elements) if smGeometryMatches(e, sig)}
+        if names & geometry:
+            return largestFirst(names & geometry), "history+geometry"
+        if names:
+            return [], "history contradicts geometry"
+        if geometry:
+            return largestFirst(geometry), "geometry"
+        return [], "nothing found"
+    if names:
+        found = largestFirst(names)
+        carrier = smGeometrySignature(shape.getElement(found[0]))
+        if len(found) == 1 or (carrier and all(
+                smGeometryMatches(shape.getElement(n), carrier, extent=False) for n in found)):
+            return found, "history"
+        return [], "unrelated descendants"
+    return [], "no geometry recorded"
+
+
+def _loadRefGeometry(fp):
+    import json
+
+    try:
+        return [json.loads(s) if s else None for s in getattr(fp, smRefGeometryProp, [])]
+    except ValueError:
+        return []
+
+
+def _storeRefGeometry(fp, signatures):
+    import json
+
+    values = [json.dumps(s) if s else "" for s in signatures]
+    if not hasattr(fp, smRefGeometryProp):
+        fp.addProperty("App::PropertyStringList", smRefGeometryProp, "Base",
+                       "Geometry of the referenced elements, used to find them again "
+                       "when their names are lost", 0, False, True)
+        fp.setPropertyStatus(smRefGeometryProp, ["Output"])
+    if list(getattr(fp, smRefGeometryProp)) != values:
+        setattr(fp, smRefGeometryProp, values)
+
+
+def smResolveSubElementSlots(fp, propName="baseObject"):
+    """Return (sub-element name, slot, piece) for each element of a link
+    property to build with.
+
+    slot is the position of the sub in the property and piece the index
+    among the elements a lost sub was recovered as (a split edge gives
+    several, largest first), as smToolTag expects them.
+
+    References FreeCAD could follow are returned as they are and their
+    geometry is recorded in a hidden property. A lost reference ('?Edge98')
+    is looked up with smFindLostElement; if that refuses, SMException is
+    raised asking to re-select it, unless the preference
+    RefRecoveryFallback restores the old behaviour of using the old index.
+    Neither the property nor the recorded geometry is changed by a
+    recovery, so FreeCAD picks the original name up again if the change is
+    undone.
+    """
+    link = getattr(fp, propName, None)
+    if not link:
+        return []
+    linked, subs = link
+    shape = linked.Shape
+    signatures = _loadRefGeometry(fp)
+    signatures += [None] * (len(subs) - len(signatures))
+    shadows = None
+    result = []
+    for slot, sub in enumerate(subs):
+        prefix, _dot, name = sub.rpartition(".")
+        prefix = prefix + "." if prefix else ""
+        if not name.startswith("?"):
+            result.append((sub, slot, 0))
+            try:
+                signatures[slot] = smGeometrySignature(shape.getElement(name))
+            except (ValueError, IndexError, Part.OCCError):
+                pass
+            continue
+        if shadows is None:
+            shadows = smGetShadowNames(fp, propName)
+        oldName = name.lstrip("?")
+        kind = re.sub(r"\d+$", "", oldName)
+        mapped = shadows[slot] if slot < len(shadows) else ""
+        if kind in ("Edge", "Face", "Vertex"):
+            found, rule = smFindLostElement(shape, kind, mapped, signatures[slot])
+        else:
+            found, rule = [], "unknown element type"
+        if found:
+            FreeCAD.Console.PrintWarning(translate(
+                "SheetMetalTools", "{}: lost {} of {}, using {} ({})\n"
+            ).format(fp.Label, oldName, linked.Label, " + ".join(found), rule))
+            result.extend((prefix + f, slot, piece) for piece, f in enumerate(found))
+        elif params.GetBool("RefRecoveryFallback", False):
+            FreeCAD.Console.PrintWarning(translate(
+                "SheetMetalTools", "{}: lost {} of {}, using its old index ({})\n"
+            ).format(fp.Label, oldName, linked.Label, rule))
+            result.append((prefix + oldName, slot, 0))
+        else:
+            raise SMException(translate(
+                "SheetMetalTools", "{}: lost {} of {} ({}); re-select it"
+            ).format(fp.Label, oldName, linked.Label, rule))
+    _storeRefGeometry(fp, signatures[:len(subs)])
+    # Two references can end up on the same element.
+    unique = {}
+    for entry in result:
+        unique.setdefault(entry[0], entry)
+    return list(unique.values())
+
+
+def smResolveSubElements(fp, propName="baseObject"):
+    """Return the sub-element names of a link property to build with (see
+    smResolveSubElementSlots)."""
+    return [name for name, _slot, _piece in smResolveSubElementSlots(fp, propName)]
+
+
 def smIsParallel(v1, v2):
     return abs(abs(v1.normalize().dot(v2.normalize())) - 1.0) < smEpsilon
 

@@ -129,7 +129,7 @@ class SMSolidBend:
         self.addVerifyProperties(fp)
         Main_Object = fp.baseObject[0].Shape.copy()
         fp.Shape = smSolidBend(radius=fp.radius.Value,
-                               selEdgeNames=fp.baseObject[1],
+                               selEdgeNames=SheetMetalTools.smResolveSubElements(fp),
                                MainObject=Main_Object)
 
 

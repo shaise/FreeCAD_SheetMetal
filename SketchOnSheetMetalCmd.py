@@ -201,7 +201,7 @@ class SMSketchOnSheet:
         """
         fp.Shape = smSketchOnSheetMetal(kfactor=fp.kfactor,
                                         sketch=fp.Sketch,
-                                        selFaceNames=fp.baseObject[1],
+                                        selFaceNames=SheetMetalTools.smResolveSubElements(fp),
                                         MainObject=fp.baseObject[0])
 
 

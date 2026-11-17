@@ -258,7 +258,7 @@ class SMExtrudeWall:
 
         # Pass selected object shape.
         Main_Object = fp.baseObject[0]
-        face = fp.baseObject[1]
+        face = SheetMetalTools.smResolveSubElements(fp)
         fp.Shape = smExtrude(extLength=fp.length.Value,
                              gap1=fp.gap1.Value,
                              gap2=fp.gap2.Value,

@@ -141,8 +141,8 @@ class ExtrudedCutout:
             cutSketch = fp.Sketch
 
             # Get selected object and selected face from the properties.
-            selected_object, face_name = fp.baseObject
-            face_name = face_name[0]
+            selected_object = fp.baseObject[0]
+            face_name = SheetMetalTools.smResolveSubElements(fp)[0]
             selected_face = selected_object.Shape.getElement(face_name)
             normal_vector = selected_face.normalAt(0, 0)
 

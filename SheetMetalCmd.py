@@ -1288,6 +1288,7 @@ def smBend(
     PerforationMaxLength=5.0,
     NonperforationMaxLength=5.0,
     toponamingId=None,
+    toolSlots=None,
 ):
     # if sketch is as wall.
     sketches = False
@@ -1329,13 +1330,18 @@ def smBend(
     # Tag the tool solids built for each selected item, so the faces they
     # add get topological names (see docs/TNP.md). `toponamingId` is
     # (feature ID, sketch segment); without it the tags are hashed from
-    # the selected element's mapped name.
+    # the selected element's mapped name. `toolSlots` gives (slot, piece)
+    # of each selected item in the feature's link property, so a selected
+    # edge split upstream does not shift the tags of the others.
     toolKeys = [SheetMetalTools.smElementKey(MainObject, name) for name in selFaceNames]
     featureId, segment = toponamingId or (None, 0)
+    if not toolSlots or len(toolSlots) != len(selFaceNames):
+        toolSlots = [(i, 0) for i in range(len(selFaceNames))]
 
     def smTag(tool, i, role):
-        return SheetMetalTools.smTagFeatureTool(tool, featureId, i, role, segment=segment,
-                                                fallbackKey=toolKeys[i])
+        slot, piece = toolSlots[i]
+        return SheetMetalTools.smTagFeatureTool(tool, featureId, slot, role, segment=segment,
+                                                piece=piece, fallbackKey=toolKeys[i])
 
     nogaptrimedgelist = []
     mainlist, trimedgelist, nogaptrimedgelist = getBendetail(
@@ -1923,7 +1929,9 @@ class SMBendWall:
 
         # Pass selected object shape.
         Main_Object = fp.baseObject[0].Shape.copy()
-        face = fp.baseObject[1]
+        resolved = SheetMetalTools.smResolveSubElementSlots(fp)
+        face = [name for name, _slot, _piece in resolved]
+        toolSlots = [(slot, piece) for _name, slot, piece in resolved]
         thk, thkDir = sheet_thk(Main_Object, face[0])
 
         if fp.Sketch:
@@ -2088,7 +2096,8 @@ class SMBendWall:
                 PerforationInitialLength=fp.PerforationInitialLength.Value,
                 PerforationMaxLength=fp.PerforationMaxLength.Value,
                 NonperforationMaxLength=fp.NonperforationMaxLength.Value,
-                toponamingId=(fp.ID, i))
+                toponamingId=(fp.ID, i),
+                toolSlots=toolSlots)
             faces = smGetFace(f, s)
             face = faces
             Main_Object = s

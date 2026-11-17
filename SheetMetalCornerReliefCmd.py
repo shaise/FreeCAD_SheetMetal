@@ -724,7 +724,7 @@ class SMCornerRelief:
                              xoffset=fp.XOffset.Value,
                              yoffset=fp.YOffset.Value,
                              sketch=fp.Sketch,
-                             selEdgeNames=fp.baseObject[1],
+                             selEdgeNames=SheetMetalTools.smResolveSubElements(fp),
                              MainObject=fp.baseObject[0])
         SheetMetalTools.smHideObjects(fp.baseObject[0], fp.Sketch)
 

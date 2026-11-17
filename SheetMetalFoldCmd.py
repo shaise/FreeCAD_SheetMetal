@@ -274,7 +274,7 @@ class SMFoldWall:
                           bendlinesketch=fp.BendLine,
                           position=fp.Position,
                           invertbend=fp.invertbend,
-                          selFaceNames=fp.baseObject[1],
+                          selFaceNames=SheetMetalTools.smResolveSubElements(fp),
                           MainObject=fp.baseObject[0])
 
 

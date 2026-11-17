@@ -155,8 +155,12 @@ are kept, prefixed by the feature's tag.
   (`Part::Feature::searchElementCache`), which needs the old element's
   vertices to be unchanged, so it fails when the face itself was cut.
   FreeCAD `main` adds a tolerance-based fallback (`rescueDriftedElement` in
-  `src/App/PropertyLinks.cpp`). SheetMetal cannot avoid this; features fall
-  back to the old index with a warning (`getElementFromTNP`).
+  `src/App/PropertyLinks.cpp`). SheetMetal features read their
+  references through `SheetMetalTools.smResolveSubElements`, which
+  recovers a lost reference only when the saved name history and the
+  recorded geometry agree (e.g. both pieces of a split edge) and otherwise
+  stops with "re-select it" instead of using the old index. See
+  [simple-resolver.md](simple-resolver.md).
 
 ## 3. Rules for SheetMetal code
 

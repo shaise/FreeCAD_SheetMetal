@@ -85,7 +85,7 @@ class SMJunction:
         """
         # Pass selected object shape.
         Main_Object = fp.baseObject[0].Shape.copy()
-        fp.Shape = smJunction(gap=fp.gap.Value, selEdgeNames=fp.baseObject[1],
+        fp.Shape = smJunction(gap=fp.gap.Value, selEdgeNames=SheetMetalTools.smResolveSubElements(fp),
                               MainObject=Main_Object)
         SheetMetalTools.smHideObjects(fp.baseObject[0])
 

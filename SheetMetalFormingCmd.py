@@ -169,7 +169,7 @@ class SMBendWall:
         """
         self.addVerifyProperties(fp)
         base = fp.baseObject[0].Shape
-        base_face = base.getElement(SheetMetalTools.getElementFromTNP(fp.baseObject[1][0]))
+        base_face = base.getElement(SheetMetalTools.smResolveSubElements(fp)[0])
         thk = SheetMetalTools.smGetThickness(base, base_face)
         fp.thickness = thk
         tool = fp.toolObject[0].Shape

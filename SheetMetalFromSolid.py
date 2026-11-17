@@ -715,7 +715,7 @@ class SMFromSolid:
         if not base_shape.Faces:
             return
         self.addVerifyProperties(fp)
-        fp.Shape = smMakeSheetMetalFromSolid(base_shape, fp.baseObject[1], fp.Radius.Value, 
+        fp.Shape = smMakeSheetMetalFromSolid(base_shape, SheetMetalTools.smResolveSubElements(fp), fp.Radius.Value,
                                              fp.Thickness.Value, 0.1, fp.Invert)
 
     def __getstate__(self):

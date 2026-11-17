@@ -35,11 +35,13 @@ from SMTests.helpers import (
     PLATE,
     THK,
     TOL,
+    backEdge,
     cornerBendEdges,
     findElement,
     findVertex,
     isLine,
     makeBase,
+    makePlate,
     makeCornerWall,
     makeSketch,
     makeWall,
@@ -488,3 +490,242 @@ class TestTNPReferences(unittest.TestCase):
             self.wall.length = 35.0
 
         self.assertReferenceFollows(unfold, self.flatSide(1), change)
+
+
+class TestTNPRecovery(unittest.TestCase):
+    """References FreeCAD loses because an upstream cut starts to split the
+    referenced edge (see SheetMetalTools.smResolveSubElements)."""
+
+    def setUp(self):
+        self.doc = FreeCAD.newDocument("TestTNPRecovery")
+        _sketch, base = makePlate(self.doc)
+        self.wall1 = makeWall(self.doc, base, [backEdge(base.Shape)], "Wall1")
+        self.doc.recompute()
+        # A hole through Wall1 below its top edge, like a PartDesign Hole.
+        self.tool = self.doc.addObject("Part::Cylinder", "HoleTool")
+        self.tool.Radius = 2
+        self.tool.Height = 20
+        self.tool.Placement = FreeCAD.Placement(Vector(50, 40, 17),
+                                                FreeCAD.Rotation(Vector(1, 0, 0), -90))
+        self.cut = self.doc.addObject("Part::Cut", "Hole")
+        self.cut.Base = self.wall1
+        self.cut.Tool = self.tool
+        self.doc.recompute()
+        shape = self.cut.Shape
+        self.zmax, self.ymax = shape.BoundBox.ZMax, shape.BoundBox.YMax
+        edge = findElement(shape, "Edge", self.onTopEdge)
+        self.line = (shape.getElement(edge).Vertexes[0].Point, Vector(1, 0, 0))
+        self.wall2 = makeWall(self.doc, self.cut, [edge], "Wall2")
+        self.doc.recompute()
+
+    def tearDown(self):
+        FreeCAD.closeDocument(self.doc.Name)
+
+    def onTopEdge(self, e):
+        return (isLine(e) and e.BoundBox.XLength > 1 and abs(e.BoundBox.ZMin - self.zmax) < TOL
+                and abs(e.BoundBox.YMin - self.ymax) < TOL)
+
+    def resolved(self):
+        import SheetMetalTools
+
+        return SheetMetalTools.smResolveSubElements(self.wall2)
+
+    def testSplitEdgeIsFollowed(self):
+        self.tool.Radius = 8  # now cuts through the top edge
+        self.doc.recompute()
+        self.assertTrue(self.wall2.baseObject[1][0].startswith("?"), "FreeCAD kept the name")
+        self.assertFalse("Invalid" in self.wall2.State)
+        pieces = self.resolved()
+        self.assertEqual(len(pieces), 2)
+        for name in pieces:
+            self.assertTrue(self.onTopEdge(self.cut.Shape.getElement(name)), name)
+        # Wall2 is the wall built directly on both pieces.
+        expected = makeWall(self.doc, self.cut, pieces, "Expected")
+        self.doc.recompute()
+        self.assertAlmostEqual(self.wall2.Shape.Volume, expected.Shape.Volume, places=6)
+        self.assertTrue(self.wall2.Shape.isSame(expected.Shape)
+                        or abs(self.wall2.Shape.common(expected.Shape).Volume
+                               - expected.Shape.Volume) < 1e-6)
+
+    def testOriginalEdgeReturns(self):
+        self.tool.Radius = 8
+        self.doc.recompute()
+        self.tool.Radius = 2
+        self.doc.recompute()
+        sub = self.wall2.baseObject[1][0]
+        self.assertFalse(sub.startswith("?"), "FreeCAD did not find the edge again")
+        self.assertTrue(self.onTopEdge(self.cut.Shape.getElement(sub)))
+
+    def isRefused(self):
+        return "Invalid" in self.wall2.State
+
+    def testMovedAndSplitEdgeIsRefused(self):
+        # R2: the name history finds the pieces of the edge, but they are no
+        # longer on the line the wall was built on.
+        self.wall1.length = self.wall1.length.Value + 5
+        self.tool.Placement.Base.z += 5
+        self.tool.Radius = 8
+        self.doc.recompute()
+        self.assertTrue(self.wall2.baseObject[1][0].startswith("?"), "FreeCAD kept the name")
+        self.assertTrue(self.isRefused(), "a moved and split edge must be re-selected")
+
+    def testFallbackPreferenceUsesOldIndex(self):
+        import SheetMetalTools
+
+        oldSub = self.wall2.baseObject[1][0]
+        SheetMetalTools.params.SetBool("RefRecoveryFallback", True)
+        try:
+            self.wall1.length = self.wall1.length.Value + 5
+            self.tool.Placement.Base.z += 5
+            self.tool.Radius = 8
+            self.doc.recompute()
+            self.assertFalse(self.isRefused())
+            self.assertEqual(self.resolved(), [oldSub])
+        finally:
+            SheetMetalTools.params.RemBool("RefRecoveryFallback")
+
+    def testSplitEdgeWithoutRecordedGeometry(self):
+        # R4: an old document has no recorded geometry; the pieces are
+        # recognised as one split edge because they are collinear.
+        import SheetMetalTools
+
+        setattr(self.wall2, SheetMetalTools.smRefGeometryProp, [])
+        self.tool.Radius = 8
+        self.doc.recompute()
+        self.assertFalse(self.isRefused())
+        pieces = self.resolved()
+        self.assertEqual(len(pieces), 2)
+        for name in pieces:
+            self.assertTrue(self.onTopEdge(self.cut.Shape.getElement(name)), name)
+
+    def testSplitPiecesKeepTheirTags(self):
+        # The wall on the pieces of sub 0 is tagged with slot 0, pieces 0
+        # and 1 (see SheetMetalTools.smToolTag).
+        import SheetMetalTools
+
+        self.tool.Radius = 8
+        self.doc.recompute()
+        slots = [(slot, piece) for _n, slot, piece
+                 in SheetMetalTools.smResolveSubElementSlots(self.wall2)]
+        self.assertEqual(slots, [(0, 0), (0, 1)])
+
+
+class _FakeShape:
+    """Just enough of a shape for SheetMetalTools.smFindLostElement."""
+
+    def __init__(self, edges, names):
+        self.Edges = edges
+        self.ElementMap = {name: f"Edge{i + 1}" for i, name in enumerate(names)}
+
+    def getElement(self, name):
+        return self.Edges[int(name[4:]) - 1]
+
+
+class TestTNPResolverRules(unittest.TestCase):
+    """The decision table of smFindLostElement (docs/simple-resolver.md)."""
+
+    old = "#312:9;:H1013,E"
+
+    def find(self, edges, names, sig):
+        import SheetMetalTools
+
+        return SheetMetalTools.smFindLostElement(_FakeShape(edges, names), "Edge", self.old, sig)
+
+    def signature(self, edge):
+        import SheetMetalTools
+
+        return SheetMetalTools.smGeometrySignature(edge)
+
+    def testSplitMappedNameIgnoresParentheses(self):
+        import SheetMetalTools
+
+        self.assertEqual(SheetMetalTools.smSplitMappedName("Edge1;:G(Face5;K-1;:Hce4:4,F);CUT"),
+                         ["Edge1", ":G(Face5;K-1;:Hce4:4,F)", "CUT"])
+
+    def testHistoryAndGeometryAgree(self):
+        line = Part.makeLine(Vector(0, 0, 0), Vector(10, 0, 0))
+        pieces = [Part.makeLine(Vector(6, 0, 0), Vector(10, 0, 0)),
+                  Part.makeLine(Vector(0, 0, 0), Vector(4, 0, 0)),
+                  Part.makeLine(Vector(0, 5, 0), Vector(10, 5, 0))]
+        names = ["#312:9;:M;CUT;:H1014:7,E", "#312:9;:M2;CUT;:H1014:8,E", "g2;SKT"]
+        self.assertEqual(self.find(pieces, names, self.signature(line)),
+                         (["Edge1", "Edge2"], "history+geometry"))
+
+    def testHistoryContradictsGeometry(self):
+        line = Part.makeLine(Vector(0, 0, 0), Vector(10, 0, 0))
+        moved = [Part.makeLine(Vector(0, 5, 0), Vector(10, 5, 0)),
+                 Part.makeLine(Vector(0, 0, 0), Vector(10, 0, 0))]
+        names = ["#312:9;:M;CUT;:H1014:7,E", "g2;SKT"]
+        self.assertEqual(self.find(moved, names, self.signature(line)),
+                         ([], "history contradicts geometry"))
+
+    def testGeometryOnly(self):
+        line = Part.makeLine(Vector(0, 0, 0), Vector(10, 0, 0))
+        edges = [Part.makeLine(Vector(0, 5, 0), Vector(10, 5, 0)),
+                 Part.makeLine(Vector(2, 0, 0), Vector(8, 0, 0))]
+        self.assertEqual(self.find(edges, ["g1;SKT", "g2;SKT"], self.signature(line)),
+                         (["Edge2"], "geometry"))
+
+    def testUnrelatedDescendantsAreRefused(self):
+        edges = [Part.makeLine(Vector(0, 0, 0), Vector(10, 0, 0)),
+                 Part.makeLine(Vector(0, 0, 0), Vector(0, 10, 0))]
+        names = ["#312:9;:M;CUT;:H1014:7,E", "#312:9;:M2;CUT;:H1014:8,E"]
+        self.assertEqual(self.find(edges, names, None), ([], "unrelated descendants"))
+
+    def testFacesMustLieInsideTheOldFace(self):
+        import SheetMetalTools
+
+        old = Part.makePlane(10, 10)
+        grown = Part.makePlane(20, 10)
+        shrunk = Part.makePlane(5, 10)
+        sig = SheetMetalTools.smGeometrySignature(old)
+        self.assertFalse(SheetMetalTools.smGeometryMatches(grown, sig))
+        self.assertTrue(SheetMetalTools.smGeometryMatches(shrunk, sig))
+
+
+class TestTNPHoleSplitsEdge(unittest.TestCase):
+    """SMTests/data/HoleSplitsEdge.FCStd: a PartDesign Hole of growing
+    diameter cuts through the edge Bend003 is built on (see
+    docs/simple-resolver.md). Every diameter gives the right edge(s) or a
+    refusal, never another edge."""
+
+    def setUp(self):
+        import os
+
+        path = os.path.join(os.path.dirname(__file__), "data", "HoleSplitsEdge.FCStd")
+        self.doc = FreeCAD.openDocument(path, True)
+        self.hole = self.doc.getObject("Hole")
+        self.wall = self.doc.getObject("Bend003")
+        # Saved with the reference lost; at D = 20 FreeCAD finds it again.
+        self.hole.Diameter = 20
+        self.doc.recompute()
+        sub = self.wall.baseObject[1][0]
+        self.assertFalse(sub.startswith("?"))
+        edge = self.hole.Shape.getElement(sub)
+        self.line = edgeSignature(edge)
+        self.length = edge.Length
+
+    def tearDown(self):
+        FreeCAD.closeDocument(self.doc.Name)
+
+    def pieces(self):
+        import SheetMetalTools
+
+        return SheetMetalTools.smResolveSubElements(self.wall)
+
+    def testDiameterSweep(self):
+        expected = {30: 2, 36: 2, 40: 2, 50: 1}
+        for diameter in range(10, 62, 2):
+            with self.subTest(diameter=diameter):
+                self.hole.Diameter = diameter
+                self.doc.recompute()
+                if "Invalid" in self.wall.State:
+                    self.assertNotIn(diameter, expected, "refused")
+                    continue
+                names = self.pieces()
+                for name in names:
+                    edge = self.hole.Shape.getElement(name)
+                    self.assertTrue(sameLine(edge, self.line), f"{name} is off the line")
+                    self.assertLessEqual(edge.Length, self.length + TOL)
+                if diameter in expected:
+                    self.assertEqual(len(names), expected[diameter], names)

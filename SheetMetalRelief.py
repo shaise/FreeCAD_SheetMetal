@@ -89,9 +89,13 @@ def smMakeFace(vertex, face, edges, relief):
 smRoleRelief = 1
 
 
-def smRelief(relief=2.0, selVertexNames=" ", MainObject=None, featureId=None):
+def smRelief(relief=2.0, selVertexNames=" ", MainObject=None, featureId=None, toolSlots=None):
+    """toolSlots gives (slot, piece) of each vertex in the feature's link
+    property (see SheetMetalTools.smResolveSubElementSlots)."""
     resultSolid = MainObject
-    for slot, selVertexName in enumerate(selVertexNames):
+    if not toolSlots or len(toolSlots) != len(selVertexNames):
+        toolSlots = [(i, 0) for i in range(len(selVertexNames))]
+    for selVertexName, (slot, piece) in zip(selVertexNames, toolSlots):
         vertex = MainObject.getElement(SheetMetalTools.getElementFromTNP(selVertexName))
         facelist = MainObject.ancestorsOfType(vertex, Part.Face)
 
@@ -111,7 +115,7 @@ def smRelief(relief=2.0, selVertexNames=" ", MainObject=None, featureId=None):
         cutsolid = cutsolid.removeSplitter()
         # Tag the tool so the pocket faces get topological names (see docs/TNP.md).
         SheetMetalTools.smTagFeatureTool(
-            cutsolid, featureId, slot, smRoleRelief,
+            cutsolid, featureId, slot, smRoleRelief, piece=piece,
             fallbackKey=SheetMetalTools.smElementKey(MainObject, selVertexName))
         resultSolid = resultSolid.cut(cutsolid)
         # Part.show(resultsolid, "resultsolid")
@@ -141,8 +145,11 @@ class SMRelief:
         """
         # Pass selected object shape.
         Main_Object = fp.baseObject[0].Shape.copy()
-        fp.Shape = smRelief(relief=fp.relief.Value, selVertexNames=fp.baseObject[1],
-                            MainObject=Main_Object, featureId=fp.ID)
+        resolved = SheetMetalTools.smResolveSubElementSlots(fp)
+        fp.Shape = smRelief(relief=fp.relief.Value,
+                            selVertexNames=[name for name, _slot, _piece in resolved],
+                            MainObject=Main_Object, featureId=fp.ID,
+                            toolSlots=[(slot, piece) for _name, slot, piece in resolved])
         SheetMetalTools.smHideObjects(fp.baseObject[0])
 
 
