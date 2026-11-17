@@ -226,7 +226,7 @@ wall, sketch or unfold attaches to.
 | Unfold (V2) | flat pattern wires | often (sketches on the flat, TechDraw) | tagged by source edge; keep, key = feature ID + source-edge slot |
 | From solid | shell faces, bend faces | often | tagged by source element; keep |
 | Relief | relief cut tool | sometimes | packed key (done) |
-| Junction, Solid bend | cut box, bend cylinder | rarely | check with a stable-name test like `TestBendToponaming`; tag only if it fails |
+| Junction, Solid bend | cut box, bend cylinder | rarely | stable-name test passes without tagging (`testStableNames`) |
 | Extend, Fold | none (extrudes or rotates existing named faces) | | nothing to do |
 | Base, Extruded cutout, Wrap cutout, Corner relief, Forming | none (names come from sketches or tool objects) | | nothing to do |
 
@@ -246,5 +246,11 @@ dimension change. Add one such test per tagged feature.
    Wall, Hem and Relief tag their tools with the slot and piece the
    resolver returns.
 4. Tag-lineage candidates (5.3) (done: `smLineageCandidates`).
-5. Stable-name tests for Hem, Base shape, Relief, From solid, Unfold.
+5. Stable-name tests for Hem, Base shape, Relief, From solid, Unfold
+   (done: `SMTests/testStableNames.py`, also Junction and Solid bend,
+   which pass without tagging). From solid needed two fixes: its bend
+   faces inherited a partial element map from the fillet arc (unstable
+   `;D` duplicate markers), and `makeOffsetShape` returns elements in a
+   different order on every call, so the solid is rebuilt from its faces
+   in a fixed geometric order (`smSortedSolid`).
 6. Update TNP.md 3.2 (key) and 5 (status).

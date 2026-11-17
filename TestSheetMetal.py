@@ -28,6 +28,10 @@ from SMTests.testBendCuts import TestBendCuts
 from SMTests.testTNP import (TestTNPWalls, TestTNPCoverage, TestTNPReferences, TestTNPRecovery,
                              TestTNPResolverRules, TestTNPHoleSplitsEdge)
 from SMTests.testBendToponaming import TestBendToponaming, TestToolShapeTag
+from SMTests.testStableNames import (TestHemStableNames, TestBaseShapeStableNames,
+                                     TestBaseShapeBoxStableNames, TestReliefStableNames,
+                                     TestFromSolidStableNames, TestUnfoldStableNames,
+                                     TestJunctionStableNames, TestSolidBendStableNames)
 from SMTests.testFeatures import TestFeatureGeometry
 from SMTests.testPersistence import TestPersistence
 from SMTests.testUnfoldAccuracy import (

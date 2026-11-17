@@ -602,7 +602,12 @@ class smfsShapeInfo:
                 continue
             startPoint = edgeInfo.bendEdge.Vertexes[0].Point
             endPoint = edgeInfo.bendEdge.Vertexes[1].Point
+            # A fresh edge without the fillet's element map: extruding the
+            # mapped arc would name one of the bend face's edges and vertices
+            # after it, which collides with the index names the tag gives
+            # the others and leaves an unstable duplicate marker (;D).
             arc = edgeInfo.filletArc
+            arc = Part.Edge(arc.Curve, arc.FirstParameter, arc.LastParameter)
             arcBase = smGetCenterOfEdge(edgeInfo.edge)
             arc.translate(startPoint - arcBase)
             bendFace = arc.extrude(endPoint - startPoint)
@@ -681,7 +686,25 @@ def smMakeSheetMetalFromSolid(shape, selItems, radius, thickness, tolerance, inv
         for face in shell.Faces:
             s = face.makeOffsetShape(thickness, 0.001, fill=True)
             solid = s if solid is None else solid.fuse(s)
-    return solid
+    return smSortedSolid(solid)
+
+
+def smSortedSolid(solid):
+    """The solid rebuilt from its faces in a fixed geometric order.
+
+    makeOffsetShape returns its faces, edges and vertices in a different
+    order on every call, so the same element would get another index on
+    each recompute. The names stay the same (see docs/TNP.md).
+    """
+    if solid is None or len(solid.Solids) != 1 or len(solid.Shells) != 1:
+        return solid
+
+    def key(face):
+        c = face.CenterOfMass
+        return (round(c.x, 4), round(c.y, 4), round(c.z, 4), round(face.Area, 4))
+
+    sorted_solid = Part.Solid(Part.makeShell(sorted(solid.Faces, key=key)))
+    return sorted_solid if sorted_solid.isValid() else solid
 
 class SMFromSolid:
     def __init__(self, obj, selobj, sel_items):
