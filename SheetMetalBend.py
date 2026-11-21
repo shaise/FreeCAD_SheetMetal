@@ -31,10 +31,6 @@ import SheetMetalTools
 
 smEpsilon = SheetMetalTools.smEpsilon
 
-# IMPORTANT: please remember to change the element map version in case
-# of any changes in modeling logic.
-smElementMapVersion = "sm1."
-
 # List of properties to be saved as defaults.
 smAddBendDefaultVars = [("radius", "defaultRadius")]
 
@@ -123,11 +119,6 @@ class SMSolidBend:
         #                                   FreeCAD.Qt.translate("App::Property", "Use Refine"),
         #                                   False)
 
-    def getElementMapVersion(self, _fp, ver, _prop, restored):
-        if not restored:
-            return smElementMapVersion + ver
-        return None
-
     def execute(self, fp):
         """Print a short message when doing a recomputation.
 
@@ -138,7 +129,7 @@ class SMSolidBend:
         self.addVerifyProperties(fp)
         Main_Object = fp.baseObject[0].Shape.copy()
         fp.Shape = smSolidBend(radius=fp.radius.Value,
-                               selEdgeNames=fp.baseObject[1],
+                               selEdgeNames=SheetMetalTools.smResolveSubElements(fp),
                                MainObject=Main_Object)
 
 

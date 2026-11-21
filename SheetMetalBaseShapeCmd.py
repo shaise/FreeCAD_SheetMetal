@@ -39,10 +39,6 @@ base_shape_types = ["Flat", "L-Shape", "U-Shape", "Tub", "Hat", "Box"]
 origin_location_types = ["-X,-Y", "-X,0", "-X,+Y", "0,-Y", "0,0", "0,+Y", "+X,-Y", "+X,0", "+X,+Y"]
 origin_location_buttons = ["BL", "CL", "TL", "BC", "CC", "TC", "BR", "CR", "TR"]
 
-# IMPORTANT: please remember to change the element map version in case
-# of any changes in modeling logic.
-smElementMapVersion = "sm1."
-
 
 ###################################################################################################
 # Object class and creation function
@@ -58,7 +54,7 @@ def GetOriginShift(dimension, type_, bendCompensation):
 
 
 def smCreateBaseShape(type, thickness, radius, width, length,
-                      height, flangeWidth, fillGaps, origin):
+                      height, flangeWidth, fillGaps, origin, featureId=None):
     bendCompensation = thickness + radius
     height -= bendCompensation
     compx = 0
@@ -104,7 +100,8 @@ def smCreateBaseShape(type, thickness, radius, width, length,
             faces.append("Face" + str(i+1))
 
     shape, _f = smBend(thickness, selFaceNames=faces, extLen=height, bendR=radius,
-                       MainObject=box, automiter=fillGaps, maxExtendGap=999999)
+                       MainObject=box, automiter=fillGaps, maxExtendGap=999999,
+                       toponamingId=featureId and (featureId, 0))
     if type in ["Hat", "Box"]:
         faces = []
         invertBend = False
@@ -116,7 +113,8 @@ def smCreateBaseShape(type, thickness, radius, width, length,
             if v.z > 0.9999 and z > bendCompensation:
                 faces.append("Face" + str(i+1))
         shape, _f = smBend(thickness, selFaceNames=faces, extLen=flangeWidth, bendR=radius,
-                           MainObject=shape, flipped=invertBend, automiter=fillGaps, maxExtendGap=999999)
+                           MainObject=shape, flipped=invertBend, automiter=fillGaps,
+                           maxExtendGap=999999, toponamingId=featureId and (featureId, 1))
     #SMLogger.message(str(faces))
     return shape
 
@@ -168,11 +166,6 @@ class SMBaseShape:
                                  "Property"),
             True)
 
-    def getElementMapVersion(self, _fp, ver, _prop, restored):
-        if not restored:
-            return smElementMapVersion + ver
-        return None
-
     def onChanged(self, fp, prop):
         if prop == "shapeType":
             fp.setEditorMode("radius",
@@ -194,7 +187,8 @@ class SMBaseShape:
                                      height=fp.height.Value,
                                      flangeWidth=fp.flangeWidth.Value,
                                      fillGaps=fp.fillGaps,
-                                     origin=fp.originLoc)
+                                     origin=fp.originLoc,
+                                     featureId=fp.ID)
 
     def getBaseShapeTypes(self):
         return base_shape_types

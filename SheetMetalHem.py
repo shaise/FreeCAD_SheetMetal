@@ -32,10 +32,6 @@ import Part
 import SheetMetalTools
 from SheetMetalCmd import smBend, smGetFace, smRestrict, sheet_thk
 
-# IMPORTANT: please remember to change the element map version in case
-# of any changes in modeling logic.
-smElementMapVersion = "sm1."
-
 # List of properties to be saved as defaults.
 smAddHemDefaultVars = ["HemType", ("width", "defaultWidth"),
                         ("radius", "defaultRadius"), "AutoMiter", ("kfactor", "defaultKFactor")]
@@ -334,11 +330,6 @@ class SMHem:
                 else:
                     self.setEditorMode(fp, "RollAngle", hidden)
 
-    def getElementMapVersion(self, _fp, ver, _prop, restored):
-        if not restored:
-            return smElementMapVersion + ver
-        return None
-
     def execute(self, fp):
         """Print a short message when doing a recomputation.
 
@@ -359,7 +350,9 @@ class SMHem:
 
         # Pass selected object shape.
         Main_Object = fp.baseObject[0].Shape.copy()
-        face = fp.baseObject[1]
+        resolved = SheetMetalTools.smResolveSubElementSlots(fp)
+        face = [name for name, _slot, _piece in resolved]
+        toolSlots = [(slot, piece) for _name, slot, piece in resolved]
         thk, thkDir = sheet_thk(Main_Object, face[0])
 
         # Gap value needed for first bend set only.
@@ -414,7 +407,9 @@ class SMHem:
                 selFaceNames=face,
                 MainObject=Main_Object,
                 mingap=fp.minGap.Value,
-                maxExtendGap=fp.maxExtendDist.Value)
+                maxExtendGap=fp.maxExtendDist.Value,
+                toponamingId=(fp.ID, i),
+                toolSlots=toolSlots)
 
             faces = smGetFace(f, s)
             face = faces

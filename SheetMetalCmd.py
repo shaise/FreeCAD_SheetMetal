@@ -31,10 +31,6 @@ import Part
 
 import SheetMetalTools
 
-# IMPORTANT: please remember to change the element map version in case
-# of any changes in modeling logic.
-smElementMapVersion = "sm1."
-
 smEpsilon = SheetMetalTools.smEpsilon
 
 # List of properties to be saved as defaults.
@@ -1238,6 +1234,24 @@ def smCalcCutGap(trimedEdge, origEdge, edgePos, bendGap, extend, reliefW, relief
     gap = min(gap_1, gap_2)
     return -gap
 
+
+# Roles of smBend's tool solids in their tags (SheetMetalTools.smToolTag).
+# Fixed per kind of tool, so adding or removing one tool (a relief when a
+# gap changes) does not rename the others. Folded and unfolded variants of
+# the same geometry share a role, so references survive toggling unfold.
+smRoleRelief1 = 1
+smRoleRelief1Inside = 2
+smRoleRelief2 = 3
+smRoleRelief2Inside = 4
+smRoleCorner1 = 5
+smRoleCorner2 = 6
+smRoleCut = 7
+smRoleOffset = 8
+smRoleWall = 9
+smRoleBend = 10
+smRolePerforation = 11
+
+
 def smBend(
     thk,
     bendR=1.0,
@@ -1273,6 +1287,8 @@ def smBend(
     PerforationInitialLength=5.0,
     PerforationMaxLength=5.0,
     NonperforationMaxLength=5.0,
+    toponamingId=None,
+    toolSlots=None,
 ):
     # if sketch is as wall.
     sketches = False
@@ -1310,6 +1326,22 @@ def smBend(
         extLen -= bendR / math.tan(math.radians(90.0 - bendA / 2))
     elif LengthSpec == "Outer Sharp":
         extLen -= (bendR + thk) / math.tan(math.radians(90.0 - bendA / 2))
+
+    # Tag the tool solids built for each selected item, so the faces they
+    # add get topological names (see docs/TNP.md). `toponamingId` is
+    # (feature ID, sketch segment); without it the tags are hashed from
+    # the selected element's mapped name. `toolSlots` gives (slot, piece)
+    # of each selected item in the feature's link property, so a selected
+    # edge split upstream does not shift the tags of the others.
+    toolKeys = [SheetMetalTools.smElementKey(MainObject, name) for name in selFaceNames]
+    featureId, segment = toponamingId or (None, 0)
+    if not toolSlots or len(toolSlots) != len(selFaceNames):
+        toolSlots = [(i, 0) for i in range(len(selFaceNames))]
+
+    def smTag(tool, i, role):
+        slot, piece = toolSlots[i]
+        return SheetMetalTools.smTagFeatureTool(tool, featureId, slot, role, segment=segment,
+                                                piece=piece, fallbackKey=toolKeys[i])
 
     nogaptrimedgelist = []
     mainlist, trimedgelist, nogaptrimedgelist = getBendetail(
@@ -1422,25 +1454,27 @@ def smBend(
             if agap1 > minReliefgap: # and cutgap1 > 0.0:
                 reliefFace1 = smMakeReliefFace(lenEdge, FaceDir * -1, gap1 - reliefW, reliefW,
                                                reliefD, reliefType, op="SMF")
-                reliefSolid1 = reliefFace1.extrude(thkDir * thk)
+                reliefSolid1 = smTag(reliefFace1.extrude(thkDir * thk), i, smRoleRelief1)
                 # Part.show(reliefSolid1, "reliefSolid1a")
                 CutSolids.append(reliefSolid1)
                 if inside:
                     reliefFace1 = smMakeReliefFace(lenEdge, FaceDir * -1, gap1 - reliefW, reliefW,
                                                    offset, "Rectangle", op="SMF")
-                    reliefSolid1 = reliefFace1.extrude(thkDir * thk)
+                    reliefSolid1 = smTag(reliefFace1.extrude(thkDir * thk), i,
+                                         smRoleRelief1Inside)
                     # Part.show(reliefSolid1, "reliefSolid1b")
                     CutSolids.append(reliefSolid1)
             if agap2 > minReliefgap: # and cutgap2 > 0.0:
                 reliefFace2 = smMakeReliefFace(lenEdge, FaceDir * -1, lenEdge.Length - gap2,
                                                reliefW, reliefD, reliefType, op="SMFF")
-                reliefSolid2 = reliefFace2.extrude(thkDir * thk)
+                reliefSolid2 = smTag(reliefFace2.extrude(thkDir * thk), i, smRoleRelief2)
                 # Part.show(reliefSolid2, "reliefSolid2")
                 CutSolids.append(reliefSolid2)
                 if inside:
                     reliefFace2 = smMakeReliefFace(lenEdge, FaceDir * -1, lenEdge.Length - gap2,
                                                    reliefW, offset, "Rectangle", op="SMFF")
-                    reliefSolid2 = reliefFace2.extrude(thkDir * thk)
+                    reliefSolid2 = smTag(reliefFace2.extrude(thkDir * thk), i,
+                                         smRoleRelief2Inside)
                     # Part.show(reliefSolid2, "reliefSolid2")
                     CutSolids.append(reliefSolid2)
 
@@ -1493,7 +1527,9 @@ def smBend(
                                     # print(type(edge.Curve))
                                     if issubclass(type(edge.Curve),
                                                   (Part.Circle or Part.BSplineSurface)):
-                                        RfaceE = Rface.makeOffsetShape(-Noffset1, 0.0, fill=True)
+                                        RfaceE = smTag(Rface.makeOffsetShape(-Noffset1, 0.0,
+                                                                             fill=True),
+                                                       i, smRoleCorner1)
                                         # Part.show(RfaceE, "RfaceSolid1")
                                         CutSolids.append(RfaceE)
                                         break
@@ -1509,7 +1545,9 @@ def smBend(
                                     # print(type(edge.Curve))
                                     if issubclass(type(edge.Curve),
                                                   (Part.Circle or Part.BSplineSurface)):
-                                        RfaceE = Rface.makeOffsetShape(-Noffset2, 0.0, fill=True)
+                                        RfaceE = smTag(Rface.makeOffsetShape(-Noffset2, 0.0,
+                                                                             fill=True),
+                                                       i, smRoleCorner2)
                                         # Part.show(RfaceE, "RfaceSolid2")
                                         CutSolids.append(RfaceE)
                                         break
@@ -1526,7 +1564,7 @@ def smBend(
             # Part.show(CutSolid, "CutSolid")
             CfaceSolid = Cface.extrude(thkDir * thk)
             # Part.show(CfaceSolid, "CfaceSolid")
-            CutSolid = CutSolid.common(CfaceSolid)
+            CutSolid = smTag(CutSolid.common(CfaceSolid), i, smRoleCut)
             # Part.show(CutSolid, "CutSolid")
             CutSolids.append(CutSolid)
 
@@ -1543,7 +1581,7 @@ def smBend(
         if offset > 0.0:
             # Create wall.
             offset_face = smMakeFace(lenEdge, FaceDir, -offset, op="SMO")
-            OffsetSolid = offset_face.extrude(thkDir * thk)
+            OffsetSolid = smTag(offset_face.extrude(thkDir * thk), i, smRoleOffset)
             resultSolid = resultSolid.fuse(OffsetSolid)
 
         # Adjust revolving center to new point.
@@ -1585,8 +1623,10 @@ def smBend(
                     revFace.reverse()
                 bendSolid = revFace.revolve(revAxisP, revAxisV, bendA)
                 # Part.show(bendSolid)
+                smTag(bendSolid, i, smRoleBend)
                 resultSolid = resultSolid.fuse(bendSolid)
             if wallSolid:
+                smTag(wallSolid, i, smRoleWall)
                 resultSolid = resultSolid.fuse(wallSolid)
                 # Part.show(resultSolid, "resultSolid")
             # Remove perforation
@@ -1609,6 +1649,7 @@ def smBend(
                 else:
                     perfSolid = perfFace.revolve(revAxisP, revAxisV, bendA)
                 # Part.show(perfSolid)
+                smTag(perfSolid, i, smRolePerforation)
                 resultSolid = resultSolid.cut(perfSolid)
         else:
             # Produce unfold Solid.
@@ -1621,12 +1662,14 @@ def smBend(
                     unfoldFace.reverse()
                 unfoldSolid = unfoldFace.extrude(FaceDir * unfoldLength)
                 # Part.show(unfoldSolid)
+                smTag(unfoldSolid, i, smRoleBend)
                 resultSolid = resultSolid.fuse(unfoldSolid)
             if extLen > 0.0:
                 # Flatten the wall back out.
                 wallSolid.rotate(revAxisP, revAxisV, -bendA)
                 # Part.show(wallSolid, "wallSolid")
                 wallSolid.translate(FaceDir * unfoldLength)
+                smTag(wallSolid, i, smRoleWall)
                 resultSolid = resultSolid.fuse(wallSolid)
             # Remove perforation.
             if Perforate:
@@ -1647,6 +1690,7 @@ def smBend(
                 else:
                     perfSolid = perfFace.extrude(FaceDir * unfoldLength)
                 # Part.show(perfSolid)
+                smTag(perfSolid, i, smRolePerforation)
                 resultSolid = resultSolid.cut(perfSolid)
 
     # Part.show(resultSolid, "resultSolid")
@@ -1866,11 +1910,6 @@ class SMBendWall:
                 False,
                 "ParametersEx")
 
-    def getElementMapVersion(self, _fp, ver, _prop, restored):
-        if not restored:
-            return smElementMapVersion + ver
-        return None
-
     def execute(self, fp):
         """Print a short message when doing a recomputation.
 
@@ -1890,7 +1929,9 @@ class SMBendWall:
 
         # Pass selected object shape.
         Main_Object = fp.baseObject[0].Shape.copy()
-        face = fp.baseObject[1]
+        resolved = SheetMetalTools.smResolveSubElementSlots(fp)
+        face = [name for name, _slot, _piece in resolved]
+        toolSlots = [(slot, piece) for _name, slot, piece in resolved]
         thk, thkDir = sheet_thk(Main_Object, face[0])
 
         if fp.Sketch:
@@ -2054,7 +2095,9 @@ class SMBendWall:
                 PerforationAngle=fp.PerforationAngle.Value,
                 PerforationInitialLength=fp.PerforationInitialLength.Value,
                 PerforationMaxLength=fp.PerforationMaxLength.Value,
-                NonperforationMaxLength=fp.NonperforationMaxLength.Value)
+                NonperforationMaxLength=fp.NonperforationMaxLength.Value,
+                toponamingId=(fp.ID, i),
+                toolSlots=toolSlots)
             faces = smGetFace(f, s)
             face = faces
             Main_Object = s

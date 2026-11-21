@@ -29,10 +29,6 @@ import Part
 
 import SheetMetalTools
 
-# IMPORTANT: please remember to change the element map version in case
-# of any changes in modeling logic.
-smElementMapVersion = "sm1."
-
 smEpsilon = SheetMetalTools.smEpsilon
 smSolidCornerReliefDefaultVars = [("relief", "defaultCornerRelief")]
 
@@ -89,9 +85,17 @@ def smMakeFace(vertex, face, edges, relief):
     return extface
 
 
-def smRelief(relief=2.0, selVertexNames=" ", MainObject=None):
+# Role of the relief cut in its tag (SheetMetalTools.smToolTag).
+smRoleRelief = 1
+
+
+def smRelief(relief=2.0, selVertexNames=" ", MainObject=None, featureId=None, toolSlots=None):
+    """toolSlots gives (slot, piece) of each vertex in the feature's link
+    property (see SheetMetalTools.smResolveSubElementSlots)."""
     resultSolid = MainObject
-    for selVertexName in selVertexNames:
+    if not toolSlots or len(toolSlots) != len(selVertexNames):
+        toolSlots = [(i, 0) for i in range(len(selVertexNames))]
+    for selVertexName, (slot, piece) in zip(selVertexNames, toolSlots):
         vertex = MainObject.getElement(SheetMetalTools.getElementFromTNP(selVertexName))
         facelist = MainObject.ancestorsOfType(vertex, Part.Face)
 
@@ -109,6 +113,10 @@ def smRelief(relief=2.0, selVertexNames=" ", MainObject=None):
         cutsolid = extsolidlist[0].multiFuse(extsolidlist[1:])
         # Part.show(cutsolid, "cutsolid")
         cutsolid = cutsolid.removeSplitter()
+        # Tag the tool so the pocket faces get topological names (see docs/TNP.md).
+        SheetMetalTools.smTagFeatureTool(
+            cutsolid, featureId, slot, smRoleRelief, piece=piece,
+            fallbackKey=SheetMetalTools.smElementKey(MainObject, selVertexName))
         resultSolid = resultSolid.cut(cutsolid)
         # Part.show(resultsolid, "resultsolid")
     return resultSolid
@@ -128,11 +136,6 @@ class SMRelief:
     def addVerifyProperties(self, obj):
         pass
 
-    def getElementMapVersion(self, _fp, ver, _prop, restored):
-        if not restored:
-            return smElementMapVersion + ver
-        return None
-
     def execute(self, fp):
         """Print a short message when doing a recomputation.
 
@@ -142,8 +145,11 @@ class SMRelief:
         """
         # Pass selected object shape.
         Main_Object = fp.baseObject[0].Shape.copy()
-        fp.Shape = smRelief(relief=fp.relief.Value, selVertexNames=fp.baseObject[1],
-                            MainObject=Main_Object)
+        resolved = SheetMetalTools.smResolveSubElementSlots(fp)
+        fp.Shape = smRelief(relief=fp.relief.Value,
+                            selVertexNames=[name for name, _slot, _piece in resolved],
+                            MainObject=Main_Object, featureId=fp.ID,
+                            toolSlots=[(slot, piece) for _name, slot, piece in resolved])
         SheetMetalTools.smHideObjects(fp.baseObject[0])
 
 
