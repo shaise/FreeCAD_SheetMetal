@@ -100,6 +100,8 @@ SheetMetal WB can be installed via the [Addon Manager](https://github.com/FreeCA
 * FreeCAD Forum announcement/discussion [thread](https://forum.freecad.org/viewtopic.php?f=3&t=60818) 
 
 #### Release notes:
+* V0.8.28 24 Nov 2026:  Improve fold face selection heuristic.  
+                      - Update translations.  
 * V0.8.27 07 Nov 2026:  Fix README typos and links by [@RRhino8687][RRhino8687].  
                       - Fix K-Factor defaults inconsistency by [@RRhino8687][RRhino8687].  
                       - Make complex wrapped cutout shapes work.  

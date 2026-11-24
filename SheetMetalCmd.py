@@ -30,6 +30,7 @@ import FreeCAD
 import Part
 
 import SheetMetalTools
+SMException = SheetMetalTools.SMException
 
 # IMPORTANT: please remember to change the element map version in case
 # of any changes in modeling logic.
@@ -779,44 +780,6 @@ def getSketchDetails(Sketch, sketchflip, sketchinvert, radius, thk):
     # print(LengthList, bendAList)
     return LengthList, bendAList
 
-
-def check_parallel(edge1, edge2):
-    v1 = edge1.Vertexes[0].Point - edge1.Vertexes[1].Point
-    v2 = edge2.Vertexes[0].Point - edge2.Vertexes[1].Point
-    if v1.isEqual(v2, 0.00001):
-        return True, edge2.Vertexes[0].Point - edge1.Vertexes[0].Point
-    if v1.isEqual(-v2, 0.00001):
-        return True, edge2.Vertexes[0].Point - edge1.Vertexes[1].Point
-    return False, None
-
-
-def sheet_thk(MainObject, selFaceName):
-    selItem = MainObject.getElement(SheetMetalTools.getElementFromTNP(selFaceName))
-    selFace = SheetMetalTools.smGetFaceByEdge(selItem, MainObject)
-    # Find the narrow edge.
-    thk = 999999.0
-    thkDir = None
-    if type(selItem) == Part.Face:
-        for edge in selFace.Edges:
-            if abs(edge.Length) < thk:
-                thk = abs(edge.Length)
-    else:
-        # If selected item is edge, try to find the closest parallel
-        # edge - works better when object is refined and faces are not
-        # rectangle.
-        for edge in selFace.Edges:
-            if edge.isSame(selItem):
-                continue
-            isParallel, distVect = check_parallel(selItem, edge)
-            if isParallel:
-                dist = distVect.Length
-                if dist < thk:
-                    thk = dist
-                    thkDir = distVect
-        thkDir.normalize()
-    return thk, thkDir
-
-
 def smEdge(selFaceName, MainObject):
     # Find Edge, if Face Selected.
     selItem = MainObject.getElement(SheetMetalTools.getElementFromTNP(selFaceName))
@@ -845,9 +808,11 @@ def smEdge(selFaceName, MainObject):
         seledge = lenEdge
         selFace = selItem
     elif type(selItem) == Part.Edge:
-        thk, thkDir = sheet_thk(MainObject, selFaceName)
+        # thk, thkDir = sheet_thk(MainObject, selFaceName)
         seledge = selItem
-        selFace = SheetMetalTools.smGetFaceByEdge(selItem, MainObject)
+        selFace, thk, thkDir = SheetMetalTools.smGetFaceByEdge(selItem, MainObject)
+        if not thkDir:
+            raise SMException("Non valid selection for bend operation")
         p1 = seledge.valueAt(seledge.FirstParameter)
         p2 = seledge.valueAt(seledge.LastParameter)
         revAxisV = p2 - p1
@@ -1891,7 +1856,10 @@ class SMBendWall:
         # Pass selected object shape.
         Main_Object = fp.baseObject[0].Shape.copy()
         face = fp.baseObject[1]
-        thk, thkDir = sheet_thk(Main_Object, face[0])
+        #thk, thkDir = sheet_thk(Main_Object, face[0])
+        _face, thk, thkDir = SheetMetalTools.smGetFaceByEdge(face[0], Main_Object)
+        if not thkDir:
+            raise SMException("Non valid selection for bend operation")
 
         if fp.Sketch:
             WireList = fp.Sketch.Shape.Wires[0]

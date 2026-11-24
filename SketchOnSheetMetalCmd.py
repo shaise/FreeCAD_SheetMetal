@@ -38,10 +38,10 @@ smEpsilon = SheetMetalTools.smEpsilon
 def smSketchOnSheetMetal(kfactor=0.5, sketch="", flipped=False, selFaceNames="", MainObject=None):
     resultSolid = MainObject.Shape.copy()
     selElement = resultSolid.getElement(SheetMetalTools.getElementFromTNP(selFaceNames[0]))
-    LargeFace = SheetMetalTools.smGetFaceByEdge(selElement, resultSolid)
+    LargeFace, thk, _ = SheetMetalTools.smGetFaceByEdge(selElement, resultSolid)
     sketch_face = Part.makeFace(sketch.Shape.Wires, "Part::FaceMakerBullseye")
     # To get thk of sheet, top face normal.
-    thk = SheetMetalTools.smGetThickness(resultSolid, LargeFace)
+    # thk = SheetMetalTools.smGetThickness(resultSolid, LargeFace)
     # print(thk)
     # # To get top face normal, flatsolid
     solidlist = []

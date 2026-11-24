@@ -30,7 +30,7 @@ import FreeCAD
 import Part
 
 import SheetMetalTools
-from SheetMetalCmd import smBend, smGetFace, smRestrict, sheet_thk
+from SheetMetalCmd import smBend, smGetFace, smRestrict
 
 # IMPORTANT: please remember to change the element map version in case
 # of any changes in modeling logic.
@@ -360,7 +360,7 @@ class SMHem:
         # Pass selected object shape.
         Main_Object = fp.baseObject[0].Shape.copy()
         face = fp.baseObject[1]
-        thk, thkDir = sheet_thk(Main_Object, face[0])
+        _face, thk, thkDir = SheetMetalTools.smGetFaceByEdge(face[0], Main_Object)
 
         # Gap value needed for first bend set only.
         gap1_list = [0.0 for n in LegLengthList]

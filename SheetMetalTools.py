@@ -1237,19 +1237,82 @@ def smGetThickness(obj, foldface):
     thk = thkedge.Length
     return thk
 
+def smCheckParallel(edge1, edge2):
+    '''Check if 2 edges are parallel, return distance vector from edge1 to edge2 if true, else None'''
+    v1 = edge1.Vertexes[0].Point - edge1.Vertexes[1].Point
+    v2 = edge2.Vertexes[0].Point - edge2.Vertexes[1].Point
+    if v1.isEqual(v2, 0.00001):
+        return edge2.Vertexes[0].Point - edge1.Vertexes[0].Point
+    if v1.isEqual(-v2, 0.00001):
+        return edge2.Vertexes[0].Point - edge1.Vertexes[1].Point
+    return None
+
+
+def smFindClosestParallelEdge(selEdge, selFace):
+    '''Find the closest parallel edge, return it + a vector from one edge to the other'''
+    # Works better when object is refined and faces are not rectangle.
+    thk = 999999.0
+    thkVect = None
+    parEdge = None
+    for edge in selFace.Edges:
+        if edge.isSame(selEdge):
+            continue
+        distVect = smCheckParallel(selEdge, edge)
+        if distVect:
+            if distVect.Length < thk:
+                thk = distVect.Length
+                thkVect = distVect
+                parEdge = edge
+    return parEdge, thkVect
+
+def smGetNormalAtPoint(face, point):
+    u, v = face.Surface.parameter(point)
+    return face.normalAt(u, v)
+
+def smCheckFoldableFace(edge, face, obj):
+    ''' check if a face is valid for sheetmetal folding. If so return the thicknes vector '''
+    # a valid face has:
+    # 1. A parallel edge to the selected one
+    # 2. the face attached to this parallel edge is 90 degree to the tested face
+    parEdge, thkVect = smFindClosestParallelEdge(edge, face)
+    if not parEdge:
+        return None
+    face1, face2 = obj.ancestorsOfType(parEdge, Part.Face)
+    point = parEdge.Vertexes[0].Point
+    norm1 = smGetNormalAtPoint(face1, point)
+    norm2 = smGetNormalAtPoint(face2, point)
+    if abs(norm1.dot(norm2)) < smEpsilon:
+        return thkVect
+    return None
 
 def smGetFaceByEdge(selItem, obj):
-    selFace = None
+    res = (None, None)
+    thk = thkDir = None
     # Find face if Edge Selected.
     if type(selItem) == Part.Edge:
-        Facelist = obj.ancestorsOfType(selItem, Part.Face)
-        if Facelist[0].Area < Facelist[1].Area:
-            selFace = Facelist[0]
+        Facelist = []
+        for face in obj.ancestorsOfType(selItem, Part.Face):
+            thkVect = smCheckFoldableFace(selItem, face, obj)
+            if thkVect:
+                Facelist.append((face, thkVect))
+        if len(Facelist) == 0:
+            res = (None, None)
+        elif len(Facelist) == 1 or Facelist[0][0].Area < Facelist[1][0].Area:
+            res =  Facelist[0]
         else:
-            selFace = Facelist[1]
+            res = Facelist[1]
     elif type(selItem) == Part.Face:
-        selFace = selItem
-    return selFace
+        thk = 99999999.0
+        for edge in selItem.Edges:
+            if abs(edge.Length) < thk:
+                thk = abs(edge.Length)
+                thkVect = edge.Vertexes[0].Point - edge.Vertexes[1].Point
+        res = (selItem, thkVect)
+    selFace, thkDir = res
+    if thkDir:
+        thk = thkDir.Length
+        thkDir.normalize()
+    return (selFace, thk, thkDir)
 
 
 def smGetIntersectingFace(Face, obj):
