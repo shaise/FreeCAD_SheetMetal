@@ -1286,6 +1286,8 @@ def smCheckFoldableFace(edge, face, obj):
     return None
 
 def smGetFaceByEdge(selItem, obj):
+    if (type(selItem) == str):
+        selItem = obj.getElement(getElementFromTNP(selItem))
     res = (None, None)
     thk = thkDir = None
     # Find face if Edge Selected.
