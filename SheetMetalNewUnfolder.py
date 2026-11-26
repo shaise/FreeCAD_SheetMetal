@@ -1348,11 +1348,17 @@ def compute_unbend_transform(
     return alignment_transform, overall_transform, uvref
 
 def unfold(
-    shape: Part.Shape, root_face_index: int, bac: BendAllowanceCalculator
+    shape: Part.Shape,
+    root_face_index: int,
+    bac: BendAllowanceCalculator,
+    face_transforms: dict[int, Matrix] | None = None,
 ) -> tuple[list[Part.Edge], list[BendInfo]]:
     """Given a solid body of a sheet metal part and a reference face, computes
     a solid representation of the unbent object, as well as a compound object
     containing straight edges for each bend centerline.
+
+    If a `face_transforms` dict is given, it is filled with the matrix that
+    moves each face of the root side (key: face index) into the flat pattern.
     """
     graph_of_sheet_faces = build_graph_of_tangent_faces(shape, root_face_index)
     thickness = EstimateThickness.using_best_method(shape, root_face_index)
@@ -1448,6 +1454,8 @@ def unfold(
         # Use reduce() to do repeated matrix multiplication
         # Matrix() * M_1 * M_2 * ... * M_N for N matrices.
         final_mat = reduce(multiply_operator, list_of_matrices, Matrix())
+        if face_transforms is not None:
+            face_transforms[face_id] = final_mat
         # Bent faces of the input shape are swapped for their unbent
         # versions.
         if "sketch_lines" in node_data[face_id]:
@@ -1485,9 +1493,96 @@ def getBendLabels(bend_infodata: list[BendInfo], bend_label_size: float = 2.0) -
         label_edges.extend(label_comp.Edges)
     return Part.makeCompound(label_edges)
 
+class MarkingProjection:
+    """Carries 2D markings (e.g. stud welding positions) drawn on the faces of
+    the folded part into the flat pattern."""
+
+    # Max. distance of a marking from the plane of a sheet face.
+    plane_tol = 1e-3
+    # Chordal deviation used to turn unsupported curves into polylines.
+    deflection = 0.01
+
+    @staticmethod
+    def _sketchable_edges(edge: Part.Edge) -> list[Part.Edge]:
+        """The unfold sketches only take lines, circles and arcs."""
+        if edge.Curve.TypeId in ("Part::GeomLine", "Part::GeomCircle"):
+            return [edge]
+        points = edge.discretize(Deflection=MarkingProjection.deflection)
+        return Part.makePolygon(points).Edges
+
+    @staticmethod
+    def map_edges(
+        shp: Part.Shape,
+        face_transforms: dict[int, Matrix],
+        marking_shapes: list[Part.Shape],
+        thickness: float,
+    ) -> tuple[list[Part.Edge], list[Part.Edge], int]:
+        """Map marking edges lying on a planar face of the sheet into the
+        flat pattern.
+
+        Edges on the unfold side ("front") of the sheet and edges on the
+        opposite side ("back") are returned separately, so the side to be
+        marked stays visible in the drawing. Edges that lie on no planar
+        face of the sheet are counted as unplaced and skipped.
+        """
+        faces = list(shp.Faces)
+        planes = []
+        for idx, mat in face_transforms.items():
+            face = faces[idx]
+            if face.Surface.TypeId != "Part::GeomPlane":
+                continue
+            u0, _u1, v0, _v1 = face.ParameterRange
+            planes.append((face, face.valueAt(u0, v0), face.normalAt(u0, v0), mat))
+        front, back, unplaced = [], [], 0
+        tol = MarkingProjection.plane_tol
+        for shape in marking_shapes:
+            for edge in shape.Edges:
+                p0, p1 = edge.ParameterRange
+                samples = [edge.valueAt(p0 + (p1 - p0) * k / 4) for k in range(5)]
+                mid = samples[2]
+                best = None  # (outside-distance, offset, plane)
+                for face, origin, normal, mat in planes:
+                    offsets = [(p - origin).dot(normal) for p in samples]
+                    d = offsets[2]
+                    if max(offsets) - min(offsets) > tol:
+                        continue  # Not parallel to this face.
+                    if abs(d) > tol and abs(d + thickness) > tol:
+                        continue  # Neither on this face nor on its back.
+                    proj = mid - normal * d
+                    outside = 0.0 if face.isInside(proj, tol, True) else \
+                        face.distToShape(Part.Vertex(proj))[0]
+                    if best is None or outside < best[0]:
+                        best = (outside, d, normal, mat)
+                if best is None:
+                    unplaced += 1
+                    continue
+                _outside, d, normal, mat = best
+                target = front if abs(d) <= tol else back
+                for e in MarkingProjection._sketchable_edges(edge):
+                    target.append(e.translated(normal * -d).transformed(mat))
+        return front, back, unplaced
+
+
 def getUnfold(
     bac: BendAllowanceCalculator, solid: Part.Feature, facename: str
 ) -> tuple[Part.Face, Part.Shape, Part.Compound, Vector, list[BendInfo]]:
+    return getUnfoldWithMarks(bac, solid, facename)[:5]
+
+
+def getUnfoldWithMarks(
+    bac: BendAllowanceCalculator,
+    solid: Part.Feature,
+    facename: str,
+    marking_shapes: list[Part.Shape] | None = None,
+) -> tuple[Part.Face, Part.Shape, Part.Compound, Vector, list[BendInfo],
+           tuple[Part.Compound, Part.Compound, int]]:
+    """Same as getUnfold(), plus the marking geometry mapped into the flat
+    pattern (front side, back side, number of unplaced edges).
+
+    `marking_shapes` must be given in the same coordinate system as
+    `solid.Shape`. The returned markings use the frame of the returned bend
+    lines.
+    """
     object_placement = solid.Placement.toMatrix()
     shp = solid.Shape.transformed(object_placement.inverse())
     if hasattr(shp, "findSubShape"):
@@ -1501,7 +1596,8 @@ def getUnfold(
         except ValueError:
             errmsg = f"Invalid shape name: {facename}"
             raise RuntimeError(errmsg)
-    sketch_lines, bend_lines_info = unfold(shp, root_face_index, bac)
+    face_transforms = {}
+    sketch_lines, bend_lines_info = unfold(shp, root_face_index, bac, face_transforms)
     sketch_align_transform = SketchExtraction.move_to_origin(
         Part.makeCompound(sketch_lines), shp.Faces[root_face_index]
     )
@@ -1522,8 +1618,18 @@ def getUnfold(
     trimmed_bend_lines = bend_lines_compound.common(
         unbent_solid.translated(Vector(0.0, 0.0, 0.5 * thickness))
     ).transformed(sketch_align_transform.inverse())
-   
-    return shp.Faces[root_face_index], inplace_unbend, trimmed_bend_lines, root_normal, bend_lines_info
+
+    # The face transforms map into the same in-place frame as the bend lines.
+    marks_front, marks_back, unplaced = MarkingProjection.map_edges(
+        shp,
+        face_transforms,
+        [m.transformed(object_placement.inverse()) for m in marking_shapes or []],
+        thickness,
+    )
+    marks = (Part.makeCompound(marks_front), Part.makeCompound(marks_back), unplaced)
+
+    return (shp.Faces[root_face_index], inplace_unbend, trimmed_bend_lines, root_normal,
+            bend_lines_info, marks)
 
 
 def getUnfoldSketches(
@@ -1540,7 +1646,15 @@ def getUnfoldSketches(
     bend_infodata: list[BendInfo] = [],
     bend_label_color: str = "#33c033",
     bend_label_size: float = 2.0,
+    marking_lines: Part.Compound | None = None,
+    marking_back_lines: Part.Compound | None = None,
+    marking_color: str = "#ff00ff",
 ) -> list[Part.Feature]:
+    """`marking_lines` / `marking_back_lines` are in the same frame as
+    `bend_lines` (see getUnfoldWithMarks)."""
+    marking_lines = marking_lines if marking_lines and marking_lines.Edges else None
+    marking_back_lines = (marking_back_lines
+                          if marking_back_lines and marking_back_lines.Edges else None)
     sketch_profile, inner_wires, hole_wires = SketchExtraction.extract_manually(
         unfolded_shape, root_normal
     )
@@ -1556,12 +1670,16 @@ def getUnfoldSketches(
 
     if not split_sketches:
         bend_labels_transformed = bend_labels.transformed(sketch_align_transform.inverse()) 
+        marks = [m for m in (marking_lines, marking_back_lines) if m]
         sketch_profile = Part.makeCompound(
-            [sketch_profile, *inner_wires, *hole_wires, bend_lines, bend_labels_transformed]
+            [sketch_profile, *inner_wires, *hole_wires, bend_lines, bend_labels_transformed,
+             *marks]
         )
         inner_wires = None
         hole_wires = None
         bend_lines = None
+        marking_lines = None
+        marking_back_lines = None
     sketch_profile = sketch_profile.transformed(sketch_align_transform)
     # Organize the unfold sketch layers in a group.
     sketch_doc_obj = SketchExtraction.edges_to_sketch_object(
@@ -1577,7 +1695,8 @@ def getUnfoldSketches(
             existing_sketches,
             bend_sketch_color,
         )
-        bend_lines_doc_obj.ViewObject.DrawStyle = "Dashdot"
+        if bend_lines_doc_obj.ViewObject:
+            bend_lines_doc_obj.ViewObject.DrawStyle = "Dashdot"
         sketch_objects_list.append(bend_lines_doc_obj)
     # Inner lines are sometimes not present.
     if inner_wires:
@@ -1605,6 +1724,17 @@ def getUnfoldSketches(
             existing_sketches,
             bend_label_color,
         )
-        bend_labels_doc_obj.ViewObject.PointSize = 0
+        if bend_labels_doc_obj.ViewObject:
+            bend_labels_doc_obj.ViewObject.PointSize = 0
         sketch_objects_list.append(bend_labels_doc_obj)
+    # Markings get their own layers, so they can be engraved instead of cut.
+    # Names must not be prefixes of each other (see edges_to_sketch_object).
+    for lines, suffix in ((marking_lines, "Marks"), (marking_back_lines, "BackMarks")):
+        if lines:
+            sketch_objects_list.append(SketchExtraction.edges_to_sketch_object(
+                lines.transformed(sketch_align_transform).Edges,
+                f"{obj_label}_Sketch_{suffix}",
+                existing_sketches,
+                marking_color,
+            ))
     return sketch_objects_list
