@@ -1239,6 +1239,8 @@ def smGetThickness(obj, foldface):
 
 def smCheckParallel(edge1, edge2):
     '''Check if 2 edges are parallel, return distance vector from edge1 to edge2 if true, else None'''
+    if not isinstance(edge1.Curve, Part.Line) or not isinstance(edge2.Curve, Part.Line):
+        return None
     v1 = edge1.Vertexes[0].Point - edge1.Vertexes[1].Point
     v2 = edge2.Vertexes[0].Point - edge2.Vertexes[1].Point
     if v1.isEqual(v2, 0.00001):
